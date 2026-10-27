@@ -82,6 +82,36 @@ A tool that serves one or two layers is an integration of those layers, however 
 
 Every agent harness is an AI harness; a chatbot is not an agent harness. The line between the last two follows Anthropic's split between workflows and agents (reference in `interface/references/references.json`). Interfaces are usually agent harnesses.
 
+## Step 4: the gaps filled (2026-10-27)
+
+| Gap | Now |
+| --- | --- |
+| 3. Agents are not team | `members` takes `{role, kind: person or agent, tools}`; the EE venture lists an architect and a builder agent; `ready` counts agents |
+| 4. No business-model vocabulary | `schema/vocab/business-models.json`: the St. Gallen 55 plus open-core and fee-for-service; check-ventures warns otherwise |
+| 5. One market per product | `market` may be a list with one primary |
+| 6. Layer paths had no base | relative to the venture folder, checked to exist; the EE venture's layers are now its own folders |
+| 8. Weak revenue made a revenue engine | a revenue engine needs a revenue score of 2 (`phases.json`); the EE venture now has none in Validation, which is true |
+| 9. Wedges found only through flows | a standalone part of the flagship kit is a wedge too; role tests in `test.mjs` |
+| 11. No Execution, Evidence or Governance schemas | handoff, evidence, eval-suite and decision-rights schemas; `run-handoff.mjs` and `check-execution.mjs` (EE-017) |
+
+**End to end, once.** Gaps 8 and 9 were run as the venture's first handoff, `instance/ventures/everything-ecosystem/execution/handoffs/anatomy-runner-fixes.json`, held by the builder role with two of its decision classes. `run-handoff.mjs` ran its two conformance checks and its self-proof and wrote the evidence (`evidence/results/`); `check-execution.mjs` confirmed every criterion has passing evidence before the handoff could say done. The venture's decision rights tighten the template in one place (the owner merges, so accepting work is a recommendation). So a venture now runs Purpose (core, products, matrix) to Execution (handoff) to Evidence (results) under Governance (decision rights), and the run also found a real defect: the template named a role that does not exist ("umbrella chief-of-staff"), now `chief-of-staff`.
+
+What this run did not exercise: Operations (MAD choosing the method for the handoff), Interface beyond Claude Code, review criteria, and escalation. The genus (operating system or operating model) can be argued from here, but one handoff is thin evidence.
+
+## Every path tested (2026-10-27)
+
+`node test.mjs` runs everything: schema validation of all 65 records, 21 checker tests that break a copy of the venture and expect the right error, every cross-file check, the Product Anatomy runner tests, and MAD's catalog, recommender and publisher tests. CI runs it on each pull request. The three paths the first run skipped were then run as real handoffs:
+
+| Path | Handoff | What happened |
+| --- | --- | --- |
+| Operations | `anatomy-json-output` | MAD's recommender (`ee recommend --answers`, a new mode for when Jev is unavailable) put small change and spec-first in a tie; `ee propose` wrote assignment A-001, proposed, for the owner to ratify |
+| Review | `anatomy-json-output` | The architect failed the first version (the JSON still held display text, so agents would parse strings); the builder changed it to role ids; the second review passed. Both verdicts are in the evidence |
+| Escalation | `methodology-site-refresh` | Publishing the method site stops at refusal rule R1, written for the vault layout: 80 of 82 files are refused. Changing it loosens what may go public (architect), and publishing is the owner's call. Escalated, nothing published |
+
+**One red test, and it predates this work.** The publisher's own R1 test fails on the committed head, for the same vault-layout reason; it is the first escalation's question and is left failing rather than skipped. `node test.mjs` and CI stay red on that one line until the owner answers.
+
+**Limit.** The builder, architect and reviewer were all played by one agent session. The checks enforce that a review comes from a different role, not from a different agent; separating sessions needs the interface layer to run roles apart.
+
 ## Next
 
 The next schema round covers gap 11 first (handoff, eval and decision-rights schemas), then gaps 3 to 6 and the runner fixes 8 and 9. Gaps 7 and 10 are answered; their schema follow-ups (ambition watch, bundling) join the round. The five-step algorithm skill is not in this repo yet; its card records it so the run could score it.
