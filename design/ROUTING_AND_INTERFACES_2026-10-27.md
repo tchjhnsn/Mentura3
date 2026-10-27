@@ -67,9 +67,6 @@ The route table would be generated from the kit manifests and the data model, as
 - Reference pages are generated from the manifests, as the layer graph and the glossary are, and `test.mjs` fails when they are stale.
 - The concepts (venture, layer, kit, template, record, evidence grade, gate) get a guide page each, built from `docs/ontology.json`.
 
-## Next steps (not started)
+## Next steps
 
-1. Generate the route table from the kits (`schema/routes.mjs`), with a freshness test.
-2. Build a CLI over the route table.
-3. Build an MCP server over the same table, plus the install skill.
-4. Generate documentation pages from the manifests.
+Built on 2026-10-27 (EE-030): the router (`interface/router.mjs`); the CLI, the MCP server and the local HTTP API over it; the install skill; `init --layers` for partial adoption; and the generated route table in `docs/reference/ROUTES.md`, with a freshness test. Still open: the operator console on the same router, authentication if the API ever leaves one machine, and generated reference pages for each kit.
