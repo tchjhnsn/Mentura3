@@ -9,14 +9,16 @@ status: DRAFT
 public-edition-of: "[[EVERYTHING_ECOSYSTEM_DOMAIN_DESIGN_2026-10-10]]"
 tags: [everything-ecosystem, domain-design, public-edition]
 name: "Domain design"
-description: "What the Everything Ecosystem methodology is for: the problem it addresses, its principles, the theses it tests, its concepts and rules, and how a methodology is chosen for each system. The standalone public edition."
+description: "What the Everything Ecosystem, a venture development framework, is for: the problem it addresses, its principles, the theses it tests, its concepts and rules, and how a methodology is chosen for each system. The standalone public edition."
 ---
 
 # Domain design
 
 *Public edition. The working version is kept with the founder's projects; where they differ, the working version governs and this page is corrected.*
 
-This page describes **what the methodology means**, independent of any tool or project: the problem, the principles, the concepts, and the rules that must always hold.
+The Everything Ecosystem is a **venture development framework**: an opinionated framework for developing ventures, from a hobby to a company, with AI agents, in the same genus as web development frameworks. Like them it gives conventions over configuration (one default per choice, each with its sources), a fixed structure the builder fills in, generators, checks that run like tests, and packages (kits) that plug in. A web framework calls the application's code; this framework's checks and runners call on the venture's own records.
+
+This page describes **what its methodology means**, independent of any tool or project: the problem, the principles, the concepts, and the rules that must always hold.
 
 ## The problem
 
