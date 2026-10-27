@@ -69,4 +69,4 @@ The route table would be generated from the kit manifests and the data model, as
 
 ## Next steps
 
-Built on 2026-10-27 (EE-030): the router (`interface/router.mjs`); the CLI, the MCP server and the local HTTP API over it; the install skill; `init --layers` for partial adoption; and the generated route table in `docs/reference/ROUTES.md`, with a freshness test. Still open: the operator console on the same router, authentication if the API ever leaves one machine, and generated reference pages for each kit.
+Built on 2026-10-27 (EE-030): the router (`interface/router.mjs`); the CLI, the MCP server and the local HTTP API over it; the install skill; `init --layers` for partial adoption; and the generated route table in `docs/reference/ROUTES.md`, with a freshness test. Built next (EE-032): every Next.js route type that applies, mapped in `docs/reference/ROUTES.md`. Still open: the operator console rendering views on the same router, authentication if the API ever leaves one machine, MAD tiers as route groups once record types declare a tier, and generated reference pages for each kit.
