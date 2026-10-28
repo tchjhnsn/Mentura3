@@ -21,7 +21,7 @@ Research date: Wednesday, October 28, 2026 (all times America/Chicago, CDT).
 **Headline finding.** Naive is already built on the Next.js model in more places than its docs say. Two decisions in the ledger make the analogy explicit:
 
 - EE-041 (proposed): "Mentura has two sides, as Next.js and Vercel do." The framework (Naive) is the conventions that work offline; the platform (Mentura) hosts, connects and integrates. It even says the framework "may load a platform connector by the module path the registry names, as Next.js loads a deployment adapter." (`docs/decisions/decisions.json`, EE-041)
-- EE-032 (in force): "Routes follow the Next.js App Router's conventions, with layers kept as route segments so a route is its record's folder path." It then lists the Naive versions of `[id]` dynamic segments, catch-all segments, `layout`, `not-found`, `loading`, `error`, route groups, parallel slots, `robots` and redirects. (`docs/decisions/decisions.json`, EE-032)
+- EE-032 (in force): "Routes follow the Next.js App Router's conventions, with layers kept as route segments so a route is its record's folder path." It then lists the Naive versions of `[id]` dynamic segments, catch-all segments, `layout`, `not-found`, `loading`, `error`, route groups, parallel slots, `robots` and route aliases. (`docs/decisions/decisions.json`, EE-032)
 
 EE-024 (proposed) names the genus: a "venture development framework, in the same genus as web development frameworks", with conventions over configuration, a fixed project structure, generators (`init-venture`), checks run like a test suite (`node test.mjs`), "packages that plug in (kits, by layer and tier)", and inversion of control.
 
@@ -29,7 +29,7 @@ So the strongest one-to-one matches are structural and already decided: framewor
 
 **Top 5 gaps** (Section 7):
 
-1. **A "Designing a docket" guide**, modeled on the Next.js Forms guide and React's "Reacting to Input with State". No docket record type was found in the files read, so the noun itself needs a decision first.
+1. **A "Designing a docket" guide**, modeled on the Next.js Forms guide and React's "Reacting to Input with State". No docket record type is on `main`, so the noun itself needs a decision first.
 2. **Custom kits and "Rules of kits"**, modeled on React's "Reusing Logic with Custom Hooks", "Rules of Hooks" and `eslint-plugin-react-hooks`, including composing kits from first-party or third-party templates.
 3. **A Learn track that starts with "Thinking in Naive"**, modeled on React's Learn section and "Thinking in React". React's single-source-of-truth teaching maps directly onto Naive's source-of-truth matrix (EE-042).
 4. **Upgrade guides and codemods**, modeled on Next.js "Upgrading" and `npx @next/codemod`. Naive has route aliases for renames but no version numbers or migration tool in the files read.
@@ -39,7 +39,23 @@ So the strongest one-to-one matches are structural and already decided: framewor
 
 - Every Naive claim below cites a file path and is tagged **[V]** when I read that file's text in the transcript.
 - Some files were read only in part (for example root `AGENTS.md` and `docs/design/LAYERS_AND_KITS_2026-10-27.md`). Claims that depend on files I did not see are tagged **[T]** (Torian said it) or **[N]** (searched the material I had, not found).
-- The snapshot predates PR #21 (the Fumadocs port) and any decisions above EE-052 (draft PR #19 holds EE-053 to EE-059). Claude Code should check the inventory against current `main` before acting on it.
+- The snapshot predates PR #21 (the Fumadocs port) and any decisions above EE-052. What current `main` actually holds is in the note below.
+
+### Verification against main
+
+Checked on October 28, 2026, against `main` at `d53ffd5` (the merge of PR #20), one commit after the snapshot `52d90bf`. That commit only updates the site handoff. PR #21 (Fumadocs) is still open. Draft PR #19 is still open, and its branch carries decisions past EE-059. Those entries are not on `main` and are not treated as verified here. The ledger on `main` has 51 decisions, EE-001 through EE-052, with no EE-049. The site is still Nextra.
+
+What this pass changed:
+
+1. The decision log schema is `schema/decision.schema.json`. There is no `schema/decision-record.schema.json` on `main`. Required fields are `id`, `date`, `decision`, and `status`. `why` is optional (15 entries omit it, including EE-041 through EE-048). The status enum is `proposed`, `in-force`, `superseded`, and `withdrawn`. No entry uses `withdrawn`.
+2. The decision-rights template has 27 classes. The snapshot said 19. The four levels are unchanged.
+3. `node test.mjs` has 33 fixed steps, plus a handoff check for each venture with `operations/handoffs`, and three freshness checks. The old "about 35" was a round number.
+4. Kit manifests on `main` are the six layer `kit.json` files, `schema/kit.json`, and `purpose/kits/validation/kit.json`. The snapshot named only purpose and governance.
+5. `init-venture` flags are in the file header (`--phase`, `--parent`, `--legal-form`, `--layers`). That row was [N] and is now [V].
+6. `layout`, `not-found`, `loading`, and `error` are router behaviors in `interface/router.mjs`. A venture adds no files under those names. The layout stack is the system kit, the layer kit, and the route's kit. The venture supplies the gate and need-now. Those two [N] notes are now [V]. `site/app/layout.jsx` is the docs app's Next.js layout.
+7. Go-to-market `channels` (`schema/validation-go-to-market.schema.json`) and recruiting `channels` on a team-plan role are real fields beyond the publication noun. That [N] is now [V].
+8. EE-051 adds a `confirm` activity beside EE-031's write, draft, accept, and baseline.
+9. Docket stays [N] as a record type. The word appears only as a product name in `purpose/frameworks/product-anatomy/examples/polity.json`. Custom kits, a kit registry, Naive version numbers, a changelog, migration tooling, and a CLI named `naive` are still absent.
 
 ---
 
@@ -207,7 +223,7 @@ All paths are from the repo root. Tags are defined in Section 1.2. Decision stat
 | `schema/` | Record schemas (`*.schema.json`), the data model (`schema/data-model.json`), checks (`check-*.mjs`), generators (`init-venture.mjs`, `add-department.mjs`), runners (`run-handoff.mjs`, `need-now.mjs`, `foundation.mjs`), `validate.py`, `examples/workspace` | [V] paths named in `test.mjs` and the review session |
 | `interface/` | "The router (`router.mjs`) and the CLI, MCP server and HTTP API over it; the install skill; agent harnesses and the operator console" | [V] `AGENTS.md` (partial read) |
 | `platform/` | The platform side (EE-041): vendor connectors, later hosting and the template gallery. "Framework code never imports from here (`node schema/check-boundary.mjs`)" | [V] `AGENTS.md` |
-| `site/` | Developer docs, unpublished (EE-034). Nextra on Next.js in the snapshot; PR #21 ports it to Fumadocs (not merged as of the snapshot) | [V] `AGENTS.md`, `site/AGENTS.md`, `site/package.json` |
+| `site/` | Developer docs, unpublished (EE-034). Nextra on Next.js on `main`. PR #21 (open) ports it to Fumadocs and is not merged | [V] `AGENTS.md`, `site/AGENTS.md`, `site/package.json` |
 | `docs/decisions/decisions.json` | The decisions ledger (EE-NNN) | [V] |
 | `docs/ontology.json`, `docs/ontology.md` | Nouns, with level, meaning and standard; the glossary is generated from it | [V] `site/scripts/data.mjs`, `test.mjs` |
 | `docs/reference/ROUTES.md` | Generated route table | [V] `AGENTS.md`, `test.mjs` |
@@ -227,7 +243,7 @@ All paths are from the repo root. Tags are defined in Section 1.2. Decision stat
 
 **Records.** Typed JSON files validated against schemas in `schema/`. File format rule: JSON with a schema when a program reads it; JSONL for append-only logs; `.md` when a tool expects the name; MDX for published prose. [V] EE-033 (in force).
 
-**Kits.** "Packages that plug in (kits, by layer and tier)". [V] EE-024. "A layer may hold more than one kit, under `<layer>/kits/<kit>/`." [V] EE-026 (in force). A kit manifest has `path`, `kit`, `layer`, `purpose`, `skills`, `records` and `gaps`. [V] `site/scripts/data.mjs`. Known manifests: `purpose/kit.json`, `governance/kit.json`; known kit: `purpose/kits/validation/` with `skills/problem-validation/` and `features/problem-assessment.feature`. [V] paths in the session and `test.mjs`. Kits being "the equivalent of hooks", custom kits, and pulling pieces from first-party or third-party templates: [T].
+**Kits.** "Packages that plug in (kits, by layer and tier)". [V] EE-024. "A layer may hold more than one kit, under `<layer>/kits/<kit>/`." [V] EE-026 (in force). A kit manifest has `path`, `kit`, `layer`, `purpose`, `skills`, `records` and `gaps`. [V] `site/scripts/data.mjs`. Manifests on `main`: `purpose/kit.json`, `knowledge/kit.json`, `operations/kit.json`, `evidence/kit.json`, `governance/kit.json`, `interface/kit.json`, `schema/kit.json`, and `purpose/kits/validation/kit.json` (skills under `skills/problem-validation/`, feature `features/problem-assessment.feature`). [V] those paths and `test.mjs`. Kits being "the equivalent of hooks", custom kits, and pulling pieces from first-party or third-party templates: [T].
 
 **Router and routes.** "One route table, generated from `schema/data-model.json` and the kit manifests by `interface/router.mjs`, and three interfaces over it: a CLI (`interface/cli/mentura.mjs`), an MCP server (`interface/mcp/server.mjs`) and a local HTTP API (`interface/api/server.mjs`). A route is `<layer>[/<kit>]/<record>` with the actions read, write, check and template, or a command with run. Every write is validated against the record's schema." [V] EE-030 (in force).
 
@@ -235,13 +251,13 @@ All paths are from the repo root. Tags are defined in Section 1.2. Decision stat
 
 **Gates and drafts.** "An agent's write to a record whose decision class escalates to a person (ownership, board, founder agreement, exit, telos, decision rights, publication policy) is held as a draft for a person to accept." [V] EE-030.
 
-**Decision rights.** Levels `decide`, `decide-inform`, `recommend-approve`, `escalate`, and 19 classes (for example `implementation-detail`, `new-dependency-free`, `spend-money`, `public-commitment`, `production-ship`, `contradicts-ledger`). [V] `governance/venture-template/decision-rights.json`.
+**Decision rights.** Levels `decide`, `decide-inform`, `recommend-approve`, `escalate`, and 27 classes (for example `implementation-detail`, `new-dependency-free`, `spend-money`, `public-commitment`, `production-ship`, `contradicts-ledger`). [V] `governance/venture-template/decision-rights.json`.
 
-**Decisions ledger.** Entries with `id`, `date`, `decision`, `why`, `status` (proposed, in force, superseded) and `related`. [V] `docs/decisions/decisions.json`; schema at `schema/decision-record.schema.json` [V path only].
+**Decisions ledger.** Each entry requires `id`, `date`, `decision`, and `status`. `why`, `related`, and `supersedes` are optional. Status values are `proposed`, `in-force`, `superseded`, and `withdrawn` (none of the 51 entries is `withdrawn`; 15 omit `why`). [V] `schema/decision.schema.json`, `docs/decisions/decisions.json`.
 
 **Handoffs.** "One unit of delegated work, stored at `<venture>/operations/handoffs/<id>.json`... the machine half of handoff contract v2... The brief (outcome, work, context) is prose in a Markdown file beside it." Required fields include `role`, `decision_classes`, `done_criteria`, `status`, `attempts`, `max_attempts`, `run_cap`. `schema/check-ready.mjs` checks readiness before work; `schema/check-execution.mjs` checks against decision rights. [V] `schema/handoff.schema.json`, `operations/handoff-v2.md`.
 
-**Provenance.** Every router write appends a line to `<venture>/provenance.jsonl` after W3C PROV, hash-chained; `schema/check-provenance.mjs` fails on edits. [V] EE-031 (in force).
+**Provenance.** Every router write appends a line to `<venture>/provenance.jsonl` after W3C PROV, hash-chained; `schema/check-provenance.mjs` fails on edits. Activities in EE-031 are write, draft, accept, and baseline. EE-051 adds confirm. [V] EE-031 (in force), EE-051 (proposed).
 
 **Need-now.** "The framework says what a venture needs now, what comes soon and what to hold back", from per-phase priors in `schema/need-now.json`. [V] EE-028 (in force).
 
@@ -249,7 +265,7 @@ All paths are from the repo root. Tags are defined in Section 1.2. Decision stat
 
 **Generators and templates.** `schema/init-venture.mjs` [V path]; `init --layers` for partial adoption [V] EE-030; "init-venture and templates" are framework, "a template gallery" is platform [V] EE-041. Example workspace: `schema/examples/workspace` [V] `test.mjs`.
 
-**Checks.** `node test.mjs` runs about 35 steps, including schema validation, `check-ventures`, `check-nouns`, `check-data-model` ("data model and kits"), `check-governance`, `check-publication`, `check-provenance`, `check-sources`, `check-where-used`, `check-departments`, `check-boundary`, connector evals, validation scoring, Gherkin behaviors (`schema/bdd.mjs`), handoff execution checks, and router/CLI/MCP/API tests. Generated docs are checked for staleness by regenerating them in memory. [V] `test.mjs`.
+**Checks.** `node test.mjs` runs 33 fixed steps, plus a handoff check for each venture that has `operations/handoffs`, and three freshness checks that regenerate generated docs in memory. The fixed steps include schema validation, `check-ventures`, `check-nouns`, `check-data-model` ("data model and kits"), `check-governance`, `check-publication`, `check-provenance`, `check-sources`, `check-where-used`, `check-departments`, `check-boundary`, connector evals, validation scoring, Gherkin behaviors (`schema/bdd.mjs`), strategic foundation checks, handoff execution checks, and router/CLI/MCP/API tests. [V] `test.mjs`.
 
 **Connectors and source of truth.** One connector contract (list, read, version, search, write where allowed); filesystem connector is framework, GitHub connector writes by draft pull request. [V] EE-037 (proposed). A source-of-truth matrix names, per record type, attribute and context, the system of record and owner; resolution is deterministic. A where-used list tracks every place a fact is repeated, "each live or frozen". [V] EE-042 (proposed).
 
@@ -265,11 +281,11 @@ All paths are from the repo root. Tags are defined in Section 1.2. Decision stat
 
 ### 4.3 Not found in the material I had
 
-- **Docket, decision docket.** No file, schema, route or decision I read uses the word. The nearest records are the decision record (`schema/decision-record.schema.json`), the handoff (`schema/handoff.schema.json`) and the drafts held for acceptance (EE-030). [N]
-- **Custom kits, third-party kits, a kit registry.** [N] The template gallery is named as platform in EE-041. [V]
-- **Naive version numbers, a changelog, upgrade or migration tooling.** [N] Renames are handled by route aliases (EE-032). [V]
+- **Docket, decision docket.** No schema, route, decision, or ontology noun uses the word. The only hit is a product name in `purpose/frameworks/product-anatomy/examples/polity.json` (a conversation product, not a record type). The nearest records are the decision log (`schema/decision.schema.json`), the handoff (`schema/handoff.schema.json`) and the drafts held for acceptance (EE-030). [N]
+- **Custom kits, third-party kits, a kit registry.** [N] The template gallery is named as platform in EE-041. [V] First-party kits under a layer do exist (`purpose/kits/validation/`). [V] EE-026.
+- **Naive version numbers, a changelog, upgrade or migration tooling.** [N] Product Anatomy has its own `version` (`purpose/frameworks/product-anatomy/phases.json`). That is not a Naive release. Renames are handled by route aliases (EE-032). [V]
 - **A CLI named `naive`.** The CLI file is `interface/cli/mentura.mjs` and EE-048 writes `mentura add`. [V] Whether it becomes `naive` is open (EE-043 says files keep "Everything Ecosystem" until a rename is decided). [V]
-- **"Channels" as a Naive concept beyond publication channels.** Publication channels exist (EE-025). [V] Any wider meaning of channels: [N].
+- **"Channels" beyond the publication noun.** The ontology noun `channel` is a place the venture publishes (EE-025, `docs/ontology.json`). [V] Go-to-market channels are a separate required field on `purpose/validation/go-to-market.json`: how a channel reaches the segment, with cost and evidence (`schema/validation-go-to-market.schema.json`, EE-026). The strategic foundation maps "where" to that field (`purpose/strategic-foundation.json`). [V] An open role on the team plan can also list recruiting `channels` as strings (`schema/team-plan.schema.json`). [V]
 
 ---
 
@@ -323,7 +339,7 @@ Each subsection gives the analogy, where it holds, where it breaks, and what the
 
 Torian's framing: a decision docket is essentially a form, so Naive's docs need a page on designing a docket, or any kind of docket. [T]
 
-**What the files support.** The word "docket" did not appear in anything I read (Section 4.3). The machinery a form needs is all there, under other names:
+**What the files support.** "Docket" is still not a record type (Section 4.3). The machinery a form needs is all there, under other names:
 
 | Form concept (Next.js / React) | Source | Naive equivalent | Evidence |
 |---|---|---|---|
@@ -443,11 +459,11 @@ Naive has the conventions (Section 4) and a "File formats" reference page (`site
 | `interface/route-aliases.json` | Renames | `redirects` |
 | `AGENTS.md` | Agent instructions | `AGENTS.md` |
 
-Whether `layout`, `not-found` and the others are **files** a venture can override (as in Next.js) or **router behaviors** only is not clear from EE-032. That decides whether the reference pages say "create a file" or "the router answers". Open question. [N]
+On `main` they are router behaviors, not files a venture creates. `interface/router.mjs` implements `layout` as an action, `not-found` and `loading` as fields on a read, and `error` as the failure answer (the `fix` object carries the kit's skills and template). No file under `schema/` or `instance/` is named `layout`, `not-found`, `loading`, or `error`. [V] Reference pages should say "the router answers" until someone decides ventures may override them (Section 11, Q5). [P]
 
 ### 6.5 Layouts and context
 
-Next.js layouts are shared UI that persists across navigation ([Layouts and Pages](https://nextjs.org/docs/app/getting-started/layouts-and-pages)); React context lets "a parent... provide some data to the entire tree" ([Context](https://react.dev/learn/passing-data-deeply-with-context)). Naive's `layout` is the context an agent receives before acting, nested by system, layer and kit (EE-032). [V] The docs should teach it as "layout plus context": nested, inherited, and read before every action. What's unspecified: how a venture or kit adds to the layout, and whether layouts nest per venture (`studio/print`). [N]
+Next.js layouts are shared UI that persists across navigation ([Layouts and Pages](https://nextjs.org/docs/app/getting-started/layouts-and-pages)); React context lets "a parent... provide some data to the entire tree" ([Context](https://react.dev/learn/passing-data-deeply-with-context)). Naive's `layout` is the context an agent receives before acting, nested by system, layer and kit (EE-032). [V] `interface/router.mjs` builds that stack from `schema/kit.json`, the layer `kit.json`, and the route's kit manifest when the route sits under `kits/`. A kit adds to the layout by those manifest fields. The venture directory supplies the gate and need-now status only. There is no per-venture layout file, including for a nested venture such as `studio/print`. [V] The docs should teach it as "layout plus context": nested, inherited, and read before every action. [P]
 
 ### 6.6 Data fetching and caching vs systems of record
 
@@ -481,8 +497,8 @@ The docs should borrow Next.js's warning directly: route-level checks are a conv
 
 | `create-next-app` | `init-venture` | Evidence |
 |---|---|---|
-| Default template | Default venture | [V] path `schema/init-venture.mjs`; options not read [N] |
-| Prompts for TypeScript, ESLint, Tailwind and others | `--layers` for partial adoption | [V] EE-030 |
+| Default template | Default venture for the phase | [V] `schema/init-venture.mjs`: `--phase` defaults to discovery; layers come from `schema/scaffold/defaults.json` |
+| Prompts for TypeScript, ESLint, Tailwind and others | Flags in the file header: `--phase`, `--parent`, `--legal-form`, `--layers` | [V] `schema/init-venture.mjs` header; `--layers` is also EE-030 |
 | `--example` from the official examples or any public GitHub repo | "init-venture and templates" (framework); template gallery (platform) | [V] EE-041 |
 | Writes `AGENTS.md` for coding agents | Install skill for Claude Code and Cursor | [V] EE-030 |
 
@@ -490,7 +506,7 @@ Gap: a documented options table for `init-venture`, and a decision on whether `-
 
 ### 6.9 Codemods and upgrades vs migrations
 
-Next.js ships `npx @next/codemod <transform> <path>` with `--dry` and `--print`, per-version upgrade guides, and an agent-driven upgrade. ([Codemods](https://nextjs.org/docs/app/guides/upgrading/codemods), [Upgrading](https://nextjs.org/docs/app/getting-started/upgrading)) Naive has route aliases for renamed routes (EE-032) and superseded decisions (EE-035). [V] It has no version numbers, changelog or record-migration tool in what I read. [N] Every schema rename or layer move (for example EE-038 moving handoffs to `operations/handoffs/`) is a migration that ventures outside this repo would need to run. [P] for a `migrate` command with `--dry` and `--print`, one transform per decision id.
+Next.js ships `npx @next/codemod <transform> <path>` with `--dry` and `--print`, per-version upgrade guides, and an agent-driven upgrade. ([Codemods](https://nextjs.org/docs/app/guides/upgrading/codemods), [Upgrading](https://nextjs.org/docs/app/getting-started/upgrading)) Naive has route aliases for renamed routes (EE-032) and superseded decisions (EE-035). [V] It has no version numbers, changelog or record-migration tool on `main`. [N] Every schema rename or layer move (for example EE-038 moving handoffs to `operations/handoffs/`) is a migration that ventures outside this repo would need to run. [P] for a `migrate` command with `--dry` and `--print`, one transform per decision id.
 
 ### 6.10 Server and Client Components vs framework and platform
 
@@ -498,7 +514,7 @@ Next.js's Server/Client boundary has a section on "Preventing environment poison
 
 ### 6.11 State, reducers and the provenance log
 
-React's reducer consolidates "all the state update logic... in a single function" ([Reducer](https://react.dev/learn/extracting-state-logic-into-a-reducer)). Naive's provenance log is an append-only list of actions (write, draft, accept, baseline) with hashes (EE-031). [V] The partial match: a venture's current state is its records, and the log records how they got there. It is not a reducer (records aren't recomputed from the log). The docs can mention it as a DeepDive, not as a core analogy. [P]
+React's reducer consolidates "all the state update logic... in a single function" ([Reducer](https://react.dev/learn/extracting-state-logic-into-a-reducer)). Naive's provenance log is an append-only list of actions (write, draft, accept, baseline, and confirm from EE-051) with hashes (EE-031). [V] The partial match: a venture's current state is its records, and the log records how they got there. It is not a reducer (records aren't recomputed from the log). The docs can mention it as a DeepDive, not as a core analogy. [P]
 
 ---
 
@@ -512,7 +528,7 @@ Ranked by how much each one helps a Next.js or React developer feel at home, wei
 | 2 | **Custom kits guide, "Rules of kits", kit manifest reference, and a kits lint** | [Custom Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks), [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks), [Lints](https://react.dev/reference/eslint-plugin-react-hooks) | Torian's own analogy; React teaches it with a page, a rule set and a linter | Q2 (third-party kits model) |
 | 3 | **Learn track starting with "Thinking in Naive"** | [Thinking in React](https://react.dev/learn/thinking-in-react), [Learn](https://react.dev/learn) | Next.js assumes you know React and sends newcomers to a course first ([Next.js Docs](https://nextjs.org/docs)). Naive's ICP is low- to no-code (EE-045), so Naive needs the course too | None |
 | 4 | **Versioning, upgrade guides and codemods (`migrate`)** | [Upgrading](https://nextjs.org/docs/app/getting-started/upgrading), [Codemods](https://nextjs.org/docs/app/guides/upgrading/codemods) | Ventures live outside this repo; schema changes will break them silently without it | A version scheme |
-| 5 | **Project Structure page and per-file conventions reference** | [Project structure](https://nextjs.org/docs/app/getting-started/project-structure), [File-system conventions](https://nextjs.org/docs/app/api-reference/file-conventions) | The App Router match (EE-032) is invisible unless the files are listed in one place | Q5 (files or behaviors) |
+| 5 | **Project Structure page and per-file conventions reference** | [Project structure](https://nextjs.org/docs/app/getting-started/project-structure), [File-system conventions](https://nextjs.org/docs/app/api-reference/file-conventions) | The App Router match (EE-032) is invisible unless the files are listed in one place | Q5 (whether ventures may override the router answers) |
 | 6 | Bundled, version-matched docs for agents | [AI Coding Agents](https://nextjs.org/docs/app/guides/ai-agents) | Naive is agent-first; Next.js ships its docs inside the package so agents don't use stale training data | Fumadocs `llms.txt` (PR #21) |
 | 7 | `init-venture` options reference and `--example` templates | [create-next-app](https://nextjs.org/docs/app/api-reference/cli/create-next-app) | The first command a new user runs | Q3 |
 | 8 | Error handling page: expected vs unexpected | [Error Handling](https://nextjs.org/docs/app/getting-started/error-handling) | Next.js separates returned errors from thrown ones; Naive's `error` and `not-found` answers fit the first, crashed checks the second | None |
@@ -539,7 +555,7 @@ These have no meaningful Naive counterpart. The docs should not force analogies 
 | Pages Router rendering modes (SSR, SSG, CSR) | Naive's views are Markdown; build-time reads only matter for the docs site | [Pages Router](https://nextjs.org/docs/pages) |
 | Internationalization, PWAs, analytics, OpenTelemetry | Not framework concerns today; analytics is platform (EE-041) per the PR #20 handoff | [llms.txt](https://nextjs.org/docs/llms.txt) |
 
-The docs site itself is a Next.js app (Fumadocs, per PR #21), so all of the above still applies to people working on `site/`. That belongs in `site/AGENTS.md`, not in Naive's user docs.
+The docs site on `main` is still a Nextra app on Next.js (`site/package.json`, EE-034). PR #21 is open and would replace Nextra with Fumadocs. Until that merges, the topics above apply to people working on `site/` as a Next.js app. That belongs in `site/AGENTS.md`, not in Naive's user docs.
 
 ---
 
@@ -694,7 +710,7 @@ Combine Next.js's structure with React's teaching blocks. Component names below 
 
 1. **Diátaxis folders vs Next.js sections.** The PR #20 handoff maps pages into `get-started`, `guides`, `concepts`, `reference` (Diátaxis). Next.js's Getting Started mixes tutorial and explanation on one page, which Diátaxis says to avoid. Options: (a) keep Diátaxis folders and just rename labels to Next.js terms; (b) use Next.js sections and keep Diátaxis as the `type` field per page. Recommendation: (b), with the `type` field enforced by the content check so each page still has one type. [P]
 2. **Learn is two Diátaxis types.** React's Learn mixes tutorial and explanation. Put tutorials under Learn and the "why" pages under Architecture.
-3. **`_meta.js` vs `meta.json`.** `site/AGENTS.md` in the snapshot says Nextra and `_meta.js`; PR #21 moves to Fumadocs `meta.json`. The IA assumes PR #21 merges. [V for both states]
+3. **`_meta.js` vs `meta.json`.** `site/AGENTS.md` on `main` says Nextra and `_meta.js`. [V] PR #21 is open and not on `main`; it and the site handoff target Fumadocs `meta.json`. The IA assumes that PR merges. [P]
 4. **Never copy repo data into a page** (`site/AGENTS.md`). Applies to the glossary column (Section 9.3) and to any tables of kits, routes or decision classes. Render them.
 5. **No instance data** (EE-034, `site/scripts/data.mjs`). Every example (docket, kit) must come from `schema/examples/workspace`, never `instance/`.
 6. **Mentura content.** The PR #20 handoff says to mention Mentura only where a page must say "this part is the platform". A top-level Mentura section needs Torian's OK (Q7).
@@ -734,7 +750,7 @@ Priority order. Each item is one PR, per Torian's one-item-per-PR rule. P0 pages
 2. **Third-party kits: import by reference or copy in?** EE-048 says schemas are never copied into a venture. Should a third-party kit stay upstream (npm-like) while templates and skills can be copied and changed (shadcn-like)? And is a kit registry framework or platform (EE-041 puts the template gallery on the platform side)?
 3. **Is `init-venture --example <url>` framework or platform?** Fetching a public template needs the network, which EE-041 keeps out of framework connectors.
 4. **Does Naive get version numbers?** Upgrade guides and a `migrate` tool need them.
-5. **Are `layout`, `not-found`, `loading` and `error` files a venture can override, or router behaviors only?** This decides how the reference pages read.
+5. **Should a venture be able to override `layout`, `not-found`, `loading` and `error` with files?** Today they are router behaviors only (`interface/router.mjs`). Reference pages can say "the router answers" unless you want overrides.
 6. **Can `docs/ontology.json` nouns carry an `analogues` field** (Next.js, React terms) so the glossary column is generated?
 7. **Should Mentura get its own top-level docs section now,** or stay a note on framework pages until it ships?
 8. **CLI name:** keep `mentura` in commands, or rename to `naive` before the docs teach it? (EE-043 holds renames until decided.)
