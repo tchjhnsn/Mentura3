@@ -63,7 +63,7 @@ What a reasoning model answers to decide which packages fit. A question is asked
 | Question | Sets | Asked in | Moves | Settled first by |
 |---|---|---|---|---|
 | Is the venture raising money from investors now, or about to? | `raising` | every phase | investor | the founder's flags (raising) |
-| Does the venture have a public website, or plan one within the next month? | `site` | every phase | marketing | a site presence or sitemap record |
+| Does the venture have a public website, or plan one within the next month? | `site` | every phase | marketing | a site presence record (a site Naive has read) |
 | Is the product offered to partners or intermediaries who serve customers of their own? | `partner_led` | every phase | partner | the ICP (reached_through) and products (offered_to) |
 | Will the venture hire anyone, or bring on a cofounder, in the next three months? | `hiring` | every phase | team | the founder's flags (hiring) and the team decision |
 | Does the venture work in a regulated field (health, finance, education, legal, children, public sector)? | `regulated` | validation, beachhead, scale, platform | governance | nothing yet: always asked |
