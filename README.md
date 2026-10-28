@@ -36,6 +36,7 @@ The framework can still load a platform connector by the module path in `knowled
 | `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
 | `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
 | `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |
+| `integrations/site.mjs` | Reads a venture's website: the home page and the pages it links to, as text, with where each sits (EE-062). Uses `FIRECRAWL_API_KEY` when set, a plain fetch otherwise |
 
 ## Not yet moved
 
