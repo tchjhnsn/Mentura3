@@ -64,7 +64,7 @@ export async function read(site, { pages = 10, chars = 6000 } = {}) {
   const pick = [...firsts, ...ranked.filter((l) => !firsts.includes(l))].slice(0, pages - 1);
   const rest = await Promise.all(pick.map(async (l) => { try { return { ...(await get(l.url)), link: l }; } catch (e) { return { url: l.url, error: e.message, link: l }; } }));
   const page = (p, depth) => ({ url: p.url, path: new URL(p.url).pathname, title: p.title ?? "", depth, in_nav: depth === 0 ? true : !!p.link?.in_nav, label: p.link?.label ?? "", ...(p.error ? { error: p.error } : { text: p.text.slice(0, chars) }) });
-  return { site: new URL(home.url).origin, via, read_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), links_found: ls.length, pages: [page(home, 0), ...rest.map((p) => page(p, 1))] };
+  return { site: new URL(home.url).origin, via, read_at: new Date().toISOString().replace(/\.\d+Z$/, "Z"), links_found: ls.length, links: ls.map((l) => ({ path: new URL(l.url).pathname, label: l.label, in_nav: l.in_nav })), pages: [page(home, 0), ...rest.map((p) => page(p, 1))] };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
