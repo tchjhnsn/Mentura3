@@ -33,6 +33,9 @@ The framework can still load a platform connector by the module path in `knowled
 | `connectors/github.mjs` | The GitHub connector: reads from a branch, writes by draft pull request (EE-037) |
 | `connectors/fake-github.mjs` | A fake of the GitHub REST API for offline evals |
 | `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`knowledge/connectors/suite.mjs`), the router over a GitHub source, the catalog, and an optional live run |
+| `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
+| `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
+| `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |
 
 ## Not yet moved
 
