@@ -9,9 +9,9 @@ description: "The platform side of Mentura: what lives here, the boundary with t
 
 # Platform
 
-Mentura has two sides, the way Next.js and Vercel do (EE-041).
+The system has two sides, the way Next.js and Vercel do (EE-041): the framework Naive and the platform Mentura.
 
-- **The framework** (working name Memento, EE-043) is the conventions. It works offline, with no account, and names no vendor. It covers record schemas and the data model, kits, the router and the CLI, MCP server and local API over it, routes, provenance, the checks, need-now priors, validation scoring, `init-venture`, the connector contract with the filesystem connector, and the docs. That is everything in this repository outside `platform/`.
+- **The framework**, Naive (EE-043), is the conventions. It works offline, with no account, and names no vendor. It covers record schemas and the data model, kits, the router and the CLI, MCP server and local API over it, routes, provenance, the checks, need-now priors, validation scoring, `init-venture`, the connector contract with the filesystem connector, and the docs. That is everything in this repository outside `platform/`.
 - **The platform** hosts, connects and integrates. It holds connectors that reach a vendor over the network with credentials, the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console, and a gallery of templates. That is this folder.
 
 A template is framework, the way `create-next-app --example` is. The gallery that hosts templates is platform.
