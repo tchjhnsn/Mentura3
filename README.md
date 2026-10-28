@@ -1,0 +1,39 @@
+---
+type: reference
+source: hybrid
+created: 2026-10-28T03:07:56Z
+ai-model: claude-opus-5.5
+tags: [everything-ecosystem, mentura, platform, framework, boundary]
+description: "The platform side of Mentura: what lives here, the boundary with the framework, and how it is enforced (EE-041)."
+---
+
+# Platform
+
+Mentura has two sides, the way Next.js and Vercel do (EE-041).
+
+- **The framework** is the conventions. It works offline, with no account, and names no vendor. It covers record schemas and the data model, kits, the router and the CLI, MCP server and local API over it, routes, provenance, the checks, need-now priors, validation scoring, `init-venture`, the connector contract with the filesystem connector, and the docs. That is everything in this repository outside `platform/`.
+- **The platform** hosts, connects and integrates. It holds connectors that reach a vendor over the network with credentials, the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console, and a gallery of templates. That is this folder.
+
+A template is framework, the way `create-next-app --example` is. The gallery that hosts templates is platform.
+
+## The boundary
+
+The platform builds on the framework, and never the other way round. `node schema/check-boundary.mjs` (run by `node test.mjs`) fails when:
+
+1. a file outside `platform/` imports anything from `platform/`;
+2. a connector registered outside `platform/` reaches the network or names credentials;
+3. a registered connector module does not exist.
+
+The framework can still load a platform connector by the module path in `knowledge/tooling/integrations.json`. That is inversion of control, like a Next.js deployment adapter: the framework defines the contract, and the platform implements it for a vendor.
+
+## What is here
+
+| Path | Holds |
+|---|---|
+| `connectors/github.mjs` | The GitHub connector: reads from a branch, writes by draft pull request (EE-037) |
+| `connectors/fake-github.mjs` | A fake of the GitHub REST API for offline evals |
+| `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`knowledge/connectors/suite.mjs`), the router over a GitHub source, the catalog, and an optional live run |
+
+## Not yet moved
+
+Each layer's `tooling/integrations.json` stays in the framework for now. Most entries are opinionated defaults with references (EE-014), plain data that calls nothing, like a framework's docs recommending a host. An entry moves here once it carries code that calls a vendor.
