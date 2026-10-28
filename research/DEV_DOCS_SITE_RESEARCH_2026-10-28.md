@@ -1,4 +1,5 @@
 ---
+publish: false
 title: Building developer documentation sites from MDX on Vercel
 description: Research, best practices, a recommended stack, and an agent-executable implementation plan.
 date: 2026-10-28
