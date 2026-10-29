@@ -112,8 +112,9 @@ export function write(venture, data, syncedAt = new Date().toISOString()) {
   for (const a of data.accounts)
     json(join(money, `${a.id}.json`), { id: a.id, name: a.account_name, type: a.account_type, last_4: a.account_number_last_4 ?? null, balance: a.balance, source: pointer("account", a.id), synced_at: syncedAt });
   const stream = join(money, "_streams/transactions");
-  json(join(stream, "stream.json"), { stream: "transactions", sensitive: true, source: data.source, append_only: true,
-    description: "Every transaction Rho posted, one file each, as Rho returned it. Rho is the system of record; corrections are new entries that point to the old one." });
+  // The stream's declaration, as schema/stream.schema.json has it. Its events are append-only and stay out of git.
+  json(join(stream, "stream.json"), { id: "transactions", sensitive: true,
+    summary: `Every transaction ${data.source} posted, one file each, as Rho returned it; Rho is the system of record. The versioned view is money/_summary.json.` });
   let added = 0;
   for (const t of data.transactions) {
     const at = t.posted_at ?? t.initiated_at;
