@@ -44,7 +44,7 @@ const GATES = ["people_decide", "founder_settled", "decisions_traced"];
 // recorded as feedback under its key. Jev reads the root run: the founder's dump in the inputs, and the
 // docket at each step the founder settled, the drafted records and the agent's reports in the outputs
 // (interface/harness/run.mjs, finish). The first two are an independent check that the docket ranks
-// decisions well (EE-074); the founder reviews whatever Jev doubts.
+// decisions well (EE-075); the founder reviews whatever Jev doubts.
 const JEV = {
   docket_next: "At each step in outputs.docket.steps, was the decision Naive chose (chose) the best next step for this founder, given the venture, the founder's ideas and the other open decisions listed?",
   docket_function: "At each step in outputs.docket.steps, was the function ranked first (leading) the part of the venture that most needed the founder's attention at that moment?",

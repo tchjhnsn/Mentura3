@@ -36,7 +36,7 @@ The framework can still load a platform connector by the module path in `knowled
 | `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
 | `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
 | `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |
-| `integrations/langsmith-docket.mjs` | The docket's evidence as a LangSmith experiment: the scenario states as a dataset, and one scored run of the docket and the judge (Jev) as an experiment over it (EE-074). Needs `LANGSMITH_API_KEY` |
+| `integrations/langsmith-docket.mjs` | The docket's evidence as a LangSmith experiment: the scenario states as a dataset, and one scored run of the docket and the judge (Jev) as an experiment over it (EE-075). Needs `LANGSMITH_API_KEY` |
 | `integrations/rho.mjs` | Rho, the founder's bank and spend suite, as the venture's money source: syncs `money/` (accounts, a sensitive append-only transactions stream, and a summary) over Rho's MCP server, calling only read-only tools (EE-070). Rho's sandbox by default; `--live` needs `RHO_API_TOKEN` |
 | `integrations/site.mjs` | Reads a venture's website: the home page and the pages it links to, as text, with where each sits (EE-062). Uses `FIRECRAWL_API_KEY` when set, a plain fetch otherwise |
 
