@@ -39,6 +39,12 @@ The framework can still load a platform connector by the module path in `knowled
 | `integrations/langsmith-docket.mjs` | The docket's evidence as a LangSmith experiment: the scenario states as a dataset, and one scored run of the docket and the judge (Jev) as an experiment over it (EE-075). Needs `LANGSMITH_API_KEY` |
 | `integrations/rho.mjs` | Rho, the founder's bank and spend suite, as the venture's money source: syncs `money/` (accounts, a sensitive append-only transactions stream, and a summary) over Rho's MCP server, calling only read-only tools (EE-070). Rho's sandbox by default; `--live` needs `RHO_API_TOKEN` |
 | `integrations/site.mjs` | Reads a venture's website: the home page and the pages it links to, as text, with where each sits (EE-062). Uses `FIRECRAWL_API_KEY` when set, a plain fetch otherwise |
+| `adapter.json` | Mentura as Naive's first adapter, as Vercel is for Next.js: `mentura adapters verify mentura` runs the connector contract suite, the webhooks and the kits (Z-4) |
+| `kits/agent-upgrade/` | The agent-run upgrade behind `naive upgrade --agent`: an agent does the guides' by-hand steps on a staged copy, and the framework's checks decide (U-3). `stand-in-agent.mjs` runs offline |
+| `kits/validation-kickoff/` | An automation over the validation package: once the foundation is complete, it proposes the decision to start validating (M-12) |
+| `kits/test.mjs` | Tests for the kits, with the stand-in agent |
+| `webhooks/server.mjs` | Signed webhooks from systems of record: a change marks the summaries that read it stale (V-9). Secrets come from `NAIVE_WEBHOOK_SECRET_<SOURCE>` |
+| `webhooks/test.mjs` | Tests for the webhooks, offline |
 
 ## Not yet moved
 

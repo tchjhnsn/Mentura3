@@ -1,0 +1,29 @@
+{
+  "name": "validation-kickoff",
+  "title": "Validation kickoff",
+  "purpose": "When the foundation is settled, start the next step: put the decision to begin validating in front of the founder (M-12). An automation over the validation package, so it waits until the foundation package it needs is complete.",
+  "extends": { "package": "validation" },
+  "automations": [
+    {
+      "id": "start",
+      "on": { "activity": ["write", "accept", "confirm"], "route": "foundation/**", "by": "person" },
+      "needs": "foundation",
+      "once": true,
+      "run": {
+        "propose": {
+          "id": "start-validation",
+          "question": "The foundation is settled. Start validating the solution now: write the solution record and plan the first problem interviews?",
+          "options": ["Yes: start validation now", "Not yet: keep working the foundation"],
+          "layer": "purpose",
+          "boundary": "fail-open",
+          "decides": { "record": "validation-solution", "path": "validation/solution.json" },
+          "unlocks": [{ "activity": "Draft the solution record and the interview plan", "routes": ["validation/solution"] }]
+        }
+      },
+      "note": "Proposes a decision rather than writing records: the founder decides whether validation starts."
+    }
+  ],
+  "use_model": [],
+  "status": "built",
+  "note": "Turn it on with \"kits\": [\"validation-kickoff\"] in the venture's naive.config.json. The framework's trigger runner (schema/triggers.mjs) runs it; this kit holds no code."
+}
