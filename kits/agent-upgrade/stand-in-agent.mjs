@@ -25,8 +25,9 @@ const walk = (rel) => {
 if (/say package where you wrote kit/.test(prompt)) walk("");
 if (process.env.STAND_IN_BREAK === "1") {
   mkdirSync(join(cwd, "foundation"), { recursive: true });
-  writeFileSync(join(cwd, "foundation/icp.json"), JSON.stringify({ broken: true }) + "\n");
-  edits.push({ path: "foundation/icp.json", why: "rewrote the ICP" });
+  mkdirSync(join(cwd, "foundation/icp"), { recursive: true });
+  writeFileSync(join(cwd, "foundation/icp/broken.json"), JSON.stringify({ broken: true }) + "\n");
+  edits.push({ path: "foundation/icp/broken.json", why: "rewrote an ICP profile" });
 }
 const answer = { summary: edits.length ? `Updated ${edits.length} file(s) by the guides' by-hand steps.` : "Nothing in the guides' by-hand steps applied to this venture.", edits, left: [] };
 console.log(JSON.stringify({ type: "result", is_error: false, result: JSON.stringify(answer) }));

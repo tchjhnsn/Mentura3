@@ -50,8 +50,8 @@ const bad = naive(["upgrade", b, "--agent"], { MENTURA_AGENT_CMD: STAND_IN, STAN
 expect("an agent that breaks a record leaves the upgrade failing its checks", bad.status === 1 && /checks-failed/.test(bad.stdout) && /records match their schemas/.test(bad.stdout), bad.stdout + bad.stderr);
 const refused = naive(["upgrade", b, "--accept", "--confirm", "upgrade"]);
 expect("an upgrade whose checks fail cannot be accepted, even when confirmed", refused.status === 1 && /checks fail/.test(refused.stderr) && !existsSync(join(b, "naive.config.json")));
-const fixedRec = { venture: "broken", profiles: [{ id: "solo", who: "Solo founders" }] };
-writeFileSync(join(b, ".naive/upgrade/venture/foundation/icp.json"), JSON.stringify(fixedRec, null, 2) + "\n");
+const fixedRec = { venture: "broken", id: "broken", who: "Solo founders" };
+writeFileSync(join(b, ".naive/upgrade/venture/foundation/icp/broken.json"), JSON.stringify(fixedRec, null, 2) + "\n");
 const status = naive(["upgrade", b, "--status"]);
 expect("fixing the copy and running --status runs the checks again", /: ready/.test(status.stdout), status.stdout + status.stderr);
 writeFileSync(join(b, "profile.md"), "# broken\n\nChanged while the upgrade waited.\n");
@@ -77,7 +77,7 @@ put("foundation/problem", { venture: "kickoff", statement: "Cafes run out of mil
 const waiting = JSON.parse(mentura(["triggers", "--venture", "kickoff", "--json"], env).stdout);
 expect("the kit's automation is listed with the package it needs", waiting.triggers.some((t) => t.id === "validation-kickoff-start" && t.from === "kit validation-kickoff" && t.needs === "foundation" && t.needs_complete === false));
 expect("before the foundation is complete, the automation waits and proposes nothing", waiting.waiting.some((w) => w.trigger === "validation-kickoff-start") && !existsSync(join(k, "decisions/start-validation.decision.json")));
-put("foundation/icp", { venture: "kickoff", profiles: [{ id: "cafes", who: "Independent cafe owners" }] });
+put("foundation/icp/cafes", { venture: "kickoff", id: "cafes", who: "Independent cafe owners" });
 mentura(["decide", "product-exists", "--venture", "kickoff", "--by", "Founder", "--answer", "No: it is still an idea", "--confirm", "product-exists"], env);
 put("product/milk-alert", { id: "milk-alert", name: "Milk alert", description: "Tells a cafe when milk runs low" });
 const after = JSON.parse(mentura(["triggers", "--venture", "kickoff", "--json"], env).stdout);
