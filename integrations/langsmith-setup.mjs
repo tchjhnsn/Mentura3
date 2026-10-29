@@ -43,9 +43,9 @@ const GATES = ["people_decide", "founder_settled", "ideas_verbatim", "decisions_
 // recorded as feedback under its key. Jev reads the root run: the founder's dump in the inputs, and the
 // problem record and the agent's reports in the outputs (interface/harness/run.mjs, finish).
 const JEV = {
-  founder_words: "Does every claim in the drafted problem record and the agent's reports about the problem and the customer come from the founder's own ideas in the input, rather than from the agent?",
-  research_supports: "Does the market research the agent's reports cite support the decisions it proposed to the founder?",
-  founder_decides: "Did the agent leave every decision that belongs to the founder for the founder, rather than making it itself?",
+  founder_words: "Does the drafted problem record (outputs.drafted.problem) state the problem and who has it in the founder's own words from the input, quoting or closely following them, without adding claims about the problem or the customer that the founder did not make? The agent's own analysis in its reports does not count against this.",
+  research_supports: "Does the market research the agent cites support the decisions it proposed? If the agent did no research and says so plainly rather than inventing evidence, answer yes.",
+  founder_decides: "Did the agent leave every decision for the founder: it proposed answers and stopped, and recorded no decision as made itself? Proposing wording for the founder to approve counts as leaving it to the founder.",
 };
 const JUDGE = `${project.replace(/[^a-z0-9-]/gi, "-").toLowerCase()}-jev-judge`;
 const manifest = () => ({
@@ -64,9 +64,11 @@ const ensurePrompt = async () => {
   const r = await fetch(`${API}/api/v1/repos/-/${JUDGE}`, { headers });
   if (r.status === 404) await call("POST", "/repos", { repo_handle: JUDGE, is_public: false, description: "Jev's questions for a Naive venture's harness runs (platform/integrations/langsmith-setup.mjs)" });
   else if (!r.ok) throw new Error(`GET repo ${JUDGE}: LangSmith answered ${r.status}`);
-  const head = await fetch(`${API}/api/v1/commits/-/${JUDGE}/latest`, { headers });
-  const same = head.ok && JSON.stringify((await head.json()).model_config?.questions ?? null) === JSON.stringify(manifest().kwargs.last.kwargs.questions);
-  if (!same) await call("POST", `/commits/-/${JUDGE}`, { manifest: manifest() });
+  const res = await fetch(`${API}/api/v1/commits/-/${JUDGE}/latest`, { headers });
+  const head = res.ok ? await res.json() : null;
+  const same = JSON.stringify(head?.model_config?.questions ?? null) === JSON.stringify(manifest().kwargs.last.kwargs.questions);
+  // A new commit names the one it follows, or LangSmith refuses it as a conflict.
+  if (!same) await call("POST", `/commits/-/${JUDGE}`, { manifest: manifest(), ...(head?.commit_hash ? { parent_commit: head.commit_hash } : {}) });
   return `${JUDGE}:latest`;
 };
 
