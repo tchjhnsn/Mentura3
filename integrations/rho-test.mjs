@@ -17,7 +17,7 @@ await t("a sync writes accounts, one stream file per transaction, a sensitive st
   const v = mkdtempSync(join(tmpdir(), "rho-"));
   const { added, summary } = write(v, fixture, "2026-10-29T00:00:00Z");
   ok(added === fixture.transactions.length, `added ${added}`);
-  ok(readdirSync(join(v, "money/accounts")).length === fixture.accounts.length, "accounts");
+  ok(readdirSync(join(v, "money")).filter((f) => f.endsWith(".json") && !f.startsWith("_")).length === fixture.accounts.length, "accounts");
   ok(JSON.parse(readFileSync(join(v, "money/_streams/transactions/stream.json"), "utf8")).sensitive === true, "stream not sensitive");
   ok(readFileSync(join(v, "money/.gitignore"), "utf8").includes("_streams/transactions/"), "stream not ignored");
   const f = walk(join(v, "money/_streams/transactions")).find((x) => !x.endsWith("stream.json"));

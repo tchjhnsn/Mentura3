@@ -12,10 +12,10 @@
 //   --save-fixture   keeps what Rho answered, for --fixture later
 //
 // The package it writes (data package shape, PR #23 stage C):
-//   money/accounts/<rho id>.json                       master record, with a rho:account pointer
+//   money/<rho id>.json                                master record, with a rho:account pointer
 //   money/_streams/transactions/stream.json            sensitive: kept out of git and out of traces
 //   money/_streams/transactions/YYYY/MM/<date>-<id>.json   append-only; a resync never rewrites one
-//   money/summary.json                                 versioned: cash, net burn, runway, as of when
+//   money/_summary.json                                 versioned: cash, net burn, runway, as of when
 //
 // Amounts stay in minor units (cents for USD), as Rho returns them.
 
@@ -110,7 +110,7 @@ export function write(venture, data, syncedAt = new Date().toISOString()) {
   const money = join(venture, "money");
   const pointer = (kind, id) => `${data.source}:${kind}:${id}`;
   for (const a of data.accounts)
-    json(join(money, "accounts", `${a.id}.json`), { id: a.id, name: a.account_name, type: a.account_type, last_4: a.account_number_last_4 ?? null, balance: a.balance, source: pointer("account", a.id), synced_at: syncedAt });
+    json(join(money, `${a.id}.json`), { id: a.id, name: a.account_name, type: a.account_type, last_4: a.account_number_last_4 ?? null, balance: a.balance, source: pointer("account", a.id), synced_at: syncedAt });
   const stream = join(money, "_streams/transactions");
   json(join(stream, "stream.json"), { stream: "transactions", sensitive: true, source: data.source, append_only: true,
     description: "Every transaction Rho posted, one file each, as Rho returned it. Rho is the system of record; corrections are new entries that point to the old one." });
@@ -126,7 +126,7 @@ export function write(venture, data, syncedAt = new Date().toISOString()) {
   const ignore = join(money, ".gitignore");
   if (!existsSync(ignore)) writeFileSync(ignore, "_streams/transactions/*/\n");
   const summary = summarize(data, syncedAt);
-  json(join(money, "summary.json"), summary);
+  json(join(money, "_summary.json"), summary);
   return { added, summary };
 }
 
