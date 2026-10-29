@@ -21,6 +21,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { ventureFile } from "../../schema/venture-paths.mjs";
 
 export const SANDBOX = "https://rhoapi-sandbox.rho.co/mcp/v1";
 export const LIVE = "https://rhoapi.rho.co/mcp/v1";
@@ -107,7 +108,7 @@ export function summarize(data, syncedAt) {
 const json = (f, v) => { mkdirSync(join(f, ".."), { recursive: true }); writeFileSync(f, `${JSON.stringify(v, null, 2)}\n`); };
 
 export function write(venture, data, syncedAt = new Date().toISOString()) {
-  const money = join(venture, "money");
+  const money = join(ventureFile(venture, "money"));
   const pointer = (kind, id) => `${data.source}:${kind}:${id}`;
   for (const a of data.accounts)
     json(join(money, `${a.id}.json`), { id: a.id, name: a.account_name, type: a.account_type, last_4: a.account_number_last_4 ?? null, balance: a.balance, source: pointer("account", a.id), synced_at: syncedAt });
