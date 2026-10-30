@@ -73,6 +73,8 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
   - A grant may not exceed its grantor's grant, and the chain must lead back to the founder.
   - No role may verify its own work.
   - Any grant that has expired fails.
+  - A scope is `venture` or a plain path, so `..` cannot widen it.
+  - A record that names `extends` is bound by the template's `never_redelegated` and `one_way_doors`. If `extends` cannot be read, the check fails and `mentura merge` refuses everyone.
 - **Playbook:** `governance/playbooks/delegation.md`, with the default ladder and how to widen it.
 
 ## 6. Next steps
