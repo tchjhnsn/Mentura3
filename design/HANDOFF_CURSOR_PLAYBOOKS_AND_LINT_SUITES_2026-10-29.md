@@ -67,6 +67,18 @@ Each checks a function's decisions and records against what it inherits from the
 | investors | `investors/lint` | A raise decision with no use of funds; terms that conflict with an alignment principle; an investor update with unconfirmed numbers |
 | legal | `legal/lint` | A public claim with no source; an agreement with no counterparty record |
 
+## Roles, delegation and the verification substrate (added 2026-10-29)
+
+Torian decided: agent building belongs to Naive, as conventions (agents are Markdown files). Shared substrates with MAD are built inside Naive until MAD joins the monorepo. Full plan: `docs/design/ROLES_DELEGATION_AND_VERIFICATION_PLAN_2026-10-29.md`.
+
+| Branch | What to build |
+|---|---|
+| `cursor/roles-templates` | `governance/venture-template/roles/<id>.json` for founder (chief delegator), chief-of-staff, product-manager, cto, builder, marketing-lead, finance-lead, validation-lead, people-lead, counsel. Each has: function, grantable decision classes, default tier (person, frontier, workhorse, none), lint suites it runs, `verified_by` (never itself), skill path. A schema `schema/role-template.schema.json` and a check that `verified_by` differs from the role. |
+| `cursor/chief-of-staff-agent` | `agents/chief-of-staff/AGENTS.md` and skill: reads the docket, delegates only within its grant, writes handoffs with a verifier other than the holder, escalates everything else to the founder. It ships open source with Naive. |
+| `cursor/delegation-suite` | `governance/delegation.json` (grants `{from, to, classes, scope, may_redelegate, expires}`, founder as root), the default template (operations classes re-delegable by the chief of staff; strategy-or-constitution, experience-design and money never re-delegated), `schema/check-delegation.mjs` (no grant exceeds its grantor's, the chain reaches the founder, no self-verification, expired grants fail), and `governance/playbooks/delegation.md`. |
+| `cursor/verification-substrate` | One module, `schema/verify.mjs`, that the gate, lint suites and handoff done criteria all call: a check is `{kind: conformance | model | person, verifier, target}`, the verifier must differ from the builder, and results are logged in provenance. Don't change behavior; move the builder-is-not-reviewer rule from `check-ready.mjs` and `check-execution.mjs` into it, so MAD can reuse it later. |
+| `cursor/phase-gate` | Check a phase's exit criteria (telos) before `naive phase` moves on. Fail-open by default: it warns and the founder decides. |
+
 ## Then
 
 When a suite lands, add it to its function skill (`packages/<function>/skill/SKILL.md`, a Checks line) and to `naive check`. A later change can add a cross-function rule set: a decision in one function that contradicts another function's records, such as marketing promising what product does not ship.
