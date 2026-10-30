@@ -16,6 +16,7 @@ import { pagesFromFiles } from "./content.mjs";
 const root = new URL("../../", import.meta.url).pathname;
 
 // pr_review.screenshots in naive.config.json: "off" (default), "on-demand" (the PR's `screenshots` label) or "always".
+/** @param {{ labels?: string[], config?: { pr_review?: { screenshots?: string } } }} [opts] */
 export function screenshotMode({ labels = [], config } = {}) {
   let setting = config?.pr_review?.screenshots;
   if (setting === undefined && existsSync(join(root, "naive.config.json"))) {
@@ -38,6 +39,7 @@ export function contrast(a, b) {
 // Runs in the page. A finding gives the rule and the element's position, never page text or a src: the report is
 // public and page text may be a secret. Returns findings; kept self-contained so it can be passed to page.evaluate.
 export function inspectPage() {
+  const { document, getComputedStyle, NodeFilter } = /** @type {*} */ (globalThis);
   const findings = [];
   const heads = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].filter((h) => h.offsetParent !== null || h.getClientRects().length);
   const h1s = heads.filter((h) => h.tagName === "H1").length;
@@ -79,6 +81,7 @@ export function inspectPage() {
   return findings;
 }
 
+/** @param {{ path: string, findings: { rule: string, detail: string }[], error?: string }[]} pages @param {{ skipped?: string, screenshots?: boolean }} [opts] */
 export function report(pages, { skipped, screenshots } = {}) {
   const out = ["### Design", ""];
   if (skipped) return [...out, `Skipped: ${skipped}.`].join("\n");
@@ -93,6 +96,7 @@ export function report(pages, { skipped, screenshots } = {}) {
   return out.join("\n");
 }
 
+/** @param {{ preview?: string, base?: string, labels?: string[], files?: string[], shotsDir?: string }} [opts] */
 export async function run({ preview, base = "origin/main", labels = [], files, shotsDir = "pr-review-out/screenshots" } = {}) {
   const changed = files ?? execFileSync("git", ["diff", "--name-only", `${base}...HEAD`], { cwd: root, encoding: "utf8" }).split("\n").filter(Boolean);
   const paths = pagesFromFiles(changed);
@@ -114,7 +118,7 @@ export async function run({ preview, base = "origin/main", labels = [], files, s
       await page.close();
       const small = await mobile.newPage();
       await small.goto(url, { waitUntil: "networkidle" });
-      const over = await small.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      const over = await small.evaluate(() => { const { documentElement: e } = /** @type {*} */ (globalThis).document; return e.scrollWidth - e.clientWidth; });
       if (over > 1) findings.push({ rule: "overflow-375", detail: `${over}px wider than the viewport` });
       await small.close();
       pages.push({ path, findings });

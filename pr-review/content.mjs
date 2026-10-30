@@ -82,6 +82,7 @@ export function pagesFromFiles(files) {
   return [...urls].sort();
 }
 
+/** @param {string} base @param {string} path @param {(url: string, init: { headers: Record<string, string> }) => Promise<{ ok: boolean, status: number, headers: { get(name: string): string | null | undefined }, text(): Promise<string> }>} [fetchImpl] */
 export async function fetchMarkdown(base, path, fetchImpl = fetch) {
   const url = new URL(path, base).toString();
   const first = await fetchImpl(url, { headers: { accept: "text/markdown" } });
@@ -103,6 +104,7 @@ export function report(pages, source) {
   return out.join("\n");
 }
 
+/** @param {{ preview?: string, base?: string, fixtures?: string, files?: string[] }} [opts] */
 export async function run({ preview, base = "origin/main", fixtures, files } = {}) {
   const { source, patterns } = loadPatterns();
   let inputs;
