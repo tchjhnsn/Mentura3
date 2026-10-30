@@ -65,7 +65,7 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
 
 ## 5. Delegation suite (install the defaults, customize per venture)
 
-- **Record:** `governance/delegation.json`: grants `{from, to, classes, scope, may_redelegate, expires}`. The founder is the root.
+- **Record:** `governance/delegation.json`: grants `{from, to, classes, scope, may_redelegate, expires}`. The founder is the root. `root` is the founder's role id; `founder` lists the people who hold that role, by name. The publish gate (`schema/publish.mjs`) and the merge gate (`schema/decisions.mjs`) read `founder` to tell a person from a role.
 - **Default template:**
   - The founder grants the chief of staff `may_redelegate: true` for operations-level classes.
   - Strategy-or-constitution, experience-design and money classes are not re-delegated.
