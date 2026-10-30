@@ -26,18 +26,19 @@ const arg = (k, d) => (process.argv.includes(k) ? process.argv[process.argv.inde
 
 const NAME = "Naive: docket scenarios";
 const list = states();
-let [dataset] = await call("GET", `/datasets?name=${encodeURIComponent(NAME)}`);
-if (!dataset) dataset = await call("POST", "/datasets", { name: NAME, description: "Venture states where the right next step is argued from a cited source (schema/examples/docket-scenarios.json). Labels are an agent's draft until the founder reviews them." });
-const have = await call("GET", `/examples?dataset=${dataset.id}&limit=100`);
+let [dataset] = /** @type {{ id: string }[]} */ (await call("GET", `/datasets?name=${encodeURIComponent(NAME)}`));
+if (!dataset) dataset = /** @type {{ id: string }} */ (await call("POST", "/datasets", { name: NAME, description: "Venture states where the right next step is argued from a cited source (schema/examples/docket-scenarios.json). Labels are an agent's draft until the founder reviews them." }));
+/** @typedef {{ id: string, inputs: { state: string } }} Example */
+const have = /** @type {Example[]} */ (await call("GET", `/examples?dataset=${dataset.id}&limit=100`));
 const byState = new Map(have.map((e) => [e.inputs.state, e]));
 for (const st of list) if (!byState.has(st.id)) {
-  const e = await call("POST", "/examples", { dataset_id: dataset.id, inputs: { state: st.id, phase: st.phase, situation: st.scenario.situation, decisions: st.decisions.map((d) => ({ id: d.id, question: d.question, function: d.function.id, render: d.render, held_by: d.held_by ?? null })) },
-    outputs: { decision: st.expected.decision, function: st.expected.function, why: st.scenario.why, source: st.scenario.source } });
+  const e = /** @type {Example} */ (await call("POST", "/examples", { dataset_id: dataset.id, inputs: { state: st.id, phase: st.phase, situation: st.scenario.situation, decisions: st.decisions.map((d) => ({ id: d.id, question: d.question, function: d.function.id, render: d.render, held_by: d.held_by ?? null })) },
+    outputs: { decision: st.expected.decision, function: st.expected.function, why: st.scenario.why, source: st.scenario.source } }));
   byState.set(st.id, e);
 }
 
 const name = arg("--name", `docket ${new Date().toISOString().slice(0, 16)}`);
-const session = await call("POST", "/sessions", { name, reference_dataset_id: dataset.id, description: `docket next ${scored.docket_next}, function ${scored.docket_function}${scored.judge_next != null ? `; judge next ${scored.judge_next}, agree ${scored.docket_judge_agree}` : ""}` });
+const session = /** @type {{ id: string, tenant_id: string }} */ (await call("POST", "/sessions", { name, reference_dataset_id: dataset.id, description: `docket next ${scored.docket_next}, function ${scored.docket_function}${scored.judge_next != null ? `; judge next ${scored.judge_next}, agree ${scored.docket_judge_agree}` : ""}` }));
 const now = new Date().toISOString();
 const post = [];
 const feedback = [];

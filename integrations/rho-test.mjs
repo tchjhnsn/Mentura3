@@ -50,9 +50,9 @@ await t("the client calls read-only tools and refuses the rest, over a fake Rho"
       res.end(`event: message\ndata: ${JSON.stringify({ jsonrpc: "2.0", id: m.id, result })}\n\n`);
     });
   });
-  await new Promise((r) => server.listen(0, "127.0.0.1", r));
+  await /** @type {Promise<void>} */ (new Promise((r) => server.listen(0, "127.0.0.1", r)));
   try {
-    const rho = client(`http://127.0.0.1:${server.address().port}/mcp/v1`, "x");
+    const rho = client(`http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}/mcp/v1`, "x");
     await rho.init();
     ok(Array.isArray((await rho.call("listAccounts")).accounts), "read failed");
     let refused = false;

@@ -21,7 +21,7 @@ await Promise.all(chunks.map(async (ks) => {
   const res = await fetch(ENDPOINT, { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({ ...req, questions: Object.fromEntries(ks.map((k) => [k, req.questions[k]])) }), signal: AbortSignal.timeout(120000) });
   if (!res.ok) throw new Error(`TypeSafe returned ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const r = await res.json();
+  const r = /** @type {{ model?: string, answers?: Record<string, unknown>, usage?: { input_tokens?: number, output_tokens?: number } }} */ (await res.json());
   out.model = r.model;
   Object.assign(out.answers, r.answers);
   out.usage.input_tokens += r.usage?.input_tokens ?? 0; out.usage.output_tokens += r.usage?.output_tokens ?? 0;

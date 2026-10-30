@@ -32,7 +32,7 @@ const findOrCreate = async (path, name, body) => {
   if (!apply) return { id: `<${name}>`, created: "dry-run" };
   const list = await call("GET", `${path}?name=${encodeURIComponent(name)}`);
   const hit = (Array.isArray(list) ? list : []).find((x) => x.name === name);
-  return hit ? { ...hit, created: false } : { ...(await call("POST", path, { name, ...body })), created: true };
+  return hit ? { ...hit, created: false } : { .../** @type {{ id: string }} */ (await call("POST", path, { name, ...body })), created: true };
 };
 
 // Naive's own evals, attached to each run's root as feedback by the harness (interface/harness/evals.mjs).
@@ -68,7 +68,7 @@ const ensurePrompt = async () => {
   if (r.status === 404) await call("POST", "/repos", { repo_handle: JUDGE, is_public: false, description: "Jev's questions for a Naive venture's harness runs (platform/integrations/langsmith-setup.mjs)" });
   else if (!r.ok) throw new Error(`GET repo ${JUDGE}: LangSmith answered ${r.status}`);
   const res = await fetch(`${API}/api/v1/commits/-/${JUDGE}/latest`, { headers });
-  const head = res.ok ? await res.json() : null;
+  const head = /** @type {{ model_config?: { questions?: unknown }, commit_hash?: string } | null} */ (res.ok ? await res.json() : null);
   const same = JSON.stringify(head?.model_config?.questions ?? null) === JSON.stringify(manifest().kwargs.last.kwargs.questions);
   // A new commit names the one it follows, or LangSmith refuses it as a conflict.
   if (!same) await call("POST", `/commits/-/${JUDGE}`, { manifest: manifest(), ...(head?.commit_hash ? { parent_commit: head.commit_hash } : {}) });
@@ -86,6 +86,7 @@ out.created.push({ session: session.id }, { queue: queue.id }, { dataset: datase
 
 const root = "eq(is_root, true)";
 const below = (k, t) => `and(eq(feedback_key, "${k}"), lt(feedback_score, ${t}))`;
+/** @type {{ display_name: string, sampling_rate: number, filter: string, add_to_annotation_queue_id?: string, add_to_dataset_id?: string, extend_evaluator_trace_retention?: boolean, evaluator_id?: string }[]} */
 const rules = [
   { display_name: "Naive: gate missed, to founder review", sampling_rate: 1, filter: `and(${root}, or(${GATES.map((k) => below(k, 1)).join(", ")}))`, add_to_annotation_queue_id: queue.id },
   { display_name: "Naive: every gate held, to good runs", sampling_rate: 1, filter: `and(${root}, ${GATES.map((k) => `and(eq(feedback_key, "${k}"), eq(feedback_score, 1))`).join(", ")})`, add_to_dataset_id: dataset.id },
@@ -95,21 +96,21 @@ const rules = [
 const hubRef = await ensurePrompt();
 let judgeId = "<Jev: judges each run>";
 if (apply) {
-  const { evaluators = [] } = await call("GET", "/platform/evaluators");
+  const { evaluators = [] } = /** @type {{ evaluators?: { id: string, name: string, type: string }[] }} */ (await call("GET", "/platform/evaluators"));
   judgeId = evaluators.find((e) => e.name === "Jev: judges each run" && e.type === "decision_model")?.id
-    ?? (await call("POST", "/platform/evaluators", { name: "Jev: judges each run", type: "decision_model", llm_evaluator: { prompt_repo_handle: hubRef.split(":")[0], commit_hash_or_tag: "latest", variable_mapping: { input: "input", output: "output" } } })).evaluator.id;
+    ?? (/** @type {{ evaluator: { id: string } }} */ (await call("POST", "/platform/evaluators", { name: "Jev: judges each run", type: "decision_model", llm_evaluator: { prompt_repo_handle: hubRef.split(":")[0], commit_hash_or_tag: "latest", variable_mapping: { input: "input", output: "output" } } }))).evaluator.id;
 }
 out.created.push({ judge: judgeId, prompt: hubRef });
 rules.push({ display_name: "Jev: judges each run", sampling_rate: 1, filter: root, extend_evaluator_trace_retention: true, evaluator_id: judgeId });
 rules.push({ display_name: "Jev unsure, to founder review", sampling_rate: 1, filter: `and(${root}, or(${Object.keys(JEV).map((k) => below(k, 0.7)).join(", ")}))`, add_to_annotation_queue_id: queue.id });
 
-const existing = apply ? await call("GET", `/runs/rules?session_id=${session.id}`) : [];
+const existing = /** @type {{ id: string, display_name: string, filter: string }[]} */ (apply ? await call("GET", `/runs/rules?session_id=${session.id}`) : []);
 for (const r of rules) {
   const body = { ...r, session_id: session.id };
   if (!apply) { out.created.push({ rule: body }); continue; }
   const hit = existing.find((x) => x.display_name === r.display_name);
   // A rule whose filter changed (new gates, new questions) is updated in place, keeping its id.
   if (hit && hit.filter !== body.filter) await call("PATCH", `/runs/rules/${hit.id}`, { ...hit, ...body });
-  out.created.push({ rule: r.display_name, id: hit?.id ?? (await call("POST", "/runs/rules", body)).id, created: !hit, ...(hit && hit.filter !== body.filter ? { updated: "filter" } : {}) });
+  out.created.push({ rule: r.display_name, id: hit?.id ?? (/** @type {{ id: string }} */ (await call("POST", "/runs/rules", body))).id, created: !hit, ...(hit && hit.filter !== body.filter ? { updated: "filter" } : {}) });
 }
 console.log(JSON.stringify(out, null, 2));

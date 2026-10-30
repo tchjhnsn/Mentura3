@@ -31,15 +31,16 @@ async function post(path, body) {
 }
 
 export async function search({ queries, results = 5 }) {
-  const pages = await Promise.all(queries.slice(0, 5).map(async (q) => ({ q, r: await post("/search", { query: q, limit: results }) })));
+  const pages = await Promise.all(queries.slice(0, 5).map(async (q) => ({ q, r: /** @type {{ data?: { title?: string, url: string, description?: string, metadata?: { title?: string, description?: string } }[] }} */ (await post("/search", { query: q, limit: results })) })));
   return pages.flatMap(({ q, r }) => (r.data ?? []).slice(0, results).map((x) => ({ query: q, title: x.title ?? x.metadata?.title ?? null, url: x.url, snippet: x.description ?? x.metadata?.description ?? null })));
 }
 
 export async function read({ url, chars = 6000 }) {
-  const r = await post("/scrape", { url, formats: ["markdown"], onlyMainContent: true });
+  const r = /** @type {{ data?: { metadata?: { title?: string }, markdown?: string } }} */ (await post("/scrape", { url, formats: ["markdown"], onlyMainContent: true }));
   return { url, title: r.data?.metadata?.title ?? null, markdown: (r.data?.markdown ?? "").slice(0, chars) };
 }
 
+/** @param {{ id?: number | string, method: string, params?: { name?: string, arguments?: * } }} msg */
 export async function handle({ id, method, params = {} }) {
   const reply = (result) => ({ jsonrpc: "2.0", id, result });
   switch (method) {
