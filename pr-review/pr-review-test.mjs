@@ -90,7 +90,7 @@ const robots = readFileSync(join(root, "site/app/robots.ts"), "utf8");
 check("robots.ts disallows everything", /disallow:\s*"\/"/.test(robots) && !/allow:\s*"\/"/.test(robots.replace(/disallow/g, "")));
 check("layout metadata keeps index: false", /robots:\s*\{\s*index:\s*false/.test(readFileSync(join(root, "site/app/layout.tsx"), "utf8")));
 const next = readFileSync(join(root, "site/next.config.mjs"), "utf8");
-check("next.config sends X-Robots-Tag noindex on preview", /VERCEL_ENV/.test(next) && /"preview"/.test(next) && /X-Robots-Tag[^\n]*\n?[^\n]*noindex/.test(next));
+check("next.config sends X-Robots-Tag noindex on every path, previews included", /source: "\/:path\*"/.test(next) && /X-Robots-Tag[^\n]*\n?[^\n]*noindex/.test(next));
 
 // Untrusted PR code runs only in pr-review.yml, with no secrets and a read-only token; pr-review-comment.yml holds the
 // write token, runs from the default branch and runs no PR code.
