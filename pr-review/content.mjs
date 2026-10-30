@@ -45,13 +45,15 @@ export function loadPatterns(dir = root) {
   return { source: "fallback", patterns: FALLBACK_PATTERNS };
 }
 
+// A finding records the rule and where it matched, never the matched text: the report is public and the match may be
+// a secret or the internal term itself.
 export function checkMarkdown(text, patterns) {
   const findings = [];
   const lines = text.split("\n");
   for (const p of patterns) {
     const re = new RegExp(p.pattern, p.flags.includes("g") ? p.flags : p.flags + "g");
     lines.forEach((line, i) => {
-      for (const m of line.matchAll(re)) findings.push({ rule: p.id, severity: p.severity, line: i + 1, match: m[0], reason: p.reason });
+      for (const m of line.matchAll(re)) findings.push({ rule: p.id, severity: p.severity, line: i + 1, column: m.index + 1, reason: p.reason });
     });
   }
   return findings;
@@ -71,11 +73,10 @@ export function pagesFromFiles(files) {
 }
 
 export async function fetchMarkdown(base, path, fetchImpl = fetch) {
-  const headers = process.env.VERCEL_BYPASS ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS } : {};
   const url = new URL(path, base).toString();
-  const first = await fetchImpl(url, { headers: { ...headers, accept: "text/markdown" } });
+  const first = await fetchImpl(url, { headers: { accept: "text/markdown" } });
   if (first.ok && /markdown|text\/plain/.test(first.headers.get("content-type") ?? "")) return first.text();
-  const second = await fetchImpl(url.replace(/\/$/, "") + ".md", { headers });
+  const second = await fetchImpl(url.replace(/\/$/, "") + ".md", { headers: {} });
   if (second.ok) return second.text();
   throw new Error(`no markdown for ${path} (${first.status}, .md ${second.status})`);
 }
@@ -87,7 +88,7 @@ export function report(pages, source) {
   else if (!hits.length) out.push(`${pages.length} page(s) checked, nothing found.`);
   for (const p of hits) {
     out.push(`- \`${p.path}\`${p.error ? `: could not read (${p.error})` : ""}`);
-    for (const f of p.findings) out.push(`  - ${f.severity} \`${f.rule}\` line ${f.line}: ${f.reason} (\`${f.match.slice(0, 40)}\`)`);
+    for (const f of p.findings) out.push(`  - ${f.severity} \`${f.rule}\` line ${f.line}, column ${f.column}: ${f.reason}`);
   }
   return out.join("\n");
 }

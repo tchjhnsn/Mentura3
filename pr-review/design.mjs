@@ -2,15 +2,14 @@
 // reading the DOM and computed styles. No screenshots unless the screenshot mode says so.
 //
 //   node scripts/pr-review/design.mjs --preview <url> [--base origin/main] [--screenshots off|on-demand|always]
-//                                     [--labels a,b] [--out findings.json]
+//                                     [--labels a,b] [--out findings.json] [--shots <dir>]
 //
 // Checks: one h1; no skipped or duplicate headings; no horizontal overflow at 375px; every img has alt;
 // text contrast at least 4.5:1 from computed colors. Needs playwright (npx playwright install chromium);
 // without it the pass reports that it was skipped.
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pagesFromFiles } from "./content.mjs";
 
@@ -82,7 +81,7 @@ export function inspectPage() {
 export function report(pages, { skipped, screenshots } = {}) {
   const out = ["### Design", ""];
   if (skipped) return [...out, `Skipped: ${skipped}.`].join("\n");
-  out.push(`Screenshots: ${screenshots ? "taken for this run, not kept" : "off"}.`, "");
+  out.push(`Screenshots: ${screenshots ? "uploaded with this run's \`pr-review\` artifact" : "off"}.`, "");
   const hits = pages.filter((p) => p.error || p.findings.length);
   if (!pages.length) out.push("No changed site pages.");
   else if (!hits.length) out.push(`${pages.length} page(s) checked, nothing found.`);
@@ -93,17 +92,16 @@ export function report(pages, { skipped, screenshots } = {}) {
   return out.join("\n");
 }
 
-export async function run({ preview, base = "origin/main", labels = [], files } = {}) {
+export async function run({ preview, base = "origin/main", labels = [], files, shotsDir = "pr-review-out/screenshots" } = {}) {
   const changed = files ?? execFileSync("git", ["diff", "--name-only", `${base}...HEAD`], { cwd: root, encoding: "utf8" }).split("\n").filter(Boolean);
   const paths = pagesFromFiles(changed);
   const screenshots = screenshotMode({ labels });
   let chromium;
   try { ({ chromium } = await import("playwright")); } catch { return { pages: [], markdown: report([], { skipped: "playwright is not installed" }) }; }
   const browser = await chromium.launch();
-  const extraHTTPHeaders = process.env.VERCEL_BYPASS ? { "x-vercel-protection-bypass": process.env.VERCEL_BYPASS } : {};
-  const desktop = await browser.newContext({ viewport: { width: 1280, height: 900 }, extraHTTPHeaders });
-  const mobile = await browser.newContext({ viewport: { width: 375, height: 812 }, extraHTTPHeaders });
-  const shots = screenshots ? mkdtempSync(join(tmpdir(), "pr-review-")) : null;
+  const desktop = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const mobile = await browser.newContext({ viewport: { width: 375, height: 812 } });
+  const shots = screenshots ? (mkdirSync(shotsDir, { recursive: true }), shotsDir) : null;
   const pages = [];
   for (const path of paths) {
     const url = new URL(path, preview).toString();
@@ -130,7 +128,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const preview = arg("preview") ?? process.env.PREVIEW_URL;
   if (!preview) { console.error("usage: design.mjs --preview <url>"); process.exit(2); }
   const labels = (arg("labels") ?? process.env.PR_LABELS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  const result = await run({ preview, base: arg("base"), labels });
+  const result = await run({ preview, base: arg("base"), labels, shotsDir: arg("shots") });
   if (arg("out")) writeFileSync(arg("out"), JSON.stringify(result, null, 2));
   console.log(result.markdown);
 }

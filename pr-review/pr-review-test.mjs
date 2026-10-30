@@ -21,6 +21,8 @@ check("a clean page has no findings (example.com email allowed)", byName["clean.
 const rules = new Set(byName["leaky.md"].findings.map((f) => f.rule));
 for (const r of ["codename", "local-path", "private-path", "todo", "secret-aws"]) check(`leaky page flags ${r}`, rules.has(r));
 check("findings carry line numbers", byName["leaky.md"].findings.find((f) => f.rule === "secret-aws").line === 7);
+check("report gives kind and location, never the matched text", result.markdown.includes("line 7, column 32: AWS access key shape")
+  && !/AKIA|mentura|\/Users\/someone/i.test(result.markdown) && !JSON.stringify(result.pages).includes("AKIA"));
 check("report names the leaky page only", result.markdown.includes("leaky.md") && !result.markdown.includes("clean.md"));
 check("patterns come from the dictionary or the fallback", ["fallback", "schema/internal-terms.json", "governance/internal-terms.json"].includes(loadPatterns().source));
 check("fallback patterns compile", FALLBACK_PATTERNS.every((p) => new RegExp(p.pattern, p.flags)));
@@ -53,9 +55,16 @@ check("layout metadata keeps index: false", /robots:\s*\{\s*index:\s*false/.test
 const next = readFileSync(join(root, "site/next.config.mjs"), "utf8");
 check("next.config sends X-Robots-Tag noindex on preview", /VERCEL_ENV/.test(next) && /"preview"/.test(next) && /X-Robots-Tag[^\n]*\n?[^\n]*noindex/.test(next));
 
-// The workflow never merges or approves.
+// Untrusted PR code runs only in pr-review.yml, with no secrets and a read-only token; pr-review-comment.yml holds the
+// write token, runs from the default branch and runs no PR code.
 const wf = readFileSync(join(root, ".github/workflows/pr-review.yml"), "utf8");
-check("workflow never merges or approves", !/pulls\.merge|createReview|"APPROVE"|gh pr (?:merge|review)|git push/.test(wf));
+const cw = readFileSync(join(root, ".github/workflows/pr-review-comment.yml"), "utf8");
+check("workflows never merge or approve", ![wf, cw].some((t) => /pulls\.merge|createReview|"APPROVE"|gh pr (?:merge|review)|git push/.test(t)));
+check("the PR-code workflow reads no secrets and has no write permission", !/secrets\./.test(wf) && !/:\s*write\b/.test(wf) && !/pull_request_target/.test(wf));
+check("the comment workflow is workflow_run, checks out nothing and runs no scripts",
+  /workflow_run:\s*\n\s*workflows:\s*\[pr-review\]/.test(cw) && !/actions\/checkout|setup-node|npm |node scripts|\brun:/.test(cw) && !/secrets\./.test(cw));
+check("the comment workflow only comments on the PR whose head was reviewed", /pr\.head\.sha !== run\.head_sha/.test(cw));
+check("screenshots go into the uploaded artifact", /--shots pr-review-out\/screenshots/.test(wf) && /upload-artifact@v4[\s\S]*path: pr-review-out\//.test(wf));
 
 console.log(failed ? `\n${failed} failing` : "\nall passing");
 process.exit(failed ? 1 : 0);
