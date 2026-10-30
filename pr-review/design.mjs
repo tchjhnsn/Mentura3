@@ -81,7 +81,7 @@ export function inspectPage() {
 export function report(pages, { skipped, screenshots } = {}) {
   const out = ["### Design", ""];
   if (skipped) return [...out, `Skipped: ${skipped}.`].join("\n");
-  out.push(`Screenshots: ${screenshots ? "uploaded with this run's \`pr-review\` artifact" : "off"}.`, "");
+  out.push(`Screenshots: ${screenshots ? "uploaded with this run's pr-review artifact" : "off"}.`, "");
   const hits = pages.filter((p) => p.error || p.findings.length);
   if (!pages.length) out.push("No changed site pages.");
   else if (!hits.length) out.push(`${pages.length} page(s) checked, nothing found.`);

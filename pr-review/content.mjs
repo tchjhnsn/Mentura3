@@ -29,7 +29,8 @@ export const FALLBACK_PATTERNS = [
   { id: "email", severity: "warn", pattern: "\\b[A-Za-z0-9._%+-]+@(?!example\\.(?:com|org))[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b", flags: "", reason: "personal email address" },
 ];
 
-// Accepts { terms: [...] }, { patterns: [...] } or an array; each entry a string (a literal term) or { pattern|term, ... }.
+// Accepts { terms: [...] }, { patterns: [...] } or an array; each entry a string (a literal term) or { regex|pattern|term, ... }.
+// The dictionary adds to the fallback list, so the secret shapes always run.
 export function loadPatterns(dir = root) {
   for (const rel of ["schema/internal-terms.json", "governance/internal-terms.json"]) {
     const file = join(dir, rel);
@@ -39,8 +40,9 @@ export function loadPatterns(dir = root) {
     const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const patterns = list.map((t, i) => typeof t === "string"
       ? { id: `term-${i + 1}`, severity: "error", pattern: `\\b${escape(t)}\\b`, flags: "i", reason: "internal term" }
-      : { id: t.id ?? `term-${i + 1}`, severity: t.severity ?? "error", pattern: t.pattern ?? `\\b${escape(t.term)}\\b`, flags: t.flags ?? "i", reason: t.reason ?? "internal term" });
-    return { source: rel, patterns };
+      : { id: t.id ?? `term-${i + 1}`, severity: t.severity === "warn" ? "warn" : "error", pattern: t.regex ?? t.pattern ?? `\\b${escape(t.term)}\\b`, flags: t.flags ?? "i", reason: t.why ?? t.reason ?? "internal term" });
+    const ids = new Set(patterns.map((p) => p.id));
+    return { source: rel, patterns: [...patterns, ...FALLBACK_PATTERNS.filter((p) => !ids.has(p.id))] };
   }
   return { source: "fallback", patterns: FALLBACK_PATTERNS };
 }
