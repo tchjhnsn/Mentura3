@@ -23,11 +23,11 @@
 //
 // Claim verdicts (the must-hold rules are checked one by one; averaging never hides them):
 //   confirmed   >= 2 independent fetched supporters with credibility >= 3, at least one of them from
-//               the time (contemporaneous, or published within PERIOD_YEARS of about_time), and
-//               no contradiction more credible than the best supporter
-//   acceptable  >= 1 fetched supporter with credibility >= 3, not contested: a read contradiction
-//               at least as credible as the best supporter, or read contradictions as many as the
-//               credible supporters, drop it to possible
+//               the time (contemporaneous, or published within PERIOD_YEARS of about_time)
+//   acceptable  >= 1 fetched supporter with credibility >= 3
+//   contested   checked before every verdict above: a read contradiction at least as credible as
+//               the best supporter, or read contradictions as many as the credible supporters,
+//               make the claim possible
 //   available   a credible supporter exists but nobody has read it yet (unread)
 //   possible    anything else; a claim resting only on search snippets is capped here
 // Tertiary sources (Wikipedia and other encyclopedias) never count as supporters: follow them to
@@ -102,15 +102,14 @@ export function judgeClaimDetailed(claim, citations, sources, { aspect } = {}) {
   const strongestAgainst = Math.max(0, ...readAgainst.map(cred));
   const periodSupport = fetchedCredible.some(fromTheTime);
   const reasons = [];
+  // Contested is checked before any verdict, so no path (confirmed included) can skip it.
+  const contested = readAgainst.length > 0 && (strongestAgainst >= best || readAgainst.length >= fetchedCredible.length);
   let verdict = "possible";
-  if (fetchedCredible.length >= CONFIRM_MIN && strongestAgainst <= best && periodSupport) verdict = "confirmed";
+  if (contested) reasons.push("contested: a read contradiction outweighs or matches the support");
+  else if (fetchedCredible.length >= CONFIRM_MIN && periodSupport) verdict = "confirmed";
   else if (fetchedCredible.length >= 1) {
     verdict = "acceptable";
-    if (fetchedCredible.length >= CONFIRM_MIN && !periodSupport) reasons.push("held below confirmed: no credible supporter from the time");
-    else if (fetchedCredible.length >= CONFIRM_MIN) reasons.push("held below confirmed: a stronger source contradicts it");
-    if (readAgainst.length && (strongestAgainst >= best || readAgainst.length >= fetchedCredible.length)) {
-      verdict = "possible"; reasons.push("contested: a read contradiction outweighs or matches the support");
-    }
+    if (fetchedCredible.length >= CONFIRM_MIN) reasons.push("held below confirmed: no credible supporter from the time");
   } else if (supporters.some((s) => s.access_level === "unread" && cred(s) >= CREDIBLE)) verdict = "available";
   if (supporters.length && supporters.every((s) => s.access_level === "snippet")) { verdict = "possible"; reasons.push("snippet-only: capped at possible until read"); }
   // Confidence: the best fetched supporter, plus a little for each further independent one, less

@@ -59,6 +59,7 @@ expect("independence: one entry per original", independent([S("a", 4), S("b", 3,
 expect("verdict: Wikipedia never counts as a supporter", J([cite("a"), cite("w")], [S("a", 4), S("w", 4, "fetched", { url: "https://en.wikipedia.org/wiki/Nike" })]).verdict === "acceptable");
 expect("verdict: a tertiary kind never counts either", J([cite("w")], [S("w", 4, "fetched", { kind: "tertiary" })]).verdict === "possible");
 expect("verdict: a stronger read contradiction blocks confirmed and acceptable (problem 8)", J([cite("a"), cite("b"), cite("z", "contradicts")], [S("a", 3), S("b", 3), S("z", 4)]).verdict === "possible");
+expect("verdict: two supporters and two equally credible read contradictions are contested, not confirmed", J([cite("a"), cite("b"), cite("y", "contradicts"), cite("z", "contradicts")], [S("a", 3, "fetched", { kind: "contemporaneous" }), S("b", 3), S("y", 3), S("z", 3)]).verdict === "possible");
 expect("verdict: a weaker contradiction does not", J([cite("a"), cite("b"), cite("z", "contradicts")], [S("a", 4), S("b", 3), S("z", 2)]).verdict === "confirmed");
 expect("verdict: one fetched credible source is acceptable", J([cite("a")], [S("a", 3)]).verdict === "acceptable");
 expect("verdict: fetched but not credible is possible", J([cite("a"), cite("b")], [S("a", 2), S("b", 2)]).verdict === "possible");
