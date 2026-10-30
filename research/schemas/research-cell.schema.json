@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "research-cell.schema.json",
+  "title": "Research cell",
+  "description": "One question of the research engine: state(subject, time, aspect) for a venture, a function and a frame. Confidential (Mentura).",
+  "type": "object",
+  "required": ["id", "venture", "function", "frame", "time", "aspect", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9:._-]*$" },
+    "venture": { "type": "string" },
+    "function": { "type": "string", "description": "A department id from operations/departments.json" },
+    "frame": { "type": "string", "description": "A frame id from packages/*/frames" },
+    "time": { "type": "string", "description": "A lifecycle phase id, or an ISO date or year" },
+    "aspect": { "type": "string" },
+    "personal": { "type": "boolean", "default": false, "description": "About a founder's personal life; refused unless RESEARCH_PERSONAL=on and the subject is a public figure with a recorded legal basis" },
+    "subject": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "public_figure": { "type": "boolean" },
+        "legal_basis": { "type": "string" }
+      }
+    },
+    "status": { "enum": ["open", "answered", "refused", "failed"] },
+    "answered_at": { "type": "string", "format": "date-time" },
+    "fresh_until": { "type": "string", "format": "date-time" },
+    "claims": { "type": "array", "items": { "type": "string" } },
+    "spend": { "type": "number", "minimum": 0 },
+    "note": { "type": "string" }
+  },
+  "additionalProperties": false
+}

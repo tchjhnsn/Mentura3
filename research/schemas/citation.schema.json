@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "citation.schema.json",
+  "title": "Research citation",
+  "description": "Ties a claim to a source with a locator. A quote is optional and short (enough to verify, never a reproduction).",
+  "type": "object",
+  "required": ["claim_id", "source_id", "locator", "supports"],
+  "properties": {
+    "claim_id": { "type": "string" },
+    "source_id": { "type": "string" },
+    "locator": { "type": "string", "description": "Book, chapter and page, or URL and section, or offsets in the snapshot" },
+    "quote": { "type": "string", "maxLength": 300 },
+    "supports": { "enum": ["supports", "contradicts", "neutral"] }
+  },
+  "additionalProperties": false
+}
