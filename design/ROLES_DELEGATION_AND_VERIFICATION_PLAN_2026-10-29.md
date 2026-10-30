@@ -54,8 +54,8 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
 |---|---|---|
 | Founder (chief delegator) | All | Self; the only role that needs no verifier |
 | Chief of staff | Delegation, docket, handoffs | Founder |
-| Product manager | product | Chief of staff, then founder for scope |
-| CTO / architect | engineering | Builder's work reviewed by architect; architect by founder |
+| Product and design lead (`product-design-lead`, alias `product-manager`) | product | Chief of staff, then founder for scope |
+| Architect (`architect`, alias `cto`) | engineering | Builder's work reviewed by architect; architect by founder |
 | Builder | engineering | Architect plus conformance checks; never itself |
 | Marketing lead | marketing | Brand lint plus chief of staff |
 | Finance lead | finance, money | Finance lint plus founder for spend |
