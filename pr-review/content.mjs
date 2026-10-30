@@ -4,9 +4,8 @@
 //   node scripts/pr-review/content.mjs --preview <url> [--base origin/main] [--out findings.json]
 //   node scripts/pr-review/content.mjs --fixtures <dir>        (offline: every .md file in <dir> is a page)
 //
-// A page's markdown comes from `Accept: text/markdown`, then from the `.md` route. The patterns come from an
-// internal-terms dictionary when the branch has one (schema/internal-terms.json or governance/internal-terms.json),
-// else from the fallback list below. It only reports: findings go in the PR comment, nothing is merged or blocked.
+// A page's markdown comes from `Accept: text/markdown`, then from the `.md` route. The patterns come from the
+// internal-terms dictionaries the branch has (see DICTIONARIES) plus the fallback list below. It only reports: findings go in the PR comment, nothing is merged or blocked.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -14,7 +13,7 @@ import { join, relative } from "node:path";
 
 const root = new URL("../../", import.meta.url).pathname;
 
-// Used when the branch has no internal-terms dictionary. Severity `error` is a leak; `warn` asks a person to look.
+// Always run, so the secret shapes apply with or without a dictionary. Severity `error` is a leak; `warn` asks a person to look.
 export const FALLBACK_PATTERNS = [
   { id: "codename", severity: "error", pattern: "\\bmentura\\b", flags: "i", reason: "internal codename" },
   { id: "repo-name", severity: "warn", pattern: "\\beverything[- ]ecosystem\\b", flags: "i", reason: "internal repository name" },
@@ -29,22 +28,31 @@ export const FALLBACK_PATTERNS = [
   { id: "email", severity: "warn", pattern: "\\b[A-Za-z0-9._%+-]+@(?!example\\.(?:com|org))[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b", flags: "", reason: "personal email address" },
 ];
 
+// Naive's list, then the founder's list for this venture, as schema/check-leaks.mjs reads them.
+const VENTURE_DICTIONARY = "instance/ventures/everything-ecosystem/governance/internal-terms.json";
+const DICTIONARIES = ["schema/internal-terms.json", VENTURE_DICTIONARY];
+
 // Accepts { terms: [...] }, { patterns: [...] } or an array; each entry a string (a literal term) or { regex|pattern|term, ... }.
-// The dictionary adds to the fallback list, so the secret shapes always run.
+// Dictionaries add to the fallback list, so the secret shapes always run. The report is public, and a founder's rule id
+// or reason can name the unannounced term, so those rules go out under a neutral id and reason.
 export function loadPatterns(dir = root) {
-  for (const rel of ["schema/internal-terms.json", "governance/internal-terms.json"]) {
+  const sources = [];
+  const patterns = [];
+  for (const rel of DICTIONARIES) {
     const file = join(dir, rel);
     if (!existsSync(file)) continue;
+    sources.push(rel);
     const data = JSON.parse(readFileSync(file, "utf8"));
     const list = Array.isArray(data) ? data : data.terms ?? data.patterns ?? [];
     const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const patterns = list.map((t, i) => typeof t === "string"
+    const own = list.map((t, i) => typeof t === "string"
       ? { id: `term-${i + 1}`, severity: "error", pattern: `\\b${escape(t)}\\b`, flags: "i", reason: "internal term" }
-      : { id: t.id ?? `term-${i + 1}`, severity: t.severity === "warn" ? "warn" : "error", pattern: t.regex ?? t.pattern ?? `\\b${escape(t.term)}\\b`, flags: t.flags ?? "i", reason: t.why ?? t.reason ?? "internal term" });
-    const ids = new Set(patterns.map((p) => p.id));
-    return { source: rel, patterns: [...patterns, ...FALLBACK_PATTERNS.filter((p) => !ids.has(p.id))] };
+      : { id: t.id ?? `term-${i + 1}`, severity: t.severity === "warn" ? "warn" : "error", pattern: t.regex ?? t.pattern ?? `\\b${escape(t.term)}\\b`, flags: t.flags ?? "", reason: t.why ?? t.reason ?? "internal term" });
+    patterns.push(...(rel === VENTURE_DICTIONARY ? own.map((p, i) => ({ ...p, id: `venture-term-${i + 1}`, reason: "term on the founder's internal list" })) : own));
   }
-  return { source: "fallback", patterns: FALLBACK_PATTERNS };
+  if (!sources.length) return { source: "fallback", patterns: FALLBACK_PATTERNS };
+  const ids = new Set(patterns.map((p) => p.id));
+  return { source: sources.join(", "), patterns: [...patterns, ...FALLBACK_PATTERNS.filter((p) => !ids.has(p.id))] };
 }
 
 // A finding records the rule and where it matched, never the matched text: the report is public and the match may be

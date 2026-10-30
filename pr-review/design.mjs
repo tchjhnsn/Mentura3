@@ -35,7 +35,8 @@ export function contrast(a, b) {
   return (x + 0.05) / (y + 0.05);
 }
 
-// Runs in the page. Returns findings; kept self-contained so it can be passed to page.evaluate.
+// Runs in the page. A finding gives the rule and the element's position, never page text or a src: the report is
+// public and page text may be a secret. Returns findings; kept self-contained so it can be passed to page.evaluate.
 export function inspectPage() {
   const findings = [];
   const heads = [...document.querySelectorAll("h1,h2,h3,h4,h5,h6")].filter((h) => h.offsetParent !== null || h.getClientRects().length);
@@ -43,15 +44,15 @@ export function inspectPage() {
   if (h1s !== 1) findings.push({ rule: "one-h1", detail: `${h1s} h1 elements` });
   let prev = 0;
   const seen = new Map();
-  for (const h of heads) {
+  for (const [i, h] of heads.entries()) {
     const level = Number(h.tagName[1]);
-    if (prev && level > prev + 1) findings.push({ rule: "heading-skip", detail: `h${prev} to h${level}: "${h.textContent.trim().slice(0, 50)}"` });
+    if (prev && level > prev + 1) findings.push({ rule: "heading-skip", detail: `h${prev} to h${level} at heading ${i + 1}` });
     prev = level;
     const key = `${level}:${h.textContent.trim().toLowerCase()}`;
-    if (seen.has(key)) findings.push({ rule: "heading-duplicate", detail: `h${level} "${h.textContent.trim().slice(0, 50)}"` });
+    if (seen.has(key)) findings.push({ rule: "heading-duplicate", detail: `h${level} at heading ${i + 1}` });
     seen.set(key, true);
   }
-  for (const img of document.querySelectorAll("img")) if (!img.hasAttribute("alt")) findings.push({ rule: "img-alt", detail: img.getAttribute("src") ?? "(no src)" });
+  for (const [i, img] of [...document.querySelectorAll("img")].entries()) if (!img.hasAttribute("alt")) findings.push({ rule: "img-alt", detail: `image ${i + 1}` });
   const parse = (c) => { const m = c.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[ ,/]+/).filter(Boolean).map(Number); return { rgb: p.slice(0, 3), a: p[3] ?? 1 }; };
   const bgOf = (el) => {
     for (let e = el; e; e = e.parentElement) { const c = parse(getComputedStyle(e).backgroundColor); if (c && c.a > 0.5) return c.rgb; }
@@ -73,7 +74,7 @@ export function inspectPage() {
     const size = parseFloat(s.fontSize), bold = Number(s.fontWeight) >= 700;
     const need = size >= 24 || (bold && size >= 18.66) ? 3 : 4.5;
     const r = ratio(fg.rgb, bgOf(el));
-    if (r < need && low++ < 10) findings.push({ rule: "contrast", detail: `${r.toFixed(2)}:1 (needs ${need}) "${n.textContent.trim().slice(0, 40)}"` });
+    if (r < need && low++ < 10) findings.push({ rule: "contrast", detail: `${r.toFixed(2)}:1 (needs ${need}) at text element ${done.size}` });
   }
   return findings;
 }
