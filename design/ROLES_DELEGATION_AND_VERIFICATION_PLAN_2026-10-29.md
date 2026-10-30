@@ -54,8 +54,8 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
 |---|---|---|
 | Founder (chief delegator) | All | Self; the only role that needs no verifier |
 | Chief of staff | Delegation, docket, handoffs | Founder |
-| Product manager | product | Chief of staff, then founder for scope |
-| CTO / architect | engineering | Builder's work reviewed by architect; architect by founder |
+| Product and design lead (`product-design-lead`, alias `product-manager`) | product | Chief of staff, then founder for scope |
+| Architect (`architect`, alias `cto`) | engineering | Builder's work reviewed by architect; architect by founder |
 | Builder | engineering | Architect plus conformance checks; never itself |
 | Marketing lead | marketing | Brand lint plus chief of staff |
 | Finance lead | finance, money | Finance lint plus founder for spend |
@@ -65,7 +65,7 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
 
 ## 5. Delegation suite (install the defaults, customize per venture)
 
-- **Record:** `governance/delegation.json`: grants `{from, to, classes, scope, may_redelegate, expires}`. The founder is the root.
+- **Record:** `governance/delegation.json`: grants `{from, to, classes, scope, may_redelegate, expires}`. The founder is the root. `root` is the founder's role id; `founder` lists the people who hold that role, by name. The publish gate (`schema/publish.mjs`) and the merge gate (`schema/decisions.mjs`) read `founder` to tell a person from a role.
 - **Default template:**
   - The founder grants the chief of staff `may_redelegate: true` for operations-level classes.
   - Strategy-or-constitution, experience-design and money classes are not re-delegated.
@@ -73,6 +73,8 @@ Each role is a template, `governance/venture-template/roles/<id>.json`, extendin
   - A grant may not exceed its grantor's grant, and the chain must lead back to the founder.
   - No role may verify its own work.
   - Any grant that has expired fails.
+  - A scope is `venture` or a plain path, so `..` cannot widen it.
+  - A record that names `extends` is bound by the template's `never_redelegated` and `one_way_doors`. If `extends` cannot be read, the check fails and `mentura merge` refuses everyone.
 - **Playbook:** `governance/playbooks/delegation.md`, with the default ladder and how to widen it.
 
 ## 6. Next steps
