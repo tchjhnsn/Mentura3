@@ -14,6 +14,17 @@
 
 import { judgeClaim, sourceCredibility } from "./credibility.mjs";
 
+export const VERIFY_GATE = 0.9;
+
+// The one rule for a verifier's answer: a rejected claim cannot stand above possible.
+export function applyVerification(claim, agrees, role = "verifier") {
+  if (agrees === undefined) return claim;
+  const out = { ...claim, verified_by: role, verifier_agrees: agrees };
+  if (agrees === false) out.verdict = "possible";
+  return out;
+}
+const withCredibility = (s, factors) => { const c = sourceCredibility({ ...s, factors }); const { credibility, ...rest } = s; return c == null ? { ...rest, factors } : { ...rest, factors, credibility: c }; };
+
 export function personalAllowed(cell, env = process.env) {
   if (!cell.personal) return { ok: true };
   if (env.RESEARCH_PERSONAL !== "on") return { ok: false, why: "personal-life research is off (RESEARCH_PERSONAL is not on)" };
@@ -22,7 +33,9 @@ export function personalAllowed(cell, env = process.env) {
   return { ok: true };
 }
 
-export async function runCell(cell, { agent, jev, store, env = process.env, budget = { cap: Infinity, spent: 0 }, now = () => new Date().toISOString() }) {
+// verify: run the same-cell verifier call inline (default on). The independent check is
+// verifyCell below, which fetches again; run it over a sample of answered cells.
+export async function runCell(cell, { agent, jev, store, env = process.env, budget = { cap: Infinity, spent: 0 }, now = () => new Date().toISOString(), verify = true }) {
   const allowed = personalAllowed(cell, env);
   if (!allowed.ok) return store.put("cells", { ...cell, status: "refused", note: allowed.why });
   let spend = 0;
@@ -43,17 +56,19 @@ export async function runCell(cell, { agent, jev, store, env = process.env, budg
       if (useJev) { try { j = await jev("factors", { source: s }); } catch { j = null; } }
       if (!j) j = await call("judge", { judgment: "factors", source: s });
       const factors = { ...s.factors, ...(j?.factors ?? {}) };
-      scored.push({ ...s, factors, credibility: sourceCredibility({ ...s, factors }) });
+      scored.push(withCredibility(s, factors));
     }
-    const { agrees = {} } = await call("verify", { cell, sources: scored, claims, citations }, "verifier");
+    // A cell with no claims is not answered: store it as failed so the generator offers it again.
+    if (!claims.length) {
+      for (const s of scored) store.put("sources", s);
+      return store.put("cells", { ...cell, status: "failed", note: "no claims found", spend });
+    }
+    const { agrees = {} } = verify ? await call("verify", { cell, sources: scored, claims, citations }, "verifier") : {};
     for (const s of scored) store.put("sources", s);
     for (const c of citations) store.put("citations", c);
     const ids = [];
     for (const c of claims) {
-      const { _supporters, _reasons, ...judged } = judgeClaim({ ...c, cell_id: cell.id }, citations, scored);
-      if (c.id in agrees) { judged.verified_by = "verifier"; judged.verifier_agrees = agrees[c.id]; }
-      // A claim the verifier rejects cannot stand above possible.
-      if (agrees[c.id] === false) judged.verdict = "possible";
+      const judged = applyVerification(judgeClaim({ ...c, cell_id: cell.id }, citations, scored, { aspect: cell.aspect }), agrees[c.id]);
       store.put("claims", judged); ids.push(judged.id);
     }
     return store.put("cells", { ...cell, status: "answered", answered_at: now(), claims: ids, spend });
@@ -74,4 +89,41 @@ export async function runQueue(cells, deps) {
     catch (e) { if (e.cap) return { results, stopped: e.message, spent: budget.spent }; throw e; }
   }
   return { results, stopped: null, spent: budget.spent };
+}
+
+// The separate verifier step: a sample of answered cells, fetched again by a fresh "verifier" role
+// that never sees the finder's sources, then asked to agree or not with each stored claim. Rejected
+// claims fall to possible (applyVerification). Passes when agreement reaches the 90% gate.
+//   rate: share of answered cells to sample; random: injectable for tests.
+export async function verifyCells(cells, { agent, store, rate = 0.3, random = Math.random, gate = VERIFY_GATE, budget = { cap: Infinity, spent: 0 } }) {
+  const answered = cells.filter((c) => store.get("cells", c.id)?.status === "answered");
+  const sample = answered.filter(() => random() < rate);
+  if (answered.length && !sample.length) sample.push(answered[0]);
+  let agreed = 0, total = 0, cellsAgreed = 0;
+  const results = [];
+  for (const cell of sample) {
+    const r = await verifyCell(cell, { agent, store, budget });
+    agreed += r.agreed; total += r.total; if (r.total && r.agreed === r.total) cellsAgreed++;
+    results.push(r);
+  }
+  const agreement = total ? agreed / total : null;
+  return { sampled: sample.length, claims: total, agreement, cell_agreement: sample.length ? cellsAgreed / sample.length : null, passed: agreement != null && agreement >= gate, results };
+}
+
+export async function verifyCell(cell, { agent, store, budget = { cap: Infinity, spent: 0 } }) {
+  const call = async (step, input) => {
+    if (budget.spent >= budget.cap) throw Object.assign(new Error(`spend cap ${budget.cap} reached`), { cap: true });
+    const { output, cost = 0 } = await agent(step, { ...input, role: "verifier" });
+    budget.spent += cost; return output;
+  };
+  const claims = store.all("claims").filter((c) => c.cell_id === cell.id);
+  const { sources = [] } = await call("find", { cell, fresh: true });
+  const { agrees = {} } = await call("verify", { cell, sources, claims });
+  let agreed = 0, total = 0;
+  for (const c of claims) {
+    if (!(c.id in agrees)) continue;
+    total++; if (agrees[c.id]) agreed++;
+    store.put("claims", applyVerification(c, agrees[c.id], "verifier-refetch"));
+  }
+  return { cell: cell.id, agreed, total, fetched: sources.length };
 }

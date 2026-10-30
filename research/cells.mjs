@@ -10,7 +10,9 @@ import { join } from "node:path";
 
 const repo = new URL("../..", import.meta.url).pathname;
 const load = (p) => JSON.parse(readFileSync(join(repo, p), "utf8"));
-export const ASPECTS = ["decision", "rationale", "actors", "resources", "outcome"];
+// The aspects the pilots use: what the situation was, what was decided, who decided, the evidence
+// at the time, and what came of it.
+export const ASPECTS = ["state", "decision", "decider", "evidence", "outcome"];
 
 export function functions() { return load("operations/departments.json").departments.map((d) => d.id); }
 export function phases() { return load("purpose/frameworks/product-anatomy/phases.json").phases.map((p) => p.id); }
