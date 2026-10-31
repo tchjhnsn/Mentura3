@@ -128,3 +128,13 @@ Torian, 2026-10-31 03:20Z. "Directed" means Torian asked for it in his own words
 | R-41 | Segment types use a standard concept scheme (W3C SKOS: concepts with broader and narrower links, a definition and its evidence) rather than a new format. A definition is a claim backed by evidence of usage, open to premise attack; a dictionary is a reference, not the truth. | proposed | check |
 | R-42 | A venture-type module (for example an AI lab inside Mentura) is a package with activation criteria: the phase or conditions under which each part of it begins. Parts can start early as substrate, so the whole department exists by the phase it is needed. This extends need-now priors and the agreed rule that a founder may turn on a later phase's packages early (EE-070). | directed | check |
 | R-43 | A venture-type module also gives research its structure: research agents (arXiv, X via Grok and others) file what they find under that module's folders, as references with provenance (R-33, R-34). | directed | check |
+
+## Licensing, access and hosting
+
+Torian, 2026-10-31 05:30Z to 05:35Z, on decision cards and in the thread. None of these changes the MVP cut; R-44 and R-45 change how the MVP reaches people.
+
+| Id | Requirement | Status | Verified by |
+| --- | --- | --- | --- |
+| R-44 | Naive is closed, not open source. The Discovery module is the free part, offered through the waitlist. No new versions are published to npm; `naive-framework` and `create-venture` 0.6.0 stay MIT for anyone who has them, since that cannot be withdrawn. | decided 05:30Z | person |
+| R-45 | Naive's docs and templates sit behind the waitlist, not on the public marketing site. Public pages that already carry them are gated or removed. | decided 05:31Z | person |
+| R-46 | Founder website hosting is a Mentura service after the MVP, architected only. Cursor's Origin hosts code, not websites, so it is not the hosting partner. When built, start on a deploy platform's multi-tenant API, with storage behind one interface so own object storage plus Neon can replace it later. | proposed | person |
