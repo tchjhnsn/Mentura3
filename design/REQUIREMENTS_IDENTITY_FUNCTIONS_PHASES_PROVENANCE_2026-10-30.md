@@ -3,7 +3,7 @@ publish: false
 type: design-note
 source: hybrid
 created: 2026-10-30T22:08:43Z
-updated: 2026-10-30T23:52:00Z
+updated: 2026-10-31T03:30:00Z
 ai-model: claude-opus-5.5
 authority: implementation
 status: DRAFT
@@ -110,3 +110,21 @@ New requirements the anchor adds:
 | R-30 | `naive next` shows the decision docket: open decisions for the current phase, ordered by what blocks what, each run through premise attack (who asked, what evidence, does it hold if false) before it is shown. Builds on the decision index and `naive lint premises`. | agreed 23:50Z | check (docket tests) |
 | R-31 | `naive check` refuses a commitment (charge, raise) until the evidence ladder supports it: demonstrated or inferred evidence for each assumption, and agent-drafted claims count as missing until a person confirms them. Builds on `schema/assess-problem.mjs`. | agreed 23:50Z | check (BDD scenarios) |
 | R-32 | `naive export` writes one generated, read-only file any agent can read: identity, problem, evidence, decisions with reasons and citations, and provenance pointers. It is never edited and is rebuilt from the records. | agreed 23:50Z | check (schema + rebuild test) |
+
+## Research, references and industry matrices
+
+Torian, 2026-10-31 03:20Z. "Directed" means Torian asked for it in his own words; "proposed" means my recommendation, awaiting his answer. None of these is in the MVP cut above, which stays as it is; R-34 and R-38 are the closest candidates because they protect the evidence `naive check` relies on.
+
+| Id | Requirement | Status | Verified by |
+| --- | --- | --- | --- |
+| R-33 | Every research run records how it was conducted: the question or claim it started from, the queries and prompts sent, the sources searched, the agent and model, and when. That record is provenance (R-17), so research findings trace to how they were found. | directed | check |
+| R-34 | A reference is a link plus a note, never a copy and never a source of truth. It records why it is cited (the claim it supports). Full copies follow the raw rules already agreed (EE-070): `raw/sources/<id>/source.json` and `text.md` in git, originals private. Raw is a folder, not a file. | directed (raw layout already agreed) | check |
+| R-35 | A reference lint checks that each link resolves and that the page still says what the reference cites it for. A mismatch is reported, never silently fixed. | directed | check (lint suite) |
+| R-36 | Each reference carries a weight that is dynamic: foundational impact and current relevance are separate scores, so a pivotal but superseded paper keeps its history and loses current weight. Weight sets how much is stored: high weight and hard to regenerate keeps more. | directed | check |
+| R-37 | Whether a reference is outdated is a judgment, not a rule. A model may propose it; a person can always review it. Freshness profiles (`schema/freshness.mjs`) supply the timing. | directed | person |
+| R-38 | A trust setting says how much the founder relies on the model's judgment versus their own, set per module and per kind of judgment, defaulting to "a person confirms". | directed | check |
+| R-39 | Industry matrices: design the architecture and schema of one industry matrix first; only then pick industries and decide whether matrices form a directory of modules. | directed | person |
+| R-40 | People served (user types, consumer types, segments) are separate entities, not fields of a venture or a matrix. They nest: a type has sub-types (founder, then kinds of founder, then further kinds). Ventures and matrices reference them by id. | directed | check |
+| R-41 | Segment types use a standard concept scheme (W3C SKOS: concepts with broader and narrower links, a definition and its evidence) rather than a new format. A definition is a claim backed by evidence of usage, open to premise attack; a dictionary is a reference, not the truth. | proposed | check |
+| R-42 | A venture-type module (for example an AI lab inside Mentura) is a package with activation criteria: the phase or conditions under which each part of it begins. Parts can start early as substrate, so the whole department exists by the phase it is needed. This extends need-now priors and the agreed rule that a founder may turn on a later phase's packages early (EE-070). | directed | check |
+| R-43 | A venture-type module also gives research its structure: research agents (arXiv, X via Grok and others) file what they find under that module's folders, as references with provenance (R-33, R-34). | directed | check |
