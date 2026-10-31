@@ -3,7 +3,7 @@ publish: false
 type: design-note
 source: hybrid
 created: 2026-10-30T22:08:43Z
-updated: 2026-10-30T22:47:30Z
+updated: 2026-10-30T23:52:00Z
 ai-model: claude-opus-5.5
 authority: implementation
 status: DRAFT
@@ -80,3 +80,33 @@ Torian, 2026-10-30 22:46Z: the process, activity and task structure of the SDLC 
 | R-27 | MAD owns the how: for each process it routes and tailors the methods and templates (R-20). It reads Naive's catalog and writes back the method chosen, as a decision record with provenance. | agreed 22:46Z | check |
 | R-28 | Execution belongs to executors (pstack, Claude Code, Cursor, a person), chosen by the agent router (R-25). Naive and MAD never contain an executor; they hand off a task and receive evidence. | agreed 22:46Z | `schema/check-boundary.mjs` |
 | R-29 | The Naive and MAD interface is a contract, not shared code: Naive gives MAD the product, its type, its phase and the open decisions; MAD returns chosen methods, the resulting task plan and the evidence from execution. Its exact shape is decided in the MAD maturity thread. | proposed | person |
+
+## MVP cut: the judgment layer
+
+On 2026-10-30 23:50Z Torian chose the judgment layer as the anchor for the Naive MVP (industry map: https://claude.ai/artifact/KeKBoHoaX8cUa3ubqKSxT8). In: venture records (identity, problem, evidence, decisions), a `naive next` decision docket with premise attack, `naive check` gating commitments (charge, raise) on the evidence ladder, and an export any agent can read. Out: the console, connectors, agents doing work, meeting intelligence, and templates beyond Discovery and Validation.
+
+Against that anchor, each requirement above is in, partly in, or architected only (agreed, but not built for the MVP).
+
+| Requirement | MVP | Why |
+| --- | --- | --- |
+| R-01 to R-03 (six questions, two scales, rigid vs anti-rigid) | Architected only | They govern the design; nothing to build |
+| R-04 (people, roles) | Architected only | One founder holds every role in the MVP |
+| R-05 to R-09 (function modules, four tests, Lean) | Architected only | Not needed to record or check a judgment |
+| R-10 (every function declared, null-able) | In, declaration only | Each decision needs an owning function; a one-line declaration is cheap |
+| R-11 (function list cleanup) | In | The export fixes vocabulary for other agents; rename before it ships, not after |
+| R-12 (bitemporal phase log) | Architected only | The existing single-event phase change is enough for two phases |
+| R-13 (exit criteria per function) | Architected only | Gates in the MVP are the evidence ladder (R-31) |
+| R-14 (Idea as Discovery's first sub-phase) | In, as vocabulary only | Discovery is in scope; no code beyond the phase description |
+| R-15 (sub-phase markers) | Architected only | `naive next` orders by decision, not by sub-phase |
+| R-16 (`identity/` replaces `foundation/`) | In | Identity is one of the four MVP record kinds |
+| R-17, R-18 (separate provenance; reasons with citations) | In (already built) | A judgment is only trustworthy with its who, when and why |
+| R-19 (generated index) | Partly in, as the export (R-32) | The export is the first generated, read-only view |
+| R-20 to R-29 (MAD, product function, roles, router, SDLC catalog) | Architected only | Agents doing work and engineering methods are out of the MVP |
+
+New requirements the anchor adds:
+
+| Id | Requirement | Status | Verified by |
+| --- | --- | --- | --- |
+| R-30 | `naive next` shows the decision docket: open decisions for the current phase, ordered by what blocks what, each run through premise attack (who asked, what evidence, does it hold if false) before it is shown. Builds on the decision index and `naive lint premises`. | agreed 23:50Z | check (docket tests) |
+| R-31 | `naive check` refuses a commitment (charge, raise) until the evidence ladder supports it: demonstrated or inferred evidence for each assumption, and agent-drafted claims count as missing until a person confirms them. Builds on `schema/assess-problem.mjs`. | agreed 23:50Z | check (BDD scenarios) |
+| R-32 | `naive export` writes one generated, read-only file any agent can read: identity, problem, evidence, decisions with reasons and citations, and provenance pointers. It is never edited and is rebuilt from the records. | agreed 23:50Z | check (schema + rebuild test) |
