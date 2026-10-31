@@ -55,6 +55,10 @@ founders/<handle>/
 - `node schema/founders.ts init|link|idea|reference|inspiration|show|check` makes and checks the folder.
 - **What a founder is, is checked, not argued.** A founder is a person, with confirmed facts, who was there before the first hire, investment or paying customer, brought at least one founding contribution the record shows, has a stake, and shows up in the record of decisions or work. A co-founder is a founder with at least one other founder. The proofs in `lean/` show this for every case (`cd lean && lake build`).
 
+### Words that are checked, not argued
+
+Every term in Naive's glossary goes through the same admission, without anyone asking for it: it is defined as properties that can each fail, frozen by a hash, checked as a valid test (deterministic, blind to the label anyone uses, able to pass and to fail, never passed by unconfirmed facts), cross-run against every other term at its level, and backed by Lean theorems in `lean/`. Each term is recorded as proposed until a person decides it. When a definition is contested, run `node schema/terms/admit.ts` instead of asking how it was defined. A prediction the run refutes is a finding about the definition, not an error.
+
 ## A venture's structure
 
 A venture is a folder of records, laid out so the folder tree teaches you how the business fits together.
