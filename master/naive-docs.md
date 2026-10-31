@@ -53,6 +53,7 @@ founders/<handle>/
 - **Secrets stay yours.** `_private/` never reaches a model or a release. You share a secret into a venture, or with a person, only by doing it yourself.
 - **References are stored once.** Ideas, ventures and decisions cite them by id. A reference keeps exact quotes apart from what it meant to you.
 - `node schema/founders.ts init|link|idea|reference|inspiration|show|check` makes and checks the folder.
+- **What a founder is, is checked, not argued.** A founder is a person, with confirmed facts, who was there before the first hire, investment or paying customer, brought at least one founding contribution the record shows, has a stake, and shows up in the record of decisions or work. A co-founder is a founder with at least one other founder. The proofs in `lean/` show this for every case (`cd lean && lake build`).
 
 ## A venture's structure
 
