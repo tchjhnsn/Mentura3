@@ -24,7 +24,7 @@ The folder you create a venture in becomes your workspace: one place for all you
 my-workspace/
   naive-workspace.json   # its name (Naive workspace), its ventures, its settings
   AGENTS.md              # your rules for agents across every venture
-  founder/               # you, once, shared by every venture
+  founders/<handle>/     # you, before and apart from any venture
   raw/                   # what you capture before it belongs to a venture
   inbox/                 # ideas waiting for you to say which venture they belong to
   meta/                  # the workspace's own log
@@ -35,6 +35,29 @@ my-workspace/
 - **Ventures are sandboxed.** Each keeps its own records, people, permissions and history.
 - **Teammates have their own workspaces.** They add the ventures they work for into theirs, and each venture keeps its own settings.
 - **One prompt, many ventures.** `naive capture "<text>"` saves what you said in `raw/`, splits it into ideas and sends each one to its venture's inbox as a draft. Ideas it's unsure of wait in `inbox/` until you choose with `naive inbox assign <idea> <venture>`. Each choice teaches the router.
+
+### You, before any venture
+
+A founder exists before any venture and keeps existing after one ends, so you have a folder of your own above your ventures. Each venture links to you by role (`founder`, `co-founder`, `general-partner`) instead of owning you. A venture can have several founders; what each one brings is weighed from the record of their decisions and work, not fixed by the role.
+
+```text
+founders/<handle>/
+  founder.json      # an opaque id, your handle, your ventures by role, your profile
+  ideas/            # your ideas, in your words; a venture cites the one it grew from
+  references/       # the books, podcasts, films and essays that form you, and why
+  inspirations/     # the people who inspire you, and what about them fires you up
+  _private/         # your real name, your founder puzzle, your secrets
+```
+
+- **Only you confirm your profile.** An agent may draft it from your founder puzzle; the check fails a profile anyone else confirmed.
+- **Secrets stay yours.** `_private/` never reaches a model or a release. You share a secret into a venture, or with a person, only by doing it yourself.
+- **References are stored once.** Ideas, ventures and decisions cite them by id. A reference keeps exact quotes apart from what it meant to you.
+- `node schema/founders.ts init|link|idea|reference|inspiration|show|check` makes and checks the folder.
+- **What a founder is, is checked, not argued.** A founder is a person, with confirmed facts, who was there before the first hire, investment or paying customer, brought at least one founding contribution the record shows, has a stake, and shows up in the record of decisions or work. A co-founder is a founder with at least one other founder. The definition is run on generated cases, and `lean/` proves the same properties for every case (`cd lean && lake build`). Not built yet: `founders.ts check` does not run this definition on your founder record, and nothing compares the Lean copy with the TypeScript one.
+
+### Words that are checked, not argued
+
+Every term in Naive's glossary goes through the same admission, without anyone asking for it: it is defined as properties that can each fail, frozen by a hash, checked as a valid test (deterministic, blind to the label anyone uses, able to pass and to fail, never passed by unconfirmed facts), and cross-run against every other term at its level. Lean theorems in `lean/` back three terms so far (founder, co-founder and phase-gate); the other six have none yet, and nothing checks that a theorem matches its term's current definition. Each term is recorded as proposed until a person decides it. When a definition is contested, run `node schema/terms/admit.ts` instead of asking how it was defined. A prediction the run refutes is a finding about the definition, not an error.
 
 ## A venture's structure
 
@@ -136,6 +159,7 @@ In Claude Code, Naive is a plugin from the tchjhnsn/naive-plugins marketplace. O
 | Venture function skills, playbooks, founder profile | Built (0.6.0) |
 | Agents can't settle decisions or publish brand records | Built (#73) |
 | Artifacts as records, stale when a record changes | Built (#80) |
+| Founders before ventures: founders/<handle>/ with ideas, references, inspirations | Built (schema/founders.ts) |
 | Function composition (calls, authority), function.json, the 11 error codes | Not built |
 | Precog, decisions that fill in as evidence arrives, phase handoffs | Not built |
 | Marketing-site starter | Not built |
