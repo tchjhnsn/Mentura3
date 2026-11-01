@@ -97,7 +97,7 @@ Done when: the generic test shows each theorem returns `open` (not `established`
 
 ## Out of scope
 
-- Any study of a real company, any comparison, similarity matrix, embedding or competitor verdict. Those wait for venture anatomy records and Torian's go-ahead.
+- Running the research. This handoff builds the engine that performs studies and stores their records; studying a real company with it, and any comparison, similarity matrix, embedding or competitor verdict, come after it is built and wait for Torian's go-ahead.
 - The term-harvest skill and the founder glossary. They are designed in the plan and run in the sandbox term engine, not in this repo yet.
 - Polity.
 
