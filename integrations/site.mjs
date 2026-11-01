@@ -45,7 +45,7 @@ async function firecrawl(url) {
   const r = await fetch(`${FIRECRAWL}/scrape`, { method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}` },
     body: JSON.stringify({ url, formats: ["markdown", "html"], onlyMainContent: false }), signal: AbortSignal.timeout(60000) });
   if (!r.ok) throw new Error(`Firecrawl answered ${r.status} for ${url}`);
-  const d = (await r.json()).data ?? {};
+  const d = (/** @type {{ data?: { metadata?: { sourceURL?: string, title?: string }, html?: string, markdown?: string } }} */ (await r.json())).data ?? {};
   return { url: d.metadata?.sourceURL ?? url, html: d.html ?? "", title: d.metadata?.title ?? "", text: d.markdown ?? text(d.html ?? "") };
 }
 
@@ -58,7 +58,7 @@ export async function read(site, { pages = 10, chars = 6000 } = {}) {
   // Links that name a page marketing sites usually have first (about, careers, pricing...), header and nav links next, then the rest.
   const score = (l) => (LIKELY.test(`${new URL(l.url).pathname} ${l.label}`) ? 2 : 0) + (l.in_nav ? 1 : 0);
   // One page per section first (/customers, not every /customers/<name>), then the rest if room is left.
-  const ranked = ls.map((l, i) => [l, i]).sort(([a, i], [b, j]) => score(b) - score(a) || i - j).map(([l]) => l);
+  const ranked = ls.map((l, i) => /** @type {[typeof l, number]} */ ([l, i])).sort(([a, i], [b, j]) => score(b) - score(a) || i - j).map(([l]) => l);
   const section = (l) => new URL(l.url).pathname.split("/")[1];
   const firsts = ranked.filter((l, k) => ranked.findIndex((m) => section(m) === section(l)) === k);
   const pick = [...firsts, ...ranked.filter((l) => !firsts.includes(l))].slice(0, pages - 1);

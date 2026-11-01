@@ -40,6 +40,7 @@ export async function fetchAllowed(url, hosts, { fetchImpl = fetch } = {}) {
   throw new Error(`${url}: too many redirects`);
 }
 
+/** @param {{ venture: string, workspace?: string, url: string, license?: string, credit?: string, id?: string, alt?: string, copy?: string, actor?: string, fetchImpl?: typeof fetch }} opts */
 export async function fetchRemoteImage({ venture, workspace, url, license, credit, id, alt, copy, actor = "agent", fetchImpl }) {
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };
@@ -57,10 +58,10 @@ export async function fetchRemoteImage({ venture, workspace, url, license, credi
     if (!copy.toLowerCase().endsWith(`.${EXT[f.type]}`) && !(f.type === "jpeg" && /\.jpe?g$/i.test(copy))) return { ok: false, error: `${copy}: the image is ${f.type}; name it .${EXT[f.type]}` };
     mkdirSync(dirname(join(dir, copy)), { recursive: true });
     writeFileSync(join(dir, copy), got.buf);
-    const a = await addAsset({ venture, workspace, path: copy, source: url, license, credit, alt, origin_url: url, actor });
+    const a = await addAsset(/** @type {Parameters<typeof addAsset>[0]} */ ({ venture, workspace, path: copy, source: url, license, credit, alt, origin_url: url, actor }));
     if (!a.ok) return a;
   }
-  const r = await addRemote({ venture, workspace, url, license, credit, id, alt, fetched, copy, actor });
+  const r = await addRemote(/** @type {Parameters<typeof addRemote>[0]} */ ({ venture, workspace, url, license, credit, id, alt, fetched, copy, actor }));
   if (!r.ok) return r;
   // The original stays private: raw/sources/<id>/original.* is ignored by git (EE-070).
   const original = join(r.result.raw, `original.${EXT[f.type]}`);

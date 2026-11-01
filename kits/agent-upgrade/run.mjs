@@ -67,7 +67,7 @@ const changed = Object.keys(after).filter((f) => f !== "provenance.jsonl" && aft
 const deleted = Object.keys(before).filter((f) => !(f in after)).sort();
 const who = agentFromEnv("agent", "cli", { id: kit.name, ...(process.env.MENTURA_AGENT_CMD ? {} : { harness: "Claude Code" }) });
 const why = new Map((answer.edits ?? []).map((e) => [e.path, e.why]));
-for (const f of changed) record(copy, { entity: f, activity: "write", agent: who, note: `agent-run upgrade to Naive ${staged.to}: ${why.get(f) ?? "changed by the agent (it did not say why)"}` });
+for (const f of changed) record(copy, /** @type {Parameters<typeof record>[1]} */ ({ entity: f, activity: "write", agent: who, note: `agent-run upgrade to Naive ${staged.to}: ${why.get(f) ?? "changed by the agent (it did not say why)"}` }));
 annotate(dir, { agent: { kit: kit.name, summary: answer.summary ?? null, changed, deleted, reported: [...why.keys()], left: answer.left ?? [] } });
 const d = check(dir);
 

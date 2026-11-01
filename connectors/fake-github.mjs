@@ -11,6 +11,7 @@
 import { createHash } from "node:crypto";
 import { blobSha, matches } from "../../knowledge/connectors/contract.mjs";
 
+/** @param {{ repo?: string, files?: Record<string, string>, branch?: string, token?: boolean }} [opts] */
 export function fakeGitHub({ repo, files = {}, branch = "main", token = true } = {}) {
   let n = 0;
   const commits = new Map();
@@ -21,6 +22,7 @@ export function fakeGitHub({ repo, files = {}, branch = "main", token = true } =
   const at = (ref) => commits.get(branches.get(ref) ?? ref) ?? null;
   const json = (status, body) => new Response(body === undefined ? null : JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 
+  /** @param {string} url @param {{ method?: string, headers?: Record<string, string>, body?: string }} [init] */
   async function fetch(url, { method = "GET", headers = {}, body } = {}) {
     const u = new URL(url);
     calls.push(`${method} ${u.pathname}`);

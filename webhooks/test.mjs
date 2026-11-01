@@ -29,8 +29,8 @@ expect("a summary is written from the CRM's record", w.ok, w.error);
 
 const env = { NAIVE_WEBHOOK_SECRET_CRM: "s3cret-for-tests", NAIVE_WEBHOOK_SECRET_BILLING: "billing-secret" };
 const server = webhooks({ workspace: ws, env });
-await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const base = `http://127.0.0.1:${server.address().port}`;
+await /** @type {Promise<void>} */ (new Promise((r) => server.listen(0, "127.0.0.1", r)));
+const base = `http://127.0.0.1:${/** @type {import("node:net").AddressInfo} */ (server.address()).port}`;
 const post = (path, body, secret = env.NAIVE_WEBHOOK_SECRET_CRM, method = "POST") => {
   const raw = typeof body === "string" ? body : JSON.stringify(body);
   return fetch(`${base}${path}`, { method, headers: { "content-type": "application/json", ...(secret ? { "x-naive-signature": sign(secret, raw) } : {}) }, ...(method === "POST" ? { body: raw } : {}) });
@@ -54,7 +54,7 @@ try {
   expect("a path that climbs out of the source is 400", escape.status === 400);
 
   const ok = await post("/webhooks/shop/crm", { paths: ["customers/acme.json"], version: "v2" });
-  const body = await ok.json();
+  const body = /** @type {{ stale?: string[] }} */ (await ok.json());
   expect("a signed notification is accepted (202) and names what it marked", ok.status === 202 && body.stale?.includes("product/shop.json"), JSON.stringify(body));
   const read = await call({ venture: "shop", workspace: ws, route: "product/shop", action: "read" });
   expect("the router says the summary is stale, and why", read.ok && read.stale?.because?.[0]?.source === "crm" && read.stale.because[0].via === "provenance", JSON.stringify(read.stale));

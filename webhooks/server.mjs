@@ -66,5 +66,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const opt = (n, d) => { const i = a.indexOf(`--${n}`); return i >= 0 ? a[i + 1] : d; };
   const workspace = opt("workspace") ? resolve(opt("workspace")) : process.env.MENTURA_WORKSPACE;
   const s = webhooks({ workspace });
-  s.listen(Number(opt("port", 4330)), opt("host", "127.0.0.1"), () => console.log(`webhooks on http://${opt("host", "127.0.0.1")}:${s.address().port}/webhooks/<venture>/<source> for ${workspace ?? "this repository's instance/"}`));
+  s.listen(Number(opt("port", 4330)), opt("host", "127.0.0.1"), () => console.log(`webhooks on http://${opt("host", "127.0.0.1")}:${/** @type {import("node:net").AddressInfo} */ (s.address()).port}/webhooks/<venture>/<source> for ${workspace ?? "this repository's instance/"}`));
 }
