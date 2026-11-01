@@ -1,9 +1,11 @@
 // NASA: the NTRS technical reports server (contracts and reports naming a venture, such as SpaceX).
 // from/to (years) and subject filter the results; the date range is also sent to the API.
 import { getWithRetry, json } from "./http.mjs";
+/** @typedef {import("./http.mjs").HttpOpts} HttpOpts */
 
 const year = (t) => { const m = /^(\d{4})/.exec(String(t ?? "")); return m ? Number(m[1]) : null; };
 
+/** @param {string} query @param {HttpOpts & { size?: number, from?: number, to?: number, subject?: string }} [opts] */
 export async function reports(query, { size = 25, from, to, subject, ...opts } = {}) {
   const p = new URLSearchParams({ q: query, "page.size": String(size) });
   if (from) p.set("published.gte", `${from}-01-01`);

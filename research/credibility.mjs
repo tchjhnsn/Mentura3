@@ -74,6 +74,7 @@ const ACCESS_RANK = { fetched: 2, unread: 1, snippet: 0 };
 const rank = (s) => (ACCESS_RANK[s.access_level] ?? 0) * 10 + cred(s);
 
 // The source's credibility for this claim: interest judged against the claim (see the header).
+/** @param {any} s @param {{ aspect?: string, citation?: any }} [o] */
 export function credibilityFor(s, { aspect, citation } = {}) {
   const f = { ...(s.factors ?? {}) };
   if (citation?.interest != null) f.interest = citation.interest;
@@ -88,6 +89,7 @@ export const cleanClaim = (c) => Object.fromEntries(Object.entries(c).filter(([k
 // Returns a claim that fits claim.schema.json; judgeClaimDetailed also gives the reasons.
 export function judgeClaim(claim, citations, sources, opts = {}) { return judgeClaimDetailed(claim, citations, sources, opts).claim; }
 
+/** @param {any} claim @param {any[]} citations @param {any[]} sources @param {{ aspect?: string }} [o] */
 export function judgeClaimDetailed(claim, citations, sources, { aspect } = {}) {
   const byId = new Map(sources.map((s) => [s.id, s]));
   const mine = citations.filter((c) => c.claim_id === claim.id && byId.has(c.source_id));

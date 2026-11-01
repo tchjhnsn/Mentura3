@@ -35,6 +35,7 @@ export function personalAllowed(cell, env = process.env) {
 
 // verify: run the same-cell verifier call inline (default on). The independent check is
 // verifyCell below, which fetches again; run it over a sample of answered cells.
+/** @param {any} cell @param {{ agent: any, jev?: any, store: any, env?: Record<string, string | undefined>, budget?: { cap: number, spent: number }, now?: () => string, verify?: boolean }} deps */
 export async function runCell(cell, { agent, jev, store, env = process.env, budget = { cap: Infinity, spent: 0 }, now = () => new Date().toISOString(), verify = true }) {
   const allowed = personalAllowed(cell, env);
   if (!allowed.ok) return store.put("cells", { ...cell, status: "refused", note: allowed.why });

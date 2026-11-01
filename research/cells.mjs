@@ -27,7 +27,8 @@ export function frames() {
 export const cellId = (c) => [c.venture, c.function, c.frame, c.time, c.aspect].join(":");
 
 // answered: a Map of cell id to its stored cell; a cell counts as done when answered and fresh.
-export function generate({ ventures, functions: fns = functions(), frames: frs = frames(), times = phases(), aspects = ASPECTS, answered = new Map(), now = Date.now(), limit = Infinity } = {}) {
+/** @param {{ ventures: string[], functions?: string[], frames?: { id: string, functions: string[] }[], times?: string[], aspects?: string[], answered?: Map<string, any>, now?: number, limit?: number }} o */
+export function generate({ ventures, functions: fns = functions(), frames: frs = frames(), times = phases(), aspects = ASPECTS, answered = new Map(), now = Date.now(), limit = Infinity }) {
   const out = [];
   for (const venture of ventures) for (const fn of fns) for (const fr of frs) {
     // A frame that names known functions only crosses those; one naming none we know crosses all.

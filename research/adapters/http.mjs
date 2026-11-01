@@ -17,6 +17,9 @@ async function once(f, url, headers, timeout) {
   } finally { clearTimeout(timer); }
 }
 
+/** @typedef {{ fetch?: (url: string, init?: any) => Promise<any>, sleep?: (ms: number) => Promise<unknown>, retries?: number, base?: number, headers?: Record<string, string>, timeout?: number }} HttpOpts */
+
+/** @param {string} url @param {HttpOpts} [opts] */
 export async function getWithRetry(url, { fetch: f = globalThis.fetch, sleep = wait, retries = 4, base = 1000, headers = {}, timeout = 20000 } = {}) {
   for (let attempt = 0; ; attempt++) {
     let res;

@@ -20,7 +20,7 @@ const here = new URL(".", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"}  ${name}`); if (!ok) failed++; };
 const tmp = mkdtempSync(join(tmpdir(), "research-"));
-globalThis.fetch = () => { throw new Error("network used in a test"); };
+Object.assign(globalThis, { fetch: () => { throw new Error("network used in a test"); } });
 
 // Schemas: each one accepts a good record and rejects a bad one (python jsonschema).
 const good = {

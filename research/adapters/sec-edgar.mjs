@@ -2,6 +2,7 @@
 // older filing pages, and full-text search across every company's filings. SEC asks for a
 // descriptive user agent and at most 10 requests a second.
 import { getWithRetry, json } from "./http.mjs";
+/** @typedef {import("./http.mjs").HttpOpts} HttpOpts */
 
 const rows = (cik, r) => (r.accessionNumber ?? []).map((acc, i) => ({
   form: r.form[i], filed: r.filingDate[i], accession: acc,
@@ -9,6 +10,7 @@ const rows = (cik, r) => (r.accessionNumber ?? []).map((acc, i) => ({
 }));
 
 // all: also read the older pages listed under filings.files (default true). from/to: filing dates.
+/** @param {string | number} cik @param {HttpOpts & { forms?: string[], all?: boolean, from?: string, to?: string }} [opts] */
 export async function filings(cik, { forms, all = true, from, to, ...opts } = {}) {
   const id = String(cik).padStart(10, "0");
   const d = await json(await getWithRetry(`https://data.sec.gov/submissions/CIK${id}.json`, opts));
@@ -22,6 +24,7 @@ export async function filings(cik, { forms, all = true, from, to, ...opts } = {}
 }
 
 // Full-text search (EDGAR FTS, filings from 2001 on) across all companies.
+/** @param {string} query @param {HttpOpts & { forms?: string[], from?: string, to?: string }} [opts] */
 export async function search(query, { forms, from, to, ...opts } = {}) {
   const p = new URLSearchParams({ q: `"${query}"` });
   if (forms) p.set("forms", forms.join(","));
