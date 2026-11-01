@@ -47,6 +47,8 @@ One branch and one draft PR per item, in this order. Each item must leave `node 
 
 - `schema/product.schema.json`: add `parent` (product or venture id). Add `schema/feature.schema.json` with `parent` (a product id), `job`, `served` (people-served ids).
 - An `unknown` cell value: `{ "unknown": true, "reason": "..." }`. It is distinct from `null`, which means the function does not exist. Add a shared `$defs/cell` with `value | unknown`, `ref` (reference id), `evidence` (`demonstrated | inferred | assumed`), `as_of` (date).
+- A `contested` cell value: `{ "contested": true, "values": [cell, ...], "note": "..." }` for two sources that disagree. It never resolves to one value by itself.
+- Reference records gain `tier` (`primary | reputable-reporting | index`) and `read` (boolean). A cell citing an unread reference or an `index` reference cannot carry `evidence: demonstrated`.
 - `schema/venture-anatomy.schema.json`: one record per venture with the 13 parts below. Each part has a ladder level (0 absent, 1 stated, 2 cited evidence, 3 verified by an outsider) as a cell.
 - `schema/relationship.schema.json`: `{ id, from, to, level, relation, job, segment, as_of, theorem, standard, evidence: [ref ids], verdict: established | not-established | open, open_obligations: [] }`. A relationship record is derived by code, never typed by hand.
 - Study layout: `research/ventures/<id>/` inside the studying venture holds `venture.json`, `products/`, `features/` and `anatomy.json` for an outside venture, with the same schemas.
@@ -72,6 +74,8 @@ Venture anatomy parts (part, Naive function, the S-1 section it mirrors, ladder 
 
 A decision record may carry `implies: [{ part, level }]`, which raises a part's required level from the day the decision is made (for example "we may go public" raises every part to 2).
 
+For a study of an outside venture the level measures the public record: a part that surely exists but is not public (a confidential draft S-1) is `unknown`, and 0 means it does not exist.
+
 Done when: the schemas validate the fixtures below, `node schema/check-data-model.mjs` holds, and a fixture with `unknown` in a cell passes while one with a bare missing value fails.
 
 ### 2. Relationship theorems in code and Lean
@@ -93,7 +97,11 @@ Done when: the generic test shows each theorem returns `open` (not `established`
 
 ### 4. Venture anatomy runner
 
-`purpose/frameworks/venture-anatomy/anatomy.mjs check <venture dir>` reads `anatomy.json` and the venture's phase, and reports each part below its required level, including levels raised by `implies` on decisions. It works the same on a study under `research/ventures/<id>/`. Fixtures only.
+`purpose/frameworks/venture-anatomy/anatomy.mjs check <venture dir>` reads `anatomy.json` and the venture's phase, and reports each part below its required level, including levels raised by `implies` on decisions, and counts the `unknown` and `contested` cells inside every part, since a part can pass its level with key figures missing. It works the same on a study under `research/ventures/<id>/`. Fixtures only.
+
+## Learned from the first studies (2026-11-01)
+
+The Anthropic and OpenAI studies were run by hand in Mentura's research folder on the draft shapes above. They are not in this repo. They showed four needs, now written into items 1 and 4: the `contested` cell, reference `tier` and `read`, the public-record reading of the ladder, and counting unknown cells inside a part (Anthropic passes all 13 parts while its preliminary S-1 leaves Q3 revenue, committed compute spend and dilution blank).
 
 ## Out of scope
 
