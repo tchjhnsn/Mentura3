@@ -103,7 +103,7 @@ Done when: the generic test shows each theorem returns `open` (not `established`
 
 ## Confidentiality
 
-Mentura's research engine and any founder glossary are confidential. Nothing in this handoff needs them. The only glossary input is the public term list prepared for Grokbot (`TERM_LIST_2026-11-01.json`, 199 terms). It sits in the project files, not this repo; Torian passes it on.
+Mentura's research engine and any founder glossary are confidential. Nothing in this handoff needs them. The only glossary input is the public term list in `docs/design/term-harvest/TERM_LIST_2026-11-01.json` (199 terms, 36 already run). Run its pending terms through the term engine in the order its `how` field gives, contested terms first. The sandbox files it names under `naive-design/prototypes/architecture/` are not in this repo; follow the pattern it describes instead.
 
 ## Review
 
