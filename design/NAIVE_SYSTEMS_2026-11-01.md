@@ -226,4 +226,169 @@ So the code treats a function as a label on a package. The agreed design treats 
 
 ## 3. Packages
 
+### What kind of thing it is
+
+Packages answer "what" at the venture scale (R-02): the venture's records and data. Zachman's "what" column is the inventory of things the enterprise keeps information about. Naive's what is two things:
+
+- A **record** is information kept as evidence of what the venture is and has decided, and as an asset (ISO 15489-1:2016's definition of a record). In BFO terms (ISO/IEC 21838-2, with the Information Artifact Ontology built on it) a record is an *information content entity*, a generically dependent continuant. Two copies of the same JSON file on two machines are one record. That is why provenance links to a record by id and content hash (R-17), not by file path.
+- A **package** is the unit that defines a group of record types: their schemas, templates, checks and at most one minimal skill on how to write them. It is offline and names no vendor, and it is listed in `venture.json` the way `package.json` lists dependencies (EE-071). A package is a definition. The records a venture writes with it are its instances.
+
+A package is not a function. The function owns and acts on the records (section 2); the package defines them. A **kit** is Mentura's enhanced version of a package (EE-071), and agents never come inside a package: an agent that works a package is a package enhancement (`packages/catalog.json`).
+
+### Its parts
+
+`packages/catalog.json` (EE-067, EE-069) defines five package kinds:
+
+| Kind | Holds records? | Examples | What it is, ontologically |
+| --- | --- | --- | --- |
+| core | Yes, and each record has exactly one home | finance, legal, marketing, people, product, relationships, operations, fund, foundation, validation | The venture's own facts |
+| data | Yes | customers, deals, investors, money | Facts about other parties and transactions |
+| handoff | No: a versioned snapshot of core packages for one receiver | cofounder, counsel, engineering, investor, partner | A **view**, not a what. By "records are the truth, artifacts are views", a handoff is an artifact |
+| folder | Yes | decisions, evidence | Storage for record types every function uses |
+| raw | Unprocessed inputs | raw | Sources before they become records (EE-070) |
+
+Each package descriptor (`packages/<name>/package.json`) has:
+
+- `required` and `optional` record types, and `refs` (records in other packages it reads);
+- `base`: a weight per phase (finance: 0.2 in Discovery, 0.5 in Validation, 0.8 in Beachhead, 1 after);
+- `when`: conditions that raise the weight (finance: at least 0.8 when raising);
+- `gates`: when the package is complete (a person has confirmed every required record and every record it reads);
+- `checks`, `skill`, `templates`, `unlocks`, and `department` (the owning function).
+
+The record types themselves are registered in `schema/data-model.json`: 117 types, each with its JSON Schema (2020-12), the paths where its records live, its area, and its record generator (EE-099; 114 types still listed in `schema/generators/gaps.json`).
+
+### How it works in the code today
+
+- A package is complete when a person has confirmed every required record and every record it reads. Completion opens its gate to MAD's automation tier.
+- Inside a package a record waits until the records it reads are confirmed (`records.after` in the catalog).
+- Which packages a venture should attend to now is the need-now score: the phase weight, raised by conditions, with facts from the records first and from the question matrix where the records are silent (EE-028). Under R-10 this means attention, not existence: every function exists from day one, and records arrive when needed.
+- The Everything Ecosystem venture keeps its package folders at the venture root (`customers/`, `finance/`, `foundation/`, `validation/` and so on), not under `knowledge/`.
+
+### Standards
+
+| Standard | What Naive takes from it |
+| --- | --- |
+| Zachman Framework (1987) | The "what" column: the things an enterprise keeps information about |
+| ISO 15489-1:2016, records management | The definition of a record (evidence and asset), and the principles that records are authentic, reliable, complete and usable |
+| ISO 23081, metadata for records | What a record must carry about itself and its context. Naive splits this: current state in the record, history in provenance (section 6) |
+| ISO/IEC 11179, metadata registries | `schema/data-model.json` is a registry of record types; 11179 says how each data element is named, defined and registered |
+| BFO (ISO/IEC 21838-2) and the Information Artifact Ontology | A record is an information content entity: one record, many copies |
+| JSON Schema 2020-12 | Every record schema (94 schema files) |
+| Frictionless Data Package v2 (Open Knowledge Foundation, 2024) | The closest open standard for a package descriptor: `datapackage.json` lists resources with their schemas. Naive's `package.json` does the same for record types, and adds phase weights, gates and an owning function |
+| npm `package.json` | The dependency model: a venture lists its packages (EE-071) |
+
+### Prior art
+
+- **Records as evidence:** ISO 15489 and the records-management field.
+- **Packaged, schema'd data:** Frictionless Data Packages, W3C DCAT for catalogs of datasets, and npm for versioned, declared dependencies.
+- **One home per record, others read it:** the single-source-of-truth principle in master data management, and the aggregate in domain-driven design (Evans, 2003), where one aggregate owns each piece of state.
+- **Not found in this search:** packages whose relevance is scored per lifecycle phase (`base`, `when`) and whose completion is a human-confirmation gate that unlocks automation. Data package standards describe data; they do not say when a venture needs it or who must confirm it.
+
+### Conflicts with `main` and with agreed decisions
+
+1. **Handoff packages are views.** They hold no records, so under "records are the truth, artifacts are views" they belong with publishing and handoffs, not in the what. Proposed: keep the kind for now, and record in the ontology that a handoff is an artifact.
+2. **Packages name a "department", not a function.** The field should be `function` (EE-090), and data packages must name one too (R-11).
+3. **Where packages live.** EE-086 (in force) puts packages flat in `knowledge/`; the venture on `main` keeps them at its root.
+4. **The `foundation` package** is split by identity (section 1).
+5. **The `validation` package** has the same name as the Validation phase. That collision is the likely reason for R-11's rename to `research`.
+6. **Schemas are not in their packages.** `package.json` has `"schemas": []` and the schemas live in `schema/`. Either a package holds its schemas (like a Frictionless package) or the registry does; today both are half true.
+
+### What must be built
+
+| Item | Check that proves it |
+| --- | --- |
+| `department` becomes `function` on every package; data packages name an owner | Schema check: no package without a function |
+| Move package folders under `knowledge/` (EE-086), with route aliases | `naive check` finds no package folder at the venture root |
+| Rename `validation` to `research` (pending confirmation of R-11's reading) | `check-nouns` |
+| Decide whether schemas live in packages or in the registry | Decision with `affects` |
+| Record generators for the 114 types in `gaps.json` | `check-data-model.mjs`; the gap list shrinks to zero |
+
+### Sources
+
+- ISO 15489-1:2016 definition: https://en.wikipedia.org/wiki/Records_management ; https://www.casrai.org/guides/iso-15489-records-management-concepts-principles
+- Frictionless Data Package v2: https://github.com/frictionlessdata/Specs ; https://msi.dublincore.org/standards/frictionless-data
+- ISO/IEC 21838-2:2021: https://webstore.iec.ch/en/publication/72703
+
+## 4. Phases
+
+### What kind of thing it is
+
+A phase is a property a venture has for a while, because of its own state, and then loses: in OntoClean and UFO terms an **anti-rigid, intrinsic** property (section 1). A venture in Discovery leaves Discovery and is the same venture. Phases answer "when" at the venture scale (R-02).
+
+Three things follow:
+
+- **Phases partition a venture's life.** At any valid time a venture is in exactly one phase. That is the phase partition R-09 asks to be proved in Lean.
+- **A phase never adds or removes a function** (R-13, agreed). It sets each function's agenda. ISO/IEC/IEEE 15288 makes the same split for systems: its processes (the functions here) can be performed in any life-cycle stage, and a stage is a period of the life cycle, not a kind of work.
+- **A phase has two times** (R-12, agreed): when it was true (valid time) and when the records said so (transaction time). This is the bitemporal model of Snodgrass (1999), standardized in SQL:2011 as application-time and system-versioned periods. A late correction ("we actually reached product-market fit in March") adds a new line; it never rewrites history.
+
+In a statechart (Harel, 1987) the phases are states, the gates are guarded transitions, and the sub-phases are ordered markers inside a state that never guard anything (R-15).
+
+### Its parts
+
+| Part | What it is | Status |
+| --- | --- | --- |
+| The five phases | Discovery, Validation, Beachhead, Scale, Platform, each with a question and a gate (EE-012) | Built: `purpose/frameworks/product-anatomy/phases.json`, the `phase` enum in `venture.schema.json` |
+| Gate | The condition for leaving: problem-solution fit; product-market fit (retention holds); repeatability; market leadership with healthy margins; others building on it | Built as text; checked through exit criteria |
+| Exit criteria | What must be true to leave this phase, each met with a date, a person and evidence. Under R-13 they are the union of the functions' criteria for the phase, and each belongs to one function | Built without the function link: stored in the telos record (`telos.phases`) |
+| Lifecycle playbook | The order of decisions and the evidence that clears each gate: `product-first` (default) or `revenue-first` | Built: `purpose/frameworks/product-anatomy/playbooks/` |
+| Phase span | valid_from, valid_to, recorded_at, evidence, person (R-12) | Not built |
+| Sub-phases | Ordered markers that never gate (R-15). "Idea" is Discovery's first (R-14) | Not built |
+| Function agenda per phase | What each function works on in this phase (R-13) | Not built; the nearest thing is the per-phase weight on packages and need-now priors |
+
+### How it works in the code today
+
+- The current phase is one mutable field, `phase`, in `venture.json`.
+- Phase changes are events in the freshness log (`event: "phase"`, with `from`, `to`, `at`), written by `mentura phase <id>`. If `venture.json` is changed by hand, `schema/freshness.mjs` warns that the field and the last recorded change disagree, and falls back to the file's modification time.
+- `schema/lifecycle.mjs` decides whether the venture may move: it reads the exit criteria from the telos and the playbook's gate evidence. `console/lib/phase.ts` only shows the founder that answer; nothing in the console decides.
+- Records can be stale per phase: a freshness profile with `per_phase` marks a record stale once the venture changes phase after the record was last checked.
+- Need-now (EE-028, `schema/need-now.json`) gives each record type a prior per phase, raised or lowered by facts about the venture.
+
+So the code already keeps phase changes as events, which is half of R-12. It has only one time per event, and the mutable field in `venture.json` competes with the log as the source of truth.
+
+### Standards
+
+| Standard | What Naive takes from it |
+| --- | --- |
+| OntoClean and UFO | A phase as an anti-rigid intrinsic property, distinct from a role (relational) and from a kind (rigid) |
+| ISO/IEC/IEEE 15288 and 24748-1 | Life-cycle stages are periods; processes run across stages. Phases against functions is the same split |
+| SQL:2011 temporal tables (ISO/IEC 9075-2:2011); Snodgrass (1999) | Valid time and transaction time: the phase span's two times |
+| ISO 8601 | Every date and time in a phase span |
+| Allen's interval algebra (1983) | How two spans relate (before, meets, overlaps): the check that a venture's phase spans meet with no gap or overlap |
+| Harel statecharts (1987) | Phases as states, gates as guarded transitions; the form pstack's statechart skill checks with TLA+ |
+
+### Prior art
+
+- **The phases themselves:** Blank, *The Four Steps to the Epiphany* (2005) for Discovery and Validation; Moore, *Crossing the Chasm* (1991) and *Inside the Tornado* (1995) for Beachhead and Scale. Churchill and Lewis, "The Five Stages of Small Business Growth" (1983), is the older growth-stage model.
+- **Gates with criteria:** Cooper's Stage-Gate (1990).
+- **Phases against disciplines:** the Rational Unified Process (Kruchten) draws disciplines (requirements, implementation, testing) running across phases (inception, elaboration, construction, transition) with effort rising and falling in each. That chart is the prior art for R-13's function-by-phase matrix.
+- **Not found in this search:** a venture's phase kept as a bitemporal, append-only log with evidence and a person on each span, and gates that check exit criteria owned by functions. Startup-stage models are frameworks for people to read; none is a record a program checks.
+
+### Conflicts with `main` and with agreed decisions
+
+1. **Two sources of truth for the current phase:** the mutable `phase` field and the freshness log. Proposed: the log of phase spans is the truth, and `phase` in `venture.json` becomes a derived value the checks recompute.
+2. **One time, not two.** Phase events have `at` only. R-12 needs valid and recorded times.
+3. **Exit criteria live in the telos.** The telos end state is identity (section 1), but its exit criteria are phase data owned by functions. The split of `foundation/` must move them out.
+4. **Agenda per phase sits on packages**, not on functions (section 2).
+
+### What must be built
+
+| Item | Check that proves it |
+| --- | --- |
+| A phase span record and `phases.jsonl` log (append-only), migrated from the freshness log's phase events | Check: spans meet with no gap or overlap; the current phase in `venture.json` equals the derived one |
+| Each exit criterion names its function | Schema check |
+| Sub-phases as ordered markers, "Idea" first in Discovery | Check: no gate reads a sub-phase |
+| Function agenda per phase, in each function module | Generic test: every function has an agenda for every phase (empty allowed) |
+| Lean: the phase partition and "no transition changes the function set" | `lake build` |
+
+### Sources
+
+- ISO/IEC 9075-2:2011 temporal features; Snodgrass, *Developing Time-Oriented Database Applications in SQL*, Morgan Kaufmann, 1999.
+- Harel, "Statecharts: A visual formalism for complex systems", *Science of Computer Programming* 8(3), 1987.
+- Allen, "Maintaining knowledge about temporal intervals", *CACM* 26(11), 1983.
+- Churchill and Lewis, "The Five Stages of Small Business Growth", *Harvard Business Review*, May-June 1983.
+- Cooper, "Stage-Gate Systems: A New Tool for Managing New Products", *Business Horizons* 33(3), 1990.
+- Kruchten, *The Rational Unified Process: An Introduction*, Addison-Wesley, 1998.
+
+## 5. Where and why
+
 Next.
