@@ -391,4 +391,226 @@ So the code already keeps phase changes as events, which is half of R-12. It has
 
 ## 5. Where and why
 
-Next.
+These are two systems that share a section because neither has its own folder yet.
+
+### 5a. Where
+
+#### What kind of thing it is
+
+Where is the venture's position in the world: whom it serves, in which places and under which laws, and through which channels it reaches them (R-02). All of it is anti-rigid. A venture can change market and stay the same venture. Most of it is relational, linking the venture to something outside it (a market, a jurisdiction, a channel), so in UFO terms these are relators and roles, not properties of the venture alone.
+
+Where has four parts with different kinds:
+
+| Part | Kind | Example |
+| --- | --- | --- |
+| Market, then segment, then ideal customer profile (ICP) | A classification of the people served, nested from broad to specific (proposed as separate records in the meta-schema) | b2b; early founders who build with AI; the ICP record |
+| Geography | Places, by code | US, CA |
+| Jurisdiction | The legal places whose rules apply, which can differ from geography (a Delaware entity selling in Texas) | US-DE for the entity, US-TX for sales tax |
+| Channel | The route by which the venture reaches a segment | founder-led sales, X, LinkedIn, Substack |
+
+Industry (what the venture produces, as a NAICS code) is in `venture.json` today. It describes the what of production, not the where, but every industry map reads it as a position in the market.
+
+#### How it works in the code today
+
+- `venture.json` `industry`: NAICS code and label, re-checked at each phase gate. The Everything Ecosystem is 513210, Software Publishers.
+- `product.schema.json` `market`: whom each product serves, after Abell's three dimensions of a business (customer groups, customer functions, technologies), with `customer` (b2c, b2b, b2g, b2b2c) and `relationship` (customer, client, user, member, audience, partner, EE-021). Geography sits at `market.geography`.
+- `foundation/icp/*.json`, against `schema/icp-profile.schema.json`: one record per ICP, with traits, jobs, where to find them, buying roles and the channels that reach them.
+- `venture.json` `core.promised_to`: the ICP's short form.
+- `validation-go-to-market` records: channels.
+- `venture.json` `regulation`: how much laws and regulators constrain the venture (EE-040). Jurisdiction appears nowhere else.
+
+So where is spread across five records, with no market or segment record of its own, and ICPs filed under `foundation/`.
+
+#### Standards
+
+| Standard | What Naive takes from it |
+| --- | --- |
+| NAICS 2022 | Industry codes (already used) |
+| ISO 3166-1 and ISO 3166-2 | Country and subdivision codes for geography and jurisdiction |
+| Abell, *Defining the Business* (1980) | Customer groups, customer functions and technologies: already the shape of `product.market` |
+| W3C SKOS (2009) | Broader and narrower concepts for the market, segment and ICP hierarchy (proposed) |
+| ISO 4217 | Currency codes, where a market is priced |
+
+#### Prior art and what is new
+
+Market segmentation and ICPs are standard marketing practice, and Abell's business definition is forty years old. What Naive adds is keeping them as linked records the docket and gates can read: for example, refusing a pricing decision whose segment has no evidence. That claim is untested.
+
+#### Conflicts
+
+1. The strategic foundation puts the ICP under "who" (section 1). Under R-02 it is where.
+2. ICPs live in `foundation/`, which the identity split must move.
+3. Jurisdiction is not modelled except as a level of regulation, although the legal entity (section 1) and compliance gates need it.
+
+### 5b. Why
+
+#### What kind of thing it is
+
+Why has two parts of different kinds (R-02, agreed):
+
+- **Essential why:** the venture's purpose and core promise. It is rigid by decision, so it belongs to identity (section 1). Changing it is a refounding or an amendment (open).
+- **Contingent why:** the reasons for everything else. Goals, exit criteria, principles, and the reasons behind each decision. All of it can change, and each change is itself a decision.
+
+This split has a direct precedent. Collins and Porras ("Building Your Company's Vision", *HBR*, 1996) divide a company's vision into a **core ideology** (core purpose and core values, which do not change) and an **envisioned future** (goals, which do). Their core ideology is the essential why; their envisioned future is the contingent why.
+
+The contingent why is a structure of **reasons**. A decision record holds the reasons it was made, each with citations, and freezes the cited files' hashes when it is approved (R-18). In argument terms (Toulmin, 1958) a reason is a claim backed by data under a warrant. In design-rationale terms (IBIS, Kunz and Rittel, 1970) it is a position on an issue, with arguments for and against.
+
+#### How it works in the code today
+
+| Where | What | Which why |
+| --- | --- | --- |
+| `venture.json` `core.promise`, `core.must_not` | The core promise, and what the venture will not do | Essential |
+| `foundation/telos` (`telos.schema.json`) | The end state, horizon, measures, owner outcome, exit criteria per phase, steering | End state: essential. The rest: contingent |
+| `foundation/goals/*.json` (`goal.schema.json`) | Goals with kind, horizon, end state, value, why, measures, owner | Contingent |
+| `foundation/alignment.json` | Principles the venture will not break, each with a source and a check | Contingent (the strategic foundation's "whether") |
+| Decision records, `reasons` | Reasons with citations, hashes frozen at approval (`schema/reasons.mjs`) | Contingent |
+| `schema/check-reasons.mjs` | Reports a decided decision whose cited file has changed since approval, and marks it stale | Built check |
+
+The decision side is the most complete part of Naive: reasons, citations, frozen hashes and a check that fails when a reason moves.
+
+#### Standards
+
+| Standard | What Naive takes from it |
+| --- | --- |
+| OMG Business Motivation Model (BMM) 1.3 | The standard vocabulary for why. Ends (vision, goal, objective) against means (mission, strategy, tactic); directives (business policy, business rule); influencers and assessments. Note: in BMM a mission is a *means*, not an end |
+| ArchiMate 3.2 motivation elements | Driver, assessment, goal, outcome, principle, requirement: the same layer in the architecture language Naive's functions already map to |
+| ISO 9001:2015, clause 6.2 | Quality objectives: measurable, monitored, updated. The shape of a goal's measures |
+| IBIS (Kunz and Rittel, 1970) and QOC (MacLean and others, 1991) | Design rationale: issues, positions, arguments. Decision reasons and the inquiry records (`naive-design/inquiries/`) |
+| ISO/IEC/IEEE 42010 | Architecture rationale: each architecture decision records why |
+| Toulmin, *The Uses of Argument* (1958) | Claim, data, warrant: what a reason with a citation is |
+| W7 (Ram and Liu, 2009) | Why as one of the seven provenance questions about a record (section 6) |
+
+#### Prior art and what is new
+
+- **Unchanging purpose against changing goals:** Collins and Porras (1996); BMM's ends and means.
+- **Decision rationale as records:** IBIS, QOC, and architecture decision records (Nygard, 2011).
+- **Not found in this search:** reasons whose citations are frozen by content hash at approval, so a decision turns stale on its own when the evidence behind it changes. Decision records elsewhere keep rationale as prose.
+
+#### Conflicts
+
+1. **"Mission".** The strategic foundation calls `core.promise` the mission and files it under "what". BMM files mission under means (how), and Naive files the core promise under essential why. The glossary must pick one meaning and record the others as scoped senses.
+2. **The telos mixes both whys:** the end state is essential; the measures and exit criteria are contingent. The identity split must divide it.
+3. **The strategic foundation's "whether"** has no slot in R-02's six questions. Proposed: it is the contingent why, read from alignment principles.
+
+### What must be built (where and why)
+
+| Item | Check that proves it |
+| --- | --- |
+| Market, segment and ICP as separate, linked records (SKOS broader and narrower) | Schema check: every ICP has a segment, every segment a market |
+| Jurisdiction as ISO 3166 codes on the legal entity and on each market | Schema check |
+| Split the telos: end state into `identity/`, exit criteria to phases, measures to goals | `naive check` finds no essential-why field outside `identity/` |
+| Map goals, principles and decisions to BMM terms in `docs/ontology.json` | `check-nouns` |
+| Decide "mission" and "whether" | Decisions with `affects` |
+
+### Sources
+
+- Abell, *Defining the Business: The Starting Point of Strategic Planning*, Prentice-Hall, 1980.
+- Collins and Porras, "Building Your Company's Vision", *Harvard Business Review*, Sept-Oct 1996.
+- OMG, *Business Motivation Model* 1.3, 2015: https://www.omg.org/spec/BMM/
+- The Open Group, *ArchiMate 3.2 Specification*, 2022, chapter 6 (motivation elements).
+- Kunz and Rittel, "Issues as Elements of Information Systems", Working Paper 131, Berkeley, 1970.
+- W3C, *SKOS Simple Knowledge Organization System Reference*, 2009: https://www.w3.org/TR/skos-reference/
+
+## 6. Provenance
+
+### What kind of thing it is
+
+Provenance is the six questions asked of a record instead of a venture: who wrote it, what it is, when, where (through which interface and route), why (under which decision), and how (by which activity, from what). R-01 calls this the record scale. Provenance is *information*. Keeping and checking it is a *capability* (provenance tracking, from the capability vocabulary run).
+
+In W3C PROV terms (PROV-DM, 2013) every line is a small graph:
+
+- an **entity** (the record version, by content hash);
+- an **activity** that generated it (write, draft, accept, confirm, move, baseline, release);
+- an **agent** associated with that activity (a person, or an agent through an interface);
+- and the entities it was **derived from**.
+
+Records hold only their current state; their history is the log (R-17, agreed). Each log line carries the hash of the line before it, so the log is append-only by construction: changing an old line breaks every later hash.
+
+### Its parts
+
+| Part | What it is | Status |
+| --- | --- | --- |
+| `provenance.jsonl` | One log per venture, one line per write, hash-chained (EE-031) | Built; 127 lines in the Everything Ecosystem venture |
+| `schema/provenance-entry.schema.json` | The shape of a line | Built |
+| `schema/check-provenance.mjs` | Verifies the chain and the entries | Built |
+| Link by record id and sha256 (R-17) | Each line names the record and the hash of the version it describes | Partly built: lines carry `sha256`, but name the record by file path |
+| Generated index (R-19) | A rebuildable index answering why, then-and-now and where-used questions | Not built; `naive export` (R-32) is the first generated view |
+| Research provenance (R-33) | How a research finding was found: question, queries, sources, agent, time | Not built |
+| Publishing attestations (R-57) | A certificate per published file | Designed, not built |
+
+### How it works in the code today
+
+A real line from the log:
+
+```json
+{"at":"2026-10-30T01:12:44.912Z","entity":"venture.json","activity":"write",
+ "agent":{"kind":"agent","via":"cli","id":"naive-upgrade"},"derived_from":["venture.json"],
+ "decision":"Torian, 2026-10-30: an opinionated schema with swappable frameworks ...",
+ "note":"telos-to-goals: ambition moved to foundation/goals/scale.json",
+ "sha256":"94b64a...","prev":"219dd1...","hash":"6897fa..."}
+```
+
+Mapped to the six questions:
+
+| Question | Field | Gap |
+| --- | --- | --- |
+| Who | `agent.kind`, `agent.id` | None for agents. A person's id should point at a person identity (section 1) |
+| What | `entity`, `sha256` | `entity` is a file path. 40 of the 127 lines are moves, and a move changes the path, so the record's identity is lost across moves. R-17 asks for the record id |
+| When | `at` | One time only (transaction time). A late correction cannot say when the fact was true |
+| Where | `agent.via`, `route` | Only some lines have `route` |
+| Why | `decision`, `note`, `statement` | `decision` is free text, not a decision id. The why cannot be followed to its decision record |
+| How | `activity`, `derived_from` | None |
+
+The activities used so far: confirm 45, move 40, baseline 21, write 9, accept 6, draft 5, release 1. Writes through the router get a line; edits made outside it are covered only by git history (EE-031).
+
+A finding from the ontology run on 2026-11-01: provenance is per record version, not per value. A knowledge graph of record needs a source and a date on each value (checks KR1 and KR2); Naive's records fail those checks today.
+
+### Standards
+
+| Standard | What Naive takes from it |
+| --- | --- |
+| W3C PROV-DM and PROV-O (Recommendations, 2013) | Entity, activity, agent, `wasGeneratedBy`, `wasDerivedFrom`, `wasAssociatedWith`: the fields of each line |
+| W7 (Ram and Liu, 2009) | Provenance as seven questions (what, when, where, how, who, which, why). Naive's six questions at record scale follow it |
+| ISO 23081, metadata for records | Event history as records metadata, kept apart from the record's content |
+| ISO 15489-1:2016 | Authenticity and reliability: what the hash chain is for |
+| Hash-chained logs: Schneier and Kelsey, "Secure Audit Logs" (1999); Certificate Transparency (RFC 6962, 2013) | Each entry commits to the one before, so tampering is detectable |
+| in-toto and SLSA | Attestations for published artifacts (R-57) |
+| Event sourcing (Fowler, 2005) | Current state as a result of the event log. Naive keeps the state in the record and the events in the log, and both must agree |
+
+### Prior art
+
+- **Data provenance models:** W3C PROV and W7 are standards, and Open Provenance Model (2008) came before PROV.
+- **Tamper-evident logs:** Schneier and Kelsey, Certificate Transparency, git's content-addressed history.
+- **Not found in this search:** the same six questions asked at two scales, so that the venture's who, what, when, where, why and how (sections 1 to 5) and each record's provenance share one vocabulary and can be checked against each other. For example: the who of a write must hold the role that owns that function. W7 and PROV stop at the record.
+
+### Conflicts with agreed decisions
+
+1. **Path, not id** (R-17).
+2. **Free-text decisions.** The why must be a decision id so the index can follow it.
+3. **One time.** Phase spans (section 4) need two; other records may too.
+4. **Where the log lives.** EE-086 puts `provenance.jsonl` under `meta/`; the venture on `main` keeps it at the root.
+
+### What must be built
+
+| Item | Check that proves it |
+| --- | --- |
+| `record` (id) on every line, with `entity` (path) kept as where | `check-provenance.mjs`: every line resolves to a record id |
+| `decision` as a decision id, with free text moved to `note` | Check: every decision id resolves |
+| The who of a write holds the role that owns the record's function | Cross-scale check (venture-scale who against record-scale who) |
+| The generated index (R-19) | Rebuilt from files gives the same index |
+| Per-value source and date where a record is a knowledge graph of record (KR1, KR2) | The KGR checks pass |
+
+### Sources
+
+- W3C, *PROV-DM: The PROV Data Model*, 2013: https://www.w3.org/TR/prov-dm/
+- Ram and Liu, "A New Perspective on Semantics of Data Provenance", 2009 (W7).
+- Schneier and Kelsey, "Secure Audit Logs to Support Computer Forensics", *ACM TISSEC* 2(2), 1999.
+- RFC 6962, *Certificate Transparency*, 2013.
+
+## What the six sections show together
+
+1. **The model is agreed; the code is one model behind it.** Every system has an agreed design (R-01 to R-19) and a different shape on `main`: identity spread across `venture.json` and `foundation/`; functions as labels on packages; phase as one field; where and why mixed into `foundation/`; provenance by path.
+2. **`foundation/` is where the systems collide.** It holds identity (telos end state), where (ICPs), contingent why (goals, alignment), phase data (exit criteria) and research (the problem). Splitting it is the single change that moves four systems at once.
+3. **Two six-question models disagree.** `purpose/strategic-foundation.json` (on `main`) and R-02 (in unmerged PR #125) assign who, what and why differently. One decision fixes it.
+4. **Naive's new parts are the checks, not the categories.** Every category above has a standard or prior art. What we did not find elsewhere is a venture whose categories are files a program checks: function membership tests, phase spans with evidence, reasons frozen by hash, and the same six questions checked across both scales.
+
+The next step is to merge these six sections into the single Naive record, and then to write the technical version that states Naive as a symbolic system.
