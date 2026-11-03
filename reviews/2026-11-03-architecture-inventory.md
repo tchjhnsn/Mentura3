@@ -6,13 +6,13 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1464 files and 467 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1468 files and 469 directories.
 
-Top-level entries besides `.git` are 32. 21 are directories and 11 are files. A count of 31 is one short of this listing.
+Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
-Directories: `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+Directories: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
-Files: `.gitattributes`, `.gitignore`, `AGENTS.md`, `LICENSE`, `README.md`, `eslint.config.mjs`, `package-lock.json`, `package.json`, `test.mjs`, `tsconfig.json`, `tsconfig.strict.json`.
+Files: `.gitattributes`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `LICENSE`, `README.md`, `eslint.config.mjs`, `package-lock.json`, `package.json`, `test.mjs`, `tsconfig.json`, `tsconfig.strict.json`.
 
 A folder row's file count is recursive. It includes files in child folders that also have their own rows. Direct is the count of files in that folder itself. Summing the files column double counts.
 
@@ -22,15 +22,17 @@ Kind is judged from file contents. The detectors read JSON fields, front matter,
 
 Nouns come from `docs/ontology.json`. Admitted terms come from `schema/terms/admitted.json`. A row maps cleanly when one concept matched and the folder name is that noun, or a plural of it, or one of the six layer names the layer noun lists, or `schema` for the system layer. A row maps to a noun with a different name when one concept matched and the folder name does not. A row maps to several nouns when two concepts matched. Layer and layer manifest count as one concept, and schema and record type count as one concept, because each pair is the folder and the file the ontology already ties together. A row has no noun when no detector matched.
 
-Of the 151 folders, 18 map cleanly, 21 map to a noun with a different name, 7 map to several nouns, and 105 have no noun.
+Of the 153 folders, 18 map cleanly, 21 map to a noun with a different name, 7 map to several nouns, and 107 have no noun.
 
 ## 1. Folders
 
 | Path | Files | Direct | What it holds | Nouns | Status |
 | --- | ---: | ---: | --- | --- | --- |
+| `.claude` | 2 | 1 | Holds 2 files, mostly .md (1), for example .claude/settings.json. | none | no noun exists |
 | `.claude-plugin` | 2 | 2 | Holds 2 files, mostly .json (2), for example .claude-plugin/marketplace.json. | agent harness | maps to a noun with a different name |
-| `.github` | 5 | 0 | Holds 5 files, mostly .yml (5), for example .github/workflows/docs-required.yml. | none | no noun exists |
-| `.github/workflows` | 5 | 5 | Holds 5 files, mostly .yml (5), for example .github/workflows/docs-required.yml. | none | no noun exists |
+| `.claude/rules` | 1 | 1 | Holds 1 file, mostly .md (1), for example .claude/rules/pstack-models.md. | none | no noun exists |
+| `.github` | 6 | 0 | Holds 6 files, mostly .yml (6), for example .github/workflows/claude.yml. | none | no noun exists |
+| `.github/workflows` | 6 | 6 | Holds 6 files, mostly .yml (6), for example .github/workflows/claude.yml. | none | no noun exists |
 | `agents` | 1 | 0 | Holds 1 file, mostly .md (1), for example agents/chief-of-staff/AGENTS.md. | tooling | maps to a noun with a different name |
 | `agents/chief-of-staff` | 1 | 1 | Holds 1 file, mostly .md (1), for example agents/chief-of-staff/AGENTS.md. | tooling | maps to a noun with a different name |
 | `beta` | 1 | 1 | Holds 1 file, mostly .json (1), for example beta/capabilities.json. | none | no noun exists |
@@ -242,6 +244,7 @@ Top-level directories by the three kinds. Other material is listed and does not 
 
 | Path | Product, library, company | Also other | Mix of the three |
 | --- | --- | --- | --- |
+| `.claude` | none of the three | yes | no |
 | `.claude-plugin` | none of the three | yes | no |
 | `.github` | none of the three | yes | no |
 | `agents` | library | no | no |
@@ -297,7 +300,7 @@ Content that shows up in the tree and matched no ontology noun:
 | connector module under knowledge/connectors or platform/connectors | 10 | `knowledge/connectors/catalog.mjs` |
 | term engine source under schema/terms | 5 | `schema/terms/admit.ts` |
 | Gherkin feature | 3 | `governance/features/decisions.feature` |
-| GitHub Actions workflow | 5 | `.github/workflows/docs-required.yml` |
+| GitHub Actions workflow | 6 | `.github/workflows/claude.yml` |
 
 `docs/ontology.json` has 112 nouns. 13 are retired and are left out of the homeless list. 99 are kept, new, or proposed.
 
@@ -334,7 +337,7 @@ EE-001 and EE-013 are in force and still say seven layers, including Execution. 
 
 `schema` is the system layer by `schema/layer.json`, and it also holds most of the checker source.
 
-Remainder: `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `packages`, `platform`, `scripts`, `site`, `verification`.
+Remainder: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `packages`, `platform`, `scripts`, `site`, `verification`.
 
 BFO does not separate these directories. The design doc gives a record one class and a function another. It does not give a layer a class. A layer directory that mixes skills, templates, and checkers is several information artifacts in one folder.
 
@@ -345,7 +348,7 @@ BFO does not separate these directories. The design doc gives a record one class
 - Platform, by `platform/README.md`: `platform`.
 - Platform, by `console/README.md`, stored outside `platform/`: `console`.
 - Workspace: `instance`.
-- Framework, if the platform README is applied to the rest: `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+- Framework, if the platform README is applied to the rest: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
 BFO does not draw the framework and platform line. Both sides are files. The workspace adds the continuant, the venture, and the information content entities about it. The console exception shows the split is not yet a single directory boundary.
 
@@ -357,7 +360,7 @@ This set uses the file rules in section 3. A top-level directory goes where its 
 - Library only: `agents`, `evidence`, `frameworks`, `packages`.
 - Company records only: `instance`.
 - Mixed: `governance`, `interface`, `knowledge`, `operations`, `purpose`, `verification`.
-- None of the three (proofs, docs, CI, plugin manifests, or similar): `.claude-plugin`, `.github`, `beta`, `docs`, `lean`.
+- None of the three (proofs, docs, CI, plugin manifests, or similar): `.claude`, `.claude-plugin`, `.github`, `beta`, `docs`, `lean`.
 
 BFO would not make these three into top categories. Product code, the library, and the company records are all files, so the design doc's record sentence puts them in one class, information content entity. What differs is whose artifact the file is. The company records are about the venture continuant. The library and the product code are about the framework. The design doc has not assigned those roles to BFO classes.
 
