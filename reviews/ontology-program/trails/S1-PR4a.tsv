@@ -1,0 +1,7 @@
+time	step	choice	why	evidence
+2026-11-03T21:58:00Z	copy	git show from preserve/sources-2026-11-03, unchanged	build-the-lever and subtract-before-you-add: copies come from git and stay unedited	wc -c 63059; sha256 02f38f70689994068a3755368559c72dccbc6e2c83f11e55ed0cd0a76c46c896 matches SHA256SUMS.txt
+2026-11-03T21:59:00Z	sidecar	cite ledger row N-010 with Claude id C-028	the plan says row C-028, but the merged ledger's row id is N-010 and C-028 is its Claude audit id	grok-store/merged-ledger.md line 92
+2026-11-03T21:59:00Z	sidecar	name the inventory script as a reader and the retired foundation term as verbatim	PR 174 review lesson and the foundation-retired rule	scripts/architecture-inventory.ts; grep counts foundation 5 times
+2026-11-03T22:00:00Z	data model	no ignore entry needed	the copy is Markdown, and check-data-model covers JSON files only	node schema/check-data-model.mjs exit 0
+2026-11-03T22:32:00Z	sidecar	corrected the reader sentence before review	S1-PR3 verifier showed readHead reads the whole file, not 1200 characters	scripts/architecture-inventory.ts:68-79
+2026-11-03T23:01:11Z	sidecar	correct the foundation count to 6 and cite EE-091	S1-PR4a verifier: 5 was grep line count and included foundational and Agentic AI Foundation; ontology.json does not list the noun, EE-091 is the rule	grep -n -i foundation lines 30, 121, 277
