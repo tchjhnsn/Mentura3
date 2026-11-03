@@ -724,7 +724,7 @@ function render(files: FileInfo[], dirs: string[], nouns: Noun[]): string {
   lines.push("");
   lines.push(`The walk skips \`.git\`, \`node_modules\`, \`.lake\`, \`.next\`, filenames that start with \`.env\`, paths git ignores, and \`docs/reviews/\` so this generated file is not part of its own count. It found ${files.length} files and ${dirs.length} directories.`);
   lines.push("");
-  lines.push(`Top-level entries besides \`.git\` are ${top.length}. ${topDirs.length} are directories and ${topFiles.length} are files. A count of 31 is one short of this listing.`);
+  lines.push(`Top-level entries besides \`.git\` are ${top.length}. ${topDirs.length} are directories and ${topFiles.length} are files. A count of ${top.length - 1} is one short of this listing.`);
   lines.push("");
   lines.push(`Directories: ${topDirs.map((d) => `\`${d}\``).join(", ")}.`);
   lines.push("");
