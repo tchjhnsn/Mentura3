@@ -11,13 +11,13 @@ recorded-on: 2026-11-04
 
 Each `.md` file in this folder except this one is a verbatim copy of a `memory/*.md` file from Claude's project memory export, taken with `git show` from `preserve/sources-2026-11-03` and not edited. The folder is `docs/memory/claude/`, the default of gate G13. The notes are records of what Claude remembered on 2026-11-03. They are not in force, and nothing reads them. Stage 2 of the ontology program reconciles them.
 
-`FLAGS.tsv` on the preserve branch flags 61 of the 78 files (`mentura-confidential`, `names-polity`, `investor-relations` and others). Torian decided gate G14, on Nov 3, that every source is preserved as-is, confidential files included, each flagged file with a `FLAGS.tsv` row, and this unit's plan section says to copy confidential files unchanged; each flagged file's `FLAGS.tsv` line is in the table, and the cleanup rule in that row still applies before any public mirror. 27 files are not named by any merged ledger row and show `none`.
+`FLAGS.tsv` on the preserve branch flags 61 of the 78 files (`mentura-confidential`, `names-polity`, `investor-relations` and others). Torian decided gate G14, on Nov 3, that every source is preserved as-is, confidential files included, each flagged file with a `FLAGS.tsv` row, and this unit's plan section says to copy confidential files unchanged; each flagged file's `FLAGS.tsv` line is in the table, and the cleanup rule in that row still applies before any public mirror. The ledger rows column also reads the full ledger, `grok-store/merged-ledger.full.md` on the preserve branch, because the public ledger shows confidential rows as pointers only. A confidential row is listed only once every source it names is on main, so a row that also names a source still off main is left out until that source lands. 23 files show `none`.
 
 The notes use the retired name `foundation` 52 times and five of them contain em dashes, as they were written. EE-091 decided that `foundation/` moves to `identity/` (not built yet).
 
 | File | sha256 | Ledger rows | FLAGS.tsv line and flags |
 |---|---|---|---|
-| `MEMORY.md` | `38e18eebff885442e99d869c4015d09badeca8a64701ee6db63b45635574c971` | N-005, N-046, N-152, N-178, N-182, N-184, N-188, N-196, N-197 | line 31: mentura-confidential,investor-relations |
+| `MEMORY.md` | `38e18eebff885442e99d869c4015d09badeca8a64701ee6db63b45635574c971` | N-005, N-046, N-091, N-152, N-178, N-182, N-184, N-188, N-196, N-197 | line 31: mentura-confidential,investor-relations |
 | `ai-labs-anatomy.md` | `8d2837ffc4119a25556461c601e42f7f6b5e19b21387fc9ccaeec22a51f411e9` | N-019, N-020, N-031, N-097, N-111, N-144 | line 32: names-polity,mentura-confidential |
 | `ai-never-speaks-for-human.md` | `c78de8e462254b30792b0edf2658f931c80b362e3695868ff10c100e1b5242a5` | N-098 | line 33: mentura-confidential |
 | `anthropic-directory-overlap.md` | `5008e626242afedd72149e6d4f60526a52de807152588ee8f50647ecd239a9fc` | none | line 34: mentura-confidential,investor-relations |
@@ -35,7 +35,7 @@ The notes use the retired name `foundation` 52 times and five of them contain em
 | `ee-icp.md` | `dc3f1a249b901477a774fc7d50ee2570d102aa33a73a3d0179d78e210881b8a8` | none | line 46: mentura-confidential |
 | `ee-ideas-raw.md` | `05b863f98a63280992b4d56337dcbe58af99ca339674e6a4f18d529e1797a70d` | N-210 | line 47: mentura-confidential |
 | `ee-interfaces.md` | `1449260d81a6318f7c819bdefc746d5a7643bcf0ee91a37813805f4c5efd2f49` | N-180 | line 48: mentura-confidential |
-| `ee-investor-relations.md` | `97174623798325503307039777a5af63a6bcd9df8bffdf717e4d9f84f4451ef6` | none | line 49: mentura-confidential,investor-relations,founder-personal |
+| `ee-investor-relations.md` | `97174623798325503307039777a5af63a6bcd9df8bffdf717e4d9f84f4451ef6` | N-033 | line 49: mentura-confidential,investor-relations,founder-personal |
 | `ee-knowledge-connectors.md` | `ee6c32a38b55075173892651b2757555dccb9b5ff6ebc976d5bb0a045a4dc8c6` | none | line 50: mentura-confidential |
 | `ee-merge-queue.md` | `909f20f77fba81c9b73bf13d0f481be2ba6d6651054d87d847de3bbc416c77d7` | none | line 51: mentura-confidential |
 | `ee-nextjs-translation.md` | `8cc31a1799ff608520f7f4b9c4e1028cf56dc979c2822539d82dfc00309aac17` | N-145 | not flagged |
@@ -44,7 +44,7 @@ The notes use the retired name `foundation` 52 times and five of them contain em
 | `ee-publication-gate.md` | `00a6a9bd26d4ab4d0be796cb395e04347eea1caaba73c02238d9cb8870921fa2` | N-179 | not flagged |
 | `ee-records-vs-artifacts.md` | `1c62349932256a061adc187de220a52da6de9d197a75904e0c09e317a7de8731` | N-029 | not flagged |
 | `ee-scope-solo-founders.md` | `2332e2858150a45fc8b5d67a0fd2a421d74cf0cd323478a6b04012a87f6e542a` | none | not flagged |
-| `ee-self-validation.md` | `0290347d6a1e6e8bee92d56014ecf7928d7d28f4eef9fdf49d9adfa3a80de09b` | N-093, N-168, N-169, N-195, N-204, N-206, N-207, N-208, N-209, N-218 | line 54: mentura-confidential,investor-relations |
+| `ee-self-validation.md` | `0290347d6a1e6e8bee92d56014ecf7928d7d28f4eef9fdf49d9adfa3a80de09b` | N-093, N-168, N-169, N-195, N-204, N-205, N-206, N-207, N-208, N-209, N-218 | line 54: mentura-confidential,investor-relations |
 | `ee-setup-roles-venture-type.md` | `e21df794b4545c95cba65be409ced52063740f2545c24d509a7c1a1c7e218b2e` | N-176 | line 55: investor-relations |
 | `ee-setup-sources-of-truth.md` | `ae2b1613f1c3b8359f2921e409136a7fab732798c8c0184457947ec0d200d797` | N-212 | line 56: mentura-confidential |
 | `ee-spheres-model.md` | `000728415e27b094089430b5de95afbb2a92ac041163831665e24617ab6ec828` | N-153, N-156 | line 57: names-polity |
@@ -74,9 +74,9 @@ The notes use the retired name `foundation` 52 times and five of them contain em
 | `mad-maturity.md` | `10525c9c0790b3d1786ca6b72dd23769918f2ef8b2e06d5f0eb73ad315088601` | N-141, N-217 | not flagged |
 | `master-architecture.md` | `fcf13d7de5f24d1f7199e6d42b958e24d9aaba3f6a174f6c35bbfa55ec9c9c0b` | N-003, N-004, N-017, N-018, N-029, N-046, N-104, N-143, N-152, N-184, N-187 | line 73: mentura-confidential |
 | `mentor-coach-definitions.md` | `f96655dc33356537a302f139e544f05761dcc0e6cae2e6674f294acfa823e50e` | N-024, N-025 | line 74: names-polity,mentura-confidential,investor-relations |
-| `mentura-discovery-strategy.md` | `2ea88fe84620cd0e01755fa3afaae152beb3ff6e32a5c2f155883848cca4fcc5` | none | line 75: mentura-confidential,investor-relations |
+| `mentura-discovery-strategy.md` | `2ea88fe84620cd0e01755fa3afaae152beb3ff6e32a5c2f155883848cca4fcc5` | N-027, N-091, N-103 | line 75: mentura-confidential,investor-relations |
 | `mentura-discovery-workflow.md` | `3e676a983469ec2b80a987c260fff9a4994bdc54cd372eaa2c7b68d0679487ca` | none | line 76: mentura-confidential |
-| `mentura-market-research.md` | `a1a821ab7a5bc5c5f0390c8738921731c28680d1d2df3f684173829813a67b7b` | none | line 77: mentura-confidential,investor-relations |
+| `mentura-market-research.md` | `a1a821ab7a5bc5c5f0390c8738921731c28680d1d2df3f684173829813a67b7b` | N-088, N-205 | line 77: mentura-confidential,investor-relations |
 | `methodology-consultancy.md` | `8450579808bf36ee1260a6ebbdb405082dbdf1e0d04a745925ad07d1a73abdcb` | none | not flagged |
 | `naive-docs-handoff.md` | `90a9f341b9b9170ec765fe7bc60642d27c0e0de061e4809413a36dfd3d4b5ee9` | N-180 | line 78: mentura-confidential |
 | `naive-docs-not-public.md` | `b7880651afe8acdd8602cabb45f32ab1a7f963ba45c2af3c618bca54c116cae7` | N-087, N-198 | not flagged |
@@ -84,7 +84,7 @@ The notes use the retired name `foundation` 52 times and five of them contain em
 | `naive-plugins-and-proving.md` | `810ecd45dd8d58c10596b5baffcb7e2883deb5093809020ffceef4ee06d2fa5f` | N-189 | line 80: mentura-confidential |
 | `naive-systems-doc.md` | `5480b0d07850d6bb7c21f370ffe4d24e183f3754d5fcf5ff70388e46ef5ddb5e` | none | line 81: mentura-confidential |
 | `polity-vision-and-roadmap-draft.md` | `0dd4b61cc1edd4d8932ec6a60528e0fa51a9223eb7eee31334c6f6dd8acfa2e0` | none | line 82: names-polity |
-| `precog.md` | `73eda53852c2973680b596e684af6b59ff39f0b60ff4fadbcaaa8c9520e1c294` | none | line 83: mentura-confidential |
+| `precog.md` | `73eda53852c2973680b596e684af6b59ff39f0b60ff4fadbcaaa8c9520e1c294` | N-035 | line 83: mentura-confidential |
 | `problem-loop.md` | `aeaa805c2b6cc5894b2678cbc84cbbf74a437e098fdda6b4421d0eb87c16e223` | N-021 | line 84: mentura-confidential,personal-data-third-party |
 | `pstack-default.md` | `a1a0694b21fe18781634a0b5d2c1b999468a0b1854a54973ca1cdd98e0390f13` | N-139 | not flagged |
 | `readmes-docs-as-code.md` | `6d1180ab88db8f55367f9d92bea8fb466de8fa3c2be2730e2450891d4269fa9a` | N-132, N-180, N-199 | not flagged |

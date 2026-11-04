@@ -1,0 +1,6 @@
+time	step	choice	why	evidence
+2026-11-04T08:04:36Z	pick	mark the confidential rows whose every named source is already on main	the public ledger shows confidential rows as pointers only, so the S1-PR8 and S1-PR10.1 markers missed them	grok-store/merged-ledger.full.md rows N-027, N-033, N-035, N-088, N-091, N-103
+2026-11-04T08:04:36Z	scope	leave out N-006, N-026, N-112, N-133 and N-137 and do not name them in either sidecar	each also names a source still off main (the research folder in #192, a patch only on the Mac, open PRs #158, #34 and #130); the coverage script counts every id a marker holds, so naming them would hide that work	full ledger rows
+2026-11-04T08:04:36Z	edit	add ids to the ledger rows column of two existing sidecars, preserved files untouched	subtract-before-you-add: the copies stay byte for byte, only the markers change	git diff touches only the two PRESERVED.md files; the inventory is unchanged (--check ok)
+2026-11-04T08:04:36Z	verify	coverage 54 to 48, exactly those 6 rows removed	prove-it-works	diff of coverage ids before and after
+2026-11-04T08:05:32Z	sidecar	list N-038 on all 26 artifacts	the S1-PR10.2 lane 4 verifier showed the full ledger truncates N-037 and N-038 with (+N more); N-038 is the artifacts named by memory and every artifact id appears in docs/memory/claude/	grep of each artifact id in docs/memory/claude/
