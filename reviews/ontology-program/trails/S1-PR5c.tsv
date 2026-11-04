@@ -1,0 +1,6 @@
+time	step	choice	why	evidence
+2026-11-04T02:54:21Z	gate	follow G9 option B, store the patch and metadata	Torian 2026-11-04 01:22Z settled G9 as option B	plan line 92; project thread
+2026-11-04T02:54:21Z	patch	gh pr diff 164, verbatim	build-the-lever: the plan's own command	sha256 a161f90e...c7c9; git apply --check on cb502f9 exit 0
+2026-11-04T02:54:21Z	metadata	build pr-164.json from REST pulls/164 and pulls/164/files with gh field names	gh pr view needs GraphQL, which returns HTTP 403 here	same method as S1-PR5a and S1-PR5b
+2026-11-04T02:54:21Z	confidentiality	preserve as-is; the four hits are unchanged context lines already on main	lane 6 asks for a FLAGS.tsv row only for new confidential content; none is added	patch lines 188, 190, 214, 215; schema/data-model.schema.json line 45 and schema/types/records.d.ts line 348 on main
+2026-11-04T02:54:21Z	data model	no schema edit	the docs/design/preserved/**/*.json ignore from #181 covers pr-164.json	node schema/check-data-model.mjs exit 0
