@@ -88,16 +88,18 @@ Claude does not decide these. When a unit reaches one, Claude posts one decision
 - [ ] G5. Whether the 13 owner@area scopes stand in for the catalog until S2-PR7 lands. Blocks S2-PR7.
 - [ ] G6. Whether the 9 mixed-scope ideas are placed right. Blocks their scopes in S3-PR5.
 - [ ] G7. Whether `framework` is rebased onto `main` before closure. The default is no rebase, since stage 1 preserves its PRs from their own diffs. Blocks S4-PR2.
-- [ ] G8. The missing `usage.json` and the prototype code (the sandbox `*-vocab.ts` and `*.lean` files) that only Claude's project or the Mac holds. Torian has to supply them. Blocks those rows in S1-PR10.
-- [ ] G9. How the framework PRs land as-is. Option A applies each patch onto `main`, which makes its code and its `in-force` decision live. Option B, the default, stores each PR's verbatim patch and metadata under `docs/design/preserved/framework/`, so nothing runs until stage 2 applies it. Torian's rule says as-is and also says no code treats preserved work as live, and only option B meets both. Blocks S1-PR5a to S1-PR5d.
+- [x] G8. The missing `usage.json` and the prototype code (the sandbox `*-vocab.ts` and `*.lean` files) that only Claude's project or the Mac holds. Torian has to supply them. Blocks those rows in S1-PR10. Decided Nov 4: the files were in the shared project folder, so S1-PR10.12 (#202) preserved the whole sandbox folder, `usage.json` included.
+- [x] G9. How the framework PRs land as-is. Option A applies each patch onto `main`, which makes its code and its `in-force` decision live. Option B, the default, stores each PR's verbatim patch and metadata under `docs/design/preserved/framework/`, so nothing runs until stage 2 applies it. Torian's rule says as-is and also says no code treats preserved work as live, and only option B meets both. Blocks S1-PR5a to S1-PR5d. Decided Nov 4 (01:22Z) as option B, the default.
 - [x] G10. `naive.architecture.json` marks the library, research engine, curation and precog elements confidential, and its rule AK6 forbids sending them to outside models. Option A commits it verbatim. Option B, the default, commits a pointer record with the sha256 and store path, and the bytes stay in the private store. Decided Nov 3 as commit as-is, flagged in FLAGS.tsv.
 - [x] G11. `GLOSSARY.agent.md` has one sentence that names the paused civic venture. Option A commits it verbatim. Option B, the default, holds the file until Torian rules, because the rule against naming the paused civic venture and the verbatim rule conflict. Decided Nov 3 as commit as-is, flagged in FLAGS.tsv.
-- [ ] G12. #162 and #163 cite EE-101, EE-104 and EE-105, which live in #155, #158 and #161, also off `main`. The default preserves those in S1-PR10 units. Under G9 option A they must land before S1-PR5b.
-- [ ] G13. Where the memory snapshots live. The default is `docs/memory/grok-bot/` and `docs/memory/claude/`, which do not exist yet. Blocks S1-PR7 and S1-PR8.
+- [x] G12. #162 and #163 cite EE-101, EE-104 and EE-105, which live in #155, #158 and #161, also off `main`. The default preserves those in S1-PR10 units. Under G9 option A they must land before S1-PR5b. Default taken: S1-PR10 units preserve #155, #158 and #161 as patches.
+- [x] G13. Where the memory snapshots live. The default is `docs/memory/grok-bot/` and `docs/memory/claude/`, which do not exist yet. Blocks S1-PR7 and S1-PR8. Default taken: `docs/memory/claude/` landed in S1-PR8 (#187).
 - [x] G14. Whether Grok Bot may push the sources to branch `preserve/sources-2026-11-03` so Claude can copy them byte for byte, since the Action cannot read Grok Bot's store. The alternative is that Grok Bot writes every stage 1 PR itself. Decided Nov 3 as push every source as-is, confidential files included, each flagged file with a `FLAGS.tsv` row.
-- [ ] G15. Torian's go to remove the `hold` label from #173. Blocks S1-PR6.
+- [x] G15. Torian's go to remove the `hold` label from #173. Blocks S1-PR6. Given Nov 4 (03:37Z); #173 landed.
 - [ ] G16. Where idea records live. `instance/ventures/everything-ecosystem/ideas/` exists on `main` today, and `founder-idea.schema.json` describes `founders/<handle>/ideas/<id>.json`. Blocks S2-PR9 and S3-PR1.
 - [x] G17. Claude's `TERM_LIST_2026-11-01.json` marks 36 of its 340 entries `outside_models: false` (Mentura research-engine areas), and its header says to filter them out before handing the file on. Option A commits it verbatim. Option B, the default, commits it with those 36 entries filtered and records the full file as a pointer plus its hash. Decided Nov 3 as commit as-is, flagged in FLAGS.tsv. All 340 entries are committed unfiltered.
+
+Stage 1 closed on Torian's ruling of Nov 4, 2026 at 18:52Z: "Forget whatever was on the Mac or in the Grokbot memory. Whatever you have access to is what we will continue with." S1-PR7 is dropped, and the ledger rows whose only copy is on the Mac, in Grok Bot's memory or box notes, or in the private store stay on the coverage list as out of reach, not preserved. `node scripts/preservation-coverage.ts` still lists them, so the report stays honest. Stage 2 starts on the same ruling.
 
 ### PR mechanics, for every PR
 
@@ -850,6 +852,8 @@ Each live lane runs on its own cloud VM at the PR head. Drive through `control-u
 - [ ] Grok Bot owns this PR and Claude does not touch it. Grok Bot squash-merges it bottom-up per `playbooks/shipping.md` with green checks and no `hold` label.
 
 ## Sync Grok Bot's Naive memory into the repo (S1-PR7)
+
+**Dropped.** Torian ruled on Nov 4, 2026 that the program continues with what Claude can reach. Grok Bot's memory export is not coming, so this PR is not built.
 
 **Owner.** Grok Bot writes it, because only Grok Bot can read its memory.
 
