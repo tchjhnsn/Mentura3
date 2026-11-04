@@ -1,0 +1,15 @@
+{
+  "number": 156,
+  "title": "Decision EE-102: coordinate through typed provenance records routed by the Lead",
+  "body": "Adds decision EE-102 to `docs/decisions/decisions.json`: agents coordinate through typed provenance records routed by the Lead (blackboard), with temporary relationship children only for live back-and-forth. Related: EE-029, EE-031. Sources: Brooks; Kim et al. 2025 (arXiv:2512.08296).\n\nStacked on EE-101 (base is `cursor/jev-llm-code-split-9a9d`); it retargets to main once EE-101 merges.\n\nBuilt by cloud agent bc-af72ec51 (its PR tool failed with `[unavailable] Error`, so this was opened by Grok Bot at Torian's direction).",
+  "headRefOid": "f08b7f2e5719f9f4d5fd52c5f8cdbbebb18cb2e5",
+  "baseRefName": "cursor/jev-llm-code-split-9a9d",
+  "baseRefOid": "e6a26f02e5df7444e267302e8b28314a8df12fc1",
+  "files": [
+    {
+      "path": "docs/decisions/decisions.json",
+      "additions": 11,
+      "deletions": 0
+    }
+  ]
+}
