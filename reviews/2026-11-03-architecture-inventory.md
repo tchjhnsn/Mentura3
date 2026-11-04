@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1474 files and 473 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1477 files and 475 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -41,9 +41,9 @@ Of the 153 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
 | `console/lib` | 14 | 14 | Holds 14 product source files, types .ts 13, .mjs 1. | none | no noun exists |
-| `docs` | 49 | 3 | Holds 49 files, mostly .md (43), for example docs/ontology.json. | none | no noun exists |
+| `docs` | 52 | 3 | Holds 52 files, mostly .md (46), for example docs/ontology.json. | none | no noun exists |
 | `docs/decisions` | 1 | 1 | Holds 1 file, mostly .json (1), for example docs/decisions/decisions.json. | decision | maps cleanly |
-| `docs/design` | 38 | 25 | Holds 38 files, mostly .md (34), for example docs/design/DECISION_ROADMAPS_AND_LIFECYCLE_PLAYBOOKS_2026-10-29.md. | none | no noun exists |
+| `docs/design` | 41 | 25 | Holds 41 files, mostly .md (37), for example docs/design/DECISION_ROADMAPS_AND_LIFECYCLE_PLAYBOOKS_2026-10-29.md. | none | no noun exists |
 | `docs/master` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/master/naive-docs.md. | none | no noun exists |
 | `docs/reference` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/reference/ROUTES.md. | none | no noun exists |
 | `docs/research` | 3 | 3 | Holds 3 files, mostly .md (3), for example docs/research/DEV_DOCS_SITE_RESEARCH_2026-10-28.md. | none | no noun exists |
@@ -186,7 +186,7 @@ Of the 153 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 
 | Pattern | Count | Where the files sit |
 | --- | ---: | --- |
-| `README.md` | 82 | schema 34, verification 27, instance 4, purpose 4, governance 2, knowledge 2, platform 2, (root) 1 |
+| `README.md` | 83 | schema 34, verification 27, instance 4, purpose 4, docs 2, governance 2, knowledge 2, platform 2 |
 | `readme.md` | 0 | nowhere |
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
 | `SKILL.md` | 48 | governance 15, packages 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
