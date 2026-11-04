@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1492 files and 480 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1493 files and 480 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -41,9 +41,9 @@ Of the 153 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
 | `console/lib` | 14 | 14 | Holds 14 product source files, types .ts 13, .mjs 1. | none | no noun exists |
-| `docs` | 67 | 3 | Holds 67 files, mostly .md (52), for example docs/ontology.json. | none | no noun exists |
+| `docs` | 68 | 3 | Holds 68 files, mostly .md (53), for example docs/ontology.json. | none | no noun exists |
 | `docs/decisions` | 1 | 1 | Holds 1 file, mostly .json (1), for example docs/decisions/decisions.json. | decision | maps cleanly |
-| `docs/design` | 56 | 26 | Holds 56 files, mostly .md (43), for example docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. | none | no noun exists |
+| `docs/design` | 57 | 27 | Holds 57 files, mostly .md (44), for example docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. | none | no noun exists |
 | `docs/master` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/master/naive-docs.md. | none | no noun exists |
 | `docs/reference` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/reference/ROUTES.md. | none | no noun exists |
 | `docs/research` | 3 | 3 | Holds 3 files, mostly .md (3), for example docs/research/DEV_DOCS_SITE_RESEARCH_2026-10-28.md. | none | no noun exists |
@@ -200,7 +200,7 @@ Of the 153 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
 | `*.steps.mjs` | 3 | purpose 2, governance 1 |
 | `*.feature` | 3 | purpose 2, governance 1 |
-| `dated YYYY-MM-DD in the filename` | 40 | docs 31, evidence 4, governance 1, instance 1, operations 1, purpose 1, schema 1 |
+| `dated YYYY-MM-DD in the filename` | 41 | docs 32, evidence 4, governance 1, instance 1, operations 1, purpose 1, schema 1 |
 | `*.lean` | 5 | lean 5 |
 | `*.tla` | 27 | verification 27 |
 | `*.decision.json` | 28 | schema 15, instance 13 |
@@ -214,7 +214,7 @@ Conflicts, from those counts:
 
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
-- Dated filenames (YYYY-MM-DD) occur 40 times. docs/design has 28. evidence/benchmarks has 4. docs/research has 3. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
+- Dated filenames (YYYY-MM-DD) occur 41 times. docs/design has 29. evidence/benchmarks has 4. docs/research has 3. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
 - These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 16 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
