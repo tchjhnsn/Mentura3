@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T00:58:20Z	copy	git show from preserve/sources-2026-11-03, unchanged	build-the-lever and subtract-before-you-add	cmp exit 0; wc -c 54069; sha256 133c4e1b824cbc80afa65939507ef2c41929812cb988aa676b6b86b69011f624 matches SHA256SUMS.txt and the N-003 prefix
+2026-11-04T00:58:20Z	data model	no schema edit	the docs/design/preserved/**/*.json glob ignore from the data-model fix covers this path	node schema/check-data-model.mjs exit 0
+2026-11-04T00:58:20Z	flags	commit as-is, name the four confidential elements and AK6, cite FLAGS.tsv line 259	G10 decided commit as-is on Nov 3	FLAGS.tsv line 259; file lines 839, 880, 891, 910, 1347
+2026-11-04T00:58:20Z	sidecar	count foundation by whole word, cite EE-091 as not built, FLAGS by line, at most 400000 bytes	lessons from the S1-PR4a to S1-PR4c verifiers	grep -o -i -w foundation: 1 hit on line 2094
