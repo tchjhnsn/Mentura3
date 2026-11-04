@@ -1,0 +1,655 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index f457f314..2e2ff2a8 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -28,7 +28,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
+ - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
+ - `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
+ - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
+-- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function, and a new sense is only for a different meaning. Nouns may relate by broader, narrower, related, part-of or derived-from; `node schema/check-nouns.mjs --graph` prints the graph (`docs/noun-graph.md`).
++- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function, and a new sense is only for a different meaning. A sense may instead use an existing noun as its suffix, and then it still has exactly one owner, an existing function id. Nouns may relate by broader, narrower, related, part-of, derived-from or driver-of; `node schema/check-nouns.mjs --graph` prints the graph (`docs/noun-graph.md`).
+ - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
+ - `node schema/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
+ - `node schema/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node schema/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
+@@ -83,4 +83,4 @@ The ecosystem is a schema; a workspace is an instance made of ventures (EE-002,
+ 
+ ## Nouns and references
+ 
+-Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form, `docs/noun-graph.md` the graph); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, when a function's capabilities are not nouns it owns, or when a noun relation is invalid. Each noun names its function, or null when the word is shared. A function gets a new scoped sense only when the meaning differs. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
++Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form, `docs/noun-graph.md` the graph); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, when a function's capabilities are not nouns it owns, or when a noun relation is invalid. Each noun names its function, or null when the word is shared. A function gets a new scoped sense only when the meaning differs. Relations are broader, narrower, related, part-of, derived-from and driver-of. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
+diff --git a/docs/decisions/decisions.json b/docs/decisions/decisions.json
+index 10575d4c..857fe890 100644
+--- a/docs/decisions/decisions.json
++++ b/docs/decisions/decisions.json
+@@ -1346,6 +1346,44 @@
+           "expect": "exists"
+         }
+       ]
++    },
++    {
++      "id": "EE-104",
++      "date": "2026-11-02",
++      "status": "in-force",
++      "decision": "Anticipation replaces precog as the ontology term for Mentura's anticipatory capability. The internal codename is Deluminator. The public name is to be chosen by Torian from Growth proposals.",
++      "why": "Torian approved this on 2026-11-02. The word precog comes from The Minority Report, and that association suggests surveillance and pre-judgment. Rosen's anticipatory system (1985) is the standard for the capability. EE-098 already says the capability is part of Mentura, with records in Naive and delivery in the app.",
++      "related": [
++        "EE-098"
++      ],
++      "supersedes": [],
++      "affects": [
++        {
++          "kind": "term",
++          "target": "anticipation",
++          "expect": "defined"
++        },
++        {
++          "kind": "term",
++          "target": "precog",
++          "expect": "retired"
++        },
++        {
++          "kind": "term",
++          "target": "forecast",
++          "expect": "defined"
++        },
++        {
++          "kind": "term",
++          "target": "capability@function",
++          "expect": "defined"
++        },
++        {
++          "kind": "term",
++          "target": "capability@product",
++          "expect": "defined"
++        }
++      ]
+     }
+   ]
+ }
+diff --git a/docs/noun-graph.md b/docs/noun-graph.md
+index 33052f93..3c0d1d51 100644
+--- a/docs/noun-graph.md
++++ b/docs/noun-graph.md
+@@ -4,7 +4,7 @@ Generated from `docs/ontology.json` by `node schema/check-nouns.mjs --graph` (EE
+ 
+ Nouns are grouped and colored by the function that owns them. A noun with no function is shared. A noun that takes part in no relation is left off the graph.
+ 
+-Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source.
++Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source. `driver-of` points from the noun whose value drives to the noun it drives. It is causal, so a walk may follow it. It is not a SKOS link.
+ 
+ ```mermaid
+ flowchart LR
+@@ -16,6 +16,7 @@ flowchart LR
+     n_succession_matrix["Succession Matrix"]
+     n_account["account"]
+     n_agent_harness["agent harness"]
++    n_anticipation["anticipation"]
+     n_board["board"]
+     n_brand_guidelines["brand guidelines"]
+     n_business_model["business model"]
+@@ -28,17 +29,21 @@ flowchart LR
+     n_custom_workbench["custom workbench"]
+     n_data_model["data model"]
+     n_decision["decision"]
++    n_decision_prefetch["decision prefetch"]
+     n_decision_right["decision right"]
+     n_done_criterion["done-criterion"]
++    n_draft["draft"]
+     n_eval["eval"]
+     n_evidence["evidence"]
+     n_evidence_grade["evidence grade"]
+     n_exit_criterion["exit criterion"]
++    n_forecast["forecast"]
+     n_function["function"]
+     n_gate["gate"]
+     n_handoff["handoff"]
+     n_harness["harness"]
+     n_human_loop["human loop"]
++    n_impact_forecast["impact forecast"]
+     n_integration["integration"]
+     n_investor_right["investor right"]
+     n_job["job"]
+@@ -84,6 +89,9 @@ flowchart LR
+     n_workbench["workbench"]
+     n_workspace["workspace"]
+   end
++  subgraph g_capabilities["capabilities"]
++    n_capability_function["capability@function"]
++  end
+   subgraph g_finance["finance"]
+     n_customer_finance["customer@finance"]
+   end
+@@ -91,20 +99,27 @@ flowchart LR
+     n_customer_marketing_and_sales["customer@marketing-and-sales"]
+   end
+   subgraph g_products["products"]
++    n_capability_product["capability@product"]
+     n_product_decision["product decision"]
+   end
+   n_agent_harness -->|broader| n_ai_harness
+   n_ai_harness -->|broader| n_harness
+   n_console -->|broader| n_custom_workbench
+   n_custom_workbench -->|broader| n_workbench
++  n_impact_forecast -->|broader| n_forecast
+   n_publication -->|broader| n_handoff
+   n_the_system -->|broader| n_venture_development_framework
+   n_wedge -->|broader| n_portfolio_role
+   n_preference_stack -->|derived-from| n_cap_table
++  n_cap_table -->|driver-of| n_preference_stack
++  n_evidence -->|driver-of| n_evidence_grade
++  n_phase -->|driver-of| n_need_now_score
+   n_channel -->|part-of| n_publication_policy
++  n_decision_prefetch -->|part-of| n_anticipation
+   n_done_criterion -->|part-of| n_handoff
+   n_exit_criterion -->|part-of| n_telos
+   n_handoff -->|part-of| n_method
++  n_impact_forecast -->|part-of| n_anticipation
+   n_product_anatomy -->|part-of| n_method
+   n_record_type -->|part-of| n_data_model
+   n_share_class -->|part-of| n_cap_table
+@@ -118,6 +133,9 @@ flowchart LR
+   n_brand_guidelines ---|related| n_pillar
+   n_business_model ---|related| n_product
+   n_capability_register ---|related| n_eval
++  n_capability_function ---|related| n_capability_product
++  n_capability_function ---|related| n_function
++  n_capability_product ---|related| n_product
+   n_central_data_management_structure ---|related| n_venture
+   n_channel ---|related| n_publication
+   n_console ---|related| n_view
+@@ -125,6 +143,7 @@ flowchart LR
+   n_data_model ---|related| n_layer
+   n_data_model ---|related| n_route
+   n_decision ---|related| n_provenance
++  n_decision_prefetch ---|related| n_draft
+   n_decision_right ---|related| n_function
+   n_decision_right ---|related| n_venture_template
+   n_eval ---|related| n_evidence
+@@ -184,6 +203,7 @@ flowchart LR
+   n_vault ---|related| n_workspace
+   n_venture ---|related| n_venture_profile
+   classDef c_shared fill:#f5f5f4,stroke:#57534e,color:#1c1917
++  classDef c_capabilities fill:#fef3c7,stroke:#b45309,color:#1c1917
+   classDef c_finance fill:#dcfce7,stroke:#15803d,color:#1c1917
+   classDef c_marketing_and_sales fill:#fce7f3,stroke:#be185d,color:#1c1917
+   classDef c_products fill:#dbeafe,stroke:#1d4ed8,color:#1c1917
+@@ -194,11 +214,14 @@ flowchart LR
+   class n_succession_matrix c_shared
+   class n_account c_shared
+   class n_agent_harness c_shared
++  class n_anticipation c_shared
+   class n_board c_shared
+   class n_brand_guidelines c_shared
+   class n_business_model c_shared
+   class n_cap_table c_shared
+   class n_capability_register c_shared
++  class n_capability_function c_capabilities
++  class n_capability_product c_products
+   class n_central_data_management_structure c_shared
+   class n_channel c_shared
+   class n_console c_shared
+@@ -208,17 +231,21 @@ flowchart LR
+   class n_customer_marketing_and_sales c_marketing_and_sales
+   class n_data_model c_shared
+   class n_decision c_shared
++  class n_decision_prefetch c_shared
+   class n_decision_right c_shared
+   class n_done_criterion c_shared
++  class n_draft c_shared
+   class n_eval c_shared
+   class n_evidence c_shared
+   class n_evidence_grade c_shared
+   class n_exit_criterion c_shared
++  class n_forecast c_shared
+   class n_function c_shared
+   class n_gate c_shared
+   class n_handoff c_shared
+   class n_harness c_shared
+   class n_human_loop c_shared
++  class n_impact_forecast c_shared
+   class n_integration c_shared
+   class n_investor_right c_shared
+   class n_job c_shared
+diff --git a/docs/ontology.json b/docs/ontology.json
+index 4ad0c939..0ec71a7c 100644
+--- a/docs/ontology.json
++++ b/docs/ontology.json
+@@ -1,6 +1,6 @@
+ {
+   "version": "0.6.0",
+-  "note": "The system's nouns (EE-014, EE-103). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. A new scoped sense (name@function) is only for a different meaning; the same meaning presented differently by market or relationship is a view of the same noun. A noun may carry relations, a closed set: broader, narrower, related (W3C SKOS), part-of and derived-from. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of and derived-from are one-way. No self-relations. broader and part-of have no cycles. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. node schema/check-nouns.mjs --graph prints the noun graph.",
++  "note": "The system's nouns (EE-014, EE-103, EE-104). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. A new scoped sense (name@function) is only for a different meaning; the same meaning presented differently by market or relationship is a view of the same noun. When the suffix is a function id, that id is the owner. A sense may instead use an existing noun as the suffix (capability@function, capability@product) and then it has exactly one owner, an existing function id. A noun may carry relations, a closed set: broader, narrower, related (W3C SKOS), part-of, derived-from and driver-of. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of, derived-from and driver-of are one-way. driver-of is causal: the noun's value drives the target's value. No self-relations. broader and part-of have no cycles. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. node schema/check-nouns.mjs --graph prints the noun graph.",
+   "check": [
+     "schema/",
+     "docs/ontology.md",
+@@ -142,6 +142,10 @@
+         {
+           "type": "related",
+           "target": "venture"
++        },
++        {
++          "type": "driver-of",
++          "target": "need-now score"
+         }
+       ]
+     },
+@@ -604,6 +608,10 @@
+         {
+           "type": "related",
+           "target": "eval"
++        },
++        {
++          "type": "driver-of",
++          "target": "evidence grade"
+         }
+       ]
+     },
+@@ -989,7 +997,13 @@
+       "standard": "capitalization table (common startup and finance usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "driver-of",
++          "target": "preference stack"
++        }
++      ]
+     },
+     {
+       "noun": "share class",
+@@ -1499,7 +1513,8 @@
+       "function": "products",
+       "handoff_type": false,
+       "capabilities": [
+-        "product decision"
++        "product decision",
++        "capability@product"
+       ]
+     },
+     {
+@@ -1594,6 +1609,106 @@
+         "F4",
+         "F5"
+       ]
++    },
++    {
++      "noun": "anticipation",
++      "level": "system",
++      "meaning": "Mentura's anticipatory capability (EE-098), after Rosen 1985's anticipatory system: a system containing a predictive model of itself and/or its environment that changes state now in accord with predictions about a later instant. It keeps a predictive model of the venture as impact forecasts (records in Naive) and acts now on its predictions through decision prefetch (drafts delivered in the app). People decide; nothing it produces commits the venture.",
++      "standard": "anticipatory system (Rosen 1985), narrowed",
++      "status": "proposed",
++      "function": null,
++      "handoff_type": false
++    },
++    {
++      "noun": "precog",
++      "level": "system",
++      "meaning": "Retired for anticipation (EE-104). The Minority Report association suggests surveillance and pre-judgment.",
++      "standard": "ours",
++      "status": "retired",
++      "replaced_by": "anticipation",
++      "function": null,
++      "handoff_type": false
++    },
++    {
++      "noun": "forecast",
++      "level": "venture",
++      "meaning": "A prediction of a future value given all the information available, distinct from a goal and from a plan.",
++      "standard": "forecasting (Hyndman and Athanasopoulos)",
++      "status": "proposed",
++      "function": null,
++      "handoff_type": false
++    },
++    {
++      "noun": "impact forecast",
++      "level": "venture",
++      "meaning": "A record forecasting how a change in one function's record moves other functions' numbers. The instance is owned by the function whose number is forecast. Scored with the Brier score and an interval score. Code walks driver-of and does the driver arithmetic. Jev is used only for unmapped links. A language model proposes estimates. Code scores the outcomes.",
++      "standard": "forecasting (Hyndman and Athanasopoulos); change impact analysis (Arnold and Bohner); change propagation (Clarkson, Simons and Eckert)",
++      "status": "proposed",
++      "function": null,
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "forecast"
++        },
++        {
++          "type": "part-of",
++          "target": "anticipation"
++        }
++      ]
++    },
++    {
++      "noun": "decision prefetch",
++      "level": "interface",
++      "meaning": "Drafts of the next likely decisions, prepared before the person reaches them, after prefetching and speculative execution. Code picks and invalidates drafts from the statechart, dependencies and hashes. Jev ranks them. A language model writes them. Measured by accepted drafts over drafts made, coverage, and lead time gained.",
++      "standard": "prefetching and speculative execution (Smith 1981; Srinath et al. 2007; Next.js prefetching; Leviathan et al. 2023)",
++      "status": "proposed",
++      "function": null,
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "anticipation"
++        },
++        {
++          "type": "related",
++          "target": "draft"
++        }
++      ]
++    },
++    {
++      "noun": "capability@function",
++      "level": "venture",
++      "meaning": "An APQC-style business capability a function performs. The capabilities function owns this sense.",
++      "standard": "business capability (APQC PCF; BIZBOK)",
++      "status": "proposed",
++      "function": "capabilities",
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "function"
++        },
++        {
++          "type": "related",
++          "target": "capability@product"
++        }
++      ]
++    },
++    {
++      "noun": "capability@product",
++      "level": "venture",
++      "meaning": "What a product enables its user to do. The products function owns this sense.",
++      "standard": "product capability (common product-management usage)",
++      "status": "proposed",
++      "function": "products",
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     }
+   ]
+ }
+diff --git a/docs/ontology.md b/docs/ontology.md
+index 7d626af6..5821c154 100644
+--- a/docs/ontology.md
++++ b/docs/ontology.md
+@@ -15,9 +15,9 @@ The system is opinionated: it names one default for each choice, and every defau
+ - `node schema/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function. It also fails when a relation's type is outside the closed set, when its target is missing or retired, when a noun relates to itself, when broader and narrower disagree, or when broader or part-of cycles.
+ - Each noun names a `function` (one id from `operations/departments.json`, or nothing when the word is shared) and a handoff type (yes when that noun can type a package). A shared noun may appear in any package and never decides which function the package belongs to.
+ - `node schema/check-nouns.mjs --package <file> --function <id>` prints one verdict: admit, refer to the function that owns the type, or reject. `--record` appends that verdict to `<id>.provenance.jsonl` beside the package. The verdict is not stored on the handoff. The receiver has to be a function noun. A schema checker that cannot run exits 2 and records nothing.
+-- A scoped noun is written `name@function`. The suffix is a function id, and the noun's function is that same id. A bare name is not added beside a scoped sense. A retired bare name may stay, as the pointer to the senses that replaced it.
++- A scoped noun is written `name@function`. When the suffix is a function id, the noun's function is that same id. A sense may instead use an existing noun as the suffix, as capability@function and capability@product do, and then it still has exactly one owner, an existing function id. A bare name is not added beside a scoped sense. A retired bare name may stay, as the pointer to the senses that replaced it.
+ - A function gets a new scoped sense (`name@function`) only when the meaning differs. The same meaning, presented differently by market or by relationship, is a view of the same noun, not a new sense.
+-- A noun may carry relations to other nouns. The types are a closed set: `broader`, `narrower` and `related` (W3C SKOS), plus `part-of` and `derived-from`. `broader` and `narrower` are inverses, and `related` is symmetric. Stating one side is enough: the check derives the other, and when both sides are written they must agree. `part-of` and `derived-from` have no inverse in the set, so they are stored only in the direction written. A noun does not relate to itself. A target must be a noun that exists and is not retired. `broader` and `part-of` have no cycles.
++- A noun may carry relations to other nouns. The types are a closed set: `broader`, `narrower` and `related` (W3C SKOS), plus `part-of`, `derived-from` and `driver-of`. `broader` and `narrower` are inverses, and `related` is symmetric. Stating one side is enough: the check derives the other, and when both sides are written they must agree. `part-of`, `derived-from` and `driver-of` have no inverse in the set, so they are stored only in the direction written. `driver-of` is causal: the first noun's value drives the second noun's value. A noun does not relate to itself. A target must be a noun that exists and is not retired. `broader` and `part-of` have no cycles.
+ - A fact value is the boolean true or a record. Any other value fails that property. Two records that give one field two values are a reject. A record the term cannot read fails every property of that type. That is a reject of the package, and it is recorded.
+ - References are ids in `<layer>/references/references.json`.
+ - The genus of the whole is open: files say "the system" until the first venture runs end to end, then it is settled as an operating system or an operating model.
+@@ -43,6 +43,7 @@ The system is opinionated: it names one default for each choice, and every defau
+ | template | A fill-in starting point for one record or document: the fields, what to write in each and what a strong one looks like. A kit holds templates; a template holds no rules and checks nothing | common usage (document template) |  |  |  |
+ | provenance | Who or what produced a record, by which activity, from what, and under which decision: explicit in the provenance log for writes through the router, implicit in git history for everything else (EE-031) | W3C PROV (PROV-DM: entity, activity, agent) |  |  |  |
+ | provenance log | A venture's append-only record of writes, <venture>/provenance.jsonl: one line per write naming the file, the activity (write, draft, accept, baseline), the person or agent and the interface, what it was derived from and the decision; each line carries the previous line's hash (EE-031) | W3C PROV; hash-chained append-only log (common audit usage) |  |  |  |
++| anticipation | Mentura's anticipatory capability (EE-098), after Rosen 1985's anticipatory system: a system containing a predictive model of itself and/or its environment that changes state now in accord with predictions about a later instant. It keeps a predictive model of the venture as impact forecasts (records in Naive) and acts now on its predictions through decision prefetch (drafts delivered in the app). People decide; nothing it produces commits the venture. | anticipatory system (Rosen 1985), narrowed |  |  |  |
+ 
+ ### Venture
+ 
+@@ -68,6 +69,10 @@ The system is opinionated: it names one default for each choice, and every defau
+ | strategic foundation | The records a founder keeps in front of them every day until they are muscle memory, answering why, what, who, how, when, where and whether, with brand beside them (purpose/strategic-foundation.json). Each foundation statement is an attribute of an existing record; changing one is deliberate (type to confirm) and confirmed statements unlock delegation (EE-051, EE-052) | strategic foundation in strategic planning (mission, vision, values), widened by the Five Ws and How |  |  |  |
+ | customer@marketing-and-sales | The buyer this function sells to. The finance sense of the same word is customer@finance. The @ scope is the one the term list uses for two senses of one word. | Schema.org Customer |  | marketing-and-sales |  |
+ | customer@finance | The party the books record as the source of revenue. The marketing sense of the same word is customer@marketing-and-sales. | FIBO (Financial Industry Business Ontology), Customer |  | finance |  |
++| forecast | A prediction of a future value given all the information available, distinct from a goal and from a plan. | forecasting (Hyndman and Athanasopoulos) |  |  |  |
++| impact forecast | A record forecasting how a change in one function's record moves other functions' numbers. The instance is owned by the function whose number is forecast. Scored with the Brier score and an interval score. Code walks driver-of and does the driver arithmetic. Jev is used only for unmapped links. A language model proposes estimates. Code scores the outcomes. | forecasting (Hyndman and Athanasopoulos); change impact analysis (Arnold and Bohner); change propagation (Clarkson, Simons and Eckert) |  |  |  |
++| capability@function | An APQC-style business capability a function performs. The capabilities function owns this sense. | business capability (APQC PCF; BIZBOK) |  | capabilities |  |
++| capability@product | What a product enables its user to do. The products function owns this sense. | product capability (common product-management usage) |  | products |  |
+ 
+ ### Purpose
+ 
+@@ -156,19 +161,20 @@ The system is opinionated: it names one default for each choice, and every defau
+ | route group | A named set of routes that shares a layout without changing their paths; one per phase, (discovery) to (platform), holding the routes need-now suggests in that phase (EE-032) | Next.js App Router (route groups) |  |  |  |
+ | slot | One part of a page that renders on its own beside others, such as @validation in the venture overview; a slot that fails shows its error while the rest render (EE-032) | Next.js App Router (parallel routes, @slot) |  |  |  |
+ | route alias | An old route kept after a rename, which the router follows to the new one with a deprecation note (EE-032) | common API usage (deprecation, redirects) |  |  |  |
++| decision prefetch | Drafts of the next likely decisions, prepared before the person reaches them, after prefetching and speculative execution. Code picks and invalidates drafts from the statechart, dependencies and hashes. Jev ranks them. A language model writes them. Measured by accepted drafts over drafts made, coverage, and lead time gained. | prefetching and speculative execution (Smith 1981; Srinath et al. 2007; Next.js prefetching; Leviathan et al. 2023) |  |  |  |
+ 
+ ### Function
+ 
+ | Noun | Meaning | Standard | References | Function | Handoff type |
+ | --- | --- | --- | --- | --- | --- |
+ | strategy | The function that sets the venture's direction: vision, and the choices that follow from it. A solo founder holds it with the others. Capabilities: founder appointment. | APQC PCF 7.4 Cross-Industry 1.0 Develop Vision and Strategy |  | strategy |  |
+-| products | The function that develops what the venture offers, and the decisions that change the offering. Capabilities: product decision. | APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services |  | products |  |
++| products | The function that develops what the venture offers, and the decisions that change the offering. Capabilities: product decision, capability@product. | APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services |  | products |  |
+ | marketing-and-sales | The function that finds the buyer and sells the offering, including the price. Capabilities: pricing decision, customer@marketing-and-sales. | APQC PCF 7.4 Cross-Industry 3.0 Market and Sell Products and Services |  | marketing-and-sales |  |
+ | finance | The function that keeps the books: revenue, cost, and the customer as an account. Capabilities: customer@finance. | APQC PCF 7.4 Cross-Industry 9.0 Manage Financial Resources |  | finance |  |
+ 
+ ### Relations
+ 
+-Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. The graph is [docs/noun-graph.md](noun-graph.md).
++Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. `part-of`, `derived-from` and `driver-of` are stored only in the direction written. `driver-of` means the first noun's value drives the second noun's value. The graph is [docs/noun-graph.md](noun-graph.md).
+ 
+ | From | Type | To |
+ | --- | --- | --- |
+@@ -179,15 +185,22 @@ Each row is stated on the noun. `broader` and `narrower` are inverses, and `rela
+ | AI harness | broader | harness |
+ | brand guidelines | related | pillar |
+ | business model | related | product |
++| cap table | driver-of | preference stack |
+ | capability register | related | eval |
++| capability@function | related | capability@product |
++| capability@function | related | function |
++| capability@product | related | product |
+ | central data management structure | related | venture |
+ | channel | part-of | publication policy |
+ | console | broader | custom workbench |
+ | custom workbench | broader | workbench |
+ | customer@marketing-and-sales | related | customer@finance |
+ | data model | related | layer |
++| decision prefetch | part-of | anticipation |
++| decision prefetch | related | draft |
+ | done-criterion | part-of | handoff |
+ | Everything Ecosystem | related | the system |
++| evidence | driver-of | evidence grade |
+ | evidence | related | eval |
+ | evidence grade | related | evidence |
+ | exit criterion | part-of | telos |
+@@ -198,6 +211,8 @@ Each row is stated on the noun. `broader` and `narrower` are inverses, and `rela
+ | gate | related | phase |
+ | handoff | part-of | method |
+ | human loop | related | team plan |
++| impact forecast | broader | forecast |
++| impact forecast | part-of | anticipation |
+ | integration | related | layer |
+ | integration | related | workbench |
+ | investor right | related | share class |
+@@ -213,6 +228,7 @@ Each row is stated on the noun. `broader` and `narrower` are inverses, and `rela
+ | market | related | product |
+ | need-now score | related | phase |
+ | need-now score | related | record type |
++| phase | driver-of | need-now score |
+ | phase | related | venture |
+ | portfolio role | related | phase |
+ | portfolio role | related | product |
+@@ -280,3 +296,4 @@ Each row is stated on the noun. `broader` and `narrower` are inverses, and `rela
+ | liquidation waterfall | retired; use preference stack |
+ | derived answer | retired; use undefined |
+ | guiding statement | retired; use undefined |
++| precog | retired; use anticipation |
+diff --git a/schema/README.md b/schema/README.md
+index e7ea637e..d4e41a27 100644
+--- a/schema/README.md
++++ b/schema/README.md
+@@ -26,7 +26,7 @@ Status:
+ | Product (card) | `schema/product.schema.json` | defined | `products/<id>.json`: market, job, technology, offering, business model, flows |
+ | Account | `schema/account.schema.json` | defined | Optional. `accounts/<id>/account.json` inside the venture that serves it; relationship client, customer, user, member, partner or other (EE-021) |
+ | Venture folder layout | `schema/scaffold/defaults.json`, `schema/init-venture.mjs` | defined | Starting layers by phase; pillars and venture profile in every venture |
+-| Nouns | `docs/ontology.json`, `schema/check-nouns.mjs`, `schema/ontology-gate.ts`, `schema/noun-relations.ts`, `docs/noun-graph.md` | defined | Standards first (EE-014, EE-103). Each noun names its function (a department id, or null when the word is shared) and whether it can type a handoff. A scoped noun `name@function` must be owned by that function, and a new scoped sense is only for a different meaning: the same meaning presented differently by market or relationship is a view of the same noun. A noun may name relations from a closed set: broader, narrower, related (W3C SKOS), part-of and derived-from. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of and derived-from are one-way. No self-relations. broader and part-of have no cycles. `node schema/check-nouns.mjs --graph` prints the noun graph. `node schema/check-nouns.mjs --package <file> --function <id>` prints one membership verdict; `--record` writes it to the sidecar beside the package. If the schema checker cannot run, crashes, or the operating-rules module cannot be read, the command exits 2 and records nothing. Only a package that fails validation is recorded as a schema reject. A fact is the boolean true or a record; any other value fails that property, and two records that disagree are a reject. A record the term cannot read fails every property of that type and is recorded as that reject |
++| Nouns | `docs/ontology.json`, `schema/check-nouns.mjs`, `schema/ontology-gate.ts`, `schema/noun-relations.ts`, `docs/noun-graph.md` | defined | Standards first (EE-014, EE-103). Each noun names its function (a department id, or null when the word is shared) and whether it can type a handoff. A scoped noun `name@function` is owned by that function when the suffix is a function id, and a new scoped sense is only for a different meaning: the same meaning presented differently by market or relationship is a view of the same noun. A noun may name relations from a closed set: broader, narrower, related (W3C SKOS), part-of, derived-from and driver-of. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of, derived-from and driver-of are one-way. driver-of is causal: the noun's value drives the target's value. No self-relations. broader and part-of have no cycles. A scoped sense may use an existing noun as its suffix (capability@function, capability@product) and then it still has exactly one owner, an existing function id. `node schema/check-nouns.mjs --graph` prints the noun graph. `node schema/check-nouns.mjs --package <file> --function <id>` prints one membership verdict; `--record` writes it to the sidecar beside the package. If the schema checker cannot run, crashes, or the operating-rules module cannot be read, the command exits 2 and records nothing. Only a package that fails validation is recorded as a schema reject. A fact is the boolean true or a record; any other value fails that property, and two records that disagree are a reject. A record the term cannot read fails every property of that type and is recorded as that reject |
+ | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
+ | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
+ | Record generators | `schema/generators/`, `schema/generators/generate.mjs`, `schema/generators/gaps.json`, `schema/generators/generators-test.mjs` | pilots built | The script beside a schema (EE-099): it describes what to ask and drafts one record that passes the schema, and hands the draft to the write chain without storing it. A record type names its script in `generator` in the data model. Pilots so far are `glossary.mjs`, `reference.mjs` and `bug.mjs`. `check-data-model.mjs` fails a type that names no generator unless `gaps.json` lists it, and fails a listed type that has one |
+diff --git a/schema/check-nouns.mjs b/schema/check-nouns.mjs
+index d80db1c5..84d16502 100644
+--- a/schema/check-nouns.mjs
++++ b/schema/check-nouns.mjs
+@@ -4,7 +4,8 @@
+ // (a noun with no standard, a function that is not a department, a capability a function
+ // does not own), or when a noun relation is outside the closed set, points at a missing
+ // or retired noun, relates a noun to itself, contradicts its inverse, or cycles through
+-// broader or part-of. With --md, prints the glossary as Markdown. With --graph, prints
++// broader or part-of. driver-of is causal and one-way: the noun's value drives the target.
++// With --md, prints the glossary as Markdown. With --graph, prints
+ // the noun graph. With --package, prints one membership verdict for that handoff.
+ //
+ //   node schema/check-nouns.mjs
+diff --git a/schema/noun-relations.ts b/schema/noun-relations.ts
+index 684f80da..04a43328 100644
+--- a/schema/noun-relations.ts
++++ b/schema/noun-relations.ts
+@@ -1,10 +1,11 @@
+-// Typed relations between nouns (EE-103). The closed set is SKOS broader, narrower and
+-// related, plus part-of and derived-from. broader and narrower are inverses, and related
++// Typed relations between nouns (EE-103, EE-104). The closed set is SKOS broader, narrower and
++// related, plus part-of, derived-from and driver-of. broader and narrower are inverses, and related
+ // is symmetric: stating one side is enough, and a stated pair must agree with its inverse.
+-// part-of and derived-from have no inverse in the set. broader and part-of may not cycle.
+-// A noun does not relate to itself. The graph draws each fact once.
++// part-of, derived-from and driver-of have no inverse in the set. driver-of is causal: the
++// noun's value drives the target's value, and propagation may walk it. It is not a SKOS link.
++// broader and part-of may not cycle. A noun does not relate to itself. The graph draws each fact once.
+ 
+-export const RELATION_TYPES = ["broader", "narrower", "related", "part-of", "derived-from"] as const;
++export const RELATION_TYPES = ["broader", "narrower", "related", "part-of", "derived-from", "driver-of"] as const;
+ export type RelationType = (typeof RELATION_TYPES)[number];
+ 
+ const RELATION_SET = new Set<string>(RELATION_TYPES);
+@@ -49,7 +50,7 @@ type RelationInput = {
+ };
+ 
+ type Stated = { from: string; type: RelationType; target: string };
+-type Edge = { from: string; to: string; type: "broader" | "related" | "part-of" | "derived-from"; arrow: boolean };
++type Edge = { from: string; to: string; type: "broader" | "related" | "part-of" | "derived-from" | "driver-of"; arrow: boolean };
+ 
+ const isRecord = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
+ const isRelationType = (value: string): value is RelationType => RELATION_SET.has(value);
+@@ -166,6 +167,7 @@ function resolve(input: readonly unknown[]): Resolved {
+   const partFacts: { from: string; to: string }[] = [];
+   const related = new Map<string, [string, string]>();
+   const derived: Edge[] = [];
++  const drivers: Edge[] = [];
+ 
+   for (const noun of nouns) {
+     const seen = new Set<string>();
+@@ -199,6 +201,7 @@ function resolve(input: readonly unknown[]): Resolved {
+       if (rel.type === "part-of") partFacts.push({ from: noun.noun, to: rel.target });
+       if (rel.type === "related") related.set(pairOf(noun.noun, rel.target), noun.noun < rel.target ? [noun.noun, rel.target] : [rel.target, noun.noun]);
+       if (rel.type === "derived-from") derived.push({ from: noun.noun, to: rel.target, type: "derived-from", arrow: true });
++      if (rel.type === "driver-of") drivers.push({ from: noun.noun, to: rel.target, type: "driver-of", arrow: true });
+     }
+   }
+ 
+@@ -212,6 +215,7 @@ function resolve(input: readonly unknown[]): Resolved {
+     ...partFacts.map((fact) => ({ from: fact.from, to: fact.to, type: "part-of" as const, arrow: true })),
+     ...[...related.values()].map(([from, to]) => ({ from, to, type: "related" as const, arrow: false })),
+     ...derived,
++    ...drivers,
+   ];
+   edges.sort((a, b) => a.type.localeCompare(b.type) || a.from.localeCompare(b.from) || a.to.localeCompare(b.to));
+   return { errors, stated, edges, owner };
+@@ -276,7 +280,7 @@ export function renderNounGraph(input: readonly unknown[]): string {
+     "",
+     "Nouns are grouped and colored by the function that owns them. A noun with no function is shared. A noun that takes part in no relation is left off the graph.",
+     "",
+-    "Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source.",
++    "Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source. `driver-of` points from the noun whose value drives to the noun it drives. It is causal, so a walk may follow it. It is not a SKOS link.",
+     "",
+     "```mermaid",
+     ...lines,
+@@ -293,7 +297,7 @@ export function renderRelationSection(input: readonly unknown[]): string {
+     "",
+     "### Relations",
+     "",
+-    "Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. The graph is [docs/noun-graph.md](noun-graph.md).",
++    "Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. `part-of`, `derived-from` and `driver-of` are stored only in the direction written. `driver-of` means the first noun's value drives the second noun's value. The graph is [docs/noun-graph.md](noun-graph.md).",
+     "",
+     "| From | Type | To |",
+     "| --- | --- | --- |",
+diff --git a/schema/ontology-gate-test.ts b/schema/ontology-gate-test.ts
+index 6d6a6129..9fda084d 100644
+--- a/schema/ontology-gate-test.ts
++++ b/schema/ontology-gate-test.ts
+@@ -423,9 +423,34 @@ expect("the repository ontology passes", run(process.execPath, [join(root, "sche
+   const ran = check(dir);
+   expect("a part-of cycle fails", ran.status !== 0 && /part-of cycle: job -> market -> job/.test(ran.stderr));
+ }
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "driver-of", target: "wedge" }]; });
++  const ran = check(dir);
++  expect("driver-of cannot relate a noun to itself", ran.status !== 0 && /wedge: driver-of relates a noun to itself/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => {
++    const job = noun(o, "job");
++    const market = noun(o, "market");
++    if (job) job.relations = [{ type: "driver-of", target: "market" }];
++    if (market) market.relations = [{ type: "driver-of", target: "job" }];
++  });
++  const ran = check(dir);
++  expect("driver-of stated both ways is two causal facts", ran.status === 0);
++}
++{
++  const dir = sparse((o) => { o.nouns.push({ noun: "lens@product", level: "venture", meaning: "A sense whose suffix is a noun.", standard: "ours", status: "proposed", function: "products", handoff_type: false }); });
++  const ran = check(dir);
++  expect("a scope that names an existing noun keeps one department owner", ran.status === 0);
++}
++{
++  const dir = sparse((o) => { o.nouns.push({ noun: "lens@product", level: "venture", meaning: "A sense with no owner.", standard: "ours", status: "proposed", function: null, handoff_type: false }); });
++  const ran = check(dir);
++  expect("a scope that names a noun still needs one department owner", ran.status !== 0 && /lens@product: function nobody is not a department id/.test(ran.stderr));
++}
+ {
+   const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--graph"]);
+-  expect("the graph draws seeded relations, grouped by function", ran.status === 0 && /n_succession_matrix -->\|part-of\| n_product_anatomy/.test(ran.stdout) && /subgraph g_marketing_and_sales/.test(ran.stdout) && /n_customer_finance ---\|related\| n_customer_marketing_and_sales/.test(ran.stdout) && /n_wedge -->\|broader\| n_portfolio_role/.test(ran.stdout));
++  expect("the graph draws seeded relations, grouped by function", ran.status === 0 && /n_succession_matrix -->\|part-of\| n_product_anatomy/.test(ran.stdout) && /subgraph g_marketing_and_sales/.test(ran.stdout) && /n_customer_finance ---\|related\| n_customer_marketing_and_sales/.test(ran.stdout) && /n_wedge -->\|broader\| n_portfolio_role/.test(ran.stdout) && /n_cap_table -->\|driver-of\| n_preference_stack/.test(ran.stdout) && /n_impact_forecast -->\|part-of\| n_anticipation/.test(ran.stdout) && /n_decision_prefetch -->\|part-of\| n_anticipation/.test(ran.stdout) && /n_impact_forecast -->\|broader\| n_forecast/.test(ran.stdout));
+ }
+ 
+ function spawnGate(file: string, fn: string): Promise<{ status: number | null }> {
+diff --git a/schema/ontology-gate.ts b/schema/ontology-gate.ts
+index 2e6018bd..2253c987 100644
+--- a/schema/ontology-gate.ts
++++ b/schema/ontology-gate.ts
+@@ -208,8 +208,11 @@ export function checkOntology(root: string): string[] {
+   return errors;
+ }
+ 
+-/** A scoped sense is `name@function`. The suffix is a function id and is the noun's owner. A bare name does not sit beside one. */
++/** A scoped sense is `name@suffix`. When the suffix is a function id, that id is the owner.
++ *  A sense may instead name an existing noun (capability@function, capability@product). It still
++ *  has exactly one owner, an existing function id. A bare name does not sit beside one. */
+ function checkScopes(nouns: Noun[], departments: Set<string>, errors: string[]): void {
++  const live = new Set(nouns.filter((n) => n.status !== "retired").map((n) => n.noun));
+   const stems = new Set<string>();
+   for (const noun of nouns) {
+     const match = /^(.+)@([^@]+)$/.exec(noun.noun);
+@@ -218,8 +221,15 @@ function checkScopes(nouns: Noun[], departments: Set<string>, errors: string[]):
+     const suffix = match[2] ?? "";
+     if (noun.status === "retired") continue;
+     stems.add(stem);
+-    if (!departments.has(suffix)) errors.push(`docs/ontology.json: ${noun.noun}: scope ${suffix} is not a function id`);
+-    if (noun.function !== suffix) errors.push(`docs/ontology.json: ${noun.noun}: function ${noun.function ?? "nobody"} does not match its scope ${suffix}`);
++    if (departments.has(suffix)) {
++      if (noun.function !== suffix) errors.push(`docs/ontology.json: ${noun.noun}: function ${noun.function ?? "nobody"} does not match its scope ${suffix}`);
++      continue;
++    }
++    if (live.has(suffix)) {
++      if (noun.function == null || !departments.has(noun.function)) errors.push(`docs/ontology.json: ${noun.noun}: function ${noun.function ?? "nobody"} is not a department id`);
++      continue;
++    }
++    errors.push(`docs/ontology.json: ${noun.noun}: scope ${suffix} is not a function id`);
+   }
+   for (const noun of nouns) {
+     if (noun.status === "retired" || noun.noun.includes("@")) continue;

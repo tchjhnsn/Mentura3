@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:48:07Z	gate	G9 option B and G12 default: store PR #158 as a verbatim patch plus metadata, not applied	same as S1-PR10.5; the patch changes code, so applying it would make EE-104 live	plan lines 92 and 95
+2026-11-04T08:48:07Z	patch	gh pr diff 158, verbatim, against its stacked base #157	build-the-lever	git apply --check on 04d1f22 exit 0; pr-157.json headRefOid is 04d1f22
+2026-11-04T08:48:07Z	ledger	name confidential row N-112 from the full ledger	its other sources (artifact BPmRB and memory precog.md) are on main since #191 and #187	grok-store/merged-ledger.full.md row N-112
+2026-11-04T09:20:54Z	fix	marker names the four Mentura lines and the Grok copy, and counts precog three times in the record	lane 5 verifier found the scan sentence understated the matches	verifier report on d1d88f7
