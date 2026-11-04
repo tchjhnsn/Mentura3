@@ -1,0 +1,30 @@
+---
+name: ee-hackathon-aitx-2026
+description: Torian is competing (agent track) in the AITX & MLOps World Community Hackathon, Austin Tech Week; submissions close 2026-10-29 22:00Z
+metadata:
+  type: project
+  modified: 2026-10-28T18:11:47.226Z
+---
+
+Torian, 2026-10-28 18:08Z: competing in the AITX & MLOps World Community Hackathon @ Austin Tech Week, agent track (https://luma.com/aitx-mlops-techweek-hack ; rules on a Notion page that didn't load for us). Investors, technologists and founders attend. He called agent integration "maybe the most important aspect of what we build right now" and the hackathon "one of the first real-time oriented goals the framework needs to hit". Tech Week pitching gives him good signal from founders and investors (anecdotal; not yet captured as evidence).
+
+Schedule (Austin time, CDT = UTC-5): kickoff Mon Oct 26 at Antler, 800 Brazos St #340; remote build Tue-Thu; online submissions close Thu Oct 29 5:00 PM (22:00Z); Hack Fair and judging Fri Oct 30 1:00 PM, winners 4:00 PM. Solo or teams up to 5. Sponsors: AutoHDR, Supabase, Atlassian for Startups, Hook'em Hacks.
+
+In the venture: operations/decisions/hackathon.entry.decision.json (decided, his words) and hackathon.project.decision.json (my draft, due 2026-10-28T23:00Z, outcomes: submitted on time, live demo, 5 founder reactions as evidence). Docket entries hackathon-project / hackathon-build / hackathon-team. Proposed demo: Naive as a decision harness for agents (agent via MCP, paused by an open fail-closed decision until the founder approves, provenance). Must-haves proposed: agent record + harness contract, decisions through MCP/CLI with approve, unlock enforcement, demo script + live matrix page.
+
+Flaw found: any decision that decides venture.json defaults under the foundation, which never settles in Discovery, so it waits forever. Workaround: hackathon decisions decide operations/hackathon.json. Related: [[ee-decisions-file-type]].
+
+2026-10-28 18:27Z Torian (docket + thread): track is the Antler agents track (direct line to Antler's investment team). Judging: live demo at Hack Fair table + demo video + codebase; technical execution and completeness (no crash, real depth, not a wrapper), value and impact (non-obvious useful insight, usable tomorrow), innovation and execution (novel combination, looks good, speed/scale). Solo. His project answer: demo Naive as it is, plus an agent harness inside Naive; show Naive renders the right kit at the right time and the docket renders the highest-quality decisions; promise = moving founders through Discovery; at least one integration such as Apify for market research. Agents must run start to end. LangSmith: yes, traces and evals. Built so far on PR #19: decision harness demo (scripted + real Claude Code headless via MCP, live-agent.mjs), live board (board.mjs, port 4331).
+
+2026-10-28 18:36Z Torian redirected the demo: NOT a one-line idea. The founder submits a raw IDEA DUMP (not a prompt). Pipeline: dump -> .mdx -> reader (he named Jev; no Jev access in cloud yet) tags each idea with Naive conventions (pillars, departments, layers, product anatomy) -> React Flow mind map canvas showing the whole venture, founder strengths/weaknesses by where ideas cluster. Key early question: does a product already exist; use our product conventions; product strategic foundation fails closed, with core and flagship products. Use Firecrawl instead of Apify (FIRECRAWL_API_KEY). He pasted a LangSmith key in chat; flagged it, asked him to rotate and set LANGSMITH_API_KEY as an env secret; never use keys pasted in chat.
+
+2026-10-28 19:00Z built and pushed (PR #19, commit 88e0e4f, EE-059): interface/harness/run.mjs discovery --dump <file> [--board] [--yes]; idea map at purpose/frameworks/idea-map (Jev via platform/integrations/jev.mjs, env var in cloud is TYPESAFEAI_API_KEY); product foundation decisions scaffolded by init-venture (product-exists, core-product, flagship); Firecrawl at platform/mcp/research.mjs; LangSmith uploader platform/integrations/langsmith.mjs (project naive-hackathon); evals interface/harness/evals.mjs. Rehearsal: 144s, 8/8 evals. Sample dump interface/harness/examples/pt-no-shows.dump.md. Next: map layout overlap, demo script, submission text, video notes.
+2026-10-28 19:20Z: submission kit Claude Doc https://claude.ai/artifact/DDcjvJ7Ldj7uBTjLvxbgf2 (submission text, 4-min table script, video notes, laptop checklist). Board keeps serving after a run; map's React Flow cached in ~/.cache/naive-board. No-key fallback run passes 8/8 evals.
+2026-10-28 19:45Z (EE-060, commit 7d26dac): Torian's pipeline: dump -> map (loose, no decisions) -> idea graph (Merkle DAG, purpose/ideas/graph.json, graph.mjs; Jev pair deps threshold 0.5; signal v0.x; sync vs async lanes) -> roadmap (not built; asked him where dates come from: his deadlines vs founder estimates). Async vs sync development is a key feature he wants. Team question (founding-team, fail-open) scaffolded; founder-agreement kit at 0.6 in Discovery for cofounders. SAD was his first iteration of the idea-to-shipping pipeline. Board /graph view. Note: fresh discovery ventures have purpose layer off (defaults) though harness writes purpose records.
+
+2026-10-28 20:15Z: pushed d20d103 (EE-061 idea routes + /kanban; 10/10 evals) and 1292040 (EE-062 site presence: paste a link at board /site, Jev judges pages, marketing matrix v0 weighted by raising/hiring/contributors + ICPs). Torian: no connections in demo; time features (roadmaps) deferred; next for site: research where info belongs, route ICPs into matrix, sitemap hierarchy, content kits/skills.
+
+2026-10-28 20:45Z: pushed 4cf9c9e (EE-063 customer types + sitemap view) and 582141c (EE-064 planner in reverse: product offered_to decides audience, public variants + gate check-public.mjs; EE-065 amends EE-044: marketing designs elements, engineering builds from marketing package; EE-066 kit->package rename proposed, HELD until after hackathon).
+
+
+Continued in [[ee-venture-package]].
