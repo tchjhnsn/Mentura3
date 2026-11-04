@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1575 files and 482 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1602 files and 483 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -41,9 +41,9 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
 | `console/lib` | 14 | 14 | Holds 14 product source files, types .ts 13, .mjs 1. | none | no noun exists |
-| `docs` | 148 | 3 | Holds 148 files, mostly .md (133), for example docs/ontology.json. | none | no noun exists |
+| `docs` | 175 | 3 | Holds 175 files, mostly .md (160), for example docs/ontology.json. | none | no noun exists |
 | `docs/decisions` | 1 | 1 | Holds 1 file, mostly .json (1), for example docs/decisions/decisions.json. | decision | maps cleanly |
-| `docs/design` | 58 | 28 | Holds 58 files, mostly .md (45), for example docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. | none | no noun exists |
+| `docs/design` | 85 | 28 | Holds 85 files, mostly .md (72), for example docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. | none | no noun exists |
 | `docs/master` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/master/naive-docs.md. | none | no noun exists |
 | `docs/memory` | 79 | 0 | Holds 79 files, mostly .md (79), for example docs/memory/claude/MEMORY.md. | none | no noun exists |
 | `docs/reference` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/reference/ROUTES.md. | none | no noun exists |
