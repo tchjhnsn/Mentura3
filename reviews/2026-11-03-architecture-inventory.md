@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1731 files and 513 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1734 files and 514 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -41,9 +41,9 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
 | `console/lib` | 14 | 14 | Holds 14 product source files, types .ts 13, .mjs 1. | none | no noun exists |
-| `docs` | 304 | 3 | Holds 11 example venture.json files outside instance/, types .md 169, .json 129, .patch 6. | none | no noun exists |
+| `docs` | 307 | 3 | Holds 11 example venture.json files outside instance/, types .md 170, .json 130, .patch 7. | none | no noun exists |
 | `docs/decisions` | 1 | 1 | Holds 1 file, mostly .json (1), for example docs/decisions/decisions.json. | decision | maps cleanly |
-| `docs/design` | 214 | 28 | Holds 11 example venture.json files outside instance/, types .json 127, .md 81, .patch 6. | none | no noun exists |
+| `docs/design` | 217 | 28 | Holds 11 example venture.json files outside instance/, types .json 128, .md 82, .patch 7. | none | no noun exists |
 | `docs/master` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/master/naive-docs.md. | none | no noun exists |
 | `docs/memory` | 79 | 0 | Holds 79 files, mostly .md (79), for example docs/memory/claude/MEMORY.md. | none | no noun exists |
 | `docs/reference` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/reference/ROUTES.md. | none | no noun exists |

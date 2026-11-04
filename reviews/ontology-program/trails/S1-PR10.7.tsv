@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:46:20Z	gate	G9 option B and G12 default: store PR #161 as a verbatim patch plus metadata, not applied	same as S1-PR10.5	plan lines 92 and 95
+2026-11-04T08:46:20Z	patch	gh pr diff 161, verbatim	build-the-lever	git apply --check on cb502f9 exit 0
+2026-11-04T08:46:20Z	ledger	name N-116 and N-124; leave out N-062	N-062 says its order lives only in agent memory, a Grok box note not yet preserved; naming it would hide that	merged ledger row N-062
+2026-11-04T08:46:20Z	scan	explain the three scan matches on patch line 14 in the marker	they describe a checker and a path, not confidential content; PR patches have no FLAGS.tsv rows	grep -n line 14
