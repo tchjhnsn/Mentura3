@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1573 files and 482 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1575 files and 482 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -147,7 +147,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `schema/terms` | 6 | 6 | Holds 5 product source files, types .ts 5, .json 1. | none | no noun exists |
 | `schema/types` | 1 | 1 | Holds 1 product source file, types .ts 1. | record type | maps to a noun with a different name |
 | `schema/vocab` | 1 | 1 | Holds 1 file, mostly .json (1), for example schema/vocab/business-models.json. | business model | maps to a noun with a different name |
-| `scripts` | 11 | 4 | Holds 8 product source files, types .mjs 5, .ts 3, .md 2, .jsonl 1. | none | no noun exists |
+| `scripts` | 13 | 6 | Holds 10 product source files, types .ts 5, .mjs 5, .md 2, .jsonl 1. | none | no noun exists |
 | `scripts/fixtures` | 1 | 0 | Holds 1 file, mostly .jsonl (1), for example scripts/fixtures/transcripts/proj/session-a.jsonl. | none | no noun exists |
 | `scripts/pr-review` | 6 | 4 | Holds 4 product source files, types .mjs 3, .md 2, .ts 1. | none | no noun exists |
 | `site` | 166 | 10 | Holds 84 product source files, types .mdx 50, .tsx 43, .ts 21, .mjs 17. | none | no noun exists |
@@ -195,7 +195,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `package.json` | 26 | packages 22, console 1, interface 1, (root) 1, site 1 |
 | `*.schema.json` | 105 | schema 101, platform 4 |
 | `*-test.mjs` | 61 | schema 52, interface 3, platform 3, scripts 2, operations 1 |
-| `*-test.ts` | 10 | schema 6, console 2, scripts 1, site 1 |
+| `*-test.ts` | 11 | schema 6, console 2, scripts 2, site 1 |
 | `*.test.ts` | 0 | nowhere |
 | `*.test.mjs` | 0 | nowhere |
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
@@ -208,7 +208,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
 | `*.mjs` | 331 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
-| `*.ts` | 57 | site 21, console 18, schema 16, scripts 2 |
+| `*.ts` | 59 | site 21, console 18, schema 16, scripts 4 |
 | `*.tsx` | 74 | site 43, console 31 |
 
 Conflicts, from those counts:
