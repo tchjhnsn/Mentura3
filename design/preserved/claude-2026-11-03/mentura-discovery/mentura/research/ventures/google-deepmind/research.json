@@ -1,0 +1,23 @@
+{
+ "venture": "google-deepmind",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "google-deepmind",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Genie 3; listed for world models only",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

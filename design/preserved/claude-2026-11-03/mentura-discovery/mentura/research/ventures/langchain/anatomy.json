@@ -1,0 +1,231 @@
+{
+ "venture": "anatomy-of:langchain",
+ "of": "langchain",
+ "study": {
+  "studied_by": "mentura",
+  "status": "draft",
+  "sources": [
+   "langchain-2025-10-20-series-b",
+   "techcrunch-2025-07-08-langchain"
+  ],
+  "source_policy": "Public sources only; company posts and reputable reporting; aggregators only as an index.",
+  "started": "2026-11-01"
+ },
+ "phase": "growth (inferred)",
+ "ladder": {
+  "0": "absent",
+  "1": "stated",
+  "2": "cited evidence",
+  "3": "verified by an outsider"
+ },
+ "reading": "Levels measure the PUBLIC record. A private company's confidential parts are unknown, not 0.",
+ "parts": {
+  "core": {
+   "level": {
+    "unknown": true,
+    "reason": "no mission statement read",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Frameworks and a platform for building, observing and evaluating agents.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "defined-terms": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "risk-register": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "customers": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "langchain-2025-10-20-series-b",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Replit, Clay, Harvey, Rippling, Cloudflare, Workday, Cisco named; about 35% of the Fortune 500 (company claim).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "market": {
+   "level": {
+    "value": 1,
+    "ref": {
+     "id": "techcrunch-2025-07-08-langchain",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "LLM application development and agent observability.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "products": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "langchain-2025-10-20-series-b",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "LangChain and LangGraph (open source, 1.0); LangSmith (observability, evaluation, deployment, Agent Builder).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "people": {
+   "level": {
+    "value": 1,
+    "ref": {
+     "id": "techcrunch-2025-07-08-langchain",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Founder Harrison Chase.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "control": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Ownership not public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "dependencies": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "LangSmith runs customers' chosen models; we run Jev inside it (our own use, not a source).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "financials": {
+   "level": {
+    "value": 1,
+    "ref": {
+     "id": "techcrunch-2025-07-08-langchain",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01",
+    "note": "ARR $12M to $16M per four sources, July 2025; company did not comment"
+   },
+   "summary": "Only press estimates.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "capital": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "langchain-2025-10-20-series-b",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "$125M Series B led by IVP at $1.25B (2025-10-20); a September 2026 Series C figure on a share marketplace is unverified.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "regulation": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Not read.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "related-parties": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  }
+ }
+}

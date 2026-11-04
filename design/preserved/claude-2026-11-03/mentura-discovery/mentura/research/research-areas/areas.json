@@ -1,0 +1,350 @@
+{
+ "record_type": "research-area-set",
+ "as_of": "2026-11-01",
+ "areas": [
+  {
+   "id": "machine-learning",
+   "label": "Machine learning",
+   "family": "learning",
+   "arxiv": {
+    "value": "cs.LG, stat.ML",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "reinforcement-learning",
+   "label": "Reinforcement learning",
+   "family": "learning",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "neural-evolutionary",
+   "label": "Neural and evolutionary computing",
+   "family": "learning",
+   "arxiv": {
+    "value": "cs.NE",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "language",
+   "label": "Language (NLP, language models)",
+   "family": "modalities",
+   "arxiv": {
+    "value": "cs.CL",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "vision",
+   "label": "Computer vision",
+   "family": "modalities",
+   "arxiv": {
+    "value": "cs.CV",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "speech-audio",
+   "label": "Speech and audio",
+   "family": "modalities",
+   "arxiv": {
+    "value": "eess.AS",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "generative-media",
+   "label": "Image, video and 3D generation",
+   "family": "modalities",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "krr",
+   "label": "Knowledge representation and reasoning",
+   "family": "reasoning",
+   "arxiv": {
+    "value": "cs.AI",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "logic-verification",
+   "label": "Logic and formal verification",
+   "family": "reasoning",
+   "arxiv": {
+    "value": "cs.LO",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "symbolic-computation",
+   "label": "Symbolic computation",
+   "family": "reasoning",
+   "arxiv": {
+    "value": "cs.SC",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "information-retrieval",
+   "label": "Information retrieval",
+   "family": "reasoning",
+   "arxiv": {
+    "value": "cs.IR",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "neuro-symbolic",
+   "label": "Neuro-symbolic integration",
+   "family": "reasoning",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "agents",
+   "label": "Agents and tool use",
+   "family": "acting",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "multi-agent",
+   "label": "Multi-agent systems",
+   "family": "acting",
+   "arxiv": {
+    "value": "cs.MA",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "robotics",
+   "label": "Robotics",
+   "family": "acting",
+   "arxiv": {
+    "value": "cs.RO",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "world-models",
+   "label": "World models",
+   "family": "acting",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "decision-models",
+   "label": "Decision models (non-generative)",
+   "family": "acting",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "alignment",
+   "label": "Alignment",
+   "family": "safety",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "interpretability",
+   "label": "Interpretability",
+   "family": "safety",
+   "arxiv": {
+    "unknown": true,
+    "reason": "no arXiv category; named from surveys and lab usage"
+   }
+  },
+  {
+   "id": "security",
+   "label": "Security and privacy",
+   "family": "safety",
+   "arxiv": {
+    "value": "cs.CR",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "hci",
+   "label": "Human-computer interaction",
+   "family": "society",
+   "arxiv": {
+    "value": "cs.HC",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "computing-hardware",
+   "label": "Hardware architecture",
+   "family": "systems",
+   "arxiv": {
+    "value": "cs.AR",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "distributed-training",
+   "label": "Distributed and parallel computing",
+   "family": "systems",
+   "arxiv": {
+    "value": "cs.DC",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "programming-languages",
+   "label": "Programming languages",
+   "family": "systems",
+   "arxiv": {
+    "value": "cs.PL",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "id": "neuroscience",
+   "label": "Neuroscience link",
+   "family": "society",
+   "arxiv": {
+    "value": "q-bio.NC",
+    "ref": {
+     "id": "arxiv-category-taxonomy",
+     "locator": "https://arxiv.org/category_taxonomy",
+     "tier": "primary",
+     "read": true
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "id": "w3c-skos-2009",
+ "title": "SKOS Simple Knowledge Organization System Reference",
+ "authors": "W3C (Miles, Bechhofer eds.)",
+ "venue": "W3C Recommendation, 18 August 2009",
+ "url": "https://www.w3.org/TR/skos-reference/",
+ "retrieved": "2026-11-01",
+ "tier": "known standard, not opened this session",
+ "quotes": [],
+ "read": "each concept is a node with a URI; broader, narrower and related links"
+}

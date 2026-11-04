@@ -1,0 +1,13 @@
+{
+ "id": "minsky-1974-frames",
+ "title": "A Framework for Representing Knowledge",
+ "authors": "Marvin Minsky",
+ "venue": "MIT AI Laboratory Memo 306, June 1974",
+ "url": "https://dspace.mit.edu/handle/1721.1/6089",
+ "retrieved": "2026-11-01",
+ "tier": "primary (read through search snippets)",
+ "quotes": [
+  "The 'top levels' of a frame are fixed, and represent things that are always true about the supposed situation. The lower levels have many 'slots' that must be filled by specific instances or data."
+ ],
+ "read": "defaults: shown only secondhand (FRL implemented 'defaults, constraints, inheritance, procedural attachment'); not quoted from the memo"
+}

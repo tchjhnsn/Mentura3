@@ -1,0 +1,20 @@
+{
+ "id": "langchain",
+ "kind": "venture",
+ "name": "LangChain, Inc.",
+ "study": {
+  "status": "draft",
+  "scope": "anatomy from public sources; products incl. LangSmith",
+  "started": "2026-11-01"
+ },
+ "identity": {
+  "unknown": true,
+  "reason": "legal entity details not read",
+  "as_of": "2026-11-01"
+ },
+ "phase": {
+  "unknown": true,
+  "reason": "not assessed",
+  "as_of": "2026-11-01"
+ }
+}

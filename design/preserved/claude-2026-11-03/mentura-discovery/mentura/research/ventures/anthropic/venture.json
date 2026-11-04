@@ -1,0 +1,214 @@
+{
+  "id": "anthropic",
+  "kind": "venture",
+  "name": "Anthropic, PBC",
+  "study": {
+    "studied_by": "mentura",
+    "status": "draft",
+    "schema": "draft shapes from everything-ecosystem PR #147 (cell, venture-anatomy); revalidate once Grokbot lands the schemas",
+    "sources": [
+      "anthropic-s-1-2026"
+    ],
+    "source_policy": "Public sources only. Every cell cites a reference id and a locator. A fact with no public source is unknown with a reason. Wording is ours unless quoted.",
+    "started": "2026-11-01"
+  },
+  "identity": {
+    "legal_form": {
+      "value": "Delaware public benefit corporation, incorporated January 2021",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Corporate Information"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    },
+    "founders": {
+      "value": [
+        "Dario Amodei",
+        "Daniela Amodei",
+        "Tom Brown",
+        "Jack Clark",
+        "Jared Kaplan",
+        "Sam McCandlish",
+        "Christopher Olah"
+      ],
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Founder Voting Structure"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    },
+    "essential_why": {
+      "value": "The responsible development and maintenance of advanced AI for the long-term benefit of humanity (the Company Purpose in its certificate of incorporation).",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Our Governance Structure and Its Goals"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    },
+    "self_description": {
+      "value": "First and foremost a research lab; also calls itself a platform company.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Overview; Business, Competition"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    }
+  },
+  "phase": {
+    "value": "scale",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our reading against Naive's phases: more than 11,900 customers at $100k+ TTM and revenue of $16.3B for the six months ended 2026-06-30. It claims Platform (others build on its primitives); Platform is not yet established to standard."
+  },
+  "core": {
+    "promise": {
+      "value": "Organisations can hand Claude real professional work and trust what comes back: frontier capability that is safe, steerable and predictable enough for mission-critical work.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Overview and Claude as a Virtual Collaborator"
+      },
+      "evidence": "inferred",
+      "as_of": "2026-10-26",
+      "note": "Our wording of the S-1's claims."
+    },
+    "promised_to": {
+      "value": "Enterprises and the knowledge workers and developers inside them.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Enterprise Strategy"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    },
+    "must_not": {
+      "value": "Catastrophic misuse, misaligned or unsanctioned autonomous action, or harm delivered under its name.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Risk Factors Summary"
+      },
+      "evidence": "inferred",
+      "as_of": "2026-10-26"
+    },
+    "competence": {
+      "value": "Frontier and safety research done as one programme, on one fungible multi-chip compute pool, with each model helping build the next (closing the loop).",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Prospectus Summary, Our Core Advantages"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-10-26"
+    }
+  },
+  "holds": {
+    "value": [
+      "anthropic-public-benefit-fund"
+    ],
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Our Commitment to Public Benefit"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26",
+    "note": "A wholly owned subsidiary holding 5% of fully diluted shares (Class N) for the Company Purpose. Ode with Anthropic is a partnership with private equity firms; the S-1 does not say Anthropic controls it, so it is not listed as held."
+  },
+  "decisions": [
+    {
+      "id": "anthropic-d-ipo",
+      "made": "2026-10-26",
+      "decision": "File to list Class A common stock on the Nasdaq Global Select Market.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Cover; Prospectus Summary, Controlled Company Status"
+      },
+      "implies": [
+        {
+          "part": "core",
+          "level": 2
+        },
+        {
+          "part": "defined-terms",
+          "level": 2
+        },
+        {
+          "part": "risk-register",
+          "level": 2
+        },
+        {
+          "part": "customers",
+          "level": 2
+        },
+        {
+          "part": "market",
+          "level": 2
+        },
+        {
+          "part": "products",
+          "level": 2
+        },
+        {
+          "part": "people",
+          "level": 2
+        },
+        {
+          "part": "control",
+          "level": 2
+        },
+        {
+          "part": "dependencies",
+          "level": 2
+        },
+        {
+          "part": "financials",
+          "level": 2
+        },
+        {
+          "part": "capital",
+          "level": 2
+        },
+        {
+          "part": "regulation",
+          "level": 2
+        },
+        {
+          "part": "related-parties",
+          "level": 2
+        }
+      ]
+    },
+    {
+      "id": "anthropic-d-pbc",
+      "made": "2021-01",
+      "decision": "Incorporate as a Delaware PBC with the Company Purpose.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Public Benefit Corporation Status"
+      }
+    },
+    {
+      "id": "anthropic-d-ltbt",
+      "made": "2023",
+      "decision": "Create the Long-Term Benefit Trust, which elects a majority of the board through Class T stock.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Long-Term Benefit Trust"
+      }
+    },
+    {
+      "id": "anthropic-d-rsp",
+      "made": "unknown",
+      "decision": "Responsible Scaling Policy: a model release can be delayed or restricted for safety.",
+      "ref": {
+        "id": "anthropic-s-1-2026",
+        "locator": "Business, Safety Research is Core to Our Business, Our Approach to Model Releases"
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+ "id": "langchain.langsmith",
+ "kind": "product",
+ "parent": "langchain",
+ "name": "LangSmith",
+ "offering": {
+  "value": "Observability, evaluation, deployment and Agent Builder for LLM apps and agents",
+  "ref": {
+   "id": "langchain-2025-10-20-series-b",
+   "locator": "body"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ },
+ "pricing": {
+  "value": "Free to start; $39/month small-team tier; custom enterprise (July 2025)",
+  "ref": {
+   "id": "techcrunch-2025-07-08-langchain",
+   "locator": "body"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ }
+}

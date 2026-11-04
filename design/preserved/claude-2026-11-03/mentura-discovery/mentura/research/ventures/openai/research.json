@@ -1,0 +1,91 @@
+{
+ "venture": "openai",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "openai",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "ChatGPT, API",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "openai",
+   "area": "reinforcement-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "o1 reasoning models",
+    "ref": {
+     "id": "arxiv-2502-17419"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "openai",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Codex, Atlas; AGENTS.md",
+    "ref": {
+     "id": "anthropic-2025-12-09-aaif"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "openai",
+   "area": "speech-audio",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "voice models; no page opened",
+    "ref": null,
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "openai",
+   "area": "generative-media",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "image and video models; no page opened",
+    "ref": null,
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

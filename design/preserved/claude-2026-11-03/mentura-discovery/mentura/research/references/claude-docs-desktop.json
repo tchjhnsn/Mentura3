@@ -1,0 +1,15 @@
+{
+ "id": "claude-docs-desktop",
+ "kind": "reference",
+ "title": "Claude Code docs: Claude Desktop, the Code tab",
+ "locator": "https://code.claude.com/docs/en/desktop.md",
+ "tier": "primary",
+ "read": true,
+ "accessed": "2026-11-01",
+ "quotes": [
+  "In the Claude Desktop app, Claude Code is the Code tab. The app also has chat and Cowork, which handles Dispatch and longer agentic work.",
+  "sessions appear in the session list at claude.ai/code and in the Claude apps on devices signed in to your claude.ai account",
+  "The desktop app reads the same settings files as the CLI",
+  "Cowork's configuration syncs through your claude.ai account"
+ ]
+}

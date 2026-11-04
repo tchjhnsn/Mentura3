@@ -1,0 +1,21 @@
+{
+ "id": "anthropic.duet",
+ "kind": "product",
+ "parent": "anthropic",
+ "name": "Claude Duet",
+ "as_of": "2026-11-01",
+ "refs": [
+  "claude-2026-10-21-duet",
+  "macrumors-2026-10-21-duet"
+ ],
+ "offering_kind": {
+  "derived_from": "naive-design/prototypes/architecture/offering-run.json",
+  "value": {
+   "Claude Duet": [
+    "app",
+    "product"
+   ]
+  }
+ },
+ "description": "A proactive agent that 'reaches out before you ask': connects to your apps, flags what needs attention, works in its own cloud browser, asks before acting. Standalone app on iOS and Android, also on claude.ai; uses the Claude account's memory, skills and connectors. Runs on Opus 5.5."
+}

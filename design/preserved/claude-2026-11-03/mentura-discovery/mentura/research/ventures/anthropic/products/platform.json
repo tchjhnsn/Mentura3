@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.platform",
+  "kind": "product",
+  "parent": "anthropic",
+  "name": "Claude Platform",
+  "job": {
+    "value": "Build, deploy and scale their own applications on Claude.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Developers and companies building products on Claude",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "API primitives (tool use, long context, code execution, files, MCP, skills, caching, batch), consumption priced",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

@@ -1,0 +1,16 @@
+{
+ "id": "macrumors-2026-10-21-duet",
+ "kind": "reference",
+ "title": "MacRumors: Anthropic Launches Claude Duet",
+ "locator": "https://www.macrumors.com/2026/10/21/anthropic-claude-duet/",
+ "tier": "secondary",
+ "read": true,
+ "accessed": "2026-11-01",
+ "quotes": [
+  "reaches out before you ask",
+  "usable on the web or in a standalone iOS app",
+  "a standalone product",
+  "draws on memory, skills, and connected apps from a Claude account",
+  "Duet is built around Opus 5.5"
+ ]
+}

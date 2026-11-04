@@ -1,0 +1,18 @@
+{
+ "id": "anthropic-2026-06-23-claude-tag",
+ "kind": "reference",
+ "title": "Anthropic: Introducing Claude Tag (2026-06-23)",
+ "locator": "https://www.anthropic.com/news/introducing-claude-tag",
+ "tier": "primary",
+ "read": true,
+ "accessed": "2026-11-01",
+ "quotes": [
+  "Published Jun 23, 2026",
+  "beta for Claude Enterprise and Team customers",
+  "launches on Slack",
+  "Claude Tag works with Opus 4.8",
+  "the beginning of an evolution of Claude Code",
+  "replaces the existing Claude in Slack app",
+  "introductory launch credit"
+ ]
+}

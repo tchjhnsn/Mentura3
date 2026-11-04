@@ -1,0 +1,55 @@
+{
+ "venture": "thinking-machines",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "thinking-machines",
+   "area": "machine-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Tinker; LoRA Without Regret",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "thinking-machines",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Inkling open weights",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "thinking-machines",
+   "area": "hci",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "interaction models preview",
+    "ref": null,
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

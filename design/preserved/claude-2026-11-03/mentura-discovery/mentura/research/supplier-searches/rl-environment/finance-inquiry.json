@@ -1,0 +1,17 @@
+{
+ "id": "inquiry.finance-to-engineering.rl-environment.1",
+ "kind": "cross-function inquiry",
+ "from": "finance", "to": "engineering",
+ "triggered_by": {"event": "record written", "record": "supplier-searches/rl-environment/ranking.json", "at": "2026-11-01T05:55:00Z"},
+ "cites": ["need.rl-environment", "candidates/prime-intellect-verifiers.json"],
+ "questions": [
+  {"id": "Q1", "asks": "Which product would you use: the library only, the Hub, or Hosted Training?", "why": "decides whether there is a vendor bill at all", "answer": "unknown"},
+  {"id": "Q2", "asks": "Self-hosted compute or a GPU provider? Which one?", "why": "the library is free; compute is the cost", "answer": "unknown"},
+  {"id": "Q3", "asks": "Base model and size?", "why": "GPU type and hours scale with it", "answer": "unknown"},
+  {"id": "Q4", "asks": "Rollouts per training run, and runs per month?", "why": "usage-priced compute", "answer": "unknown"},
+  {"id": "Q5", "asks": "Which phase does training start in?", "why": "when the cost lands against runway; decided 04:49Z: log now, train later", "answer": "after the check-outcome log has volume; date unknown"},
+  {"id": "Q6", "asks": "Does any environment need exclusivity?", "why": "Epoch reports exclusive deals cost about 4-5x", "answer": "no: we build our own environments on our records"}
+ ],
+ "next": {"finance research": "price GPU compute for the answers to Q2-Q4", "status": "gated: waits on Q1-Q4", "writes_to": "finance records only (cost model), citing engineering's records; never edits engineering's records"},
+ "as_of": "2026-11-01T05:56:00Z"
+}

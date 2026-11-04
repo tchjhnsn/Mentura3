@@ -1,0 +1,399 @@
+{
+ "as_of": "2026-11-01",
+ "memberships": [
+  {
+   "record_type": "belongs-to",
+   "venture": "anthropic",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Claude models; S-1 Business",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "anthropic",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Claude Code, Cowork; S-1 Business",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "anthropic",
+   "area": "interpretability",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "S-1 Business, research",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "anthropic",
+   "area": "alignment",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Responsible Scaling Policy; S-1",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "anthropic",
+   "area": "reinforcement-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "RL in training, not checked in an opened page",
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "openai",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "ChatGPT, API (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "openai",
+   "area": "reinforcement-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "reasoning models o1 (survey 2502.17419)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "openai",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Codex, Atlas (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "openai",
+   "area": "speech-audio",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "voice in ChatGPT; not opened this session",
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "openai",
+   "area": "generative-media",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "image and video models; not opened this session",
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "spacexai",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Grok 4.5 and 4.6 (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "spacexai",
+   "area": "distributed-training",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Colossus 2, gigawatt scale (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "spacexai",
+   "area": "generative-media",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Grok Imagine video (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "spacexai",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Grok Bot, August 2026 (reporting)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "typesafe",
+   "area": "decision-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Jev; typesafe.ai/manifesto, latent.space/p/jev",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "typesafe",
+   "area": "reinforcement-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "RLCD training (primer)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "thinking-machines",
+   "area": "machine-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Tinker fine-tuning API; LoRA Without Regret",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "thinking-machines",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Inkling open weights, 2026-07-15",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "thinking-machines",
+   "area": "hci",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "interaction models preview, May 2026",
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "ami-labs",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "JEPA; $1.03B seed, March 2026",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "world-labs",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Marble; $1B raise, February 2026",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "google-deepmind",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Genie 3 (listed for world models only)",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "nvidia",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "Cosmos open weights",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "nvidia",
+   "area": "computing-hardware",
+   "share": {
+    "unknown": true,
+    "reason": "no basis for a share yet"
+   },
+   "basis": {
+    "value": "GPUs",
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ],
+ "candidate": [
+  {
+   "record_type": "belongs-to",
+   "venture": "naive-mentura",
+   "area": "krr",
+   "status": "candidate, not locked",
+   "basis": {
+    "value": "knowledge graph of record, ontology, typed cells",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "naive-mentura",
+   "area": "logic-verification",
+   "status": "candidate, not locked",
+   "basis": {
+    "value": "term engine + Lean theorems",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "naive-mentura",
+   "area": "neuro-symbolic",
+   "status": "candidate, not locked",
+   "basis": {
+    "value": "records-first: Kautz Type 3, Type 2 in the research engine",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "naive-mentura",
+   "area": "hci",
+   "status": "candidate, not locked",
+   "basis": {
+    "value": "workbench, decision cards",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "belongs-to",
+   "venture": "naive-mentura",
+   "area": "information-retrieval",
+   "status": "candidate, not locked",
+   "basis": {
+    "value": "research engine reads sources (confidential)",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  }
+ ],
+ "superseded_by": "ventures/<id>/research.json (lab links) and research-areas/self.json (our placement), 2026-11-01T04:40Z"
+}

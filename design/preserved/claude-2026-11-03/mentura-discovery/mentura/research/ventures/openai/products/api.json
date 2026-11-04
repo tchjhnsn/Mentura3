@@ -1,0 +1,39 @@
+{
+  "id": "openai.api",
+  "kind": "product",
+  "parent": "openai",
+  "name": "OpenAI API and models (GPT-5.x, GPT-6, image, speech)",
+  "job": {
+    "value": "Give developers model intelligence to build into their products.",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01",
+    "note": "Our wording."
+  },
+  "served": {
+    "value": "Developers and businesses",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+  },
+  "offering": {
+    "value": "Metered tokens by model",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "OpenAI does not publish revenue by product.",
+    "as_of": "2026-11-01"
+  }
+}

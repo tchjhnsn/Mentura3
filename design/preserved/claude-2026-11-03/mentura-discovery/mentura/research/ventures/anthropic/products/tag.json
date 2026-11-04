@@ -1,0 +1,20 @@
+{
+ "id": "anthropic.tag",
+ "kind": "product",
+ "parent": "anthropic",
+ "name": "Claude Tag",
+ "as_of": "2026-11-01",
+ "refs": [
+  "anthropic-2026-06-23-claude-tag"
+ ],
+ "offering_kind": {
+  "derived_from": "naive-design/prototypes/architecture/offering-run.json",
+  "value": {
+   "Claude Tag": [
+    "product",
+    "framework"
+   ]
+  }
+ },
+ "description": "An ambient agent tagged into channels and threads, with channel-scoped memory. Beta for Team and Enterprise since 2026-06-23; runs inside Slack with no client of its own; 'the beginning of an evolution of Claude Code'."
+}

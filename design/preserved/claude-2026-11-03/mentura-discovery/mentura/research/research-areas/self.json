@@ -1,0 +1,139 @@
+{
+ "record_type": "self-placement",
+ "ventures": [
+  "naive",
+  "mentura",
+  "polity (observer, polity-os)"
+ ],
+ "status": "candidate, not locked",
+ "as_of": "2026-11-01",
+ "researches": [
+  {
+   "area": "krr",
+   "basis": {
+    "value": "knowledge graph of record, ontology, typed cells",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "area": "logic-verification",
+   "basis": {
+    "value": "term engine, Lean theorems",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "area": "neuro-symbolic",
+   "basis": {
+    "value": "records-first, Kautz Type 3 (Type 2 in the research engine); Polity's observer is Type 3 too: 'code decides; models only classify inputs'",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "area": "multi-agent",
+   "basis": {
+    "value": "coordination and permission logic between agent roles: who may act without whose approval, what records a handoff needs",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "area": "hci",
+   "basis": {
+    "value": "workbench, decision cards",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "area": "information-retrieval",
+   "basis": {
+    "value": "research engine (confidential)",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  }
+ ],
+ "offers_via_platforms": [
+  {
+   "area": "agents",
+   "basis": {
+    "value": "agents acting as a venture's early employees, one suite per business function, run on others' agent platforms",
+    "evidence": "assumed",
+    "as_of": "2026-11-01",
+    "note": "we coordinate them; we do not build the agent runtime"
+   }
+  }
+ ],
+ "depends_on": [
+  {
+   "supplier": "anthropic",
+   "products": [
+    "Claude models",
+    "Claude Code"
+   ]
+  },
+  {
+   "supplier": "spacexai",
+   "products": [
+    "Cursor",
+    "Grokbot"
+   ]
+  },
+  {
+   "supplier": "typesafe",
+   "products": [
+    "Jev"
+   ]
+  },
+  {
+   "supplier": "langchain",
+   "products": [
+    "LangSmith"
+   ]
+  }
+ ],
+ "interest": [
+  {
+   "area": "reinforcement-learning",
+   "basis": {
+    "value": "decision models like Jev; symbolic checks as verifiable rewards (cf. arXiv 2610.40564, binary verifiable rewards)",
+    "evidence": "assumed",
+    "as_of": "2026-11-01",
+    "note": "interest only, nothing built"
+   }
+  },
+  {
+   "area": "decision-models",
+   "basis": {
+    "value": "study Jev-style typed, calibrated models",
+    "evidence": "assumed",
+    "as_of": "2026-11-01"
+   }
+  }
+ ],
+ "organization": {
+  "value": "applied AI company with an internal research function; no public AI-lab claim; publishing decided later",
+  "decided": "Torian, 2026-11-01 04:33Z (decision card)",
+  "research_function": {
+   "areas": [
+    "krr",
+    "logic-verification",
+    "neuro-symbolic",
+    "multi-agent",
+    "hci",
+    "information-retrieval"
+   ],
+   "interests": [
+    "reinforcement-learning",
+    "decision-models"
+   ],
+   "public": false
+  },
+  "open": "whether 'research' joins the 13 functions in everything-ecosystem functions/ (EE-090) or sits under an existing function"
+ },
+ "competitor_status": "not proven for any supplier; see relationships/competitor-check-2026-11-01.json"
+}

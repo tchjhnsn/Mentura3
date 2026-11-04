@@ -1,0 +1,20 @@
+{
+ "id": "anthropic.agent-sdk",
+ "kind": "product",
+ "parent": "anthropic",
+ "name": "Claude Agent SDK",
+ "as_of": "2026-11-01",
+ "refs": [
+  "claude-docs-agent-sdk-overview"
+ ],
+ "offering_kind": {
+  "derived_from": "naive-design/prototypes/architecture/offering-run.json",
+  "value": {
+   "Claude Agent SDK": [
+    "product",
+    "framework"
+   ]
+  }
+ },
+ "description": null
+}

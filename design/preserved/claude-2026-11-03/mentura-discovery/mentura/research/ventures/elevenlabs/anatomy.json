@@ -1,0 +1,248 @@
+{
+ "venture": "anatomy-of:elevenlabs",
+ "of": "elevenlabs",
+ "study": {
+  "studied_by": "mentura",
+  "status": "draft",
+  "sources": [
+   "elevenlabs-docs-agents-overview",
+   "elevenlabs-docs-agents-llm",
+   "dataconomy-2026-02-04-elevenlabs-series-d",
+   "decoder-2025-05-31-claude-elevenlabs"
+  ],
+  "source_policy": "Public sources only; company posts and reputable reporting; aggregators only as an index.",
+  "started": "2026-11-01"
+ },
+ "phase": "scale (inferred from ARR)",
+ "ladder": {
+  "0": "absent",
+  "1": "stated",
+  "2": "cited evidence",
+  "3": "verified by an outsider"
+ },
+ "reading": "Levels measure the PUBLIC record. A private company's confidential parts are unknown, not 0.",
+ "parts": {
+  "core": {
+   "level": {
+    "unknown": true,
+    "reason": "no company mission statement read",
+    "as_of": "2026-11-01"
+   },
+   "summary": "The co-founder frames the aim as turning research into deployed audio experiences (Dataconomy).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "defined-terms": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "risk-register": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "customers": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Not read. One aggregator says enterprise is 55% of revenue (unverified).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "market": {
+   "level": {
+    "value": 1,
+    "ref": {
+     "id": "dataconomy-2026-02-04-elevenlabs-series-d",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Voice and audio AI; considering video (LTX partnership).",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "products": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "elevenlabs-docs-agents-overview",
+     "locator": "overview"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "ElevenAgents (ASR, LLM of choice, TTS, turn-taking), Creative audio tools, realtime voice model.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "people": {
+   "level": {
+    "value": 1,
+    "ref": {
+     "id": "dataconomy-2026-02-04-elevenlabs-series-d",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Co-founder Mati Staniszewski; Sequoia's Andrew Reed joins the board.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "control": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Board seat for Sequoia; ownership not public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "dependencies": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "elevenlabs-docs-agents-llm",
+     "locator": "LLM list"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Agents run on suppliers' language models (Anthropic, OpenAI, Google) or open weights it hosts.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "financials": {
+   "level": {
+    "contested": true,
+    "values": [
+     {
+      "value": "ARR $330M at end of 2025",
+      "ref": {
+       "id": "dataconomy-2026-02-04-elevenlabs-series-d",
+       "locator": "body"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-11-01",
+      "note": "company-stated, reported"
+     },
+     {
+      "value": "ARR about $600M in September 2026",
+      "ref": {
+       "id": "dealroom-elevenlabs-22b-secondary"
+      },
+      "evidence": "assumed",
+      "as_of": "2026-11-01",
+      "note": "aggregator, not read"
+     }
+    ],
+    "as_of": "2026-11-01"
+   },
+   "summary": "Revenue is company-stated through the press only; level 1 at most.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "capital": {
+   "level": {
+    "value": 2,
+    "ref": {
+     "id": "dataconomy-2026-02-04-elevenlabs-series-d",
+     "locator": "body"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "summary": "$500M Series D led by Sequoia at $11B (2026-02-04); a reported staff share sale at $22B is unverified.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "regulation": {
+   "level": {
+    "unknown": true,
+    "reason": "no source read for this part",
+    "as_of": "2026-11-01"
+   },
+   "summary": "Voice cloning and consent rules likely matter; not read.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  },
+  "related-parties": {
+   "level": {
+    "unknown": true,
+    "reason": "private; no filing",
+    "as_of": "2026-11-01"
+   },
+   "summary": "None public.",
+   "required": {
+    "unknown": true,
+    "reason": "phase tables (L1-by, L2-by) not applied in this draft; the runner in PR #147 computes them",
+    "as_of": "2026-11-01"
+   },
+   "meets": "unknown"
+  }
+ }
+}

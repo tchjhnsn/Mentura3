@@ -1,0 +1,20 @@
+{
+ "record_type": "supplies",
+ "from": "typesafe",
+ "to": "naive-mentura",
+ "what": "Jev: decision model (in use via LangSmith; planned in the pipeline)",
+ "kind": "tooling supplier (vendor) for development",
+ "basis": {
+  "value": "Torian uses these products to build ours",
+  "evidence": "demonstrated",
+  "ref": {
+   "id": "torian-2026-11-01-0445z",
+   "locator": "thread message"
+  },
+  "as_of": "2026-11-01"
+ },
+ "competes": {
+  "status": "see competitor-check-2026-11-01.json",
+  "rule": "not-a-competitor needs no shared job+segment AND no shared scarce input"
+ }
+}
