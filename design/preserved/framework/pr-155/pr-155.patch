@@ -1,0 +1,23 @@
+diff --git a/docs/decisions/decisions.json b/docs/decisions/decisions.json
+index 7d76b101..508c1bd8 100644
+--- a/docs/decisions/decisions.json
++++ b/docs/decisions/decisions.json
+@@ -1321,6 +1321,18 @@
+           "expect": "exists"
+         }
+       ]
++    },
++    {
++      "id": "EE-101",
++      "date": "2026-11-02",
++      "status": "in-force",
++      "decision": "Standing rule for who does what. Language models write packages, ADRs, plans, code and summaries. Jev (TypeSafe's System One model, a typed-answer model that returns pick-one, scale and yes/no answers with probabilities and no free text) judges and routes: gate checks, fact scores, impact-tier scores and router rewards. Plain code checks anything checkable: arithmetic, dates, the Wilson lower bound, SPRT math and the type gate. Jev must never compute.",
++      "why": "Torian, 2026-11-02. Jev is cheap and fast, and its output format is always valid, but its arithmetic is at chance and its calibration varies by task and wording, so it must never compute. Language models are needed for open-ended writing. Code is exact and free for anything deterministic. Two alternatives were rejected. Jev for everything was rejected because Jev cannot write. Language models for everything were rejected because they are far more expensive at scale and less structured for judging. This is the standing form of the split EE-007 already uses for tool choice, where a reasoning model writes and Jev scores, and of EE-042, where a fast model may read a rule and code resolves it. The figures that follow are taken from the research note TypeSafe Jev vs language models for Naive's functions (2026-11-02) and from sources that note lists, and each figure names its source. Jev's list price is $0.042 per million input tokens, and output is free (TypeSafe home page and FAQ, https://typesafe.ai/, and Introducing System One models and Jev, https://typesafe.ai/blog/introducing-system-one-models-and-jev). A call takes about 0.1 to 0.2 seconds: Vals AI measured a median of 0.10 s isolated and 0.11 s under load (An Independent Evaluation of TypeSafe's Jev, 2026-10-06, https://www.vals.ai/blogs/independent-evaluation-of-jev), and SILT measured a median of 0.18 s and a p90 of 0.22 s (SILT-RP-009, 2026-10-10, https://sentientindexlabs.com/publications/silt-rp-009). The same note's probe against jev-1.14.0 on 2026-11-02 measured 67 to 152 ms. The format holds: Vals reported no malformed responses, and that probe returned 27 valid answers out of 27. SILT measured arithmetic accuracy at 50%, which is chance (same SILT-RP-009), and TypeSafe's jaggedness note says Jev is not a calculator (https://docs.typesafe.ai/model-jaggedness/jev-1.13). Calibration depends on the task and the wording. Vals measured an ECE of 0.011 on claim verification and 0.108 on LegalBench (same Vals evaluation). A calibration audit found that asking the same question two ways changed ECE by 0.071 (L. Meng, How far can a commercial decision model's probabilities be trusted, 2026-09-24, https://lsmeng.github.io/pdf/preprint-jev-calibration-audit.pdf). The TypeSafe FAQ says the guarantee covers the shape of the answers, not that every decision is correct (https://typesafe.ai/). Jev returns no free text: the System One post, the System One concept (https://docs.typesafe.ai/concepts/system-one) and the coding-agents introduction (https://docs.typesafe.ai/introduction/coding-agents) describe typed answers and no generated text. On that research note's cost model, which assumes 1 million decisions a day and 20 judgments on each, batched Jev judging is about $8.4k a month. The same judgments on Sonnet 5.5 are about $200k a month with caching, or $542k without. The note takes Sonnet 5.5 prices of $2 per million input tokens, $0.10 per million cached input tokens and $10 per million output tokens from its storage-cost source. Those monthly totals are the note's arithmetic on the assumptions it marks, not a separate measurement.",
++      "related": [
++        "EE-007",
++        "EE-039",
++        "EE-042"
++      ]
+     }
+   ]
+ }

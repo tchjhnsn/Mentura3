@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:43:31Z	gate	G9 option B and G12 default: store PR #155 as a verbatim patch plus metadata, not applied	Torian settled G9 as option B on Nov 4; G12 default preserves EE-101 in an S1-PR10 unit	plan lines 92 and 95
+2026-11-04T08:43:31Z	patch	gh pr diff 155, verbatim	build-the-lever, same as S1-PR5	sha256 8aac2cda...9590; git apply --check on cb502f9 exit 0
+2026-11-04T08:43:31Z	metadata	pr-155.json from REST pulls/155 and pulls/155/files	gh pr view needs GraphQL, which returns 403 here	same method as S1-PR5a to S1-PR5d
+2026-11-04T08:43:31Z	ledger	name N-128 and N-015, not N-129	N-129 is EE-102 in #156, which is stacked on #155 and gets its own unit	ledger rows citing #155
