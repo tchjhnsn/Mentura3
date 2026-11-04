@@ -1,0 +1,6 @@
+time	step	choice	why	evidence
+2026-11-04T03:23:39Z	gate	follow G9 option B, store the patch and metadata	Torian 2026-11-04 01:22Z settled G9 as option B	plan line 92; project thread
+2026-11-04T03:23:39Z	gate	take G12 default, cited decisions preserved in S1-PR10 units	the plan states a default and under option B nothing applies the patch; Torian 2026-11-04: take a gate default without a card	plan line 95; plan line 748
+2026-11-04T03:23:39Z	patch	gh pr diff 162, verbatim	build-the-lever: the plan's own command	sha256 6192134d...1c0b; git apply --check on cb502f9 exit 0
+2026-11-04T03:23:39Z	metadata	build pr-162.json from REST pulls/162 and pulls/162/files with gh field names	gh pr view needs GraphQL, which returns HTTP 403 here	same method as S1-PR5a to S1-PR5c
+2026-11-04T03:23:39Z	data model	no schema edit	the docs/design/preserved/**/*.json ignore from #181 covers pr-162.json	node schema/check-data-model.mjs exit 0
