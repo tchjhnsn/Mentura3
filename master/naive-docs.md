@@ -57,7 +57,7 @@ founders/<handle>/
 
 ### Words that are checked, not argued
 
-Every term in Naive's glossary goes through the same admission, without anyone asking for it: it is defined as properties that can each fail, frozen by a hash, checked as a valid test (deterministic, blind to the label anyone uses, able to pass and to fail, never passed by unconfirmed facts), and cross-run against every other term at its level. Lean theorems in `lean/` back three terms so far (founder, co-founder and phase-gate); the other six have none yet, and nothing checks that a theorem matches its term's current definition. Each term is recorded as proposed until a person decides it. When a definition is contested, run `node schema/terms/admit.ts` instead of asking how it was defined. A prediction the run refutes is a finding about the definition, not an error.
+Every term in Naive's glossary goes through the same admission, without anyone asking for it: it is defined as properties that can each fail, frozen by a hash, checked as a valid test (deterministic, blind to the label anyone uses, able to pass and to fail, never passed by unconfirmed facts), and cross-run against every other term at its level. Lean theorems in `lean/` back four terms so far (founder, co-founder, phase-gate and layer); the other seven have none yet, and nothing checks that a theorem matches its term's current definition. Each term is recorded as proposed until a person decides it. When a definition is contested, run `node schema/terms/admit.ts` instead of asking how it was defined. A prediction the run refutes is a finding about the definition, not an error.
 
 ## A venture's structure
 
