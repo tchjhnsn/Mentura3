@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1764 files and 520 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1768 files and 523 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -133,18 +133,18 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `purpose/skills` | 2 | 0 | Holds 2 SKILL.md files, types .md 2. | tooling | maps to a noun with a different name |
 | `purpose/templates` | 1 | 1 | Holds 1 file marked as a template, types .md 1. | template | maps cleanly |
 | `purpose/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example purpose/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `schema` | 515 | 288 | Holds a layer.json whose layer is system, 103 JSON Schema files, 200 product source files, 7 example venture.json files outside instance/, types .json 227, .mjs 174, .md 66, .ts 25. | layer, layer manifest, schema, record type, data model | maps to several nouns |
-| `schema/examples` | 194 | 1 | Holds 3 product source files, 7 example venture.json files outside instance/, types .json 105, .md 65, (none) 17, .jsonl 4. | none | no noun exists |
+| `schema` | 519 | 288 | Holds a layer.json whose layer is system, 103 JSON Schema files, 201 product source files, 7 example venture.json files outside instance/, types .json 230, .mjs 174, .md 66, .ts 26. | layer, layer manifest, schema, record type, data model | maps to several nouns |
+| `schema/examples` | 197 | 1 | Holds 3 product source files, 7 example venture.json files outside instance/, types .json 108, .md 65, (none) 17, .jsonl 4. | none | no noun exists |
 | `schema/examples/frames` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `schema/examples/migrate` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `schema/examples/venture-type` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
-| `schema/examples/workspace` | 190 | 1 | Holds 7 example venture.json files outside instance/, types .json 104, .md 65, (none) 17, .jsonl 4. | workspace | maps cleanly |
+| `schema/examples/workspace` | 193 | 1 | Holds 7 example venture.json files outside instance/, types .json 107, .md 65, (none) 17, .jsonl 4. | workspace | maps cleanly |
 | `schema/fixtures` | 6 | 0 | Holds 6 files, mostly .json (6), for example schema/fixtures/ontology-gate/founder-properties.json. | none | no noun exists |
 | `schema/fixtures/ontology-gate` | 6 | 6 | Holds 6 files, mostly .json (6), for example schema/fixtures/ontology-gate/founder-properties.json. | none | no noun exists |
 | `schema/generators` | 6 | 6 | Holds 5 product source files, types .mjs 5, .json 1. | none | no noun exists |
 | `schema/migrations` | 5 | 5 | Holds 5 product source files, types .mjs 5. | none | no noun exists |
 | `schema/scaffold` | 1 | 1 | Holds 1 file, mostly .json (1), for example schema/scaffold/defaults.json. | none | no noun exists |
-| `schema/terms` | 13 | 13 | Holds 12 product source files, types .ts 12, .json 1. | none | no noun exists |
+| `schema/terms` | 14 | 14 | Holds 13 product source files, types .ts 13, .json 1. | none | no noun exists |
 | `schema/types` | 1 | 1 | Holds 1 product source file, types .ts 1. | record type | maps to a noun with a different name |
 | `schema/vocab` | 1 | 1 | Holds 1 file, mostly .json (1), for example schema/vocab/business-models.json. | business model | maps to a noun with a different name |
 | `scripts` | 13 | 6 | Holds 10 product source files, types .ts 5, .mjs 5, .md 2, .jsonl 1. | none | no noun exists |
@@ -208,7 +208,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
 | `*.mjs` | 331 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
-| `*.ts` | 67 | schema 24, site 21, console 18, scripts 4 |
+| `*.ts` | 68 | schema 25, site 21, console 18, scripts 4 |
 | `*.tsx` | 74 | site 43, console 31 |
 
 Conflicts, from those counts:
@@ -216,7 +216,7 @@ Conflicts, from those counts:
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
 - Dated filenames (YYYY-MM-DD) occur 66 times. docs/design has 53. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
-- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 24 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
+- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 25 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
 
@@ -299,7 +299,7 @@ Content that shows up in the tree and matched no ontology noun:
 | Lean proof | 8 | `lean/Naive.lean` |
 | TLA+ specification | 27 | `verification/cursor/lint-money/MoneyLint.tla` |
 | connector module under knowledge/connectors or platform/connectors | 10 | `knowledge/connectors/catalog.mjs` |
-| term engine source under schema/terms | 12 | `schema/terms/admit.ts` |
+| term engine source under schema/terms | 13 | `schema/terms/admit.ts` |
 | Gherkin feature | 3 | `governance/features/decisions.feature` |
 | GitHub Actions workflow | 6 | `.github/workflows/claude.yml` |
 
@@ -316,7 +316,7 @@ Live nouns with no folder match, no schema-file stem, and no detector hit: 55.
 - system (7): method, provenance, provenance log, repository (repo), the system, vault, venture development framework.
 - venture (12): ambition, central data management structure, core product, customer@finance, customer@marketing-and-sales, funding, gate, industry, legal form, link, phase, venture profile.
 
-Admitted terms in `schema/terms/admitted.json`: 12 (founder, co-founder, early-employee, mentor, coach, friend, unearned-candour, threshold-guardian, phase-gate, layer, area, top-category). None of these ids is a top-level directory. The term engine currently admits roles and acts. It does not admit architecture folders.
+Admitted terms in `schema/terms/admitted.json`: 13 (founder, co-founder, early-employee, mentor, coach, friend, unearned-candour, threshold-guardian, phase-gate, layer, area, top-category, typed-link). None of these ids is a top-level directory. The term engine currently admits roles and acts. It does not admit architecture folders.
 
 Two kit locations exist. `platform/kits/` holds `kit.json` files, which is the path `platform/kits/README.md` states. `purpose/kits/` holds the validation kit, headed as a kit in `purpose/kits/validation/README.md`, with templates and skills and no `kit.json` in that tree. The kit noun has two homes, and they are not the same shape.
 
