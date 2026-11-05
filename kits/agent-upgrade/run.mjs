@@ -15,7 +15,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { agentFromEnv, record } from "../../../interface/provenance.mjs";
+import { agentFromEnv, record } from "../../../packages/core/provenance.mjs";
 import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "../../../schema/upgrades.mjs";
 
 const repo = new URL("../../..", import.meta.url).pathname;

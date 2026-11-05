@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "../../interface/provenance.mjs";
+import { entries } from "../../packages/core/provenance.mjs";
 import { snapshot } from "../../schema/upgrades.mjs";
 
 const repo = new URL("../..", import.meta.url).pathname;

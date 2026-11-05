@@ -57,7 +57,7 @@ cpSync(join(repo, "schema/examples/workspace"), ws, { recursive: true });
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 const { call } = await import("../../interface/router.mjs");
-const { entries } = await import("../../interface/provenance.mjs");
+const { entries } = await import("../../packages/core/provenance.mjs");
 const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in GitHub)" };
 const team = fakeGitHub({ repo: "acme/tandem", files: { "ventures/tandem/products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "ventures/tandem/notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" } });
 useFetch(team.fetch);
