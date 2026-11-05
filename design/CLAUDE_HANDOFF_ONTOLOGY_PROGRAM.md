@@ -86,7 +86,7 @@ Claude does not decide these. When a unit reaches one, Claude posts one decision
 - [x] G3. AI and mentor. C-100 says AI is never a mentor (N-098). EE-046's tagline says a mentor for your journey (N-195). Blocks the naive@governance and naive@purpose scopes in S3-PR5. Decided Nov 5 (14:31Z): mentor means a human. Naive's AI is a coach that works for the mentor and never speaks for a human, so C-100 stands and EE-046's tagline is to be reworded. Recorded as EE-117.
 - [ ] G4. Whether EE-095 gets `affects` entries in `docs/decisions/decisions.json`. Blocks S2-PR1.
 - [ ] G5. Whether the 13 owner@area scopes stand in for the catalog until S2-PR7 lands. Blocks S2-PR7.
-- [ ] G6. Whether the 9 mixed-scope ideas are placed right. Blocks their scopes in S3-PR5.
+- [x] G6. Whether the 9 mixed-scope ideas are placed right. Blocks their scopes in S3-PR5. Decided Nov 5 (15:57Z) on a decision card: ideas whose scope is mixed go to shared.
 - [ ] G7. Whether `framework` is rebased onto `main` before closure. The default is no rebase, since stage 1 preserves its PRs from their own diffs. Blocks S4-PR2.
 - [x] G8. The missing `usage.json` and the prototype code (the sandbox `*-vocab.ts` and `*.lean` files) that only Claude's project or the Mac holds. Torian has to supply them. Blocks those rows in S1-PR10. Decided Nov 4: the files were in the shared project folder, so S1-PR10.12 (#202) preserved the whole sandbox folder, `usage.json` included.
 - [x] G9. How the framework PRs land as-is. Option A applies each patch onto `main`, which makes its code and its `in-force` decision live. Option B, the default, stores each PR's verbatim patch and metadata under `docs/design/preserved/framework/`, so nothing runs until stage 2 applies it. Torian's rule says as-is and also says no code treats preserved work as live, and only option B meets both. Blocks S1-PR5a to S1-PR5d. Decided Nov 4 (01:22Z) as option B, the default.
@@ -1783,6 +1783,8 @@ Each live lane runs on its own cloud VM at the PR head. Drive through `control-u
 **Owner.** Claude.
 
 **Depends on.** S3-PR4. Each S3-PR5.k is independent and covers one ontology scope.
+
+**Deferred.** Torian's 2026-11-05 16:22Z card chose "Defer rulings, go to stage 4". Labels stay as proposals until a later ruling session, and stage 4 starts without S3-PR5.
 
 **Files.**
 
