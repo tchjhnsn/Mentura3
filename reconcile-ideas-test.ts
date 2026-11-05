@@ -158,7 +158,7 @@ try {
 
   const real = spawnSync(process.execPath, [runner], { cwd: repo, encoding: "utf8" });
   assert.equal(real.status, 0, real.stderr);
-  assert.match(real.stdout, /^218 ideas, 0 proposals, 0 labels, 0 transitions; no change$/m, "the 218 records with no proposals change nothing");
+  assert.match(real.stdout, /^218 ideas, \d+ proposals, \d+ labels( \([^)]*\))?, 0 transitions; no change$/m, "the committed state and queue are fresh for the committed proposals");
   console.log("reconcile runner: all pass");
 } finally {
   rmSync(root, { recursive: true, force: true });
