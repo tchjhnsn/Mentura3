@@ -67,11 +67,10 @@ Of the 141 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `instance` | 310 | 1 | Holds 87 files in the company venture or its workspace file, types .json 274, .md 21, (none) 10, .mdx 3. | workspace, venture | maps to several nouns |
 | `instance/people` | 219 | 0 | Holds 219 files, mostly .json (218), for example instance/people/p-54697df9/FLAGS.tsv. | none | no noun exists |
 | `instance/ventures` | 90 | 0 | Holds 86 files in the company venture or its workspace file, types .json 55, .md 21, (none) 10, .mdx 3. | venture | maps cleanly |
-| `interface` | 84 | 21 | Holds a layer.json whose layer is interface, 5 SKILL.md files, 64 product source files, types .mjs 64, .json 9, .md 9, (none) 1. | layer, layer manifest | maps cleanly |
+| `interface` | 80 | 21 | Holds a layer.json whose layer is interface, 5 SKILL.md files, 62 product source files, types .mjs 62, .md 9, .json 8, .html 1. | layer, layer manifest | maps cleanly |
 | `interface/adapters` | 3 | 3 | Holds 3 files, mostly .json (3), for example interface/adapters/claude-code.json. | none | no noun exists |
 | `interface/api` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `interface/cli` | 5 | 5 | Holds 5 product source files, types .mjs 5. | none | no noun exists |
-| `interface/create-venture` | 4 | 4 | Holds 2 product source files, types .mjs 2, (none) 1, .json 1. | none | no noun exists |
 | `interface/demo` | 3 | 3 | Holds 3 product source files, types .mjs 3. | none | no noun exists |
 | `interface/dev` | 2 | 2 | Holds 2 product source files, types .mjs 2. | none | no noun exists |
 | `interface/harness` | 4 | 3 | Holds 3 product source files, types .mjs 3, .md 1. | harness | maps cleanly |
@@ -98,8 +97,9 @@ Of the 141 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
 | `operations/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `packages` | 10 | 0 | Holds 7 product source files, types .mjs 7, .md 3. | none | no noun exists |
+| `packages` | 14 | 0 | Holds 9 product source files, types .mjs 9, .md 3, (none) 1, .json 1. | none | no noun exists |
 | `packages/core` | 5 | 5 | Holds 4 product source files, types .mjs 4, .md 1. | none | no noun exists |
+| `packages/create-venture` | 4 | 4 | Holds 2 product source files, types .mjs 2, (none) 1, .json 1. | none | no noun exists |
 | `packages/records` | 2 | 2 | Holds 1 product source file, types .md 1, .mjs 1. | none | no noun exists |
 | `packages/routes` | 3 | 3 | Holds 2 product source files, types .mjs 2, .md 1. | none | no noun exists |
 | `platform` | 38 | 2 | Holds 4 JSON Schema files, 28 product source files, types .mjs 28, .json 8, .md 2. | none | no noun exists |
@@ -179,13 +179,13 @@ Of the 141 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
 | `SKILL.md` | 48 | governance 15, library 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
 | `layer.json` | 7 | evidence 1, governance 1, interface 1, knowledge 1, operations 1, purpose 1, schema 1 |
-| `package.json` | 26 | library 22, console 1, interface 1, (root) 1, site 1 |
+| `package.json` | 26 | library 22, console 1, (root) 1, packages 1, site 1 |
 | `*.schema.json` | 108 | schema 104, platform 4 |
 | `*-test.mjs` | 62 | schema 31, interface 25, platform 3, scripts 2, operations 1 |
 | `*-test.ts` | 24 | schema 13, scripts 8, console 2, site 1 |
 | `*.test.ts` | 0 | nowhere |
 | `*.test.mjs` | 0 | nowhere |
-| `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
+| `test.mjs` | 10 | interface 2, platform 2, purpose 2, operations 1, packages 1, schema 1, (root) 1 |
 | `*.steps.mjs` | 3 | purpose 2, governance 1 |
 | `*.feature` | 3 | purpose 2, governance 1 |
 | `dated YYYY-MM-DD in the filename` | 68 | docs 59, evidence 4, governance 1, instance 1, operations 1, purpose 1, schema 1 |
@@ -194,7 +194,7 @@ Of the 141 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 342 | schema 151, interface 64, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 7 |
+| `*.mjs` | 342 | schema 151, interface 62, verification 41, platform 28, site 17, packages 9, purpose 8, knowledge 7 |
 | `*.ts` | 81 | schema 27, site 21, console 18, scripts 15 |
 | `*.tsx` | 74 | site 43, console 31 |
 
@@ -248,7 +248,7 @@ Top-level directories by the three kinds. Other material is listed and does not 
 | `lean` | none of the three | yes | no |
 | `library` | library | yes | no |
 | `operations` | product, library | yes | yes |
-| `packages` | product | no | no |
+| `packages` | product | yes | no |
 | `platform` | product | yes | no |
 | `purpose` | product, library | yes | yes |
 | `schema` | product | yes | no |
