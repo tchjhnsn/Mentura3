@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1994 files and 527 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1992 files and 527 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -36,7 +36,7 @@ Of the 156 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `agents` | 1 | 0 | Holds 1 file, mostly .md (1), for example agents/chief-of-staff/AGENTS.md. | tooling | maps to a noun with a different name |
 | `agents/chief-of-staff` | 1 | 1 | Holds 1 file, mostly .md (1), for example agents/chief-of-staff/AGENTS.md. | tooling | maps to a noun with a different name |
 | `beta` | 1 | 1 | Holds 1 file, mostly .json (1), for example beta/capabilities.json. | none | no noun exists |
-| `console` | 59 | 9 | Holds 50 product source files, types .tsx 31, .ts 18, .json 4, .md 2. | console | maps cleanly |
+| `console` | 58 | 8 | Holds 50 product source files, types .tsx 31, .ts 18, .json 3, .md 2. | console | maps cleanly |
 | `console/app` | 11 | 5 | Holds 9 product source files, types .tsx 7, .ts 2, .ico 1, .css 1. | view, layout | maps to several nouns |
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
@@ -152,7 +152,7 @@ Of the 156 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `scripts` | 18 | 11 | Holds 15 product source files, types .ts 10, .mjs 5, .md 2, .jsonl 1. | none | no noun exists |
 | `scripts/fixtures` | 1 | 0 | Holds 1 file, mostly .jsonl (1), for example scripts/fixtures/transcripts/proj/session-a.jsonl. | none | no noun exists |
 | `scripts/pr-review` | 6 | 4 | Holds 4 product source files, types .mjs 3, .md 2, .ts 1. | none | no noun exists |
-| `site` | 166 | 10 | Holds 84 product source files, types .mdx 50, .tsx 43, .ts 21, .mjs 17. | none | no noun exists |
+| `site` | 165 | 9 | Holds 84 product source files, types .mdx 50, .tsx 43, .ts 21, .mjs 17. | none | no noun exists |
 | `site/app` | 31 | 6 | Holds 28 product source files, types .tsx 22, .ts 6, .css 2, .ico 1. | layout | maps to a noun with a different name |
 | `site/brand` | 1 | 1 | Holds 1 file, mostly .json (1), for example site/brand/tokens.json. | none | no noun exists |
 | `site/components` | 26 | 4 | Holds 24 product source files, types .tsx 19, .jsx 3, .css 2, .ts 2. | none | no noun exists |
