@@ -1,6 +1,6 @@
 # Releases (build, add, start, export)
 
-Source: `schema/releases.mjs` (`survey`, `build`, `add`, `exportRelease`), `schema/build-release.mjs`, `schema/start-release.mjs`, `schema/release-read.mjs`.
+Source: `interface/orchestration/releases.mjs` (`survey`, `build`, `add`, `exportRelease`), `interface/orchestration/build-release.mjs`, `schema/start-release.mjs`, `schema/release-read.mjs`.
 
 Release lifecycle:
 
