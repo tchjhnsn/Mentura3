@@ -131,7 +131,7 @@ function checkChangeLine(metamodel: Metamodel, line: ChangeLine): string[] { thr
 
 **EE-095 hook.** The check lives in `schema/terms/` (`schema/terms/upper-test.ts`, per S2-PR6). Where both ends of a `broader` link name admitted terms at one level, the relation `schema/terms/admit.ts` records in `schema/terms/admitted.json` must be `is_a` or `equal`. EE-095 says relations between terms are read off pass sets, and the sandbox `vocabulary.ts` (N-002) reads `is_a` the same way.
 
-**Lean hook.** `lean/Naive/Upper.lean` (S2-PR6) proves `broader` has no cycle and gives one top category per noun, using `IsA` and `refine_isA` from `lean/Naive/Concept.lean`. `lean/Naive.lean` must import it (finding F6).
+**Lean hook.** `lean/Naive/Upper.lean` (S2-PR6) proves that on any finite hierarchy, `broader` with no cycle, no orphan and no noun reaching two top categories gives one top category per noun (`upper_one_top_of_checks`). That the real `broader` meets those checks is the code's job (`schema/terms/upper-test.ts`). It uses `IsA` and `refine_isA` from `lean/Naive/Concept.lean`. `lean/Naive.lean` must import it (finding F6).
 
 **Built by.** S2-PR6.
 
