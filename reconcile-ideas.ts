@@ -54,7 +54,7 @@ export type Machine = {
 };
 
 type Idea = { id: string; text: string; status?: string; relations: { relation: string; to: string }[]; scope?: { scope: string; via: string } };
-type Ruling = { hash: string; value: Json; comment: string };
+type Ruling = { hash: string; value: Json; source: Json };
 type Noun = { noun: string; function: string | null };
 type Line = { proposal: Json; hash: string };
 
@@ -135,8 +135,8 @@ export class World {
       if (!existsSync(path)) this.rulingCache.set(key, null);
       else {
         const text = readFileSync(path, "utf8");
-        const r = JSON.parse(text) as { value: Json; comment: string };
-        this.rulingCache.set(key, { hash: hash(text), value: r.value, comment: r.comment });
+        const r = JSON.parse(text) as { value: Json; comment?: string; card?: Json };
+        this.rulingCache.set(key, { hash: hash(text), value: r.value, source: r.comment ?? r.card ?? null });
       }
     }
     return this.rulingCache.get(key) ?? null;
@@ -342,7 +342,7 @@ export function queue(machines: Map<string, Machine>, w: World): JsonObject[] {
     const r = w.ruling(m.idea, m.field);
     return m.state === "Labeled"
       ? { idea: m.idea, field: m.field, ask: "rule", label: valueOf(m), says: `No golden ruling for ${m.idea} ${m.field}. The gated label is ${canonical(valueOf(m))}.` }
-      : { idea: m.idea, field: m.field, ask: "dispute", label: valueOf(m), ruling: r?.value ?? null, comment: r?.comment ?? null, says: `The gated label ${canonical(valueOf(m))} differs from Torian's ruling ${canonical(r?.value ?? null)}.` };
+      : { idea: m.idea, field: m.field, ask: "dispute", label: valueOf(m), ruling: r?.value ?? null, source: r?.source ?? null, says: `The gated label ${canonical(valueOf(m))} differs from Torian's ruling ${canonical(r?.value ?? null)}.` };
   });
 }
 

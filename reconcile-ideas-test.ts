@@ -16,8 +16,8 @@ const read = (p: string): string => existsSync(at(p)) ? readFileSync(at(p), "utf
 const jsonl = (p: string): Record<string, unknown>[] => read(p).split("\n").filter(Boolean).map((l) => JSON.parse(l));
 const machine = (key: string): Record<string, unknown> | undefined => jsonl(STATE).find((m) => `${m.idea}.${m.field}` === key);
 const propose = (...lines: unknown[]): void => writeFileSync(proposals, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
-const rule = (idea: string, field: string, value: unknown, comment = 1): void =>
-  write(`docs/reviews/ontology-golden/${idea}.${field}.json`, { idea, field, value, comment: `https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-${comment}`, ruled: "2026-11-05" });
+const rule = (idea: string, field: string, value: unknown, source: number | { card: object } = 1): void =>
+  write(`docs/reviews/ontology-golden/${idea}.${field}.json`, { idea, field, value, ...(typeof source === "number" ? { comment: `https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-${source}` } : source), ruled: "2026-11-05" });
 const idea = (id: string, text: string, extra: object = {}): void => write(`${ideas}/${id}.json`, { id, text, captured: "2026-11-05", ...extra });
 
 const covered = new Set<string>();
@@ -79,13 +79,15 @@ try {
   write("docs/ontology.json", before);
 
   propose({ idea: "n-004", field: "relation", value: [{ relation: "related", to: "n-001" }] });
-  rule("n-004", "relation", []);
+  const card = { thread: "cmsg_01Thread", message: "cmsg_01Card", chosen_at: "2026-11-05T16:10:00Z" };
+  rule("n-004", "relation", [], { card });
   r = reconcile();
   assert.equal(machine("n-004.relation")?.state, "Disputed", `a label that differs from the ruling is Disputed: ${r.out}`);
   const disputes = jsonl(QUEUE).filter((q) => q.idea === "n-004");
   assert.equal(disputes.length, 1, "a dispute is one queue line");
   assert.equal(disputes[0].ask, "dispute");
   assert.deepEqual(disputes[0].ruling, []);
+  assert.deepEqual(disputes[0].source, card, "a dispute names the decision card Torian ruled on");
   propose({ idea: "n-004", field: "relation", value: [] });
   r = reconcile();
   assert.deepEqual(r.steps, [], "a dispute waits for Torian; the runner never rules");

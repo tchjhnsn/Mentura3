@@ -19,13 +19,24 @@ try {
   const valid = validate(sample);
   assert.equal(valid.status, 0, `the sample ruling validates: ${valid.out}`);
 
-  const { comment, ...noComment } = sample;
-  const missing = validate(noComment);
-  assert.equal(missing.status, 1, "a ruling without its comment URL is rejected");
-  assert.match(missing.out, /'comment' is a required property/);
+  const comment = "https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-1";
+  const { card, ...noSource } = sample;
+  const byComment = { ...noSource, comment };
+  assert.equal(validate(byComment).status, 0, "a ruling that cites a GitHub comment validates");
+  assert.equal(validate({ ...noSource, card }).status, 0, "a ruling that cites a decision card validates");
 
-  assert.equal(validate({ ...sample, comment: `${comment}\n` }).status, 1, "a comment URL ending in a newline is rejected");
-  assert.equal(validate({ ...sample, comment: "https://github.com/tchjhnsn/everything-ecosystem/issues/1" }).status, 1, "a URL that is not a comment is rejected");
+  assert.equal(validate(noSource).status, 1, "a ruling with no source is rejected");
+  assert.equal(validate({ ...noSource, comment, card }).status, 1, "a ruling that cites both a comment and a card is rejected");
+
+  assert.equal(validate({ ...byComment, comment: `${comment}\n` }).status, 1, "a comment URL ending in a newline is rejected");
+  assert.equal(validate({ ...byComment, comment: "https://github.com/tchjhnsn/everything-ecosystem/issues/1" }).status, 1, "a URL that is not a comment is rejected");
+
+  assert.equal(validate({ ...sample, card: { ...card, message: "msg_01SampleCard" } }).status, 1, "a card message id without the cmsg_ prefix is rejected");
+  assert.equal(validate({ ...sample, card: { ...card, thread: "cmsg_01-thread" } }).status, 1, "a card thread id with a character outside letters and digits is rejected");
+  assert.equal(validate({ ...sample, card: { ...card, message: `${card.message}\n` } }).status, 1, "a card id ending in a newline is rejected");
+  assert.equal(validate({ ...sample, card: { ...card, chosen_at: "2026-11-05" } }).status, 1, "a card without the time of the tap is rejected");
+  assert.equal(validate({ ...sample, card: { thread: card.thread, message: card.message } }).status, 1, "a card missing chosen_at is rejected");
+  assert.equal(validate({ ...sample, card: { ...card, url: "https://claude.ai" } }).status, 1, "a card with an extra key is rejected");
 
   const unknown = validate({ ...sample, field: "tags", value: ["x"] });
   assert.equal(unknown.status, 1, "a ruling on a field outside the closed set is rejected");
