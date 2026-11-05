@@ -233,11 +233,11 @@ Packages answer "what" at the venture scale (R-02): the venture's records and da
 - A **record** is information kept as evidence of what the venture is and has decided, and as an asset (ISO 15489-1:2016's definition of a record). In BFO terms (ISO/IEC 21838-2, with the Information Artifact Ontology built on it) a record is an *information content entity*, a generically dependent continuant. Two copies of the same JSON file on two machines are one record. That is why provenance links to a record by id and content hash (R-17), not by file path.
 - A **package** is the unit that defines a group of record types: their schemas, templates, checks and at most one minimal skill on how to write them. It is offline and names no vendor, and it is listed in `venture.json` the way `package.json` lists dependencies (EE-071). A package is a definition. The records a venture writes with it are its instances.
 
-A package is not a function. The function owns and acts on the records (section 2); the package defines them. A **kit** is Mentura's enhanced version of a package (EE-071), and agents never come inside a package: an agent that works a package is a package enhancement (`packages/catalog.json`).
+A package is not a function. The function owns and acts on the records (section 2); the package defines them. A **kit** is Mentura's enhanced version of a package (EE-071), and agents never come inside a package: an agent that works a package is a package enhancement (`library/packages/catalog.json`).
 
 ### Its parts
 
-`packages/catalog.json` (EE-067, EE-069) defines five package kinds:
+`library/packages/catalog.json` (EE-067, EE-069) defines five package kinds:
 
 | Kind | Holds records? | Examples | What it is, ontologically |
 | --- | --- | --- | --- |
@@ -247,7 +247,7 @@ A package is not a function. The function owns and acts on the records (section 
 | folder | Yes | decisions, evidence | Storage for record types every function uses |
 | raw | Unprocessed inputs | raw | Sources before they become records (EE-070) |
 
-Each package descriptor (`packages/<name>/package.json`) has:
+Each package descriptor (`library/packages/<name>/package.json`) has:
 
 - `required` and `optional` record types, and `refs` (records in other packages it reads);
 - `base`: a weight per phase (finance: 0.2 in Discovery, 0.5 in Validation, 0.8 in Beachhead, 1 after);

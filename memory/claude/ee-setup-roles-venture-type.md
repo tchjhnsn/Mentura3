@@ -14,7 +14,7 @@ Torian, 2026-10-29 05:41Z (his points, to implement for the demo after the curre
 - After the role, you choose which hats you wear. A solo founder owns every function by default.
 - `people/` (name open: people/team) is a top-level folder, the human-capital equivalent of venture.json: the roles schema, plus the founders' JSON (one file with entries or one file per founder, open), linked to founding agreements.
 
-Existing pieces to build on: packages/people, packages/cofounder, packages/investor(s), schema/founder-agreement.schema.json, governance/ownership.json (EE-022); venture.json `kind` is only venture|product today; functions with owners (EE-071).
+Existing pieces to build on: library/packages/people, library/packages/cofounder, library/packages/investor(s), schema/founder-agreement.schema.json, governance/ownership.json (EE-022); venture.json `kind` is only venture|product today; functions with owners (EE-071).
 
 My proposal (05:4xZ, not yet agreed): venture.json gains a `type` (software-startup, vc-fund, ...) that picks the package set; people/people.json holds roles, hats and function owners; people/founders/<id>.json one per founder linking to the founding agreement. Related: [[ee-venture-structure]], [[ee-scope-solo-founders]], [[venture-folder-knowledge-beside-code]].
 

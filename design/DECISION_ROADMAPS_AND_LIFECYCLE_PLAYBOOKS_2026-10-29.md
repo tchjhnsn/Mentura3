@@ -14,7 +14,7 @@ These are Torian's decisions from 2026-10-29: roadmaps are installable on their 
 
 A roadmap is an ordered set of **frames** from the decision library. Frames are problem-framing templates that carry no answers, are freshness-checked when used, and use the verdict ladder possible / available / acceptable / confirmed. Roadmaps reuse frames; they are not a parallel concept.
 
-- **File:** `packages/<function>/roadmaps/<id>.json`, schema `schema/decision-roadmap.schema.json`.
+- **File:** `library/packages/<function>/roadmaps/<id>.json`, schema `schema/decision-roadmap.schema.json`.
 - **Each step:**
   - `frame` (a frame id);
   - `order`;

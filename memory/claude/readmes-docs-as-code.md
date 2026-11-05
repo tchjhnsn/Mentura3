@@ -8,7 +8,7 @@ metadata:
 
 2026-10-30 17:11Z Torian decided (thread cmsg_01TRojivaFzywKqAKrsycdv8LvH3FrcEbm8j9k57K5v4p9):
 - READMEs sit next to code; code is source of truth; plain Markdown (possibly MDX) with relative links. No Sphinx, no TypeDoc for now.
-- PR rule: a PR changing code under schema/, interface/, packages/, purpose/ must update the README nearest that code (searched up to its top-level folder), or say "No docs change: <why>" in the PR body.
+- PR rule: a PR changing code under schema/, interface/, library/packages/, purpose/ must update the README nearest that code (searched up to its top-level folder), or say "No docs change: <why>" in the PR body.
 - Torian says the docs site moved from Fumadocs to Nextra (main on 2026-10-30 still had site/source.config.ts, i.e. Fumadocs; the switch may be on an unmerged branch).
 
 Implementation: patch at /mnt/project-files/readmes-docs-as-code/readmes-docs-as-code.patch (check-docs-claims scans README.md + relative links, `--readmes` mode, docs-required.yml, docs/readme-template.md). Commit/push was blocked in-session; Torian applies it.

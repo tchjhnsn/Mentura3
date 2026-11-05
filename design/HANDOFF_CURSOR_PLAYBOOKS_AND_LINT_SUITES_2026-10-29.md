@@ -16,13 +16,13 @@ For Cursor's agents to build in parallel, one branch and one draft PR per item. 
 - The two reference implementations from PR #44 (branch `claude/mac-brand-kit`):
   - Playbook: `knowledge/marketing/nike-playbook.md` in Torian's venture (`~/workspace/naive/naive`): a sourced study, then a fill-in template tied to Naive records.
   - Lint suite: `schema/brand-lint.mjs`, registered as `marketing/brand-lint` in `schema/brand.mjs` `brandCommands`.
-- Function skills: `packages/<function>/skill/SKILL.md` (branch `claude/mac-function-skills`).
+- Function skills: `library/packages/<function>/skill/SKILL.md` (branch `claude/mac-function-skills`).
 - Inherited inputs pattern: `schema/design-system.mjs` `inputs()`. A function reads other functions' records by key; it never copies them.
 
 ## Rules for every item
 
 - Branch from `claude/mac-brand-kit`. Name it `cursor/playbook-<id>` or `cursor/lint-<function>`.
-- A playbook lives at `packages/<function>/playbooks/<id>.md`. It has frontmatter (`type: playbook`, `source`, `created`, `ai-model`, `tags`). The body has three parts: what the source company or method does, with a link for every claim; a template whose prompts each name the Naive route they read or write; and the checks that tell the founder it worked. Borrow methods, never marks or ad copy. Name a trademark risk where there is one.
+- A playbook lives at `library/packages/<function>/playbooks/<id>.md`. It has frontmatter (`type: playbook`, `source`, `created`, `ai-model`, `tags`). The body has three parts: what the source company or method does, with a link for every claim; a template whose prompts each name the Naive route they read or write; and the checks that tell the founder it worked. Borrow methods, never marks or ad copy. Name a trademark risk where there is one.
 - A lint suite is `schema/lint-<function>.mjs`. The CLI is `node schema/lint-<function>.mjs <venture dir> [--json]`, and the route is `<function>/lint`. It reuses the `brand-lint.mjs` shape:
   - Each rule is `{id, description, severity: "warn", mode: "fail-open"}`.
   - A per-rule override is `<function>_lint.rules.<id>.mode` in `naive.config.json`. Exit 1 only when a fail-closed rule has findings.
@@ -81,4 +81,4 @@ Torian decided: agent building belongs to Naive, as conventions (agents are Mark
 
 ## Then
 
-When a suite lands, add it to its function skill (`packages/<function>/skill/SKILL.md`, a Checks line) and to `naive check`. A later change can add a cross-function rule set: a decision in one function that contradicts another function's records, such as marketing promising what product does not ship.
+When a suite lands, add it to its function skill (`library/packages/<function>/skill/SKILL.md`, a Checks line) and to `naive check`. A later change can add a cross-function rule set: a decision in one function that contradicts another function's records, such as marketing promising what product does not ship.

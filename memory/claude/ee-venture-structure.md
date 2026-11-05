@@ -48,14 +48,14 @@ My proposal (22:56Z, not yet agreed):
 Open questions I asked:
 1. Can a package carry one minimal skill?
 2. Should the "venture package" deliverable be renamed "release" (with handoff releases)?
-3. Layout: `packages/<name>/package.json` in Naive, and `platform/kits/<name>/kit.json`.
+3. Layout: `library/packages/<name>/package.json` in Naive, and `platform/kits/<name>/kit.json`.
 
 22:58Z: Torian AGREED to all of the 22:56Z proposal:
 - packages belong to Naive and kits to Mentura, each kit extending one package;
 - layers leave the venture tree;
 - a package may carry a minimal skill;
 - the deliverable is called a "release";
-- `packages/` and `platform/kits/` layout.
+- `library/packages/` and `platform/kits/` layout.
 
 He also said departments were only a conceptual tool. For a solo founder or a flat org they are functions of the venture, and one person wears many hats. Each one still needs an owner. The term is open.
 

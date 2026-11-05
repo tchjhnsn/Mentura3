@@ -6,11 +6,11 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1995 files and 527 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1995 files and 528 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
-Directories: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+Directories: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
 Files: `.gitattributes`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `LICENSE`, `README.md`, `eslint.config.mjs`, `package-lock.json`, `package.json`, `test.mjs`, `tsconfig.json`, `tsconfig.strict.json`.
 
@@ -22,7 +22,7 @@ Kind is judged from file contents. The detectors read JSON fields, front matter,
 
 Nouns come from `docs/ontology.json`. Admitted terms come from `schema/terms/admitted.json`. A row maps cleanly when one concept matched and the folder name is that noun, or a plural of it, or one of the six layer names the layer noun lists, or `schema` for the system layer. A row maps to a noun with a different name when one concept matched and the folder name does not. A row maps to several nouns when two concepts matched. Layer and layer manifest count as one concept, and schema and record type count as one concept, because each pair is the folder and the file the ontology already ties together. A row has no noun when no detector matched.
 
-Of the 156 folders, 18 map cleanly, 21 map to a noun with a different name, 7 map to several nouns, and 110 have no noun.
+Of the 135 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 88 have no noun.
 
 ## 1. Folders
 
@@ -88,35 +88,14 @@ Of the 156 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `knowledge/tooling` | 2 | 2 | Holds 2 files, mostly .json (1), for example knowledge/tooling/integrations.json. | integration | maps to a noun with a different name |
 | `lean` | 13 | 6 | Holds 8 Lean files, types .lean 8, (none) 2, .md 1, .json 1. | none | no noun exists |
 | `lean/Naive` | 7 | 6 | Holds 7 Lean files, types .lean 7. | none | no noun exists |
+| `library` | 54 | 0 | Holds 12 SKILL.md files, 22 venture package manifests, types .json 31, .md 23. | tooling, kit | maps to several nouns |
+| `library/packages` | 54 | 1 | Holds 12 SKILL.md files, 22 venture package manifests, types .json 31, .md 23. | none | no noun exists |
 | `operations` | 21 | 5 | Holds a layer.json whose layer is operations, 3 SKILL.md files, 3 files marked as templates, 6 product source files, types .md 9, .json 6, .mjs 6. | layer, layer manifest, function | maps to several nouns |
 | `operations/marketing` | 8 | 3 | Holds 6 product source files, types .mjs 6, .md 1, .json 1. | none | no noun exists |
 | `operations/references` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/references/references.json. | reference | maps cleanly |
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
 | `operations/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `packages` | 54 | 1 | Holds 12 SKILL.md files, 22 venture package manifests, types .json 31, .md 23. | none | no noun exists |
-| `packages/cofounder` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/counsel` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/customers` | 3 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 2, .json 1. | none | no noun exists |
-| `packages/deals` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/decisions` | 2 | 1 | Holds 1 venture package manifest, types .json 1, .md 1. | none | no noun exists |
-| `packages/engineering` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/evidence` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/finance` | 4 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .json 2, .md 2. | none | no noun exists |
-| `packages/foundation` | 3 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 2, .json 1. | none | no noun exists |
-| `packages/fund` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/investor` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/investors` | 3 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 2, .json 1. | none | no noun exists |
-| `packages/legal` | 2 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .json 1, .md 1. | none | no noun exists |
-| `packages/marketing` | 13 | 1 | Holds 3 SKILL.md files, 1 venture package manifest, types .json 8, .md 5. | none | no noun exists |
-| `packages/money` | 2 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .json 1, .md 1. | none | no noun exists |
-| `packages/operations` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/partner` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/people` | 3 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 2, .json 1. | none | no noun exists |
-| `packages/product` | 4 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 3, .json 1. | none | no noun exists |
-| `packages/raw` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/relationships` | 1 | 1 | Holds 1 venture package manifest, types .json 1. | none | no noun exists |
-| `packages/validation` | 3 | 1 | Holds 1 SKILL.md file, 1 venture package manifest, types .md 2, .json 1. | none | no noun exists |
 | `platform` | 38 | 2 | Holds 4 JSON Schema files, 28 product source files, types .mjs 28, .json 8, .md 2. | none | no noun exists |
 | `platform/connectors` | 3 | 3 | Holds 3 product source files, types .mjs 3. | none | no noun exists |
 | `platform/integrations` | 10 | 9 | Holds 9 product source files, types .mjs 9, .json 1. | none | no noun exists |
@@ -192,9 +171,9 @@ Of the 156 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `README.md` | 84 | schema 34, verification 27, instance 4, purpose 4, docs 3, governance 2, knowledge 2, platform 2 |
 | `readme.md` | 0 | nowhere |
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
-| `SKILL.md` | 48 | governance 15, packages 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
+| `SKILL.md` | 48 | governance 15, library 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
 | `layer.json` | 7 | evidence 1, governance 1, interface 1, knowledge 1, operations 1, purpose 1, schema 1 |
-| `package.json` | 26 | packages 22, console 1, interface 1, (root) 1, site 1 |
+| `package.json` | 26 | library 22, console 1, interface 1, (root) 1, site 1 |
 | `*.schema.json` | 108 | schema 104, platform 4 |
 | `*-test.mjs` | 61 | schema 52, interface 3, platform 3, scripts 2, operations 1 |
 | `*-test.ts` | 21 | schema 12, scripts 6, console 2, site 1 |
@@ -261,8 +240,8 @@ Top-level directories by the three kinds. Other material is listed and does not 
 | `interface` | product, library | yes | yes |
 | `knowledge` | product, library | yes | yes |
 | `lean` | none of the three | yes | no |
+| `library` | library | yes | no |
 | `operations` | product, library | yes | yes |
-| `packages` | library | yes | no |
 | `platform` | product | yes | no |
 | `purpose` | product, library | yes | yes |
 | `schema` | product | yes | no |
@@ -283,7 +262,7 @@ In-scope folders that mix two or more of the three kinds:
 | `purpose/kits` | product, library | product (purpose/kits/validation/features/problem-assessment.feature), library (purpose/kits/validation/skills/problem-validation/SKILL.md), other (purpose/kits/validation/references/references.json) |
 | `verification` | product, library | product (verification/cursor/lint-money/view.mjs), library (verification/lint-legal/LegalLint.cfg), other (verification/cursor/lint-money/MoneyLint.cfg) |
 
-`package.json` lists the published package's `files`. That list includes `interface/`, `schema/`, `packages/`, `purpose/`, `knowledge/`, `operations/`, `governance/`, `evidence/`, `platform/`, and `frameworks/`. The published package therefore ships product code, the library, and the layer manifests together. It does not list `instance/`, `console/`, or `site/`.
+`package.json` lists the published package's `files`. That list includes `interface/`, `schema/`, `library/packages/`, `purpose/`, `knowledge/`, `operations/`, `governance/`, `evidence/`, `platform/`, and `frameworks/`. The published package therefore ships product code, the library, and the layer manifests together. It does not list `instance/`, `console/`, or `site/`.
 
 `platform/README.md` says the framework is everything in this repository outside `platform/`. `console/README.md` says the console is platform work and not framework, and the console directory is not under `platform/`. Those two READMEs disagree about where platform work lives.
 
@@ -296,7 +275,7 @@ Content that shows up in the tree and matched no ontology noun:
 | Signal | Files | Example |
 | --- | ---: | --- |
 | thinking framework (framework.json with vocabulary and maps_to) | 2 | `frameworks/ambition-tier/framework.json` |
-| venture package (package.json kind is handoff, core, data, folder, or raw) | 22 | `packages/cofounder/package.json` |
+| venture package (package.json kind is handoff, core, data, folder, or raw) | 22 | `library/packages/cofounder/package.json` |
 | playbook (JSON with steps, title, and purpose) | 1 | `purpose/playbooks/torians-playbook.json` |
 | Lean proof | 8 | `lean/Naive.lean` |
 | TLA+ specification | 27 | `verification/cursor/lint-money/MoneyLint.tla` |
@@ -340,7 +319,7 @@ EE-001 and EE-013 are in force and still say seven layers, including Execution. 
 
 `schema` is the system layer by `schema/layer.json`, and it also holds most of the checker source.
 
-Remainder: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `packages`, `platform`, `scripts`, `site`, `verification`.
+Remainder: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `library`, `platform`, `scripts`, `site`, `verification`.
 
 BFO does not separate these directories. The design doc gives a record one class and a function another. It does not give a layer a class. A layer directory that mixes skills, templates, and checkers is several information artifacts in one folder.
 
@@ -351,7 +330,7 @@ BFO does not separate these directories. The design doc gives a record one class
 - Platform, by `platform/README.md`: `platform`.
 - Platform, by `console/README.md`, stored outside `platform/`: `console`.
 - Workspace: `instance`.
-- Framework, if the platform README is applied to the rest: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `operations`, `packages`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+- Framework, if the platform README is applied to the rest: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
 BFO does not draw the framework and platform line. Both sides are files. The workspace adds the continuant, the venture, and the information content entities about it. The console exception shows the split is not yet a single directory boundary.
 
@@ -360,7 +339,7 @@ BFO does not draw the framework and platform line. Both sides are files. The wor
 This set uses the file rules in section 3. A top-level directory goes where its files go. A directory that mixes kinds would have to be split before it could sit in one category.
 
 - Product code only: `console`, `platform`, `schema`, `scripts`, `site`.
-- Library only: `agents`, `evidence`, `frameworks`, `packages`.
+- Library only: `agents`, `evidence`, `frameworks`, `library`.
 - Company records only: `instance`.
 - Mixed: `governance`, `interface`, `knowledge`, `operations`, `purpose`, `verification`.
 - None of the three (proofs, docs, CI, plugin manifests, or similar): `.claude`, `.claude-plugin`, `.github`, `beta`, `docs`, `lean`.
