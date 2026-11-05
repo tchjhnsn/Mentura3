@@ -28,7 +28,7 @@ export const STATE = "docs/reviews/ontology-program/reconcile/state.jsonl";
 export const QUEUE = "docs/reviews/ontology-program/reconcile/queue.jsonl";
 export const PROPOSALS = "docs/reviews/ontology-program/reconcile/proposals.jsonl";
 
-type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
+export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type JsonObject = { [key: string]: Json };
 export type Field = "status" | "importance" | "relation" | "scope";
 const FIELDS: readonly Field[] = ["status", "importance", "relation", "scope"];
@@ -65,7 +65,7 @@ const hash = (s: string): string => createHash("sha256").update(s).digest("hex")
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, "utf8"));
 const keyOf = (idea: string, field: Field): string => `${idea}.${field}`;
 /** Equal labels: relation lists are sets (uniqueItems), so their order does not count. */
-const sameLabel = (a: Json, b: Json): boolean => {
+export const sameLabel = (a: Json, b: Json): boolean => {
   const norm = (v: Json): string => Array.isArray(v) ? canonical(v.map(canonical).sort()) : canonical(v);
   return norm(a) === norm(b);
 };
@@ -366,7 +366,7 @@ const ORDER: (keyof Machine)[] = ["idea", "field", "state", "reason", "missing",
 const stateLine = (m: Machine): string => JSON.stringify(Object.fromEntries(ORDER.filter((k) => m[k] !== undefined).map((k) => [k, m[k]])));
 const jsonl = (rows: string[]): string => rows.length ? `${rows.join("\n")}\n` : "";
 
-function readState(path: string): Map<string, Machine> {
+export function readState(path: string): Map<string, Machine> {
   if (!existsSync(path)) return new Map();
   const rows = readFileSync(path, "utf8").split("\n").filter((l) => l.trim()).map((l) => JSON.parse(l) as Machine);
   return new Map(rows.map((m) => [keyOf(m.idea, m.field), m]));
