@@ -9,7 +9,7 @@
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9:._-]*$" },
     "venture": { "type": "string" },
     "function": { "type": "string", "description": "A department id from operations/departments.json" },
-    "frame": { "type": "string", "description": "A frame id from packages/*/frames" },
+    "frame": { "type": "string", "description": "A frame id from library/packages/*/frames" },
     "time": { "type": "string", "description": "A lifecycle phase id, or an ISO date or year" },
     "aspect": { "type": "string" },
     "personal": { "type": "boolean", "default": false, "description": "About a founder's personal life; refused unless RESEARCH_PERSONAL=on and the subject is a public figure with a recorded legal basis" },
