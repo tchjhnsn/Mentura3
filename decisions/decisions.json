@@ -1670,6 +1670,69 @@
           "expect": "narrowed"
         }
       ]
+    },
+    {
+      "id": "EE-118",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "Naive is the framework and has its own repository, a standard monorepo like vercel/next.js, holding Naive as one package at packages/naive/ beside packages/create-venture/, which ships on its own. This repository keeps what is not Naive (Mentura's console and platform library, the site, company docs) and depends on Naive by version. Its layout follows the Next.js package: bin/naive, src/ (interfaces, router, records, functions, engine, checks, terms, store, core), lean/, library/ (the venture packages), template/ and test/. Code outside Naive (the console, the site, the platform) reaches it only through the package's exports, never by relative path. The venture file system is the type Naive defines and keeps as packages/naive/template/: venture.json, src/<function>/ with one folder per function of the 13, each holding the venture packages that function owns nested inside it (src/finance/money/), and public/ for the static files a venture hands out unchanged. Each real venture is an instance of that type and lives in its tenant's own store, outside the product repository. A venture pins a Naive version and uses Naive by importing it or calling it through the CLI, MCP server or local API; skills, templates and rules stay in Naive and are never copied into a venture. The noun for Naive stays framework, never package, because package means a venture package. This narrows EE-115 (the function folders sit under src/, not a top-level functions/) and EE-116 (the venture packages move into packages/naive/library/), and it narrows EE-041 (the framework and the platform no longer share one repository). Not built yet: Naive has no repository of its own and is spread over schema/, interface/, packages/, knowledge/, purpose/, operations/, evidence/, governance/, library/ and lean/; no function modules, template folder or exports map exist; instance/ is still in the repository.",
+      "why": "Torian, 2026-11-05, in the master architecture thread. 20:16Z: the repo layout is the highest-impact change and must follow the standard design of a monorepo, with Naive as a product. 20:21Z: instances are the unique database for each tenant. 20:29Z and 20:52Z: the venture file system has two levels like src and public in Next.js, src holds the 13 functions, and it is essentially a Next.js app that belongs under Naive. 21:56Z: he approved the Naive layout and asked to lock it into the system design. 22:21Z: packages nest under functions, and instances call Naive by API or import it like Next.js. 22:27Z: he approved the package owners and noted that MAD may be nested in the products function or others. Design: docs/design/NAIVE_LAYOUT_2026-11-05.md. 22:36Z: Naive gets its own repository, as Next.js has its own.",
+      "related": [
+        "EE-024",
+        "EE-041",
+        "EE-070",
+        "EE-071",
+        "EE-108",
+        "EE-115",
+        "EE-116"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "schema/init-venture.mjs",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "interface/router.mjs",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "instance/workspace.json",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "path",
+          "target": "src/*/",
+          "root": "venture",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "functions/",
+          "root": "venture",
+          "expect": "absent"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-115",
+          "expect": "narrowed"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-116",
+          "expect": "narrowed"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-041",
+          "expect": "narrowed"
+        }
+      ]
     }
   ]
 }
