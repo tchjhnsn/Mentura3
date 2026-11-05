@@ -14,8 +14,8 @@
 // nothing and exits 1 when the committed report differs from a fresh run.
 //
 // Both modes exit 1, naming the labels, when state.jsonl is stale against proposals.jsonl: a label at Labeled or
-// later whose line changed (the runner prints HELD and leaves it), a line the runner has not taken yet, or a
-// Labeled label with a ruling the runner has not compared.
+// later whose line changed (the runner prints HELD and leaves it) or left the file, a line the runner has not taken
+// yet, or a Labeled label with a ruling the runner has not compared.
 
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -80,6 +80,9 @@ export function report(root: string): Report {
     if (m?.taken === line.hash) continue;
     if (!m || TAKES_LINES.has(m.state)) stale.push({ key, state: m?.state ?? "none", why: "the runner has not taken this line; run node scripts/reconcile-ideas.ts" });
     else stale.push({ key, state: m.state, why: `HELD: proposals.jsonl changed after the label reached ${m.state}, and Appendix E gives ${m.state} no arrow to take it; restore the line the label took or reset the label` });
+  }
+  for (const [key, m] of [...machines].sort(([a], [b]) => a.localeCompare(b))) {
+    if (GATED.has(m.state) && !lines.has(key)) stale.push({ key, state: m.state, why: `proposals.jsonl has no line for this label, but it stays at ${m.state} with the proposal it took, so a ruling on it would count with the symbolic checks only; restore the line or reset the label` });
   }
   for (const r of rulings) {
     const key = keyOf(r.idea, r.field);
@@ -146,7 +149,7 @@ export function report(root: string): Report {
   out.push(`- Sample size. ${all.gated.n} of ${count(gatedLabels, "gated label")} ${all.gated.n === 1 ? "has" : "have"} a ruling. ${all.gated.n === 0 ? "With n = 0 there is no estimate at all." : "The 95% interval in each cell is the width that sample size allows, and it narrows only as rulings are added."}`);
   out.push(`- Selection of the sample. A ruling counts wherever it came from, so the number describes the labels Torian chose to rule on, not every label. \`SAMPLE.md\`, the one drawn sample so far, is stratified by field and value and drawn only from labels that reached Labeled, so it over-weights rare values. A rule applied to a class of ideas (for example every mixed-scope idea) measures that class only. ${all.heldBack.n === 0 ? "No ruled label was held back by the gate, so the two columns compare the same labels and cannot differ yet; the effect of the symbolic checks shows only once rulings cover labels the gate rejected." : `${count(all.heldBack.n, "ruled label")} held back by the gate ${all.heldBack.n === 1 ? "is" : "are"} counted in the last column, and the proposal had ${all.heldBack.agree} of them right.`}`);
   out.push(`- Missing nouns. ${count(routed.length, "label")} ${routed.length === 1 ? "is" : "are"} RoutedToScope because ${count(distinctMissing, "term")} ${distinctMissing === 1 ? "is" : "are"} missing from the scope they are used in${missingTerms.size ? ` (owning scopes: ${[...missingTerms].sort(([a], [b]) => a.localeCompare(b)).map(([s, t]) => `${s} ${t.size}`).join(", ")})` : ""}. They never reach Labeled, so the column with the symbolic checks cannot measure them until the owning scopes define the terms.`);
-  out.push(`- Rulings without a proposal. ${count(unproposed, "ruling")} ${unproposed === 1 ? "names" : "name"} a label with no line in \`proposals.jsonl\` and count in neither column.`);
+  out.push(`- Rulings without a proposal. ${count(unproposed, "ruling")} ${unproposed === 1 ? "names" : "name"} a label with no line in \`proposals.jsonl\` and ${unproposed === 1 ? "counts" : "count"} in no column.`);
   out.push("- Exact match. A label agrees only when its value equals the ruling. A relation list that shares some items with the ruling counts as a miss, and a scope with the right scope but another attachment counts as a miss.");
   out.push("- One run. Every proposal comes from one proposals file, so the number describes that run, not a proposer in general.");
   out.push("");

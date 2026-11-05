@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { report } from "./agreement-report.ts";
 import { GOLDEN, IDEAS, PROPOSALS, STATE, readProposals } from "./reconcile-ideas.ts";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -24,6 +25,16 @@ const seed = (labels: Label[], taken: Label[] = labels): void => {
   write("taken.jsonl", taken.map(({ idea, field, value }) => JSON.stringify({ idea, field, value })).join("\n") + "\n");
   const { lines } = readProposals(at("taken.jsonl"), { ideas: new Map(ids.map((id) => [id, { id, text: id, relations: [] }])) });
   write(STATE, taken.map((l) => JSON.stringify({ idea: l.idea, field: l.field, state: l.state, proposal: { idea: l.idea, field: l.field, value: l.value }, taken: lines.get(`${l.idea}.${l.field}`)!.hash })).join("\n") + "\n");
+};
+/** Commits the report a fresh run gives, then checks that --check fails on the stale state alone and names the label. */
+const failsStale = (key: string, why: RegExp, what: string): void => {
+  const fresh = report(root);
+  write(join(GOLDEN, `AGREEMENT_${fresh.date}.md`), fresh.text);
+  const checked = run("--check");
+  assert.equal(checked.status, 1, `${what} fails --check even though the report text is unchanged: ${checked.out}`);
+  assert.doesNotMatch(checked.out, /differs from a fresh run|is missing|is not the current report/, `${what} leaves the report text unchanged`);
+  assert.match(checked.out, new RegExp(`^FAIL 1 label in ${STATE} is stale: ${key.replace(".", "\\.")}$`, "m"), `${what} is named in the failure`);
+  assert.match(checked.out, why, `${what} gives its reason`);
 };
 /** A ruling cites a comment or a decision card; the report reads neither. */
 const rule = (idea: string, field: string, value: unknown): void => {
@@ -78,22 +89,23 @@ try {
   rule("n-003", "status", "open");
 
   seed(four.map((l) => l.idea === "n-002" ? { ...l, value: "in-venture" } : l), four);
-  const held = run("--check");
-  assert.equal(held.status, 1, "a held proposal fails --check even though the report text is unchanged");
-  assert.match(held.out, /^STALE n-002\.status \(Settled\): HELD/m, "the held label is named");
+  failsStale("n-002.status", /^STALE n-002\.status \(Settled\): HELD/m, "a held proposal");
   const refused = run();
   assert.equal(refused.status, 1, "a stale state is not reported on");
   assert.match(refused.out, /not written: 1 label .*n-002\.status/);
 
   seed([...four, { idea: "n-001", field: "importance", value: "high", state: "Labeled" }], four);
-  assert.match(run("--check").out, /^STALE n-001\.importance \(none\): the runner has not taken this line/m, "a line the runner never took is named");
+  failsStale("n-001.importance", /^STALE n-001\.importance \(none\): the runner has not taken this line/m, "a line the runner never took");
 
   seed(four.map((l) => l.idea === "n-001" ? { ...l, state: "Labeled" } : l));
-  assert.match(run("--check").out, /^STALE n-001\.status \(Labeled\): a ruling exists that the runner has not compared/m, "a Labeled label with a ruling is named");
+  failsStale("n-001.status", /^STALE n-001\.status \(Labeled\): a ruling exists that the runner has not compared/m, "a Labeled label with a ruling");
+
+  seed(four.filter((l) => l.idea !== "n-003"), four);
+  failsStale("n-003.status", /^STALE n-003\.status \(Settled\): proposals\.jsonl has no line for this label/m, "a Settled label whose line left proposals.jsonl");
 
   const real = spawnSync(process.execPath, [script, "--check"], { cwd: repo, encoding: "utf8" });
   assert.equal(real.status, 0, `the committed report matches a fresh run: ${real.stdout}${real.stderr}`);
-  console.log("agreement report: zero rulings give no percentage, 3 of 4 gives 75 percent, an edited ruling and held or untaken lines fail --check, the committed report is fresh");
+  console.log("agreement report: zero rulings give no percentage, 3 of 4 gives 75 percent, an edited ruling and each stale state fail --check, the committed report is fresh");
 } finally {
   rmSync(root, { recursive: true, force: true });
 }
