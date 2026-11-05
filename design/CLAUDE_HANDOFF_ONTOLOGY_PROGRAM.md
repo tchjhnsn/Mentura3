@@ -81,9 +81,9 @@ flowchart TD
 
 Claude does not decide these. When a unit reaches one, Claude posts one decision per issue comment with the options and the default, then moves to the next unblocked unit.
 
-- [ ] G1. Functions layout. EE-090 says every venture has a top-level `functions/` folder (N-158). EE-086 says functions are declared in `venture.json` (N-159). Blocks the naive@function scope in S3-PR5.
+- [x] G1. Functions layout. EE-090 says every venture has a top-level `functions/` folder (N-158). EE-086 says functions are declared in `venture.json` (N-159). Blocks the naive@function scope in S3-PR5. Decided Nov 5 (14:31Z): both, declared then mirrored. `venture.json` declares the functions and is the source of truth, and `functions/` is generated from it and never edited by hand. Recorded as EE-115.
 - [ ] G2. Meaning of layer. C-086 reserves layer for the technical sense (N-096). C-080 renames the knowledge layer to source of truth layer (N-095). Blocks S2-PR1 and S2-PR6.
-- [ ] G3. AI and mentor. C-100 says AI is never a mentor (N-098). EE-046's tagline says a mentor for your journey (N-195). Blocks the naive@governance and naive@purpose scopes in S3-PR5.
+- [x] G3. AI and mentor. C-100 says AI is never a mentor (N-098). EE-046's tagline says a mentor for your journey (N-195). Blocks the naive@governance and naive@purpose scopes in S3-PR5. Decided Nov 5 (14:31Z): mentor means a human. Naive's AI is a coach that works for the mentor and never speaks for a human, so C-100 stands and EE-046's tagline is to be reworded. Recorded as EE-117.
 - [ ] G4. Whether EE-095 gets `affects` entries in `docs/decisions/decisions.json`. Blocks S2-PR1.
 - [ ] G5. Whether the 13 owner@area scopes stand in for the catalog until S2-PR7 lands. Blocks S2-PR7.
 - [ ] G6. Whether the 9 mixed-scope ideas are placed right. Blocks their scopes in S3-PR5.
