@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2008 files and 533 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2009 files and 533 directories.
 
 Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
@@ -92,8 +92,8 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `lean/Naive` | 7 | 6 | Holds 7 Lean files, types .lean 7. | none | no noun exists |
 | `library` | 54 | 0 | Holds 12 SKILL.md files, 22 venture package manifests, types .json 31, .md 23. | tooling, kit | maps to several nouns |
 | `library/packages` | 54 | 1 | Holds 12 SKILL.md files, 22 venture package manifests, types .json 31, .md 23. | none | no noun exists |
-| `operations` | 21 | 5 | Holds a layer.json whose layer is operations, 3 SKILL.md files, 3 files marked as templates, 6 product source files, types .md 9, .json 6, .mjs 6. | layer, layer manifest, function | maps to several nouns |
-| `operations/marketing` | 8 | 3 | Holds 6 product source files, types .mjs 6, .md 1, .json 1. | none | no noun exists |
+| `operations` | 20 | 5 | Holds a layer.json whose layer is operations, 3 SKILL.md files, 3 files marked as templates, 5 product source files, types .md 9, .json 6, .mjs 5. | layer, layer manifest, function | maps to several nouns |
+| `operations/marketing` | 7 | 2 | Holds 5 product source files, types .mjs 5, .md 1, .json 1. | none | no noun exists |
 | `operations/references` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/references/references.json. | reference | maps cleanly |
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
@@ -118,7 +118,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `purpose/skills` | 2 | 0 | Holds 2 SKILL.md files, types .md 2. | tooling | maps to a noun with a different name |
 | `purpose/templates` | 1 | 1 | Holds 1 file marked as a template, types .md 1. | template | maps cleanly |
 | `purpose/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example purpose/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `schema` | 496 | 264 | Holds a layer.json whose layer is system, 104 JSON Schema files, 176 product source files, 7 example venture.json files outside instance/, types .json 232, .mjs 149, .md 66, .ts 26. | layer, layer manifest, schema, record type, data model | maps to several nouns |
+| `schema` | 498 | 266 | Holds a layer.json whose layer is system, 104 JSON Schema files, 178 product source files, 7 example venture.json files outside instance/, types .json 232, .mjs 151, .md 66, .ts 26. | layer, layer manifest, schema, record type, data model | maps to several nouns |
 | `schema/examples` | 198 | 1 | Holds 3 product source files, 7 example venture.json files outside instance/, types .json 109, .md 65, (none) 17, .jsonl 4. | none | no noun exists |
 | `schema/examples/frames` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `schema/examples/migrate` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
@@ -193,7 +193,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 339 | schema 149, interface 63, verification 41, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
+| `*.mjs` | 340 | schema 151, interface 63, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 6 |
 | `*.ts` | 75 | schema 25, site 21, console 18, scripts 11 |
 | `*.tsx` | 74 | site 43, console 31 |
 
@@ -202,7 +202,7 @@ Conflicts, from those counts:
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
 - Dated filenames (YYYY-MM-DD) occur 67 times. docs/design has 54. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
-- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (149 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 11 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
+- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (151 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 11 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
 
@@ -221,7 +221,7 @@ The six directories that were expected to be the company's records, checked agai
 | `purpose` | product, library, other | product (purpose/features/strategic-foundation.feature), library (purpose/kits/validation/skills/problem-validation/SKILL.md), other (purpose/checklists/vault-and-tooling-consultancy-setup.md) | no |
 | `governance` | product, library, other | product (governance/features/decisions.feature), library (governance/skills/board-design/SKILL.md), other (governance/layer.json) | no |
 | `evidence` | library, other | library (evidence/skills/agent-capabilities/SKILL.md), other (evidence/benchmarks/2026-10-27-golden.jev.after-catalog-fix.json) | no |
-| `operations` | product, library, other | product (operations/marketing/check-public.mjs), library (operations/skills/recruiting/SKILL.md), other (operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md) | no |
+| `operations` | product, library, other | product (operations/marketing/publish-build-test.mjs), library (operations/skills/recruiting/SKILL.md), other (operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md) | no |
 | `knowledge` | product, library, other | product (knowledge/connectors/catalog.mjs), library (knowledge/skills/find-reference/SKILL.md), other (knowledge/freshness.json) | no |
 | `instance` | company, other | company (instance/ventures/everything-ecosystem/.release/layout.json), other (instance/people/p-54697df9/FLAGS.tsv) | yes |
 
@@ -263,7 +263,7 @@ In-scope folders that mix two or more of the three kinds:
 | `governance/venture-template` | product, library | product (governance/venture-template/render-roles.py), library (governance/venture-template/AGENT_ROLES_AND_DECISION_RIGHTS.md) |
 | `interface` | product, library | product (interface/acting.mjs), library (interface/skills/choosing-artifacts/SKILL.md), other (interface/adapters/claude-code.json) |
 | `knowledge` | product, library | product (knowledge/connectors/catalog.mjs), library (knowledge/skills/find-reference/SKILL.md), other (knowledge/freshness.json) |
-| `operations` | product, library | product (operations/marketing/check-public.mjs), library (operations/skills/recruiting/SKILL.md), other (operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md) |
+| `operations` | product, library | product (operations/marketing/publish-build-test.mjs), library (operations/skills/recruiting/SKILL.md), other (operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md) |
 | `purpose` | product, library | product (purpose/features/strategic-foundation.feature), library (purpose/kits/validation/skills/problem-validation/SKILL.md), other (purpose/checklists/vault-and-tooling-consultancy-setup.md) |
 | `purpose/kits` | product, library | product (purpose/kits/validation/features/problem-assessment.feature), library (purpose/kits/validation/skills/problem-validation/SKILL.md), other (purpose/kits/validation/references/references.json) |
 | `verification` | product, library | product (verification/cursor/lint-money/view.mjs), library (verification/lint-legal/LegalLint.cfg), other (verification/cursor/lint-money/MoneyLint.cfg) |
