@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1757 files and 520 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1759 files and 520 directories.
 
 Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
 
@@ -133,7 +133,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `purpose/skills` | 2 | 0 | Holds 2 SKILL.md files, types .md 2. | tooling | maps to a noun with a different name |
 | `purpose/templates` | 1 | 1 | Holds 1 file marked as a template, types .md 1. | template | maps cleanly |
 | `purpose/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example purpose/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `schema` | 510 | 285 | Holds a layer.json whose layer is system, 101 JSON Schema files, 197 product source files, 7 example venture.json files outside instance/, types .json 225, .mjs 174, .md 66, .ts 22. | layer, layer manifest, schema, record type, data model | maps to several nouns |
+| `schema` | 512 | 287 | Holds a layer.json whose layer is system, 102 JSON Schema files, 198 product source files, 7 example venture.json files outside instance/, types .json 226, .mjs 174, .md 66, .ts 23. | layer, layer manifest, schema, record type, data model | maps to several nouns |
 | `schema/examples` | 194 | 1 | Holds 3 product source files, 7 example venture.json files outside instance/, types .json 105, .md 65, (none) 17, .jsonl 4. | none | no noun exists |
 | `schema/examples/frames` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `schema/examples/migrate` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
@@ -193,9 +193,9 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `SKILL.md` | 48 | governance 15, packages 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
 | `layer.json` | 7 | evidence 1, governance 1, interface 1, knowledge 1, operations 1, purpose 1, schema 1 |
 | `package.json` | 26 | packages 22, console 1, interface 1, (root) 1, site 1 |
-| `*.schema.json` | 105 | schema 101, platform 4 |
+| `*.schema.json` | 106 | schema 102, platform 4 |
 | `*-test.mjs` | 61 | schema 52, interface 3, platform 3, scripts 2, operations 1 |
-| `*-test.ts` | 14 | schema 9, console 2, scripts 2, site 1 |
+| `*-test.ts` | 15 | schema 10, console 2, scripts 2, site 1 |
 | `*.test.ts` | 0 | nowhere |
 | `*.test.mjs` | 0 | nowhere |
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
@@ -208,7 +208,7 @@ Of the 154 folders, 18 map cleanly, 21 map to a noun with a different name, 7 ma
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
 | `*.mjs` | 331 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
-| `*.ts` | 64 | schema 21, site 21, console 18, scripts 4 |
+| `*.ts` | 65 | schema 22, site 21, console 18, scripts 4 |
 | `*.tsx` | 74 | site 43, console 31 |
 
 Conflicts, from those counts:
@@ -216,7 +216,7 @@ Conflicts, from those counts:
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
 - Dated filenames (YYYY-MM-DD) occur 66 times. docs/design has 53. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
-- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 21 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
+- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 22 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
 
