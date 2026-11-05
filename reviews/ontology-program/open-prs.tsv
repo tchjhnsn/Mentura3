@@ -1,0 +1,26 @@
+number	title	listed
+34	Mentura: frame agents, training pipeline design and own-harness idea	2026-11-05T19:25:53Z
+107	Venture relationships: types, roles, flows and boundary rules	2026-11-05T19:25:53Z
+108	Meeting recorder integrations: transcripts into raw sources and interview drafts	2026-11-05T19:25:53Z
+130	Discovery interview workflow: leads and prospects, private contacts, dossiers, meetings, packet	2026-11-05T19:25:53Z
+144	Hand the PR review gate to Grokbot	2026-11-05T19:25:53Z
+148	READMEs for the main folders, on the template	2026-11-05T19:25:53Z
+149	Retire foundation: its records are the venture's identity (EE-091)	2026-11-05T19:25:53Z
+154	Cut pull request CI cost: cancel replaced runs and skip slow groups	2026-11-05T19:25:53Z
+155	Decision EE-101: language models write, Jev judges and routes, code checks	2026-11-05T19:25:53Z
+156	Decision EE-102: coordinate through typed provenance records routed by the Lead	2026-11-05T19:25:53Z
+157	Decision EE-103: typed ontology relations and a generated noun graph	2026-11-05T19:25:53Z
+158	Decision EE-104: anticipation replaces precog in the ontology	2026-11-05T19:25:53Z
+160	Add the Socratic founder puzzle	2026-11-05T19:25:53Z
+161	EE-105: accounts, organizations and ventures	2026-11-05T19:25:53Z
+162	EE-106: Naive is the symbolic system and runs agents	2026-11-05T19:25:53Z
+163	EE-107: change verbs, tiers, and vocabulary objects	2026-11-05T19:25:53Z
+164	EE-107: vocabulary objects, shapes, and a parent check	2026-11-05T19:25:53Z
+166	docs(agents): align the merge rules with pstack	2026-11-05T19:25:53Z
+170	Record EE-110: all repository code is TypeScript	2026-11-05T19:25:53Z
+210	Founder puzzle and life-ventures research (preserve, do not merge)	2026-11-05T19:25:53Z
+211	HOLD: beginner founder puzzle (guided prompt, coach mode, Jev setup guide)	2026-11-05T19:25:53Z
+220	Master architecture: Person and venture domains at the top, a store kernel that runs	2026-11-05T19:25:53Z
+243	docs: design for extracting the record types into packages/records (monorepo step 5a)	2026-11-05T19:25:53Z
+244	refactor: read the record types through packages/records (monorepo rebuild, step 5a-1)	2026-11-05T19:25:53Z
+245	feat(ontology): S4-PR2 closure record for Torian	2026-11-05T19:25:53Z
