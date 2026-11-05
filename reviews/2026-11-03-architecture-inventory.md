@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2012 files and 533 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2014 files and 533 directories.
 
 Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
@@ -133,7 +133,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `schema/terms` | 14 | 14 | Holds 13 product source files, types .ts 13, .json 1. | none | no noun exists |
 | `schema/types` | 1 | 1 | Holds 1 product source file, types .ts 1. | record type | maps to a noun with a different name |
 | `schema/vocab` | 1 | 1 | Holds 1 file, mostly .json (1), for example schema/vocab/business-models.json. | business model | maps to a noun with a different name |
-| `scripts` | 23 | 16 | Holds 19 product source files, types .ts 14, .mjs 5, .md 2, .json 1. | none | no noun exists |
+| `scripts` | 25 | 18 | Holds 21 product source files, types .ts 16, .mjs 5, .md 2, .json 1. | none | no noun exists |
 | `scripts/fixtures` | 1 | 0 | Holds 1 file, mostly .jsonl (1), for example scripts/fixtures/transcripts/proj/session-a.jsonl. | none | no noun exists |
 | `scripts/pr-review` | 6 | 4 | Holds 4 product source files, types .mjs 3, .md 2, .ts 1. | none | no noun exists |
 | `site` | 165 | 9 | Holds 84 product source files, types .mdx 50, .tsx 43, .ts 21, .mjs 17. | none | no noun exists |
@@ -181,7 +181,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `package.json` | 26 | library 22, console 1, interface 1, (root) 1, site 1 |
 | `*.schema.json` | 108 | schema 104, platform 4 |
 | `*-test.mjs` | 62 | schema 31, interface 25, platform 3, scripts 2, operations 1 |
-| `*-test.ts` | 22 | schema 12, scripts 7, console 2, site 1 |
+| `*-test.ts` | 23 | schema 12, scripts 8, console 2, site 1 |
 | `*.test.ts` | 0 | nowhere |
 | `*.test.mjs` | 0 | nowhere |
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
@@ -194,7 +194,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
 | `*.mjs` | 341 | schema 151, interface 64, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 6 |
-| `*.ts` | 77 | schema 25, site 21, console 18, scripts 13 |
+| `*.ts` | 79 | schema 25, site 21, console 18, scripts 15 |
 | `*.tsx` | 74 | site 43, console 31 |
 
 Conflicts, from those counts:
@@ -202,7 +202,7 @@ Conflicts, from those counts:
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
 - Dated filenames (YYYY-MM-DD) occur 67 times. docs/design has 54. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
-- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (151 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 13 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
+- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (151 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 15 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
 
