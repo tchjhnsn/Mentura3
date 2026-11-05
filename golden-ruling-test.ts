@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { readSchema } from "../packages/records/index.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const sample = JSON.parse(readFileSync(join(root, "schema/examples/ontology-golden/n-001.scope.json"), "utf8"));
@@ -47,8 +48,8 @@ try {
   assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "builds_on", to: "n-002" }] }).status, 0, "a relation ruling validates");
   assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "inspires", to: "n-002" }] }).status, 1, "a relation outside the term engine's set is rejected");
 
-  const idea = JSON.parse(readFileSync(join(root, "schema/founder-idea.schema.json"), "utf8"));
-  const golden = JSON.parse(readFileSync(join(root, "schema/golden-ruling.schema.json"), "utf8"));
+  const idea = readSchema("founder-idea");
+  const golden = readSchema("golden-ruling");
   for (const f of ["status", "importance"]) assert.deepEqual(golden.$defs[f].enum, idea.properties[f].enum, `${f} values match the idea record`);
 
   const folder = join(root, "docs/reviews/ontology-golden");

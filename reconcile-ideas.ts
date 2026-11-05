@@ -21,6 +21,7 @@ import { run } from "../schema/terms/engine.ts";
 import { disagreements, readLean } from "../schema/terms/lean-agreement-test.ts";
 import type { LinkGraph } from "../schema/terms/levels.ts";
 import { typedLink } from "../schema/terms/terms.ts";
+import { recordsIn } from "../packages/records/index.mjs";
 
 export const IDEAS = "instance/people/p-54697df9/ideas";
 export const GOLDEN = "docs/reviews/ontology-golden";
@@ -73,9 +74,10 @@ export const sameLabel = (a: Json, b: Json): boolean => {
 /** What the schemas say a proposal may hold, read once from the schema files so the runner never restates them. */
 type Vocabulary = { status: string[]; importance: string[]; relation: string[]; via: string[]; ideaId: RegExp; scope: RegExp; noun: RegExp };
 function vocabulary(root: string): Vocabulary {
-  const golden = readJson(join(root, "schema/golden-ruling.schema.json")) as { $defs: { status: { enum: string[] }; importance: { enum: string[] }; scope: { properties: { scope: { pattern: string } } } }; properties: { idea: { pattern: string } } };
-  const idea = readJson(join(root, "schema/founder-idea.schema.json")) as { $defs: { relation: { enum: string[] }; attachment: { enum: string[] } } };
-  const meta = readJson(join(root, "schema/ontology-metamodel.schema.json")) as { $defs: { change_line: { properties: { noun: { pattern: string } } } } };
+  const records = recordsIn(root);
+  const golden = readJson(records.schemaFile("golden-ruling")) as { $defs: { status: { enum: string[] }; importance: { enum: string[] }; scope: { properties: { scope: { pattern: string } } } }; properties: { idea: { pattern: string } } };
+  const idea = readJson(records.schemaFile("founder-idea")) as { $defs: { relation: { enum: string[] }; attachment: { enum: string[] } } };
+  const meta = readJson(records.schemaFile("ontology-metamodel")) as { $defs: { change_line: { properties: { noun: { pattern: string } } } } };
   return {
     status: golden.$defs.status.enum, importance: golden.$defs.importance.enum, relation: idea.$defs.relation.enum, via: idea.$defs.attachment.enum,
     ideaId: new RegExp(golden.properties.idea.pattern), scope: new RegExp(golden.$defs.scope.properties.scope.pattern), noun: new RegExp(meta.$defs.change_line.properties.noun.pattern),

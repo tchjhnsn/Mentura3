@@ -4,6 +4,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { QUEUE, STATE, TRANSITIONS } from "./reconcile-ideas.ts";
+import { recordsIn, schemaFile } from "../packages/records/index.mjs";
 
 const repo = new URL("..", import.meta.url).pathname;
 const runner = join(repo, "scripts/reconcile-ideas.ts");
@@ -40,7 +41,11 @@ try {
   const table = TRANSITIONS.map((t) => `${t.from} | ${t.to} | ${t.when}`);
   assert.deepEqual(table, rows, "the runner's transition table is Appendix E, row for row");
 
-  for (const p of ["docs/ontology-catalog.json", "docs/ontology.json", "schema/terms/admitted.json", "schema/golden-ruling.schema.json", "schema/founder-idea.schema.json", "schema/ontology-metamodel.schema.json", "lean/Naive"]) cpSync(join(repo, p), at(p), { recursive: true });
+  for (const p of ["docs/ontology-catalog.json", "docs/ontology.json", "schema/terms/admitted.json", "lean/Naive"]) cpSync(join(repo, p), at(p), { recursive: true });
+  // The fixture repository's record types sit where the resolver says, as the runner reads them with recordsIn(root).
+  const fixtureRecords = recordsIn(root);
+  mkdirSync(fixtureRecords.RECORDS, { recursive: true });
+  for (const name of ["golden-ruling", "founder-idea", "ontology-metamodel"]) cpSync(schemaFile(name), fixtureRecords.schemaFile(name));
   for (let n = 1; n <= 7; n++) idea(`n-00${n}`, `Fixture idea ${n}`);
 
   propose(
