@@ -14,7 +14,7 @@
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ventureDir } from "../../interface/router.mjs";
+import { ventureDir } from "../../packages/routes/routes.mjs";
 import { addAsset, addRemote } from "../../interface/brand.mjs";
 import { allowsCopy, factsOf, hostAllowed, IMAGE, registerOf } from "../../schema/assets.mjs";
 

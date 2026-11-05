@@ -19,7 +19,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
-import { ventureDir } from "../../interface/router.mjs";
+import { ventureDir } from "../../packages/routes/routes.mjs";
 import { notify } from "../../schema/stale.mjs";
 
 const MAX = 256 * 1024;
