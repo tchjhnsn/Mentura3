@@ -801,7 +801,7 @@ function render(files: FileInfo[], dirs: string[], nouns: Noun[]): string {
   if (mixes.length === 0) lines.push("| (none) | | |");
   for (const r of mixes) lines.push(`| \`${r.path}\` | ${threeOf(r.buckets).join(", ")} | ${cell(r.bucketWhy)} |`);
   lines.push("");
-  lines.push("`package.json` lists the published package's `files`. That list includes `interface/`, `schema/`, `packages/`, `purpose/`, `knowledge/`, `operations/`, `governance/`, `evidence/`, `platform/`, and `frameworks/`. The published package therefore ships product code, the library, and the layer manifests together. It does not list `instance/`, `console/`, or `site/`.");
+  lines.push("`package.json` lists the published package's `files`. That list includes `interface/`, `schema/`, `library/packages/`, `purpose/`, `knowledge/`, `operations/`, `governance/`, `evidence/`, `platform/`, and `frameworks/`. The published package therefore ships product code, the library, and the layer manifests together. It does not list `instance/`, `console/`, or `site/`.");
   lines.push("");
   lines.push("`platform/README.md` says the framework is everything in this repository outside `platform/`. `console/README.md` says the console is platform work and not framework, and the console directory is not under `platform/`. Those two READMEs disagree about where platform work lives.");
   lines.push("");
