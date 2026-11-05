@@ -37,7 +37,7 @@ Stages 3 to 6 are a loop, not a line. They run for the foundation first, then fo
 
 ## The venture package
 
-The venture package is the venture's business source of truth: the records in place, not a copy. Engineering may keep its own. It grows as work lands in it. For example, customer feedback gathered for a docket item is saved into the validation package, and that step is checked off. It gets a new version each time a package completes or the phase changes, with a tag to set in git (`package/<venture>/v<n>`); ordinary edits stay plain commits. `node schema/packages.mjs <venture> --write` renders a readable view into `package/`: an index, one document per open package, and the manifest with its versions.
+The venture package is the venture's business source of truth: the records in place, not a copy. Engineering may keep its own. It grows as work lands in it. For example, customer feedback gathered for a docket item is saved into the validation package, and that step is checked off. It gets a new version each time a package completes or the phase changes, with a tag to set in git (`package/<venture>/v<n>`); ordinary edits stay plain commits. `node interface/orchestration/venture-package.mjs <venture> --write` renders a readable view into `package/`: an index, one document per open package, and the manifest with its versions.
 
 **A package is complete** when a person has confirmed its required records and every record it reads. Completion opens MAD's automation tier for the work that depends on that package, package by package. Marketing automation can run while the investor handoff is still being written. Agents never come in a package; an agent that works a package is an enhancement.
 
@@ -117,4 +117,4 @@ What a reasoning model answers to decide which packages open. A question is aske
 - Kits (a layer's record types, skills and checks, for developers) and venture packages (the founder's records) are different things; reconcile the names before EE-066 renames kits.
 - Priors, dependencies and questions are ours (version 0.3.0) and need evaluating against real ventures.
 
-Commands: `mentura understand --venture <id>` (the Understand gate), `node schema/packages.mjs <venture> [--write]`, `node schema/packages.mjs request <venture>` (the Jev request), `node interface/harness/run.mjs discovery --dump <ideas.md>` (the whole pipeline).
+Commands: `mentura understand --venture <id>` (the Understand gate), `node interface/orchestration/venture-package.mjs <venture> [--write]`, `node interface/orchestration/venture-package.mjs request <venture>` (the Jev request), `node interface/harness/run.mjs discovery --dump <ideas.md>` (the whole pipeline).

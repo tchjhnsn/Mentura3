@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2009 files and 533 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2010 files and 533 directories.
 
 Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
@@ -67,7 +67,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `instance` | 310 | 1 | Holds 87 files in the company venture or its workspace file, types .json 274, .md 21, (none) 10, .mdx 3. | workspace, venture | maps to several nouns |
 | `instance/people` | 219 | 0 | Holds 219 files, mostly .json (218), for example instance/people/p-54697df9/FLAGS.tsv. | none | no noun exists |
 | `instance/ventures` | 90 | 0 | Holds 86 files in the company venture or its workspace file, types .json 55, .md 21, (none) 10, .mdx 3. | venture | maps cleanly |
-| `interface` | 83 | 21 | Holds a layer.json whose layer is interface, 5 SKILL.md files, 63 product source files, types .mjs 63, .json 9, .md 9, (none) 1. | layer, layer manifest | maps cleanly |
+| `interface` | 84 | 21 | Holds a layer.json whose layer is interface, 5 SKILL.md files, 64 product source files, types .mjs 64, .json 9, .md 9, (none) 1. | layer, layer manifest | maps cleanly |
 | `interface/adapters` | 3 | 3 | Holds 3 files, mostly .json (3), for example interface/adapters/claude-code.json. | none | no noun exists |
 | `interface/api` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `interface/cli` | 5 | 5 | Holds 5 product source files, types .mjs 5. | none | no noun exists |
@@ -77,7 +77,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `interface/harness` | 4 | 3 | Holds 3 product source files, types .mjs 3, .md 1. | harness | maps cleanly |
 | `interface/mcp` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `interface/operator-console` | 1 | 1 | Holds 1 file, mostly .md (1), for example interface/operator-console/README.md. | console | maps to a noun with a different name |
-| `interface/orchestration` | 7 | 7 | Holds 6 product source files, types .mjs 6, .md 1. | none | no noun exists |
+| `interface/orchestration` | 8 | 8 | Holds 7 product source files, types .mjs 7, .md 1. | none | no noun exists |
 | `interface/references` | 1 | 1 | Holds 1 file, mostly .json (1), for example interface/references/references.json. | reference | maps cleanly |
 | `interface/skills` | 6 | 0 | Holds 5 SKILL.md files, types .md 5, .html 1. | tooling | maps to a noun with a different name |
 | `interface/tests` | 23 | 23 | Holds 22 product source files, types .mjs 22, .md 1. | none | no noun exists |
@@ -193,7 +193,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 340 | schema 151, interface 63, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 6 |
+| `*.mjs` | 341 | schema 151, interface 64, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 6 |
 | `*.ts` | 75 | schema 25, site 21, console 18, scripts 11 |
 | `*.tsx` | 74 | site 43, console 31 |
 
