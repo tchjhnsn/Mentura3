@@ -6,11 +6,11 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1995 files and 528 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1999 files and 530 directories.
 
-Top-level entries besides `.git` are 34. 22 are directories and 12 are files. A count of 33 is one short of this listing.
+Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
-Directories: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+Directories: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `evidence`, `frameworks`, `governance`, `instance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `packages`, `platform`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
 Files: `.gitattributes`, `.gitignore`, `AGENTS.md`, `CLAUDE.md`, `LICENSE`, `README.md`, `eslint.config.mjs`, `package-lock.json`, `package.json`, `test.mjs`, `tsconfig.json`, `tsconfig.strict.json`.
 
@@ -22,7 +22,7 @@ Kind is judged from file contents. The detectors read JSON fields, front matter,
 
 Nouns come from `docs/ontology.json`. Admitted terms come from `schema/terms/admitted.json`. A row maps cleanly when one concept matched and the folder name is that noun, or a plural of it, or one of the six layer names the layer noun lists, or `schema` for the system layer. A row maps to a noun with a different name when one concept matched and the folder name does not. A row maps to several nouns when two concepts matched. Layer and layer manifest count as one concept, and schema and record type count as one concept, because each pair is the folder and the file the ontology already ties together. A row has no noun when no detector matched.
 
-Of the 135 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 88 have no noun.
+Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 90 have no noun.
 
 ## 1. Folders
 
@@ -96,6 +96,8 @@ Of the 135 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
 | `operations/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/tooling/integrations.json. | integration | maps to a noun with a different name |
+| `packages` | 4 | 0 | Holds 3 product source files, types .mjs 3, .md 1. | none | no noun exists |
+| `packages/core` | 4 | 4 | Holds 3 product source files, types .mjs 3, .md 1. | none | no noun exists |
 | `platform` | 38 | 2 | Holds 4 JSON Schema files, 28 product source files, types .mjs 28, .json 8, .md 2. | none | no noun exists |
 | `platform/connectors` | 3 | 3 | Holds 3 product source files, types .mjs 3. | none | no noun exists |
 | `platform/integrations` | 10 | 9 | Holds 9 product source files, types .mjs 9, .json 1. | none | no noun exists |
@@ -168,7 +170,7 @@ Of the 135 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 
 | Pattern | Count | Where the files sit |
 | --- | ---: | --- |
-| `README.md` | 84 | schema 34, verification 27, instance 4, purpose 4, docs 3, governance 2, knowledge 2, platform 2 |
+| `README.md` | 85 | schema 34, verification 27, instance 4, purpose 4, docs 3, governance 2, knowledge 2, platform 2 |
 | `readme.md` | 0 | nowhere |
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
 | `SKILL.md` | 48 | governance 15, library 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
@@ -188,7 +190,7 @@ Of the 135 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 331 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
+| `*.mjs` | 334 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
 | `*.ts` | 75 | schema 25, site 21, console 18, scripts 11 |
 | `*.tsx` | 74 | site 43, console 31 |
 
@@ -242,6 +244,7 @@ Top-level directories by the three kinds. Other material is listed and does not 
 | `lean` | none of the three | yes | no |
 | `library` | library | yes | no |
 | `operations` | product, library | yes | yes |
+| `packages` | product | no | no |
 | `platform` | product | yes | no |
 | `purpose` | product, library | yes | yes |
 | `schema` | product | yes | no |
@@ -319,7 +322,7 @@ EE-001 and EE-013 are in force and still say seven layers, including Execution. 
 
 `schema` is the system layer by `schema/layer.json`, and it also holds most of the checker source.
 
-Remainder: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `library`, `platform`, `scripts`, `site`, `verification`.
+Remainder: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `console`, `docs`, `frameworks`, `instance`, `lean`, `library`, `packages`, `platform`, `scripts`, `site`, `verification`.
 
 BFO does not separate these directories. The design doc gives a record one class and a function another. It does not give a layer a class. A layer directory that mixes skills, templates, and checkers is several information artifacts in one folder.
 
@@ -330,7 +333,7 @@ BFO does not separate these directories. The design doc gives a record one class
 - Platform, by `platform/README.md`: `platform`.
 - Platform, by `console/README.md`, stored outside `platform/`: `console`.
 - Workspace: `instance`.
-- Framework, if the platform README is applied to the rest: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `purpose`, `schema`, `scripts`, `site`, `verification`.
+- Framework, if the platform README is applied to the rest: `.claude`, `.claude-plugin`, `.github`, `agents`, `beta`, `docs`, `evidence`, `frameworks`, `governance`, `interface`, `knowledge`, `lean`, `library`, `operations`, `packages`, `purpose`, `schema`, `scripts`, `site`, `verification`.
 
 BFO does not draw the framework and platform line. Both sides are files. The workspace adds the continuant, the venture, and the information content entities about it. The console exception shows the split is not yet a single directory boundary.
 
@@ -338,7 +341,7 @@ BFO does not draw the framework and platform line. Both sides are files. The wor
 
 This set uses the file rules in section 3. A top-level directory goes where its files go. A directory that mixes kinds would have to be split before it could sit in one category.
 
-- Product code only: `console`, `platform`, `schema`, `scripts`, `site`.
+- Product code only: `console`, `packages`, `platform`, `schema`, `scripts`, `site`.
 - Library only: `agents`, `evidence`, `frameworks`, `library`.
 - Company records only: `instance`.
 - Mixed: `governance`, `interface`, `knowledge`, `operations`, `purpose`, `verification`.
