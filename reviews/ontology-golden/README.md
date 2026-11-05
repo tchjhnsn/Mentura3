@@ -32,6 +32,7 @@ A ruling looks like this.
 
 - `python3 schema/validate.py --schema golden-ruling.schema.json --file <ruling>` prints `valid`, or each error, and exits 1 on an error.
 - `python3 schema/validate.py` checks every ruling in this folder and the sample.
+- `node scripts/reconcile-ideas.ts [--root <dir>] [--proposals <file>]` gates the proposals file (JSON Lines, one `{idea, field, value, terms}` per line, by default `proposals.jsonl` in the runner's folder, which no file holds yet) and prints each transition. `node scripts/reconcile-ideas-test.ts` drives every transition of the statechart once. `node test.mjs` runs it as the reconcile runner group.
 - `node scripts/golden-ruling-test.ts` checks that the sample validates. It checks that a ruling without its comment URL, with a field outside the four or with a value from another field is rejected. It also checks that each ruling here is named for its idea and field and names an idea that exists. `node test.mjs` runs it as the golden rulings group.
 
 ## How it connects
@@ -52,9 +53,9 @@ flowchart LR
 ```
 
 - Reads: the idea records, by id.
-- Read by: nothing yet. The reconcile runner (S3-PR3) and the agreement report (S3-PR4) will read this folder, and neither is built.
+- Read by: the reconcile runner, `node scripts/reconcile-ideas.ts` (S3-PR3). It moves each proposed label through the idea record statechart and compares a Labeled label with the ruling for its idea and field. A match settles the label. A difference makes it Disputed and puts one line on Torian's queue, and so does a label with no ruling. A new ruling on a disputed field settles it at Torian's value. The runner reads this folder and never writes to it. Its state and the queue are JSON Lines files in `docs/reviews/ontology-program/reconcile/`, written only when they change. The agreement report (S3-PR4) is not built.
 
 ## Not built
 
-- Nothing compares gated labels with rulings yet (S3-PR3, S3-PR4).
+- Nothing measures how often gated labels agree with rulings yet (S3-PR4).
 - Nothing checks that a ruling's comment was written by Torian. The comment URL lets a reader check it by hand.
