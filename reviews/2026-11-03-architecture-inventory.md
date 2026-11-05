@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2015 files and 533 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2019 files and 534 directories.
 
 Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
@@ -22,7 +22,7 @@ Kind is judged from file contents. The detectors read JSON fields, front matter,
 
 Nouns come from `docs/ontology.json`. Admitted terms come from `schema/terms/admitted.json`. A row maps cleanly when one concept matched and the folder name is that noun, or a plural of it, or one of the six layer names the layer noun lists, or `schema` for the system layer. A row maps to a noun with a different name when one concept matched and the folder name does not. A row maps to several nouns when two concepts matched. Layer and layer manifest count as one concept, and schema and record type count as one concept, because each pair is the folder and the file the ontology already ties together. A row has no noun when no detector matched.
 
-Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 93 have no noun.
+Of the 141 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 94 have no noun.
 
 ## 1. Folders
 
@@ -98,8 +98,9 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
 | `operations/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `packages` | 8 | 0 | Holds 6 product source files, types .mjs 6, .md 2. | none | no noun exists |
+| `packages` | 10 | 0 | Holds 7 product source files, types .mjs 7, .md 3. | none | no noun exists |
 | `packages/core` | 5 | 5 | Holds 4 product source files, types .mjs 4, .md 1. | none | no noun exists |
+| `packages/records` | 2 | 2 | Holds 1 product source file, types .md 1, .mjs 1. | none | no noun exists |
 | `packages/routes` | 3 | 3 | Holds 2 product source files, types .mjs 2, .md 1. | none | no noun exists |
 | `platform` | 38 | 2 | Holds 4 JSON Schema files, 28 product source files, types .mjs 28, .json 8, .md 2. | none | no noun exists |
 | `platform/connectors` | 3 | 3 | Holds 3 product source files, types .mjs 3. | none | no noun exists |
@@ -118,7 +119,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `purpose/skills` | 2 | 0 | Holds 2 SKILL.md files, types .md 2. | tooling | maps to a noun with a different name |
 | `purpose/templates` | 1 | 1 | Holds 1 file marked as a template, types .md 1. | template | maps cleanly |
 | `purpose/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example purpose/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `schema` | 498 | 266 | Holds a layer.json whose layer is system, 104 JSON Schema files, 178 product source files, 7 example venture.json files outside instance/, types .json 232, .mjs 151, .md 66, .ts 26. | layer, layer manifest, schema, record type, data model | maps to several nouns |
+| `schema` | 500 | 268 | Holds a layer.json whose layer is system, 104 JSON Schema files, 180 product source files, 7 example venture.json files outside instance/, types .json 232, .mjs 151, .md 66, .ts 28. | layer, layer manifest, schema, record type, data model | maps to several nouns |
 | `schema/examples` | 198 | 1 | Holds 3 product source files, 7 example venture.json files outside instance/, types .json 109, .md 65, (none) 17, .jsonl 4. | none | no noun exists |
 | `schema/examples/frames` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
 | `schema/examples/migrate` | 1 | 1 | Holds 1 product source file, types .mjs 1. | none | no noun exists |
@@ -173,7 +174,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 
 | Pattern | Count | Where the files sit |
 | --- | ---: | --- |
-| `README.md` | 88 | schema 34, verification 27, instance 4, purpose 4, docs 3, interface 3, governance 2, knowledge 2 |
+| `README.md` | 89 | schema 34, verification 27, instance 4, purpose 4, docs 3, interface 3, packages 3, governance 2 |
 | `readme.md` | 0 | nowhere |
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
 | `SKILL.md` | 48 | governance 15, library 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
@@ -181,7 +182,7 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `package.json` | 26 | library 22, console 1, interface 1, (root) 1, site 1 |
 | `*.schema.json` | 108 | schema 104, platform 4 |
 | `*-test.mjs` | 62 | schema 31, interface 25, platform 3, scripts 2, operations 1 |
-| `*-test.ts` | 23 | schema 12, scripts 8, console 2, site 1 |
+| `*-test.ts` | 24 | schema 13, scripts 8, console 2, site 1 |
 | `*.test.ts` | 0 | nowhere |
 | `*.test.mjs` | 0 | nowhere |
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
@@ -193,8 +194,8 @@ Of the 140 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 341 | schema 151, interface 64, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 6 |
-| `*.ts` | 79 | schema 25, site 21, console 18, scripts 15 |
+| `*.mjs` | 342 | schema 151, interface 64, verification 41, platform 28, site 17, purpose 8, knowledge 7, packages 7 |
+| `*.ts` | 81 | schema 27, site 21, console 18, scripts 15 |
 | `*.tsx` | 74 | site 43, console 31 |
 
 Conflicts, from those counts:
@@ -202,7 +203,7 @@ Conflicts, from those counts:
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
 - Dated filenames (YYYY-MM-DD) occur 68 times. docs/design has 55. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
-- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (151 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 15 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
+- These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (151 .mjs, 27 .ts or .tsx); scripts (5 .mjs, 15 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
 

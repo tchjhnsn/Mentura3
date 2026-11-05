@@ -67,6 +67,6 @@ flowchart LR
 
 | Step | Change | Status |
 |---|---|---|
-| 5a-1 | Resolver, every loader through it, the bypass check | not built |
+| 5a-1 | Resolver, every loader through it, the bypass check | #244 |
 | 5a-2 | Move the record types, rewrite stored paths, old prefix read for one release | not built |
 | 4 | `packages/store` | waits for #220 |
