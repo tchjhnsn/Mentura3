@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Closure check (S4-PR1 of the ontology program). For each open pull request the plan names, and for the
-// `framework` branch, list the ideas it carries and say whether each one exists as an idea record on main.
+// Closure check (S4-PR1 and S4-PR2 of the ontology program). Writes the closure record for Torian: one verdict
+// line for every open pull request, every pull request the plan names or main preserves as a patch, the
+// `framework` branch and the `preserve/sources-2026-11-03` branch.
 //
-//   node scripts/closure-check.ts                one line per pull request, then one line for framework
+//   node scripts/closure-check.ts                the full record, as docs/reviews/<date>-closure.md holds it
 //   node scripts/closure-check.ts --root <dir>   read another checkout
 //
 // The plan asks to "confirm each has a settled record on main". Torian deferred his golden rulings on
@@ -13,29 +14,49 @@
 // A pull request whose marker is missing or lists no ideas reads `cannot be checked`, and so does framework
 // while any pull request that reaches it does.
 //
+// A pull request is in the program when the plan names it or its patch is preserved under
+// docs/design/preserved/framework/, since only then are its ideas, or its whole diff, on main. Any other open
+// pull request gets a line that gives it no verdict, and one whose title names a program PR id (S4-PR1, ...)
+// lands by merging instead.
+//
+// The source branch is safe to retire once S1-PR10 is done: every ledger row has a copy on main, except rows
+// whose only copy the stage 1 ruling put out of reach (the Mac, agent memory, the private store).
+//
 // Inputs are files on main and local git history, so it runs offline and gives the same output for the
 // same commit:
-//   - the open pull requests: the plan's "The open PRs this plan names are" line;
+//   - the open pull requests: docs/reviews/ontology-program/open-prs.tsv, listed on GitHub with `gh api`;
+//   - the plan's pull requests, program PR ids, gate G7 and stage 1 ruling: lines in the plan;
 //   - the ideas a pull request carries: the `ledger:` ids in docs/design/preserved/framework/pr-N/PRESERVED.md,
 //     plus every merged-ledger row whose repo pointer names `#N` (a superset, so closing waits on more ideas);
 //   - which pull requests target framework: the base branch and commits in pr-N.json, stacked ones included;
 //   - merged: a commit on HEAD whose subject ends with `(#N)`;
 //   - the framework tip: the base commit the preserved metadata records, checked as an ancestor of HEAD;
-//   - the idea records: each record's `source` names its ledger row.
+//   - the idea records: each record's `source` names its ledger row;
+//   - the ledger rows with no copy on main: scripts/preservation-coverage.ts.
 // It only reads. It never calls the forge, and it closes, comments on and deletes nothing.
 
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { LEDGER, parseLedger } from "./preservation-coverage.ts";
+import { coverage, LEDGER, parseLedger, treeFiles } from "./preservation-coverage.ts";
 
 export const PLAN = "docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md";
 export const PRESERVED = "docs/design/preserved/framework";
 export const IDEAS = "instance/people/p-54697df9/ideas";
 export const PROPOSALS = "docs/reviews/ontology-program/reconcile/proposals.jsonl";
+export const OPEN_PRS = "docs/reviews/ontology-program/open-prs.tsv";
+export const SOURCE_BRANCH = "preserve/sources-2026-11-03";
+
+// Ledger sources whose only copy is somewhere Claude cannot reach. The stage 1 ruling leaves them on the
+// coverage list without blocking S1-PR10.
+export const OUT_OF_REACH = new Set(["Mac only", "agent memory only, no copy", "private store: Grok box notes", "confidential, private store"]);
 
 export type Label = "settled" | "proposed only" | "unlabelled";
+
+export const SECTIONS = ["Safe to close", "Blocked", "Nothing to close", "Outside this list"] as const;
+export type Section = (typeof SECTIONS)[number];
+export type Line = { section: Section; text: string };
 
 export type PreservedPr = {
   number: number;
@@ -47,10 +68,16 @@ export type PreservedPr = {
 
 export type Repo = {
   planned: number[];
+  programIds: string[];
+  g7: string;
+  stage1: string | null;
+  listed: string;
+  open: Map<number, string>;
   pointers: Map<number, string[]>;
   preserved: PreservedPr[];
   records: Map<string, { record: string; label: Label }>;
   merged: Map<number, string>;
+  uncovered: { id: string; source: string }[];
   onMain: (_oid: string) => boolean;
 };
 
@@ -58,6 +85,42 @@ export function plannedPrs(plan: string): number[] {
   const line = /The open PRs this plan names are ([^\n]+)/.exec(plan);
   if (!line) throw new Error(`${PLAN} has no "The open PRs this plan names are" line`);
   return [...line[1].matchAll(/#(\d+)/g)].map((m) => Number(m[1]));
+}
+
+export function programIds(plan: string): string[] {
+  const line = /PR ids in order are ([^\n]+)/.exec(plan);
+  if (!line) throw new Error(`${PLAN} has no "PR ids in order are" line`);
+  return line[1].match(/\bS\d-PR\d+[a-z]?\b/g) ?? [];
+}
+
+export function gateG7(plan: string): string {
+  const line = /^- \[([ x])\] G7\. (Whether [^.]+\.)(.*)$/m.exec(plan);
+  if (!line) throw new Error(`${PLAN} has no gate G7 line`);
+  const [, mark, question, rest] = line;
+  const asked = `Gate G7 asks: "${question}"`;
+  if (mark === "x") return `${asked} The plan records it as decided. ${rest.trim()}`;
+  const fallback = /The default is (.+?)\.(?: |$)/.exec(rest);
+  if (!fallback) throw new Error(`${PLAN} gate G7 is open and states no default`);
+  return `${asked} It is open, so its default holds. The default is ${fallback[1]}. The framework line below reads the branch as it stands, not rebased onto main.`;
+}
+
+export function stage1Ruling(plan: string): string | null {
+  return /^Stage 1 closed on Torian's ruling of ([^"\n]+?): "/m.exec(plan)?.[1] ?? null;
+}
+
+export function parseOpenPrs(text: string): { listed: string; open: Map<number, string> } {
+  const [header, ...rows] = text.split("\n").filter(Boolean);
+  if (header !== "number\ttitle\tlisted") throw new Error(`${OPEN_PRS} must start with the header number, title, listed`);
+  const open = new Map<number, string>();
+  const times = new Set<string>();
+  for (const row of rows) {
+    const [number, title, listed] = row.split("\t");
+    if (!/^\d+$/.test(number) || !title || !listed) throw new Error(`${OPEN_PRS} has a malformed row: ${row}`);
+    open.set(Number(number), title);
+    times.add(listed);
+  }
+  if (times.size !== 1) throw new Error(`${OPEN_PRS} must hold one listing, with one time on every row`);
+  return { listed: [...times][0], open };
 }
 
 export function ledgerIds(marker: string): string[] {
@@ -102,19 +165,38 @@ function ideasLine(ids: string[], repo: Repo): { missing: string[]; labels: stri
   return { missing, labels: labels || "none" };
 }
 
-export function closure(repo: Repo): string[] {
-  const byNumber = new Map(repo.preserved.map((pr) => [pr.number, pr]));
-  const lines = repo.planned.map((number) => {
-    const merged = repo.merged.get(number);
-    if (merged) return `#${number} merged into main as ${merged}: nothing to close.`;
-    const pr = byNumber.get(number);
-    if (!pr || unmapped(pr)) return `#${number} not merged: no preservation marker lists its ideas, so they cannot be checked.`;
+function programId(title: string, ids: string[]): string | undefined {
+  return ids.find((id) => new RegExp(`(?<![\\w-])${id}(?!\\w)`).test(title));
+}
+
+function prLine(number: number, repo: Repo, preserved: Map<number, PreservedPr>): Line {
+  const merged = repo.merged.get(number);
+  if (merged) return { section: "Nothing to close", text: `#${number} merged into main as ${merged}: nothing to close.` };
+  const title = repo.open.get(number);
+  if (title === undefined) return { section: "Nothing to close", text: `#${number} not merged and not open on GitHub: nothing to close.` };
+  const own = programId(title, repo.programIds);
+  if (own) return { section: "Outside this list", text: `#${number} is this program's own pull request (${own}): it lands by merging, so there is nothing to close.` };
+
+  const pr = preserved.get(number);
+  if (repo.planned.includes(number) || pr) {
+    if (!pr || unmapped(pr)) return { section: "Blocked", text: `#${number} not merged: no preservation marker lists its ideas, so they cannot be checked.` };
     const ids = carried(pr, repo);
     const { missing, labels } = ideasLine(ids, repo);
-    const verdict = missing.length === 0 ? "safe to close" : `missing ${missing.join(", ")} (no idea record on main)`;
-    return `#${number} not merged: ${verdict}. Ideas ${ids.join(", ")}. Labels: ${labels}.`;
-  });
+    const safe = missing.length === 0;
+    const verdict = safe ? "safe to close" : `missing ${missing.join(", ")} (no idea record on main)`;
+    return { section: safe ? "Safe to close" : "Blocked", text: `#${number} not merged: ${verdict}. Ideas ${ids.join(", ")}. Labels: ${labels}.` };
+  }
 
+  const rows = repo.pointers.get(number) ?? [];
+  if (rows.length === 0) return { section: "Outside this list", text: `#${number} not part of this program: no ledger row names it, so this list gives it no verdict.` };
+  const named = rows.length === 1 ? `ledger row ${rows[0]} names` : `ledger rows ${rows.join(", ")} name`;
+  return {
+    section: "Outside this list",
+    text: `#${number} not part of this program: ${named} it, but the plan does not, and main holds no copy of its diff, so this list gives it no verdict.`,
+  };
+}
+
+function frameworkLine(repo: Repo): Line {
   const framework = frameworkPrs(repo.preserved);
   const tips = [...new Set(framework.filter((pr) => pr.base === "framework").map((pr) => pr.baseOid))];
   const offMain = tips.filter((oid) => !repo.onMain(oid));
@@ -129,8 +211,91 @@ export function closure(repo: Repo): string[] {
   ];
   const verdict = blocks.length === 0 ? "safe to close" : blocks.join("; ");
   const prs = framework.map((pr) => `#${pr.number} (${carried(pr, repo).join(", ") || "no ideas listed"})`).join(", ");
-  lines.push(`framework: ${verdict}. Recorded tip ${tips.map(short).join(", ") || "none"}. PRs ${prs || "none"}. Labels: ${labels}.`);
-  return lines;
+  return {
+    section: blocks.length === 0 ? "Safe to close" : "Blocked",
+    text: `framework: ${verdict}. Recorded tip ${tips.map(short).join(", ") || "none"}. PRs ${prs || "none"}. Labels: ${labels}.`,
+  };
+}
+
+function rowCount(count: number): string {
+  return `${count} ledger ${count === 1 ? "row" : "rows"}`;
+}
+
+function sourceBranchLine(repo: Repo): Line {
+  const reachable = repo.uncovered.filter((row) => !(repo.stage1 && OUT_OF_REACH.has(row.source)));
+  if (reachable.length > 0) {
+    return {
+      section: "Blocked",
+      text: `${SOURCE_BRANCH}: not safe to retire until S1-PR10 is done. ${rowCount(reachable.length)} within reach ${reachable.length === 1 ? "has" : "have"} no copy on main: ${reachable.map((row) => row.id).join(", ")}.`,
+    };
+  }
+  const counts = new Map<string, number>();
+  for (const row of repo.uncovered) counts.set(row.source, (counts.get(row.source) ?? 0) + 1);
+  const groups = [...counts.keys()].sort().map((source) => `${counts.get(source)} ${source}`).join("; ");
+  const rest = repo.uncovered.length > 0 ? ` ${rowCount(repo.uncovered.length)} ${repo.uncovered.length === 1 ? "stays" : "stay"} out of reach under Torian's ruling of ${repo.stage1} that closed stage 1 (${groups}).` : "";
+  return { section: "Safe to close", text: `${SOURCE_BRANCH}: safe to retire, since S1-PR10 is done and every ledger row within reach has a copy on main.${rest}` };
+}
+
+export function closure(repo: Repo): Line[] {
+  const preserved = new Map(repo.preserved.map((pr) => [pr.number, pr]));
+  const numbers = [...new Set([...repo.planned, ...preserved.keys(), ...repo.open.keys()])].sort((a, b) => a - b);
+  return [...numbers.map((number) => prLine(number, repo, preserved)), frameworkLine(repo), sourceBranchLine(repo)];
+}
+
+const DIAGRAM = [
+  "```mermaid",
+  "flowchart TD",
+  "  pr[Pull request] --> merged{Commit on main ends with its number?}",
+  "  merged -- yes --> nothing[Nothing to close]",
+  "  merged -- no --> open{On the open list?}",
+  "  open -- no --> nothing",
+  "  open -- yes --> own{Title names a program PR id?}",
+  "  own -- yes --> outside[Outside this list]",
+  "  own -- no --> scope{Named by the plan or preserved as a patch?}",
+  "  scope -- no --> outside",
+  "  scope -- yes --> ideas{Every idea it carries has a record on main?}",
+  "  ideas -- yes --> safe[Safe to close]",
+  "  ideas -- no, or no marker --> blocked[Blocked]",
+  "  fw[framework] --> fwq{Every PR on it safe and its tip on main?}",
+  "  fwq -- yes --> safe",
+  "  fwq -- no --> blocked",
+  "  src[preserve/sources-2026-11-03] --> s1{S1-PR10 done?}",
+  "  s1 -- yes --> safe",
+  "  s1 -- no --> blocked",
+  "```",
+];
+
+export function record(repo: Repo): string {
+  const date = repo.listed.slice(0, 10);
+  const lines = closure(repo);
+  const sections = SECTIONS.flatMap((section) => {
+    const body = lines.filter((line) => line.section === section).map((line) => `- ${line.text}`);
+    return [`## ${section}`, "", ...(body.length > 0 ? body : ["None."]), ""];
+  });
+  return [
+    `# Closure list, ${date}`,
+    "",
+    `This file is generated by \`scripts/closure-check.ts\`. From the repository root, \`node scripts/closure-check.ts > docs/reviews/${date}-closure.md\` writes it. A fresh run matches it byte for byte while main and the open pull request list stay the same.`,
+    "",
+    "It is a list for Torian. Claude closes no pull request and deletes no branch. Torian, or Grok Bot on his explicit go, acts on it.",
+    "",
+    "## Inputs",
+    "",
+    `- The open pull requests are in \`${OPEN_PRS}\`, listed on GitHub at ${repo.listed}. A pull request opened after that time is missing here, and one merged since then reads merged.`,
+    `- The program's pull requests are the plan's list in \`${PLAN}\` and every patch preserved under \`${PRESERVED}/\`.`,
+    `- An idea is on main when a file under \`${IDEAS}/\` names its ledger row in \`source\`. Labels (settled, proposed only, unlabelled) are information and do not gate.`,
+    "- The check compares ideas, not bytes. A file that only a closed pull request or a retired branch holds goes with it.",
+    "",
+    "## Gate G7",
+    "",
+    repo.g7,
+    "",
+    "## How a verdict is reached",
+    "",
+    ...DIAGRAM,
+    "",
+    ...sections,
+  ].join("\n");
 }
 
 function git(root: string, args: string[]): { status: number | null; stdout: string } {
@@ -171,16 +336,29 @@ export function readRepo(root: string): Repo {
     if (m && !merged.has(Number(m[2]))) merged.set(Number(m[2]), short(m[1]));
   }
 
-  const planned = plannedPrs(readFileSync(join(root, PLAN), "utf8"));
+  const plan = readFileSync(join(root, PLAN), "utf8");
+  const planned = plannedPrs(plan);
+  const { listed, open } = parseOpenPrs(readFileSync(join(root, OPEN_PRS), "utf8"));
+  const files = treeFiles(root);
   const rows = parseLedger(readFileSync(join(root, LEDGER), "utf8"));
-  const pointers = new Map(planned.map((n) => [n, rows.filter((row) => new RegExp(`#${n}(?!\\d)`).test(row.pointer)).map((row) => row.id)]));
+  const numbers = [...new Set([...planned, ...preserved.map((pr) => pr.number), ...open.keys()])];
+  const pointers = new Map(numbers.map((n) => [n, rows.filter((row) => new RegExp(`#${n}(?!\\d)`).test(row.pointer)).map((row) => row.id)]));
+  const uncovered = coverage(rows, files)
+    .filter((row) => !row.onMain)
+    .map((row) => ({ id: row.id, source: row.source }));
 
   return {
     planned,
+    programIds: programIds(plan),
+    g7: gateG7(plan),
+    stage1: stage1Ruling(plan),
+    listed,
+    open,
     pointers,
     preserved,
     records,
     merged,
+    uncovered,
     onMain: (oid) => git(root, ["merge-base", "--is-ancestor", oid, "HEAD"]).status === 0,
   };
 }
@@ -188,7 +366,7 @@ export function readRepo(root: string): Repo {
 function main(argv: string[]): number {
   const at = argv.indexOf("--root");
   const root = at >= 0 ? resolve(argv[at + 1]) : join(fileURLToPath(new URL(".", import.meta.url)), "..");
-  process.stdout.write(closure(readRepo(root)).join("\n") + "\n");
+  process.stdout.write(record(readRepo(root)));
   return 0;
 }
 
