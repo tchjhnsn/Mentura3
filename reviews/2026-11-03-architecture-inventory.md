@@ -6,7 +6,7 @@ The script lives in `scripts/` next to `scripts/diagnose-transcripts.mjs` and `s
 
 ## What was counted
 
-The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 1999 files and 530 directories.
+The walk skips `.git`, `node_modules`, `.lake`, `.next`, filenames that start with `.env`, paths git ignores, and `docs/reviews/` so this generated file is not part of its own count. It found 2004 files and 531 directories.
 
 Top-level entries besides `.git` are 35. 23 are directories and 12 are files. A count of 34 is one short of this listing.
 
@@ -22,7 +22,7 @@ Kind is judged from file contents. The detectors read JSON fields, front matter,
 
 Nouns come from `docs/ontology.json`. Admitted terms come from `schema/terms/admitted.json`. A row maps cleanly when one concept matched and the folder name is that noun, or a plural of it, or one of the six layer names the layer noun lists, or `schema` for the system layer. A row maps to a noun with a different name when one concept matched and the folder name does not. A row maps to several nouns when two concepts matched. Layer and layer manifest count as one concept, and schema and record type count as one concept, because each pair is the folder and the file the ontology already ties together. A row has no noun when no detector matched.
 
-Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 90 have no noun.
+Of the 138 folders, 18 map cleanly, 21 map to a noun with a different name, 8 map to several nouns, and 91 have no noun.
 
 ## 1. Folders
 
@@ -41,9 +41,9 @@ Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `console/components` | 24 | 10 | Holds 24 product source files, types .tsx 24. | none | no noun exists |
 | `console/hooks` | 1 | 1 | Holds 1 product source file, types .ts 1. | none | no noun exists |
 | `console/lib` | 14 | 14 | Holds 14 product source files, types .ts 13, .mjs 1. | none | no noun exists |
-| `docs` | 324 | 4 | Holds 11 example venture.json files outside instance/, types .md 176, .json 135, .patch 12, .txt 1. | none | no noun exists |
+| `docs` | 325 | 4 | Holds 11 example venture.json files outside instance/, types .md 177, .json 135, .patch 12, .txt 1. | none | no noun exists |
 | `docs/decisions` | 1 | 1 | Holds 1 file, mostly .json (1), for example docs/decisions/decisions.json. | decision | maps cleanly |
-| `docs/design` | 233 | 29 | Holds 11 example venture.json files outside instance/, types .json 132, .md 88, .patch 12, .txt 1. | none | no noun exists |
+| `docs/design` | 234 | 30 | Holds 11 example venture.json files outside instance/, types .json 132, .md 89, .patch 12, .txt 1. | none | no noun exists |
 | `docs/master` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/master/naive-docs.md. | none | no noun exists |
 | `docs/memory` | 79 | 0 | Holds 79 files, mostly .md (79), for example docs/memory/claude/MEMORY.md. | none | no noun exists |
 | `docs/reference` | 1 | 1 | Holds 1 file, mostly .md (1), for example docs/reference/ROUTES.md. | none | no noun exists |
@@ -96,8 +96,9 @@ Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `operations/skills` | 3 | 0 | Holds 3 SKILL.md files, types .md 3. | tooling | maps to a noun with a different name |
 | `operations/templates` | 3 | 3 | Holds 3 files marked as templates, types .md 3. | template | maps cleanly |
 | `operations/tooling` | 1 | 1 | Holds 1 file, mostly .json (1), for example operations/tooling/integrations.json. | integration | maps to a noun with a different name |
-| `packages` | 4 | 0 | Holds 3 product source files, types .mjs 3, .md 1. | none | no noun exists |
-| `packages/core` | 4 | 4 | Holds 3 product source files, types .mjs 3, .md 1. | none | no noun exists |
+| `packages` | 8 | 0 | Holds 6 product source files, types .mjs 6, .md 2. | none | no noun exists |
+| `packages/core` | 5 | 5 | Holds 4 product source files, types .mjs 4, .md 1. | none | no noun exists |
+| `packages/routes` | 3 | 3 | Holds 2 product source files, types .mjs 2, .md 1. | none | no noun exists |
 | `platform` | 38 | 2 | Holds 4 JSON Schema files, 28 product source files, types .mjs 28, .json 8, .md 2. | none | no noun exists |
 | `platform/connectors` | 3 | 3 | Holds 3 product source files, types .mjs 3. | none | no noun exists |
 | `platform/integrations` | 10 | 9 | Holds 9 product source files, types .mjs 9, .json 1. | none | no noun exists |
@@ -170,7 +171,7 @@ Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 
 | Pattern | Count | Where the files sit |
 | --- | ---: | --- |
-| `README.md` | 85 | schema 34, verification 27, instance 4, purpose 4, docs 3, governance 2, knowledge 2, platform 2 |
+| `README.md` | 86 | schema 34, verification 27, instance 4, purpose 4, docs 3, governance 2, knowledge 2, packages 2 |
 | `readme.md` | 0 | nowhere |
 | `AGENTS.md` | 8 | schema 3, (root) 1, agents 1, console 1, instance 1, site 1 |
 | `SKILL.md` | 48 | governance 15, library 12, evidence 6, interface 5, purpose 4, operations 3, knowledge 2, verification 1 |
@@ -184,13 +185,13 @@ Of the 137 folders, 18 map cleanly, 21 map to a noun with a different name, 8 ma
 | `test.mjs` | 10 | interface 3, platform 2, purpose 2, operations 1, schema 1, (root) 1 |
 | `*.steps.mjs` | 3 | purpose 2, governance 1 |
 | `*.feature` | 3 | purpose 2, governance 1 |
-| `dated YYYY-MM-DD in the filename` | 66 | docs 57, evidence 4, governance 1, instance 1, operations 1, purpose 1, schema 1 |
+| `dated YYYY-MM-DD in the filename` | 67 | docs 58, evidence 4, governance 1, instance 1, operations 1, purpose 1, schema 1 |
 | `*.lean` | 8 | lean 8 |
 | `*.tla` | 27 | verification 27 |
 | `*.decision.json` | 28 | schema 15, instance 13 |
 | `decisions.json` | 1 | docs 1 |
 | `*.mdx` | 53 | site 50, instance 3 |
-| `*.mjs` | 334 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
+| `*.mjs` | 337 | schema 174, verification 41, interface 36, platform 28, site 17, purpose 8, knowledge 7, operations 6 |
 | `*.ts` | 75 | schema 25, site 21, console 18, scripts 11 |
 | `*.tsx` | 74 | site 43, console 31 |
 
@@ -198,7 +199,7 @@ Conflicts, from those counts:
 
 - `*-test.mjs` and `*-test.ts` both occur in schema, scripts. `*.test.ts` and `*.test.mjs` occur 0 times.
 - `test.mjs` and `*-test.mjs` both occur in interface, schema.
-- Dated filenames (YYYY-MM-DD) occur 66 times. docs/design has 53. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
+- Dated filenames (YYYY-MM-DD) occur 67 times. docs/design has 54. evidence/benchmarks has 4. docs/research has 3. docs/memory has 1. governance/venture-template has 1. instance/ventures has 1. operations/FOUNDER_OPERATING_MODEL_CAMPAIGN_2026-10-14.md has 1. purpose/frameworks has 1. schema/examples has 1.
 - These top-level directories hold at least five `.mjs` files and five `.ts` or `.tsx` files: schema (174 .mjs, 25 .ts or .tsx); scripts (5 .mjs, 11 .ts or .tsx); site (17 .mjs, 64 .ts or .tsx).
 - Decision records use `*.decision.json` 28 times and `decisions.json` 1 time.
 - Instruction files use two names. `SKILL.md` occurs 48 times and `AGENTS.md` occurs 8 times. `readme.md` occurs 0 times, and `README.md` is the form in use.
@@ -291,10 +292,10 @@ Content that shows up in the tree and matched no ontology noun:
 
 A live noun has a home in this report when a folder row named it, a directory basename matches it, or a `*.schema.json` stem matches it. Matching a schema file means the record type is defined. It does not mean a directory of those records exists at depth 2. The company venture's own folders sit below `instance/ventures/` and are past the depth cut, so a record can exist there without a row of its own.
 
-Live nouns with no folder match, no schema-file stem, and no detector hit: 55.
+Live nouns with no folder match, no schema-file stem, and no detector hit: 54.
 
 - governance (13): brand guidelines, cap table, channel, decision right, editorial guidelines, founder appointment, human loop, investor right, preference stack, publication, reserved matter, share class, vesting.
-- interface (9): AI feature, AI harness, custom workbench, draft, route, route alias, route group, slot, workbench.
+- interface (8): AI feature, AI harness, custom workbench, draft, route alias, route group, slot, workbench.
 - operations (4): done-criterion, pricing decision, product decision, tier.
 - purpose (10): Succession Matrix, evidence grade, exit criterion, job, market, need-now score, offering, portfolio role, technology, wedge.
 - system (7): method, provenance, provenance log, repository (repo), the system, vault, venture development framework.
