@@ -16,7 +16,7 @@
 // version is the blob SHA GitHub reports, which is the git blob SHA-1 of the content. read also
 // gives the branch's commit and a permalink to the file at that commit, which is what to cite.
 
-import { blobSha, isText, matches, safePath } from "../../knowledge/connectors/contract.mjs";
+import { blobSha, isText, matches, safePath } from "naive-framework/knowledge/connectors/contract.mjs";
 
 /** @param {{ id?: string, repo?: string, ref?: string, root?: string, token?: string, api?: string, search?: string, writes?: string, fetch?: (url: string, init: { method: string, headers: Record<string, string>, body?: string }) => Promise<Response> }} [opts] */
 export function connect({ id = "github", repo, ref = "main", root = "", token = "GITHUB_TOKEN", api = "https://api.github.com", search = "api", writes = "pull-request", fetch: f = globalThis.fetch } = {}) {

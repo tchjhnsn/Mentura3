@@ -15,10 +15,12 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { agentFromEnv, record } from "../../../packages/core/provenance.mjs";
-import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "../../../schema/upgrades.mjs";
+import { agentFromEnv, record } from "naive-framework/packages/core/provenance.mjs";
+import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "naive-framework/schema/upgrades.mjs";
+import { naiveRoot } from "../../../scripts/naive.ts";
 
-const repo = new URL("../../..", import.meta.url).pathname;
+// The upgrade guides staged.guides names are Naive's (docs/upgrades/), read from the installed package.
+const repo = naiveRoot;
 const kit = JSON.parse(readFileSync(new URL("./kit.json", import.meta.url), "utf8"));
 const dirArg = process.argv[2];
 const json = process.argv.includes("--json");

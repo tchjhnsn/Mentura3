@@ -19,8 +19,8 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
-import { ventureDir } from "../../packages/routes/routes.mjs";
-import { notify } from "../../schema/stale.mjs";
+import { ventureDir } from "naive-framework/packages/routes/routes.mjs";
+import { notify } from "naive-framework/schema/stale.mjs";
 
 const MAX = 256 * 1024;
 export const secretFor = (source, env = process.env) => env[`NAIVE_WEBHOOK_SECRET_${source.toUpperCase().replace(/-/g, "_")}`] ?? env.NAIVE_WEBHOOK_SECRET ?? null;

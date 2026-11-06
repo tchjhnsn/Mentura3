@@ -6,10 +6,10 @@
   "files": [],
   "skills": null,
   "verify": [
-    "platform/connectors/eval.mjs",
-    "platform/webhooks/test.mjs",
-    "platform/kits/test.mjs"
+    "connectors/eval.mjs",
+    "webhooks/test.mjs",
+    "kits/test.mjs"
   ],
   "sources": [],
-  "note": "Mentura is Naive's first adapter, as Vercel is for Next.js (Z-4): it runs the framework's record contract over vendor sources (GitHub), receives systems of record's change notifications (webhooks) and holds the kits. It is verified when it passes the framework's tests: the connector contract suite (knowledge/connectors/suite.mjs) and the router over a GitHub source, both run by platform/connectors/eval.mjs, and the platform's tests of the framework hooks it implements."
+  "note": "Mentura is Naive's first adapter, as Vercel is for Next.js (Z-4): it runs the framework's record contract over vendor sources (GitHub), receives systems of record's change notifications (webhooks) and holds the kits. It is verified when it passes the framework's tests: the connector contract suite (naive-framework/knowledge/connectors/suite.mjs) and the router over a GitHub source, both run by platform/connectors/eval.mjs, and the platform's tests of the framework hooks it implements. Its verify paths are relative to this file's folder."
 }

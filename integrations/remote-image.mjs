@@ -14,9 +14,9 @@
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { ventureDir } from "../../packages/routes/routes.mjs";
-import { addAsset, addRemote } from "../../interface/brand.mjs";
-import { allowsCopy, factsOf, hostAllowed, IMAGE, registerOf } from "../../schema/assets.mjs";
+import { ventureDir } from "naive-framework/packages/routes/routes.mjs";
+import { addAsset, addRemote } from "naive-framework/interface/brand.mjs";
+import { allowsCopy, factsOf, hostAllowed, IMAGE, registerOf } from "naive-framework/schema/assets.mjs";
 
 const MAX_BYTES = 20 * 1024 * 1024;
 const EXT = { png: "png", gif: "gif", jpeg: "jpg", webp: "webp", ico: "ico", svg: "svg" };

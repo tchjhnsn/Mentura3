@@ -7,8 +7,10 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { naiveRoot } from "../../scripts/naive.ts";
 
-const repo = new URL("../..", import.meta.url).pathname;
+// Functions, phases and frames are Naive's records, read from the installed package.
+const repo = naiveRoot;
 const load = (p) => JSON.parse(readFileSync(join(repo, p), "utf8"));
 // The aspects the pilots use: what the situation was, what was decided, who decided, the evidence
 // at the time, and what came of it.

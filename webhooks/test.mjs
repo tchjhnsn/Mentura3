@@ -8,17 +8,17 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { call } from "../../interface/router.mjs";
-import { stale } from "../../schema/stale.mjs";
+import { call } from "naive-framework/interface/router.mjs";
+import { stale } from "naive-framework/schema/stale.mjs";
+import { naivePath } from "../../scripts/naive.ts";
 import { sign, webhooks } from "./server.mjs";
 
-const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 
 const ws = mkdtempSync(join(tmpdir(), "webhooks-test-"));
 const dir = join(ws, "shop");
-spawnSync("node", [join(repo, "schema/init-venture.mjs"), dir, "shop", "--layers", "purpose"], { encoding: "utf8" });
+spawnSync("node", [naivePath("schema/init-venture.mjs"), dir, "shop", "--layers", "purpose"], { encoding: "utf8" });
 mkdirSync(join(ws, "crm/customers"), { recursive: true });
 writeFileSync(join(ws, "crm/customers/acme.json"), JSON.stringify({ id: "acme", name: "Acme" }) + "\n");
 mkdirSync(join(dir, "knowledge"), { recursive: true });
