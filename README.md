@@ -24,7 +24,7 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 
 | Hook | What the platform passes |
 |---|---|
-| `registerConnector` (`naive-framework/knowledge/connectors/index.mjs`) | The GitHub connector, from `connectors/register.mjs`. A Naive checker run as its own process gets it with `node --import ./platform/connectors/preload.mjs` |
+| `registerConnector` (`naive-framework/knowledge/connectors/index.mjs`) | The GitHub and Postgres connectors, from `connectors/register.mjs`. A Naive checker run as its own process gets it with `node --import ./platform/connectors/preload.mjs` |
 | `NAIVE_KITS` | This folder's `kits/`. Without it Naive has no kits |
 | `NAIVE_PLATFORM_ADAPTER` | `adapter.json`. Its `verify` paths are relative to this folder |
 | `NAIVE_SYNC_RHO` | `node platform/integrations/rho.mjs sync`, when a deployment syncs money from Rho. Naive runs it as `<command> --venture <dir>`; nothing sets it by default |
@@ -36,7 +36,10 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 |---|---|
 | `connectors/github.mjs` | The GitHub connector: reads from a branch, writes by draft pull request (EE-037) |
 | `connectors/fake-github.mjs` | A fake of the GitHub REST API for offline evals |
-| `connectors/register.mjs`, `connectors/preload.mjs` | Register the GitHub connector with Naive, in this process or preloaded into a Naive checker |
+| `connectors/postgres.ts` | The Postgres connector: a tenant's records in Postgres, Neon in production (EE-118 step 9). Append-only: each write is a new row, a trigger refuses UPDATE and DELETE, and each row's hash chains to the tenant's previous one (`verify`). The connection string is read from the variable `url` names (default `MENTURA_DATABASE_URL`) and never stored |
+| `connectors/store-import.ts` | Loads a folder into a tenant's store through the Postgres connector, reads every file back and checks the chain: `node platform/connectors/store-import.ts instance --tenant <id> [--check]`. Running it again appends nothing. This is how `instance/` moves to Neon |
+| `connectors/postgres-eval.ts` | The Postgres connector against the contract suite, the append-only trigger, tenant isolation and the import, on a real Postgres named by `MENTURA_EVAL_DATABASE_URL` (a service in CI); without it, it skips |
+| `connectors/register.mjs`, `connectors/preload.mjs` | Register the GitHub and Postgres connectors with Naive, in this process or preloaded into a Naive checker |
 | `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`naive-framework/knowledge/connectors/suite.mjs`), its registration, the router over a GitHub source, the catalog, and an optional live run |
 | `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
 | `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |

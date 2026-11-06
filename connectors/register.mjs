@@ -19,7 +19,18 @@ export const GITHUB = {
   options: ["repo", "ref", "root", "token", "api", "search"],
 };
 
+// Postgres: a source map entry { "connector": "postgres", "tenant": "<id>", "root": "ventures/acme" } keeps the
+// records in a tenant's Postgres store, Neon in production (postgres.ts, EE-118 step 9). The connection string
+// is in the variable url names (default MENTURA_DATABASE_URL). Its eval is platform/connectors/postgres-eval.ts.
+export const POSTGRES = {
+  name: "Postgres",
+  module: fileURLToPath(new URL("./postgres.ts", import.meta.url)),
+  writes: ["direct", "none"],
+  options: ["tenant", "root", "url"],
+};
+
 /** Adds every platform connector to Naive's registry in this process. */
 export function registerPlatformConnectors() {
   registerConnector("github", GITHUB);
+  registerConnector("postgres", POSTGRES);
 }
