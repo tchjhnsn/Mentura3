@@ -1812,6 +1812,51 @@
           "expect": "exists"
         }
       ]
+    },
+    {
+      "id": "EE-123",
+      "date": "2026-11-06",
+      "status": "in-force",
+      "decision": "Mentura's function agents run one process per run, started by one command, `node platform/agents/bin.ts run <function> --venture <id>`, with the task on stdin; Grokbot calls them through an MCP shim (`bin.ts mcp`) that starts that command for each tool call, and filesystem triggers will call it too. Each agent is derived from Naive's data with no list or code per function: every id in departments.json is a function agent acting in the team-plan role `<function>-agent`, its skills are the skills/ folders of its function's module, mounted read-only, and its suggested write routes are decisions/* plus the concrete write routes of the record packages the function owns, never the team plan. A run is refused unless the venture's team plan lists that role for an agent, with routes, unable to write the team plan. The run's identity (session, trace, parent span, role, model, harness) is set in the process environment for the run, so the tracer, the router and provenance agree; every run is traced into the venture's trace files; one run holds a venture at a time (.naive/agent-run.lock), and a repeated run id reports the first run from the trace and provenance files. The model is MENTURA_MODEL as provider:model through LangChain's initChatModel, and no provider package is a dependency yet. The strategy agent is the first. Not built yet: the filesystem triggers, and appends two processes can share.",
+      "why": "Naive reads a run's identity from process.env at write time, so a long-lived server running several runs would swap shared state per call and let provenance and spans disagree; one process per run makes them agree by construction and gives Grokbot, a shell and a trigger one door. Deriving agents from Naive's data means the other twelve functions need a team-plan entry, not code. Concrete routes, not package-prefix globs, because a prefix over-reached (service delivery would have reached people/**, which holds the team plan).",
+      "related": [
+        "EE-121",
+        "EE-122",
+        "EE-041",
+        "EE-047"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "platform/agents/function-spec.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "platform/agents/function-agent.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "platform/agents/cli.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "platform/agents/bin.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "platform/agents/mcp.ts",
+          "root": "repo",
+          "expect": "exists"
+        }
+      ]
     }
   ]
 }
