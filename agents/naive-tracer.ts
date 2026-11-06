@@ -78,6 +78,21 @@ export class NaiveTracer extends BaseCallbackHandler {
     this.open.delete(runId);
   }
 
+  /**
+   * Ends every span still open, children before the spans they hang from, each with status error and the reason.
+   * A run that throws or is aborted can leave LangChain runs open, and a provenance line written inside one names a
+   * span that check-traces would then find in no file. Idempotent: a second call finds nothing open.
+   */
+  closeOpen(reason: string): void {
+    const depth = (id: string): number => {
+      let d = 0;
+      for (let p = this.open.get(id)?.parent; p && this.open.has(p) && d < 1000; p = this.open.get(p)?.parent) d++;
+      return d;
+    };
+    for (const id of [...this.open.keys()].sort((a, b) => depth(b) - depth(a))) this.end(id, {}, new Error(reason));
+    this.via.clear();
+  }
+
   agentAbove(runId: string | undefined): string | undefined {
     const id = this.spanOf(runId);
     return id ? this.open.get(id)?.agent : undefined;
