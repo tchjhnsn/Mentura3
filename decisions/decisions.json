@@ -1733,6 +1733,53 @@
           "expect": "narrowed"
         }
       ]
+    },
+    {
+      "id": "EE-119",
+      "date": "2026-11-05",
+      "status": "in-force",
+      "decision": "everything-ecosystem depends on Naive as a git dependency: package.json names naive-framework as github:tchjhnsn/naive pinned to one commit, and the lockfile records that commit. CI (the test, site, console and PR review jobs) and Vercel fetch it with a read-only token in NAIVE_READ_TOKEN, which scripts/naive-git-auth.sh hands to git before npm ci (Vercel runs it through scripts/naive-install.sh, named in site/vercel.json). Moving to a newer Naive is a change to the pin in a pull request. Not built yet: Naive is not published to a registry, so no version range is possible; Naive's TypeScript modules are loaded through a temporary load hook (scripts/naive-ts.ts) until Naive ships compiled JavaScript.",
+      "why": "Torian chose it on a decision card on 2026-11-05 at 23:31Z, over a GitHub Packages registry and a git submodule, for step 4 of EE-118 (this repository depends on Naive and drops its copies).",
+      "related": [
+        "EE-118"
+      ],
+      "affects": [
+        {
+          "kind": "path",
+          "target": "package.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": ".github/workflows/test.yml",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "scripts/naive-git-auth.sh",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "site/vercel.json",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "schema/check-ventures.mjs",
+          "root": "repo",
+          "expect": "absent"
+        },
+        {
+          "kind": "decision",
+          "target": "EE-118",
+          "expect": "narrowed"
+        }
+      ]
     }
   ]
 }
