@@ -4,7 +4,8 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { QUEUE, STATE, TRANSITIONS } from "./reconcile-ideas.ts";
-import { recordsIn, schemaFile } from "../packages/records/index.mjs";
+import { recordsIn, schemaFile } from "naive-framework/packages/records/index.mjs";
+import { naivePath, naiveTs } from "./naive.ts";
 
 const repo = new URL("..", import.meta.url).pathname;
 const runner = join(repo, "scripts/reconcile-ideas.ts");
@@ -23,7 +24,7 @@ const idea = (id: string, text: string, extra: object = {}): void => write(`${id
 
 const covered = new Set<string>();
 const reconcile = (): { status: number | null; out: string; steps: string[] } => {
-  const r = spawnSync(process.execPath, [runner, "--root", root, "--proposals", proposals], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [...naiveTs, runner, "--root", root, "--proposals", proposals, "--naive", root], { encoding: "utf8" });
   const out = `${r.stdout}${r.stderr}`;
   const steps = [...out.matchAll(/^(\S+): (.+?) -> (.+?) \((.+)\)$/gm)].map((m) => {
     const row = TRANSITIONS.find((t) => t.when === m[4]);
@@ -41,8 +42,9 @@ try {
   const table = TRANSITIONS.map((t) => `${t.from} | ${t.to} | ${t.when}`);
   assert.deepEqual(table, rows, "the runner's transition table is Appendix E, row for row");
 
-  for (const p of ["docs/ontology-catalog.json", "docs/ontology.json", "schema/terms/admitted.json", "lean/Naive"]) cpSync(join(repo, p), at(p), { recursive: true });
-  // The fixture repository's record types sit where the resolver says, as the runner reads them with recordsIn(root).
+  for (const p of ["docs/ontology-catalog.json", "docs/ontology.json", "schema/terms/admitted.json", "lean/Naive"]) cpSync(naivePath(p), at(p), { recursive: true });
+  // The fixture holds Naive's files too (the runner gets --naive root), so a case can edit the ontology or Lean.
+  // Its record types sit where the resolver says, as the runner reads them with recordsIn(naive).
   const fixtureRecords = recordsIn(root);
   mkdirSync(fixtureRecords.RECORDS, { recursive: true });
   for (const name of ["golden-ruling", "founder-idea", "ontology-metamodel"]) cpSync(schemaFile(name), fixtureRecords.schemaFile(name));
@@ -146,7 +148,7 @@ try {
   const validate = (field: string, value: unknown): number | null => {
     const file = join(root, "ruling.json");
     writeFileSync(file, JSON.stringify({ idea: "n-001", field, value, comment: "https://github.com/a/b/issues/1#issuecomment-1", ruled: "2026-11-05" }));
-    return spawnSync("python3", ["-I", "schema/validate.py", "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
+    return spawnSync("python3", ["-I", naivePath("schema/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
   };
   const cases: [string, unknown, boolean][] = [
     ["status", "open", true], ["status", "high", false], ["importance", "low", true], ["relation", [], true],
@@ -163,7 +165,7 @@ try {
     assert.equal(m?.state === "Captured" && m.reason !== undefined, !valid, `the runner agrees with the golden ruling schema on ${field} ${JSON.stringify(value)}`);
   }
 
-  const real = spawnSync(process.execPath, [runner], { cwd: repo, encoding: "utf8" });
+  const real = spawnSync(process.execPath, [...naiveTs, runner], { cwd: repo, encoding: "utf8" });
   assert.equal(real.status, 0, real.stderr);
   assert.match(real.stdout, /^218 ideas, \d+ proposals, \d+ labels( \([^)]*\))?, 0 transitions; no change$/m, "the committed state and queue are fresh for the committed proposals");
   console.log("reconcile runner: all pass");

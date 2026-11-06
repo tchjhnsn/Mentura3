@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkMarkdown, FALLBACK_PATTERNS, fetchMarkdown, loadPatterns, pagesFromFiles, run } from "./content.mjs";
 import { contrast, inspectPage, report as designReport, screenshotMode } from "./design.mjs";
+import { naivePath } from "../naive.ts";
 
 const here = new URL(".", import.meta.url).pathname;
 const root = join(here, "../..");
@@ -34,7 +35,9 @@ mkdirSync(join(dict, "schema"));
 mkdirSync(join(dict, "instance/ventures/everything-ecosystem/governance"), { recursive: true });
 writeFileSync(join(dict, "schema/internal-terms.json"), JSON.stringify({ patterns: [{ id: "decision-id", regex: "\\b(?:EE|G|D)-\\d{3}\\b", why: "a ledger id" }] }));
 writeFileSync(join(dict, "instance/ventures/everything-ecosystem/governance/internal-terms.json"), JSON.stringify({ patterns: [{ id: "codename-zephyr", regex: "\\bZephyr\\b", why: "Zephyr is unannounced", severity: "warn" }] }));
-const loaded = loadPatterns(dict).patterns;
+const loaded = loadPatterns(dict, dict).patterns;
+const withoutNaive = loadPatterns(dict, null);
+check("without naive-framework installed, Naive's list is skipped and says so; the venture's list still loads", /Naive's list skipped/.test(withoutNaive.source) && withoutNaive.source.includes("instance/ventures/everything-ecosystem/governance/internal-terms.json") && !withoutNaive.patterns.some((p) => p.id === "decision-id"));
 const dictRules = (text) => checkMarkdown(text, loaded).map((f) => f.rule);
 check("a dictionary regex is case-sensitive, as in check-leaks", dictRules("see d-100").length === 0 && dictRules("see D-100").includes("decision-id"));
 check("a term on the founder's list is found", dictRules("Zephyr ships").includes("venture-term-1"));
@@ -118,7 +121,7 @@ check("a regular artifact member reads normally", JSON.parse(readInZip("pr.json"
 rmSync(zipDir, { recursive: true });
 
 // naive publish routes on the first argument after --venture, wherever the flag sits.
-const naive = (...args) => { try { return execFileSync("node", [join(root, "interface/cli/naive.mjs"), ...args], { encoding: "utf8", stdio: "pipe" }); } catch (e) { return `${e.stdout}${e.stderr}`; } };
+const naive = (...args) => { try { return execFileSync("node", [naivePath("interface/cli/naive.mjs"), ...args], { encoding: "utf8", stdio: "pipe" }); } catch (e) { return `${e.stdout}${e.stderr}`; } };
 check("naive publish --venture <dir> check reaches the lint", !naive("publish", "--venture", join(root, "instance/ventures/everything-ecosystem"), "check", "no-such-file.md").includes("no channel check"));
 
 check("screenshots go into the uploaded artifact", /--shots pr-review-out\/screenshots/.test(wf) && /upload-artifact@v4[\s\S]*path: pr-review-out\//.test(wf));

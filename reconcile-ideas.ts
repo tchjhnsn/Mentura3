@@ -2,7 +2,11 @@
 // and the Lean agreement check, and moves each label through the idea record statechart, Appendix E of
 // docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. It makes no model or network call: proposals are input.
 //
-//   node scripts/reconcile-ideas.ts [--root <dir>] [--proposals <file>]
+//   node --import ./scripts/naive-ts.ts scripts/reconcile-ideas.ts [--root <dir>] [--proposals <file>] [--naive <dir>]
+//
+// --root is the repository with the idea records, rulings and state (this one). --naive is the Naive checkout whose
+// schemas, ontology, catalog, admitted terms and Lean proofs the gates read (default: the installed naive-framework).
+// The --import flag lets Node load Naive's TypeScript from node_modules (scripts/naive-ts.ts, temporary).
 //
 // A proposal is one JSON line: {"idea": "n-001", "field": "status", "value": "open", "terms": ["pricing decision"]}.
 // field and value take the shape of a golden ruling (schema/golden-ruling.schema.json), so a gated label and Torian's
@@ -17,11 +21,12 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { run } from "../schema/terms/engine.ts";
-import { disagreements, readLean } from "../schema/terms/lean-agreement-test.ts";
-import type { LinkGraph } from "../schema/terms/levels.ts";
-import { typedLink } from "../schema/terms/terms.ts";
-import { recordsIn } from "../packages/records/index.mjs";
+import { run } from "naive-framework/schema/terms/engine.ts";
+import { disagreements, readLean } from "naive-framework/schema/terms/lean-agreement-test.ts";
+import type { LinkGraph } from "naive-framework/schema/terms/levels.ts";
+import { typedLink } from "naive-framework/schema/terms/terms.ts";
+import { recordsIn } from "naive-framework/packages/records/index.mjs";
+import { naiveRoot } from "./naive.ts";
 
 export const IDEAS = "instance/people/p-54697df9/ideas";
 export const GOLDEN = "docs/reviews/ontology-golden";
@@ -87,6 +92,8 @@ function vocabulary(root: string): Vocabulary {
 /** Everything a run reads besides the state. Lean and the rulings are read only when a machine needs them. */
 export class World {
   readonly root: string;
+  /** The Naive checkout whose schemas, ontology, admitted terms and Lean proofs the gates read (the installed package). */
+  readonly naive: string;
   readonly vocab: Vocabulary;
   readonly ideas: Map<string, Idea>;
   lines: Map<string, Line>;
@@ -99,31 +106,32 @@ export class World {
   private leanCache: string[] | undefined;
   private rulingCache = new Map<string, Ruling | null>();
 
-  constructor(root: string, lines: Map<string, Line>) {
+  constructor(root: string, lines: Map<string, Line>, naive: string = naiveRoot) {
     this.root = root;
+    this.naive = naive;
     this.lines = lines;
-    this.vocab = vocabulary(root);
+    this.vocab = vocabulary(naive);
     this.ideas = new Map(readdirSync(join(root, IDEAS)).filter((f) => f.endsWith(".json")).map((f) => {
       const r = readJson(join(root, IDEAS, f)) as Idea;
       return [r.id, { id: r.id, text: r.text, status: r.status, relations: r.relations ?? [], scope: r.scope }];
     }));
-    const catalog = readJson(join(root, "docs/ontology-catalog.json")) as { scopes: { scope: string; owner: string; imports: string[] }[] };
+    const catalog = readJson(join(naive, "docs/ontology-catalog.json")) as { scopes: { scope: string; owner: string; imports: string[] }[] };
     this.scopes = catalog.scopes.map((s) => s.scope);
     this.imports = new Map(catalog.scopes.map((s) => [s.scope, s.imports]));
     this.scopeOf = new Map(catalog.scopes.map((s) => [s.owner, s.scope]));
-    const ontology = readJson(join(root, "docs/ontology.json")) as { top_categories: { name: string }[]; nouns: (Noun & { status: string })[] };
+    const ontology = readJson(join(naive, "docs/ontology.json")) as { top_categories: { name: string }[]; nouns: (Noun & { status: string })[] };
     this.nouns = new Map(ontology.nouns.filter((n) => n.status !== "retired").map((n) => [n.noun, { noun: n.noun, function: n.function ?? null }]));
     this.tops = new Set(ontology.top_categories.map((t) => t.name));
-    const admitted = readJson(join(root, "schema/terms/admitted.json")) as { terms: { id: string; label: string }[] };
+    const admitted = readJson(join(naive, "schema/terms/admitted.json")) as { terms: { id: string; label: string }[] };
     this.admitted = new Set(admitted.terms.flatMap((t) => [t.id, t.label]));
   }
 
   /** The Lean agreement check (schema/terms/lean-agreement-test.ts), plus the theorems typed-link cites. */
   lean(): string[] {
     if (!this.leanCache) {
-      const declared = readLean(this.root).theorems;
+      const declared = readLean(this.naive).theorems;
       this.leanCache = [
-        ...disagreements(this.root),
+        ...disagreements(this.naive),
         ...(typedLink.lean ?? []).filter((t) => !declared.has(t)).map((t) => `typed-link cites Lean theorem ${t}, which lean/Naive does not declare`),
       ];
     }
@@ -389,7 +397,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = (name: string): string | undefined => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
   const root = resolve(arg("--root") ?? join(dirname(new URL(import.meta.url).pathname), ".."));
   const proposalsFile = arg("--proposals") ? resolve(arg("--proposals")!) : join(root, PROPOSALS);
-  const world = new World(root, new Map());
+  const world = new World(root, new Map(), resolve(arg("--naive") ?? naiveRoot));
   const { lines, unread } = readProposals(proposalsFile, world);
   world.lines = lines;
   const { machines, steps } = reconcile(readState(join(root, STATE)), world);

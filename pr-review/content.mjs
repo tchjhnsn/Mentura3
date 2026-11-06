@@ -5,11 +5,12 @@
 //   node scripts/pr-review/content.mjs --fixtures <dir>        (offline: every .md file in <dir> is a page)
 //
 // A page's markdown comes from `Accept: text/markdown`, then from the `.md` route. The patterns come from the
-// internal-terms dictionaries the branch has (see DICTIONARIES) plus the fallback list below. It only reports: findings go in the PR comment, nothing is merged or blocked.
+// internal-terms dictionaries (Naive's and the venture's, see loadPatterns) plus the fallback list below. It only reports: findings go in the PR comment, nothing is merged or blocked.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const root = new URL("../../", import.meta.url).pathname;
 
@@ -28,20 +29,29 @@ export const FALLBACK_PATTERNS = [
   { id: "email", severity: "warn", pattern: "\\b[A-Za-z0-9._%+-]+@(?!example\\.(?:com|org))[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b", flags: "", reason: "personal email address" },
 ];
 
-// Naive's list, then the founder's list for this venture, as schema/check-leaks.mjs reads them.
+// Naive's list (in the installed naive-framework package), then the founder's list for this venture, as
+// naive-framework/schema/check-leaks.mjs reads them. The PR-code workflow (pr-review.yml) reads no secret, so it
+// installs without the private naive-framework package (EE-119); then Naive's list is skipped, the report says so,
+// and the venture's list and the fallback patterns still run.
+let naiveRoot = null;
+try { naiveRoot = dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { /* not installed */ }
+const NAIVE_DICTIONARY = "schema/internal-terms.json";
 const VENTURE_DICTIONARY = "instance/ventures/everything-ecosystem/governance/internal-terms.json";
-const DICTIONARIES = ["schema/internal-terms.json", VENTURE_DICTIONARY];
 
 // Accepts { terms: [...] }, { patterns: [...] } or an array; each entry a string (a literal term) or { regex|pattern|term, ... }.
 // Dictionaries add to the fallback list, so the secret shapes always run. The report is public, and a founder's rule id
 // or reason can name the unannounced term, so those rules go out under a neutral id and reason.
-export function loadPatterns(dir = root) {
+//   dir    the repository whose venture list is read (default: this one)
+//   naive  the Naive checkout whose list is read (default: the installed package)
+export function loadPatterns(dir = root, naive = naiveRoot) {
   const sources = [];
   const patterns = [];
-  for (const rel of DICTIONARIES) {
-    const file = join(dir, rel);
+  const skipped = naive ? [] : [`Naive's list skipped (naive-framework is not installed)`];
+  for (const [rel, base, label] of [[NAIVE_DICTIONARY, naive, `naive-framework/${NAIVE_DICTIONARY}`], [VENTURE_DICTIONARY, dir, VENTURE_DICTIONARY]]) {
+    if (!base) continue;
+    const file = join(base, rel);
     if (!existsSync(file)) continue;
-    sources.push(rel);
+    sources.push(label);
     const data = JSON.parse(readFileSync(file, "utf8"));
     const list = Array.isArray(data) ? data : data.terms ?? data.patterns ?? [];
     const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -50,9 +60,9 @@ export function loadPatterns(dir = root) {
       : { id: t.id ?? `term-${i + 1}`, severity: t.severity === "warn" ? "warn" : "error", pattern: t.regex ?? t.pattern ?? `\\b${escape(t.term)}\\b`, flags: t.flags ?? "", reason: t.why ?? t.reason ?? "internal term" });
     patterns.push(...(rel === VENTURE_DICTIONARY ? own.map((p, i) => ({ ...p, id: `venture-term-${i + 1}`, reason: "term on the founder's internal list" })) : own));
   }
-  if (!sources.length) return { source: "fallback", patterns: FALLBACK_PATTERNS };
+  if (!sources.length) return { source: skipped.length ? `fallback; ${skipped[0]}` : "fallback", patterns: FALLBACK_PATTERNS };
   const ids = new Set(patterns.map((p) => p.id));
-  return { source: sources.join(", "), patterns: [...patterns, ...FALLBACK_PATTERNS.filter((p) => !ids.has(p.id))] };
+  return { source: [...sources, ...skipped].join(", "), patterns: [...patterns, ...FALLBACK_PATTERNS.filter((p) => !ids.has(p.id))] };
 }
 
 // A finding records the rule and where it matched, never the matched text: the report is public and the match may be
@@ -93,7 +103,7 @@ export async function fetchMarkdown(base, path, fetchImpl = fetch) {
 }
 
 export function report(pages, source) {
-  const out = [`### Content`, ``, `Patterns: ${source === "fallback" ? "built-in fallback list" : source}.`, ``];
+  const out = [`### Content`, ``, `Patterns: ${source === "fallback" ? "built-in fallback list" : source.startsWith("fallback; ") ? `built-in fallback list; ${source.slice(10)}` : source}.`, ``];
   const hits = pages.filter((p) => p.error || p.findings.length);
   if (!pages.length) out.push("No changed site pages.");
   else if (!hits.length) out.push(`${pages.length} page(s) checked, nothing found.`);
