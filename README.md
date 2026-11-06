@@ -43,6 +43,7 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 | `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`naive-framework/src/store/connectors/suite.mjs`), its registration, the router over a GitHub source, the catalog, and an optional live run |
 | `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
 | `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
+| `agents/` | Mentura's LangChain side over Naive (EE-121, EE-122): `NaiveBackend`, a deepagents backend over Naive's agent filesystem, and `NaiveTracer`, a callback handler that writes a run as spans in the venture's trace files. See `agents/README.md` |
 | `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |
 | `integrations/langsmith-test.mjs` | Ships a Naive trace through the exporter to a local stand-in for LangSmith, offline |
 | `integrations/langsmith-docket.mjs` | The docket's evidence as a LangSmith experiment: the scenario states as a dataset, and one scored run of the docket and the judge (Jev) as an experiment over it (EE-075). Needs `LANGSMITH_API_KEY` |
