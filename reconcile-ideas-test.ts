@@ -4,7 +4,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, write
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { QUEUE, STATE, TRANSITIONS } from "./reconcile-ideas.ts";
-import { recordsIn, schemaFile } from "naive-framework/packages/records/index.mjs";
+import { recordsIn, schemaFile } from "naive-framework/src/records/index.mjs";
 import { naivePath, naiveTs } from "./naive.ts";
 
 const repo = new URL("..", import.meta.url).pathname;
@@ -42,7 +42,7 @@ try {
   const table = TRANSITIONS.map((t) => `${t.from} | ${t.to} | ${t.when}`);
   assert.deepEqual(table, rows, "the runner's transition table is Appendix E, row for row");
 
-  for (const p of ["docs/ontology-catalog.json", "docs/ontology.json", "schema/terms/admitted.json", "lean/Naive"]) cpSync(naivePath(p), at(p), { recursive: true });
+  for (const p of ["packages/naive/src/terms/ontology-catalog.json", "packages/naive/src/terms/ontology.json", "packages/naive/src/terms/admitted.json", "packages/naive/lean/Naive"]) cpSync(naivePath(p), at(p), { recursive: true });
   // The fixture holds Naive's files too (the runner gets --naive root), so a case can edit the ontology or Lean.
   // Its record types sit where the resolver says, as the runner reads them with recordsIn(naive).
   const fixtureRecords = recordsIn(root);
@@ -76,14 +76,14 @@ try {
   assert.deepEqual(r.steps, ["n-001.status Labeled -> GoldenCompare", "n-001.status GoldenCompare -> Settled"], r.out);
   assert.deepEqual(jsonl(QUEUE), [], "a settled label leaves the queue");
 
-  const before = read("docs/ontology.json");
+  const before = read("packages/naive/src/terms/ontology.json");
   const ontology = JSON.parse(before);
   ontology.nouns.push({ noun: "reconcile widget", level: "record", meaning: "A fixture noun", standard: "ours", status: "proposed", function: "products", handoff_type: false });
-  write("docs/ontology.json", ontology);
+  write("packages/naive/src/terms/ontology.json", ontology);
   r = reconcile();
   assert.equal(machine("n-003.scope")?.state, "Labeled", `once the owning scope defines the term, the label is gated again: ${r.out}`);
   assert.ok(r.steps.includes("n-003.scope RoutedToScope -> Proposed"), r.out);
-  write("docs/ontology.json", before);
+  write("packages/naive/src/terms/ontology.json", before);
 
   propose({ idea: "n-004", field: "relation", value: [{ relation: "related", to: "n-001" }] });
   const card = { thread: "cmsg_01Thread", message: "cmsg_01Card", chosen_at: "2026-11-05T16:10:00Z" };
@@ -119,13 +119,13 @@ try {
   assert.match(String(machine("n-006.relation")?.reason), /typed-link T3: n-006 names idea n-404/, `a relation to no idea is rejected by the term engine: ${r.out}`);
   assert.equal(machine("n-006.relation")?.missing, undefined, "a dangling idea is not a missing term");
 
-  const terms = read("lean/Naive/Terms.lean");
-  write("lean/Naive/Terms.lean", terms.replaceAll("idea_inverse_involutive", "idea_inverse_renamed"));
+  const terms = read("packages/naive/lean/Naive/Terms.lean");
+  write("packages/naive/lean/Naive/Terms.lean", terms.replaceAll("idea_inverse_involutive", "idea_inverse_renamed"));
   propose({ idea: "n-007", field: "importance", value: "high" });
   r = reconcile();
   assert.equal(machine("n-007.importance")?.state, "Rejected", r.out);
   assert.match(String(machine("n-007.importance")?.reason), /Lean disagrees with the code: .*idea_inverse_involutive/, "a Lean disagreement rejects at the proof check");
-  write("lean/Naive/Terms.lean", terms);
+  write("packages/naive/lean/Naive/Terms.lean", terms);
 
   idea("n-001", "Fixture idea 1, edited");
   r = reconcile();
@@ -148,7 +148,7 @@ try {
   const validate = (field: string, value: unknown): number | null => {
     const file = join(root, "ruling.json");
     writeFileSync(file, JSON.stringify({ idea: "n-001", field, value, comment: "https://github.com/a/b/issues/1#issuecomment-1", ruled: "2026-11-05" }));
-    return spawnSync("python3", ["-I", naivePath("schema/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
+    return spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
   };
   const cases: [string, unknown, boolean][] = [
     ["status", "open", true], ["status", "high", false], ["importance", "low", true], ["relation", [], true],

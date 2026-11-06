@@ -3,17 +3,17 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { readSchema } from "naive-framework/packages/records/index.mjs";
+import { readSchema } from "naive-framework/src/records/index.mjs";
 import { naivePath } from "./naive.ts";
 
 const root = new URL("..", import.meta.url).pathname;
-const sample = JSON.parse(readFileSync(naivePath("schema/examples/ontology-golden/n-001.scope.json"), "utf8"));
+const sample = JSON.parse(readFileSync(naivePath("packages/naive/src/records/examples/ontology-golden/n-001.scope.json"), "utf8"));
 const dir = mkdtempSync(join(tmpdir(), "golden-ruling-"));
 
 const validate = (ruling: unknown) => {
   const file = join(dir, "ruling.json");
   writeFileSync(file, JSON.stringify(ruling));
-  const r = spawnSync("python3", ["-I", naivePath("schema/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: root, encoding: "utf8" });
+  const r = spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: root, encoding: "utf8" });
   return { status: r.status, out: r.stdout + r.stderr };
 };
 

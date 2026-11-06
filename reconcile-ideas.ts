@@ -21,11 +21,11 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { run } from "naive-framework/schema/terms/engine.ts";
-import { disagreements, readLean } from "naive-framework/schema/terms/lean-agreement-test.ts";
-import type { LinkGraph } from "naive-framework/schema/terms/levels.ts";
-import { typedLink } from "naive-framework/schema/terms/terms.ts";
-import { recordsIn } from "naive-framework/packages/records/index.mjs";
+import { run } from "naive-framework/src/terms/engine.ts";
+import { disagreements, readLean } from "naive-framework/src/terms/lean-agreement-test.ts";
+import type { LinkGraph } from "naive-framework/src/terms/levels.ts";
+import { typedLink } from "naive-framework/src/terms/terms.ts";
+import { recordsIn } from "naive-framework/src/records/index.mjs";
 import { naiveRoot } from "./naive.ts";
 
 export const IDEAS = "instance/people/p-54697df9/ideas";
@@ -115,18 +115,18 @@ export class World {
       const r = readJson(join(root, IDEAS, f)) as Idea;
       return [r.id, { id: r.id, text: r.text, status: r.status, relations: r.relations ?? [], scope: r.scope }];
     }));
-    const catalog = readJson(join(naive, "docs/ontology-catalog.json")) as { scopes: { scope: string; owner: string; imports: string[] }[] };
+    const catalog = readJson(join(naive, "packages/naive/src/terms/ontology-catalog.json")) as { scopes: { scope: string; owner: string; imports: string[] }[] };
     this.scopes = catalog.scopes.map((s) => s.scope);
     this.imports = new Map(catalog.scopes.map((s) => [s.scope, s.imports]));
     this.scopeOf = new Map(catalog.scopes.map((s) => [s.owner, s.scope]));
-    const ontology = readJson(join(naive, "docs/ontology.json")) as { top_categories: { name: string }[]; nouns: (Noun & { status: string })[] };
+    const ontology = readJson(join(naive, "packages/naive/src/terms/ontology.json")) as { top_categories: { name: string }[]; nouns: (Noun & { status: string })[] };
     this.nouns = new Map(ontology.nouns.filter((n) => n.status !== "retired").map((n) => [n.noun, { noun: n.noun, function: n.function ?? null }]));
     this.tops = new Set(ontology.top_categories.map((t) => t.name));
-    const admitted = readJson(join(naive, "schema/terms/admitted.json")) as { terms: { id: string; label: string }[] };
+    const admitted = readJson(join(naive, "packages/naive/src/terms/admitted.json")) as { terms: { id: string; label: string }[] };
     this.admitted = new Set(admitted.terms.flatMap((t) => [t.id, t.label]));
   }
 
-  /** The Lean agreement check (schema/terms/lean-agreement-test.ts), plus the theorems typed-link cites. */
+  /** The Lean agreement check (packages/naive/src/terms/lean-agreement-test.ts), plus the theorems typed-link cites. */
   lean(): string[] {
     if (!this.leanCache) {
       const declared = readLean(this.naive).theorems;

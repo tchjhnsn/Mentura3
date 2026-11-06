@@ -27,13 +27,13 @@ check("findings carry line numbers", byName["leaky.md"].findings.find((f) => f.r
 check("report gives kind and location, never the matched text", result.markdown.includes("line 7, column 32: AWS access key shape")
   && !/AKIA|mentura|\/Users\/someone/i.test(result.markdown) && !JSON.stringify(result.pages).includes("AKIA"));
 check("report names the leaky page only", result.markdown.includes("leaky.md") && !result.markdown.includes("clean.md"));
-check("both dictionaries load: Naive's and the founder's", loadPatterns().source.includes("schema/internal-terms.json") && loadPatterns().source.includes("instance/ventures/everything-ecosystem/governance/internal-terms.json"));
+check("both dictionaries load: Naive's and the founder's", loadPatterns().source.includes("packages/naive/src/engine/internal-terms.json") && loadPatterns().source.includes("instance/ventures/everything-ecosystem/governance/internal-terms.json"));
 
 // A temporary repo, so the founder's rule below is a made-up term.
 const dict = mkdtempSync(join(tmpdir(), "pr-review-dict-"));
-mkdirSync(join(dict, "schema"));
+mkdirSync(join(dict, "packages/naive/src/engine"), { recursive: true });
 mkdirSync(join(dict, "instance/ventures/everything-ecosystem/governance"), { recursive: true });
-writeFileSync(join(dict, "schema/internal-terms.json"), JSON.stringify({ patterns: [{ id: "decision-id", regex: "\\b(?:EE|G|D)-\\d{3}\\b", why: "a ledger id" }] }));
+writeFileSync(join(dict, "packages/naive/src/engine/internal-terms.json"), JSON.stringify({ patterns: [{ id: "decision-id", regex: "\\b(?:EE|G|D)-\\d{3}\\b", why: "a ledger id" }] }));
 writeFileSync(join(dict, "instance/ventures/everything-ecosystem/governance/internal-terms.json"), JSON.stringify({ patterns: [{ id: "codename-zephyr", regex: "\\bZephyr\\b", why: "Zephyr is unannounced", severity: "warn" }] }));
 const loaded = loadPatterns(dict, dict).patterns;
 const withoutNaive = loadPatterns(dict, null);
@@ -121,7 +121,7 @@ check("a regular artifact member reads normally", JSON.parse(readInZip("pr.json"
 rmSync(zipDir, { recursive: true });
 
 // naive publish routes on the first argument after --venture, wherever the flag sits.
-const naive = (...args) => { try { return execFileSync("node", [naivePath("interface/cli/naive.mjs"), ...args], { encoding: "utf8", stdio: "pipe" }); } catch (e) { return `${e.stdout}${e.stderr}`; } };
+const naive = (...args) => { try { return execFileSync("node", [naivePath("packages/naive/src/interfaces/cli/naive.mjs"), ...args], { encoding: "utf8", stdio: "pipe" }); } catch (e) { return `${e.stdout}${e.stderr}`; } };
 check("naive publish --venture <dir> check reaches the lint", !naive("publish", "--venture", join(root, "instance/ventures/everything-ecosystem"), "check", "no-such-file.md").includes("no channel check"));
 
 check("screenshots go into the uploaded artifact", /--shots pr-review-out\/screenshots/.test(wf) && /upload-artifact@v4[\s\S]*path: pr-review-out\//.test(wf));

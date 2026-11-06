@@ -30,12 +30,12 @@ export const FALLBACK_PATTERNS = [
 ];
 
 // Naive's list (in the installed naive-framework package), then the founder's list for this venture, as
-// naive-framework/schema/check-leaks.mjs reads them. The PR-code workflow (pr-review.yml) reads no secret, so it
+// naive-framework/src/engine/check-leaks.mjs reads them. The PR-code workflow (pr-review.yml) reads no secret, so it
 // installs without the private naive-framework package (EE-119); then Naive's list is skipped, the report says so,
 // and the venture's list and the fallback patterns still run.
 let naiveRoot = null;
 try { naiveRoot = dirname(fileURLToPath(import.meta.resolve("naive-framework/package.json"))); } catch { /* not installed */ }
-const NAIVE_DICTIONARY = "schema/internal-terms.json";
+const NAIVE_DICTIONARY = "packages/naive/src/engine/internal-terms.json";
 const VENTURE_DICTIONARY = "instance/ventures/everything-ecosystem/governance/internal-terms.json";
 
 // Accepts { terms: [...] }, { patterns: [...] } or an array; each entry a string (a literal term) or { regex|pattern|term, ... }.

@@ -12,7 +12,7 @@ Reads a pull request's Vercel preview and reports what it finds in a PR comment.
 
 `content.mjs` uses three lists, in this order:
 
-1. Naive's internal terms, `schema/internal-terms.json` in the installed `naive-framework` package.
+1. Naive's internal terms, `packages/naive/src/engine/internal-terms.json` in the installed `naive-framework` package.
 2. This repository's venture's own list, `instance/ventures/everything-ecosystem/governance/internal-terms.json`.
 3. The built-in fallback patterns (ledger ids, private paths, local paths, unfinished markers, secret shapes, email addresses).
 
