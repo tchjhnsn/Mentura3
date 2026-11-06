@@ -7,8 +7,8 @@ import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { entries } from "naive-framework/packages/core/provenance.mjs";
-import { snapshot } from "naive-framework/schema/upgrades.mjs";
+import { entries } from "naive-framework/src/core/provenance.mjs";
+import { snapshot } from "naive-framework/src/engine/upgrades.mjs";
 import { naivePath } from "../../scripts/naive.ts";
 
 const repo = new URL("../..", import.meta.url).pathname;
@@ -17,11 +17,11 @@ const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}
 // Naive finds Mentura's kits only through NAIVE_KITS (EE-118), so every run names this folder.
 const KITS = new URL(".", import.meta.url).pathname;
 const node = (args, env = {}) => spawnSync("node", args, { cwd: repo, encoding: "utf8", env: { ...process.env, NAIVE_KITS: KITS, ...env } });
-const naive = (args, env) => node([naivePath("interface/cli/naive.mjs"), ...args], env);
-const mentura = (args, env) => node([naivePath("interface/cli/mentura.mjs"), ...args], env);
+const naive = (args, env) => node([naivePath("packages/naive/src/interfaces/cli/naive.mjs"), ...args], env);
+const mentura = (args, env) => node([naivePath("packages/naive/src/interfaces/cli/mentura.mjs"), ...args], env);
 const ws = mkdtempSync(join(tmpdir(), "kits-test-"));
 const STAND_IN = "node platform/kits/agent-upgrade/stand-in-agent.mjs";
-const make = (id) => { const d = join(ws, id); node([naivePath("schema/init-venture.mjs"), d, id]); return d; };
+const make = (id) => { const d = join(ws, id); node([naivePath("packages/naive/src/engine/init-venture.mjs"), d, id]); return d; };
 
 // U-3: the agent-run upgrade.
 const v = make("agentic");
@@ -44,7 +44,7 @@ expect("the founder accepts and the upgrade lands", ok.status === 0 && /is on Na
 expect("the agent's edit landed", /validation package for interviews/.test(readFileSync(join(v, "AGENTS.md"), "utf8")));
 expect("the migrations landed (foundation/ and decisions/ in place, pins written)", existsSync(join(v, "naive.config.json")) && !existsSync(join(v, "pillars")) && existsSync(join(v, "_private/pillars/product.md")));
 const log = entries(v);
-expect("the venture's provenance chain holds and ends with the person's acceptance", node([naivePath("schema/check-provenance.mjs"), v]).status === 0 && log.at(-1).activity === "accept" && log.at(-1).agent.kind === "person" && log.at(-1).agent.id === "Founder");
+expect("the venture's provenance chain holds and ends with the person's acceptance", node([naivePath("packages/naive/src/checks/check-provenance.mjs"), v]).status === 0 && log.at(-1).activity === "accept" && log.at(-1).agent.kind === "person" && log.at(-1).agent.id === "Founder");
 expect("the staged copy is gone", !existsSync(join(v, ".naive/upgrade")));
 
 // The checks stop a bad upgrade: the stand-in breaks a record.

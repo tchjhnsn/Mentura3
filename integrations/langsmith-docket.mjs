@@ -8,7 +8,7 @@
 //   node schema/docket-eval.mjs --answers a.json --json | LANGSMITH_API_KEY=... node platform/integrations/langsmith-docket.mjs [--name <experiment>]
 
 import { randomUUID } from "node:crypto";
-import { states } from "naive-framework/schema/docket-eval.mjs";
+import { states } from "naive-framework/src/engine/docket-eval.mjs";
 
 const API = (process.env.LANGSMITH_ENDPOINT ?? "https://api.smith.langchain.com") + "/api/v1";
 const key = process.env.LANGSMITH_API_KEY;

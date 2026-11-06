@@ -11,7 +11,7 @@
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { blobSha } from "naive-framework/knowledge/connectors/contract.mjs";
+import { blobSha } from "naive-framework/src/store/connectors/contract.mjs";
 import { connect, poolFrom, verify, type Client } from "./postgres.ts";
 
 /** Every file under a folder by its relative path, skipping dot files, .git and node_modules, as the filesystem connector does. */

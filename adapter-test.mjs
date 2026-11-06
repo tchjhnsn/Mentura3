@@ -14,7 +14,7 @@ import { naivePath } from "../scripts/naive.ts";
 const adapter = new URL("./adapter.json", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "adapter-test-"));
 const env = { ...process.env, MENTURA_WORKSPACE: ws, NAIVE_PLATFORM_ADAPTER: adapter };
-const mentura = (args) => spawnSync("node", [naivePath("interface/cli/mentura.mjs"), ...args], { encoding: "utf8", env, timeout: 900000 });
+const mentura = (args) => spawnSync("node", [naivePath("packages/naive/src/interfaces/cli/mentura.mjs"), ...args], { encoding: "utf8", env, timeout: 900000 });
 
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
@@ -22,7 +22,7 @@ const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}
 const list = JSON.parse(mentura(["adapters", "--json"]).stdout);
 expect("Mentura is listed as the platform adapter beside the harness adapters", list[0]?.name === "mentura" && list[0].kind === "platform" && ["claude-code", "codex", "cursor"].every((x) => list.some((l) => l.name === x && l.kind === "harness")));
 
-spawnSync("node", [naivePath("schema/init-venture.mjs"), join(ws, "harnessed"), "harnessed"], { encoding: "utf8", env });
+spawnSync("node", [naivePath("packages/naive/src/engine/init-venture.mjs"), join(ws, "harnessed"), "harnessed"], { encoding: "utf8", env });
 expect("adapting the platform adapter into a venture is refused", mentura(["adapt", "mentura", "--venture", "harnessed"]).status === 1);
 
 const m = mentura(["adapters", "verify", "mentura", "--json"]);

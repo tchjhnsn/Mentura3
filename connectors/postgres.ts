@@ -17,7 +17,7 @@
 
 import { createHash } from "node:crypto";
 import pg from "pg";
-import { blobSha, isText, matches, safePath } from "naive-framework/knowledge/connectors/contract.mjs";
+import { blobSha, isText, matches, safePath } from "naive-framework/src/store/connectors/contract.mjs";
 
 export interface Client {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>

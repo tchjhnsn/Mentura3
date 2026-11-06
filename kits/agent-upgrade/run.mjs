@@ -15,8 +15,8 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { agentFromEnv, record } from "naive-framework/packages/core/provenance.mjs";
-import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "naive-framework/schema/upgrades.mjs";
+import { agentFromEnv, record } from "naive-framework/src/core/provenance.mjs";
+import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "naive-framework/src/engine/upgrades.mjs";
 import { naiveRoot } from "../../../scripts/naive.ts";
 
 // The upgrade guides staged.guides names are Naive's (docs/upgrades/), read from the installed package.

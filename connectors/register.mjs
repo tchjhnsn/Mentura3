@@ -1,5 +1,5 @@
 // The platform's connectors, registered with Naive (EE-041, EE-118). Naive's registry
-// (naive-framework/knowledge/connectors/index.mjs) names only the connectors that ship with the framework; a
+// (naive-framework/src/store/connectors/index.mjs) names only the connectors that ship with the framework; a
 // connector that reaches a vendor lives here and is added in the process that uses it.
 //
 //   import { registerPlatformConnectors } from "./platform/connectors/register.mjs";
@@ -10,7 +10,7 @@
 // MENTURA_EVAL_GITHUB_REPO=owner/name).
 
 import { fileURLToPath } from "node:url";
-import { registerConnector } from "naive-framework/knowledge/connectors/index.mjs";
+import { registerConnector } from "naive-framework/src/store/connectors/index.mjs";
 
 export const GITHUB = {
   name: "GitHub",

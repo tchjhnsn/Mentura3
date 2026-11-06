@@ -1,6 +1,6 @@
 // The research cell generator (architecture section 1). Confidential (Mentura).
 // Cells are the cross product ventures x functions x frames x times x aspects. Functions come from
-// operations/departments.json, frames from library/packages/*/frames, times from the lifecycle phases. A
+// packages/naive/src/functions/departments.json, frames from packages/naive/library/packages/*/frames, times from the lifecycle phases. A
 // cell already answered and still fresh is skipped. No model is called here.
 //
 //   node platform/research/cells.mjs --venture nike --function marketing-and-sales [--limit 50]
@@ -16,13 +16,13 @@ const load = (p) => JSON.parse(readFileSync(join(repo, p), "utf8"));
 // at the time, and what came of it.
 export const ASPECTS = ["state", "decision", "decider", "evidence", "outcome"];
 
-export function functions() { return load("operations/departments.json").departments.map((d) => d.id); }
-export function phases() { return load("purpose/frameworks/product-anatomy/phases.json").phases.map((p) => p.id); }
+export function functions() { return load("packages/naive/src/functions/departments.json").departments.map((d) => d.id); }
+export function phases() { return load("packages/naive/src/functions/products/frameworks/product-anatomy/phases.json").phases.map((p) => p.id); }
 export function frames() {
-  const dir = join(repo, "library", "packages");
+  const dir = join(repo, "packages/naive/library", "packages");
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((p) => existsSync(join(dir, p, "frames"))).flatMap((p) =>
-    readdirSync(join(dir, p, "frames")).filter((f) => f.endsWith(".frame.json")).map((f) => load(`library/packages/${p}/frames/${f}`)))
+    readdirSync(join(dir, p, "frames")).filter((f) => f.endsWith(".frame.json")).map((f) => load(`packages/naive/library/packages/${p}/frames/${f}`)))
     .map((f) => ({ id: f.id, functions: f.functions ?? [] }));
 }
 

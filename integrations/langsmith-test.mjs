@@ -14,14 +14,14 @@ import { naivePath } from "../../scripts/naive.ts";
 
 const tmp = mkdtempSync(join(tmpdir(), "langsmith-test-"));
 const ws = join(tmp, "workspace");
-cpSync(naivePath("schema/examples/workspace"), ws, { recursive: true });
+cpSync(naivePath("packages/naive/src/records/examples/workspace"), ws, { recursive: true });
 process.env.MENTURA_WORKSPACE = ws;
 process.env.NAIVE_SESSION_DIR = join(tmp, "sessions");
 delete process.env.MENTURA_SESSION; delete process.env.NAIVE_INSTRUMENT;
 const tandem = join(ws, "ventures/tandem");
 writeFileSync(join(tandem, "naive.config.json"), JSON.stringify({ instrumentation: { events: true } }, null, 2));
 
-const { call } = await import("naive-framework/interface/router.mjs");
+const { call } = await import("naive-framework/src/router/router.mjs");
 
 let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
@@ -32,7 +32,7 @@ for (const route of ["purpose/validation/problem", "purpose/validation/problem",
   if (!r.ok) expect(`navigate ${route}`, false, r.error);
 }
 
-const tr = spawnSync("node", [naivePath("interface/vitals.mjs"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
+const tr = spawnSync("node", [naivePath("packages/naive/src/router/vitals.mjs"), tandem, "--trace", "--session", "s1"], { encoding: "utf8" });
 const file = join(tmp, "trace.json");
 writeFileSync(file, tr.stdout);
 const trace = JSON.parse(tr.stdout);

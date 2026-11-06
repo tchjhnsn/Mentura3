@@ -6,7 +6,7 @@
 
 import { cpSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/knowledge/connectors/suite.mjs";
+import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
 import { connect, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
 

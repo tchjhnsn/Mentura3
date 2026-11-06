@@ -19,10 +19,10 @@
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { blobSha } from "naive-framework/knowledge/connectors/contract.mjs";
-import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/knowledge/connectors/suite.mjs";
-import { registry, useFetch } from "naive-framework/knowledge/connectors/index.mjs";
-import { build, FILE, load, search } from "naive-framework/knowledge/connectors/catalog.mjs";
+import { blobSha } from "naive-framework/src/store/connectors/contract.mjs";
+import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
+import { registry, useFetch } from "naive-framework/src/store/connectors/index.mjs";
+import { build, FILE, load, search } from "naive-framework/src/store/connectors/catalog.mjs";
 import { fakeGitHub } from "./fake-github.mjs";
 import { connect as ghConnect } from "./github.mjs";
 import { registerPlatformConnectors } from "./register.mjs";
@@ -54,12 +54,12 @@ const ghT = await contract(h, "github (fake API)", ghMake);
 // ---- Router --------------------------------------------------------------------------------------
 console.log("\n# router over a mapped source");
 const ws = join(scratch, "workspace");
-cpSync(naivePath("schema/examples/workspace"), ws, { recursive: true });
+cpSync(naivePath("packages/naive/src/records/examples/workspace"), ws, { recursive: true });
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 expect("register: the GitHub connector is not Naive's; the platform adds it to the registry", !registry().has("github") && (registerPlatformConnectors(), registry().get("github")?.module.endsWith("platform/connectors/github.mjs")));
-const { call } = await import("naive-framework/interface/router.mjs");
-const { entries } = await import("naive-framework/packages/core/provenance.mjs");
+const { call } = await import("naive-framework/src/router/router.mjs");
+const { entries } = await import("naive-framework/src/core/provenance.mjs");
 const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in GitHub)" };
 const team = fakeGitHub({ repo: "acme/tandem", files: { "ventures/tandem/products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "ventures/tandem/notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" } });
 useFetch(team.fetch);
@@ -89,12 +89,12 @@ expect("router: the write is logged by address, with the source's version and th
   e.entity === "team-repo://products/teapot.json" && e.activity === "draft" && e.source?.version === w.result.version && e.source.pull_request === w.result.pull_request && e.source.connector === "github" && e.derived_from?.[0] === one.source.permalink, JSON.stringify(e));
 const pending = await call({ venture: "tandem", route: "purpose/product/teapot", action: "read" });
 expect("router: reading it before the merge says a pull request is waiting", pending.result === null && pending.pending_pull_requests?.[0]?.pull_request === w.result.pull_request);
-const prov = spawnSync("node", [naivePath("schema/check-provenance.mjs"), ws], { encoding: "utf8" });
+const prov = spawnSync("node", [naivePath("packages/naive/src/checks/check-provenance.mjs"), ws], { encoding: "utf8" });
 // check-sources runs as its own process, so the platform's connectors are preloaded into it (preload.mjs).
-const srcCheck = (d) => spawnSync("node", ["--import", new URL("./preload.mjs", import.meta.url).pathname, naivePath("schema/check-sources.mjs"), d], { encoding: "utf8" });
+const srcCheck = (d) => spawnSync("node", ["--import", new URL("./preload.mjs", import.meta.url).pathname, naivePath("packages/naive/src/checks/check-sources.mjs"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);
 expect("router: check-sources accepts the map", srcCheck(ws).status === 0, srcCheck(ws).stderr);
-const valid = spawnSync("python3", ["-I", naivePath("schema/validate.py"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
+const valid = spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
 expect("router: the map matches its schema", valid.status === 0, valid.stdout + valid.stderr);
 write(tandem, { "knowledge/sources.json": JSON.stringify({ sources: [{ id: "team-repo", connector: "notion" }], records: { product: "team-repo", venture: "team-repo" } }) });
 const broken = srcCheck(ws);

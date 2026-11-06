@@ -18,13 +18,13 @@ A template is framework, the way `create-next-app --example` is. The gallery tha
 
 ## The boundary
 
-The platform builds on the framework, and never the other way round. The platform imports Naive by package name (`naive-framework/knowledge/connectors/contract.mjs`), never by relative path. Naive's own boundary check, run in its repository, fails when Naive names a platform or console module, or registers a connector that reaches the network or names credentials.
+The platform builds on the framework, and never the other way round. The platform imports Naive by package name (`naive-framework/src/store/connectors/contract.mjs`), never by relative path. Naive's own boundary check, run in its repository, fails when Naive names a platform or console module, or registers a connector that reaches the network or names credentials.
 
 The platform hands its parts to Naive through Naive's hooks. That is inversion of control, like a Next.js deployment adapter: the framework defines the contract, and the platform implements it for a vendor.
 
 | Hook | What the platform passes |
 |---|---|
-| `registerConnector` (`naive-framework/knowledge/connectors/index.mjs`) | The GitHub and Postgres connectors, from `connectors/register.mjs`. A Naive checker run as its own process gets it with `node --import ./platform/connectors/preload.mjs` |
+| `registerConnector` (`naive-framework/src/store/connectors/index.mjs`) | The GitHub and Postgres connectors, from `connectors/register.mjs`. A Naive checker run as its own process gets it with `node --import ./platform/connectors/preload.mjs` |
 | `NAIVE_KITS` | This folder's `kits/`. Without it Naive has no kits |
 | `NAIVE_PLATFORM_ADAPTER` | `adapter.json`. Its `verify` paths are relative to this folder |
 | `NAIVE_SYNC_RHO` | `node platform/integrations/rho.mjs sync`, when a deployment syncs money from Rho. Naive runs it as `<command> --venture <dir>`; nothing sets it by default |
@@ -40,7 +40,7 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 | `connectors/store-import.ts` | Loads a folder into a tenant's store through the Postgres connector, reads every file back and checks the chain: `node platform/connectors/store-import.ts instance --tenant <id> [--check]`. Running it again appends nothing. This is how `instance/` moves to Neon |
 | `connectors/postgres-eval.ts` | The Postgres connector against the contract suite, the append-only trigger, tenant isolation and the import, on a real Postgres named by `MENTURA_EVAL_DATABASE_URL` (a service in CI); without it, it skips |
 | `connectors/register.mjs`, `connectors/preload.mjs` | Register the GitHub and Postgres connectors with Naive, in this process or preloaded into a Naive checker |
-| `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`naive-framework/knowledge/connectors/suite.mjs`), its registration, the router over a GitHub source, the catalog, and an optional live run |
+| `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`naive-framework/src/store/connectors/suite.mjs`), its registration, the router over a GitHub source, the catalog, and an optional live run |
 | `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
 | `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
 | `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |

@@ -9,7 +9,7 @@
 //   connect({ repo: "acme/knowledge", fetch: gh.fetch })
 
 import { createHash } from "node:crypto";
-import { blobSha, matches } from "naive-framework/knowledge/connectors/contract.mjs";
+import { blobSha, matches } from "naive-framework/src/store/connectors/contract.mjs";
 
 /** @param {{ repo?: string, files?: Record<string, string>, branch?: string, token?: boolean }} [opts] */
 export function fakeGitHub({ repo, files = {}, branch = "main", token = true } = {}) {
