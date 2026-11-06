@@ -3,7 +3,7 @@ publish: false
 type: design-note
 source: hybrid
 created: 2026-11-06T22:48:42Z
-updated: 2026-11-06T22:48:42Z
+updated: 2026-11-06T23:01:00Z
 ai-model: claude
 authority: implementation
 status: DRAFT
@@ -253,9 +253,20 @@ Rejected from candidate 1: recipes as data only (cannot learn producer reliabili
 
 Cross-judge skipped: the arena wants a judge from a non-Claude model family, and this session has only Claude models.
 
+## Young ventures lean on the library
+
+Torian, 2026-11-06 22:59Z: every venture is unique, but ventures are similar, and that is what makes the libraries useful. Even a young venture has a vast amount of research to rely on.
+
+So the unit that learns is not only one venture. A recipe can be researched at two levels:
+
+- **Library level (Mentura).** Producer outcomes (a second producer confirming a claim, or a retraction) are signals the library already holds. Mentura can run the same eval plan, scorer and sandbox against the library's whole history for a market, with no venture data at all, because the settled record of a public subject (a competitor's funding, a launch) needs only producer outcomes. Recipes kept this way ship in kits as seed recipes, with their eval plan and experiment log attached, so a venture can see how they scored.
+- **Venture level (Naive).** A young venture starts from the seed recipe for its market. Its own plan scores only what is specific to it: people's outcomes (decisions, corrections) and the facts its predicates read (its ICP, its competitor list). Its experiments tune the seed rather than start from the plain fold, and `monitor` compares the seed with the venture's tip on the venture's own future.
+
+What crosses the boundary stays as in the signal library: a venture reads library signals and seed recipes; nothing about a venture goes to Mentura. Pooling people's outcomes across ventures (which decisions founders acted on) would make seeds better, but it moves venture facts off the venture, so it is opt-in only, under the publication policy (EE-025), with a named channel and a person approving. It is not part of this design.
+
 ## Weakest point and open questions
 
-- **Too few outcomes in a young venture.** People and producers may resolve only a few dozen forecasts a quarter, and a default plan for competitors needs about a year to eighteen months of history. Until then the margin refuses most experiments, and the live recipe plus `monitor` carry the venture. Should young ventures start from a kit's seed recipe?
+- **Too few outcomes in a young venture.** People and producers may resolve only a few dozen forecasts a quarter, and a default plan for competitors needs about a year to eighteen months of history. This is now narrowed by the section above: the library holds the market's history and seed recipes come pre-tested, so a young venture lacks only its own people's outcomes. The open part is how long until those are enough to beat the seed.
 - Should a confirming producer count at a lower rating, or only A to C?
 - May a person's standing rule let the holdout check promote without an accept each time?
 - Should experiment lines also be evidence records (EE-017), or is the log beside the recipe enough?
