@@ -28,7 +28,7 @@ const validator = new Validator(schemas);
 const fits = (name, record) => {
   const file = `${name}.schema.json`, schema = schemas.get(file);
   if (schema === undefined) throw new Error(`no schema ${file}`);
-  return validator.validate(JSON.parse(JSON.stringify(record)), schema, typeof schema.$id === "string" ? schema.$id : file).length === 0;
+  return validator.validate(JSON.parse(JSON.stringify(record)), schema, typeof schema === "object" && typeof schema.$id === "string" ? schema.$id : file).length === 0;
 };
 const good = {
   "research-cell": { id: "nike:marketing-and-sales:f:discovery:decision", venture: "nike", function: "marketing-and-sales", frame: "f", time: "discovery", aspect: "decision", status: "open" },

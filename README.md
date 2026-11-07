@@ -55,7 +55,7 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 | `integrations/site.mjs` | Reads a venture's website: the home page and the pages it links to, as text, with where each sits (EE-062). Uses `FIRECRAWL_API_KEY` when set, a plain fetch otherwise |
 | `adapter.json` | Mentura as Naive's first adapter, as Vercel is for Next.js: with `NAIVE_PLATFORM_ADAPTER` naming it, `mentura adapters verify mentura` runs the connector contract suite, the webhooks and the kits (Z-4) |
 | `adapter-test.mjs` | Mentura is listed, refused as a venture adapter, and verified by those tests |
-| `research/research-test.mjs` | Tests for the research engine, offline: its schemas in `research/schemas/` are checked in process by Naive's validator (`naive-framework/src/records/validate.mjs`), with no Python |
+| `research/research-test.mjs` | Tests for the research engine, offline: its schemas in `research/schemas/` are checked in process by Naive's validator (`naive-framework/src/records/validate.mjs`), with no Python. A schema without an `$id` is registered by its file name |
 | `kits/agent-upgrade/` | The agent-run upgrade behind `naive upgrade --agent`: an agent does the guides' by-hand steps on a staged copy, and the framework's checks decide (U-3). `stand-in-agent.mjs` runs offline |
 | `kits/validation-kickoff/` | An automation over the validation package: once the foundation is complete, it proposes the decision to start validating (M-12) |
 | `kits/test.mjs` | Tests for the kits, with the stand-in agent |
