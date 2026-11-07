@@ -1,5 +1,5 @@
-// Loads a folder of records into a tenant's Postgres store (EE-118 step 9): this company's own instance/
-// into Neon, before instance/ leaves the repository. Every file goes through the Postgres connector, so
+// Loads a folder of records into a tenant's Postgres store (EE-118 step 9): how this company's own records,
+// once instance/ in this repository, moved to Neon. store-export.ts is the way back. Every file goes through the Postgres connector, so
 // the store gets the same rows a write through the router would give. A file whose content the store
 // already holds appends nothing, so running it again is safe. After the load it reads every file back and
 // checks the hash chain, and it exits 1 if anything differs.
