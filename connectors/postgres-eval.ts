@@ -4,11 +4,12 @@
 //
 //   node platform/connectors/postgres-eval.ts
 
-import { cpSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
 import { connect, driverFrom, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
+import { exportFolder } from "./store-export.ts";
 
 const h = harness("postgres");
 const { expect, throws, skip, scratch, finish } = h;
@@ -67,6 +68,19 @@ expect("import run again appends nothing", second.appended === 0 && second.uncha
 writeFileSync(join(folder, "workspace.json"), JSON.stringify({ changed: true }) + "\n");
 const third = await importFolder(folder, { tenant, client: pool });
 expect("a changed file appends one row and the chain still holds", third.appended === 1 && third.chain.rows === files + 1 && third.chain.broken.length === 0);
+
+// The export: the tenant back out into a folder, the same files with the newest content.
+console.log("\n# store export");
+const back = join(scratch, "export");
+const exported = await exportFolder(back, { tenant, client: pool });
+const same = filesOf(back).join() === filesOf(folder).join() && filesOf(folder).every((f) => readFileSync(join(back, f), "utf8") === readFileSync(join(folder, f), "utf8"));
+expect("export writes every file back with its newest content", exported.files === files && exported.mismatched.length === 0 && same, JSON.stringify(exported.mismatched.slice(0, 3)));
+const some = filesOf(folder)[0]?.split("/")[0] ?? "";
+const part = await exportFolder(join(scratch, "export-part"), { tenant, client: pool, root: some });
+expect("export --root writes only the records under that path", part.files === filesOf(folder).filter((f) => f.startsWith(`${some}/`)).length && part.mismatched.length === 0);
+mkdirSync(join(scratch, "busy"), { recursive: true });
+writeFileSync(join(scratch, "busy/keep.md"), "mine\n");
+expect("export refuses a folder that is not empty", await throws(() => exportFolder(join(scratch, "busy"), { tenant, client: pool }), /not empty/));
 
 await pool.end();
 finish();
