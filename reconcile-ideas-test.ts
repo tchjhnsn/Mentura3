@@ -53,7 +53,7 @@ try {
   propose(
     { idea: "n-001", field: "status", value: "open" },
     { idea: "n-002", field: "importance", value: "urgent" },
-    { idea: "n-003", field: "scope", value: { scope: "naive@products", via: "appends_to" }, terms: ["reconcile widget@products"] },
+    { idea: "n-003", field: "scope", value: { scope: "naive@products", via: "appends-to" }, terms: ["reconcile widget@products"] },
   );
   let r = reconcile();
   assert.equal(r.status, 0, r.out);
@@ -114,7 +114,7 @@ try {
   assert.match(String(machine("n-005.status")?.retry), /metamodel/, "the retry carries the reason");
   assert.equal(machine("n-005.status")?.state, "Labeled", "a top category is visible to every scope");
 
-  propose({ idea: "n-006", field: "relation", value: [{ relation: "builds_on", to: "n-404" }] });
+  propose({ idea: "n-006", field: "relation", value: [{ relation: "builds-on", to: "n-404" }] });
   r = reconcile();
   assert.match(String(machine("n-006.relation")?.reason), /typed-link T3: n-006 names idea n-404/, `a relation to no idea is rejected by the term engine: ${r.out}`);
   assert.equal(machine("n-006.relation")?.missing, undefined, "a dangling idea is not a missing term");
@@ -152,7 +152,7 @@ try {
   };
   const cases: [string, unknown, boolean][] = [
     ["status", "open", true], ["status", "high", false], ["importance", "low", true], ["relation", [], true],
-    ["relation", [{ relation: "builds_on", to: "n-002" }], true], ["relation", [{ relation: "inspires", to: "n-002" }], false],
+    ["relation", [{ relation: "builds-on", to: "n-002" }], true], ["relation", [{ relation: "inspires", to: "n-002" }], false],
     ["relation", [{ relation: "related", to: "n-002", note: "x" }], false], ["scope", { scope: "shared", via: "creates" }, true],
     ["scope", { scope: "products", via: "creates" }, false], ["scope", { scope: "naive@it" }, false],
   ];

@@ -47,7 +47,7 @@ try {
 
   assert.equal(validate({ ...sample, field: "status", value: "high" }).status, 1, "a value from another field is rejected");
   assert.equal(validate({ ...sample, field: "importance", value: "high" }).status, 0, "an importance ruling validates");
-  assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "builds_on", to: "n-002" }] }).status, 0, "a relation ruling validates");
+  assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "builds-on", to: "n-002" }] }).status, 0, "a relation ruling validates");
   assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "inspires", to: "n-002" }] }).status, 1, "a relation outside the term engine's set is rejected");
 
   const idea = readSchema("founder-idea");

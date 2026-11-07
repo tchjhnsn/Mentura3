@@ -254,7 +254,7 @@ function termProblems(m: Machine, w: World): { problems: string[]; missing: Miss
     else if (unresolved) problems.push(`typed-link T3: ${ids[l.from]} names idea ${named[k]}, which does not exist`);
     else if (l.target === "idea" && l.from === l.to) problems.push(`typed-link T2: ${ids[l.from]} relates to itself`);
   });
-  if (verdict.failed.includes("T4")) problems.push("typed-link T4: the label closes a cycle through broader, part-of or builds_on");
+  if (verdict.failed.includes("T4")) problems.push("typed-link T4: the label closes a cycle through broader, part-of or builds-on");
   if (!verdict.pass && !problems.length && !missing.length) problems.push(`typed-link failed ${verdict.failed.join(", ")}`);
   const used = usedScope(m, w);
   for (const t of termsOf(m)) { const gap = missingTerm(t, used, w); if (gap) missing.push(gap); }

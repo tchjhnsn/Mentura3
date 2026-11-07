@@ -61,12 +61,12 @@ try {
     { idea: "n-002", field: "status", value: "open", state: "Settled" },
     { idea: "n-003", field: "status", value: "open", state: "Settled" },
     { idea: "n-004", field: "status", value: "open", state: "Disputed" },
-    { idea: "n-005", field: "scope", value: { scope: "naive@strategy", via: "appends_to" }, state: "RoutedToScope" },
+    { idea: "n-005", field: "scope", value: { scope: "naive@strategy", via: "appends-to" }, state: "RoutedToScope" },
   ];
   seed(four);
   for (const idea of ["n-001", "n-002", "n-003"]) rule(idea, "status", "open");
   rule("n-004", "status", "dropped");
-  rule("n-005", "scope", { scope: "naive@strategy", via: "appends_to" });
+  rule("n-005", "scope", { scope: "naive@strategy", via: "appends-to" });
   assert.equal(run("--check").status, 1, "new rulings make the committed report stale");
   const known = run();
   assert.equal(known.status, 0, known.out);
