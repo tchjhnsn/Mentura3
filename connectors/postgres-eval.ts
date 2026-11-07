@@ -7,11 +7,15 @@
 import { cpSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
-import { connect, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
+import { connect, driverFrom, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
 
 const h = harness("postgres");
 const { expect, throws, skip, scratch, finish } = h;
+// The driver choice needs no database.
+expect("postgres: with no MENTURA_DB_DRIVER the driver is pg", driverFrom(undefined) === "pg");
+expect("postgres: neon-ws names Neon's WebSocket driver", driverFrom("neon-ws") === "neon-ws");
+expect("postgres: an unknown driver is refused by name", await throws(async () => driverFrom("mysql"), /must be one of pg, neon-ws/));
 if (!process.env.MENTURA_EVAL_DATABASE_URL) { skip("the Postgres evals: set MENTURA_EVAL_DATABASE_URL to a throwaway database"); finish(); }
 const pool = poolFrom("MENTURA_EVAL_DATABASE_URL");
 await ensureSchema(pool);

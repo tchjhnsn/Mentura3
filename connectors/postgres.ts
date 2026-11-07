@@ -52,10 +52,56 @@ create trigger ${TABLE}_append_only before update or delete on ${TABLE} for each
 export const chainHash = (prev: string | null, path: string, version: string): string =>
   createHash("sha256").update(`${prev ?? ""}\n${path}\n${version}`).digest("hex");
 
-/** Opens a pg Pool on the connection string the named variable holds. */
-export function poolFrom(url = "MENTURA_DATABASE_URL"): Client & { end(): Promise<void> } {
+/** The drivers poolFrom can open: node-postgres over TCP, or Neon's serverless driver over a WebSocket on 443. */
+export const DRIVERS = ["pg", "neon-ws"] as const;
+export type Driver = typeof DRIVERS[number];
+
+/** The driver MENTURA_DB_DRIVER names, else pg. */
+export function driverFrom(value = process.env.MENTURA_DB_DRIVER): Driver {
+  if (!value) return "pg";
+  const d = DRIVERS.find((x) => x === value);
+  if (!d) throw new Error(`MENTURA_DB_DRIVER is ${value}; it must be one of ${DRIVERS.join(", ")}`);
+  return d;
+}
+
+/** Any pg-shaped pool: query, connect for a transaction, end. Both drivers give one. */
+interface PgPool {
+  query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>
+  connect(): Promise<{ query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>, release(): void }>
+  end(): Promise<void>
+}
+
+/**
+ * Neon's serverless Pool. It speaks the Postgres protocol over a WebSocket on port 443, so it works where raw
+ * TCP to 5432 is blocked (a cloud container behind an HTTPS proxy). With HTTPS_PROXY set, the WebSocket goes
+ * through that proxy. The packages load only when this driver is chosen.
+ */
+async function neonPool(conn: string): Promise<PgPool> {
+  const { Pool, neonConfig } = await import("@neondatabase/serverless");
+  const { default: WebSocket } = await import("ws");
+  const proxy = process.env.HTTPS_PROXY ?? process.env.https_proxy;
+  if (proxy) {
+    const { HttpsProxyAgent } = await import("https-proxy-agent");
+    const agent = new HttpsProxyAgent(proxy);
+    neonConfig.webSocketConstructor = class extends WebSocket {
+      constructor(address: string | URL, protocols?: string | string[]) { super(address, protocols, { agent }); }
+    };
+  } else neonConfig.webSocketConstructor = WebSocket;
+  return new Pool({ connectionString: conn, max: 4 });
+}
+
+/** Opens a pool on the connection string the named variable holds, with the driver MENTURA_DB_DRIVER names (default pg). */
+export function poolFrom(url = "MENTURA_DATABASE_URL", driver: Driver = driverFrom()): Client & { end(): Promise<void> } {
   const conn = process.env[url];
   if (!conn) throw new Error(`no connection string in ${url}: set it to the database's URL`);
+  if (driver === "neon-ws") {
+    const ready = neonPool(conn);
+    return {
+      query: async (text, params) => (await ready).query(text, params),
+      connect: async () => { const c = await (await ready).connect(); return { query: (text, params) => c.query(text, params), release: () => c.release() }; },
+      end: async () => (await ready).end(),
+    };
+  }
   const pool = new pg.Pool({ connectionString: conn, max: 4 });
   return {
     query: (text, params) => pool.query(text, params),

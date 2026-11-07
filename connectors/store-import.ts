@@ -7,6 +7,7 @@
 //   node platform/connectors/store-import.ts <folder> --tenant <id> [--url <variable>] [--check]
 //
 //   --url    the environment variable holding the connection string (default MENTURA_DATABASE_URL)
+//   MENTURA_DB_DRIVER=neon-ws  connects over Neon's WebSocket driver on 443 (through HTTPS_PROXY when set), for where TCP to 5432 is blocked
 //   --check  writes no records (it creates the table if it is missing): says how many files would be appended and how many the store already holds
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
