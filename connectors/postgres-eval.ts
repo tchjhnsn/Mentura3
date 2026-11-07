@@ -9,6 +9,7 @@ import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
 import { connect, driverFrom, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
+import { naivePath } from "../../scripts/naive.ts";
 import { exportFolder } from "./store-export.ts";
 
 const h = harness("postgres");
@@ -53,16 +54,16 @@ const t = await contract(h, "postgres", make);
   if (saved !== undefined) process.env.MENTURA_EVAL_NO_URL = saved;
 }
 
-// The import: this repository's instance/ into a fresh tenant, then again, then a changed file.
+// The import: Naive's example workspace into a fresh tenant, then again, then a changed file.
 console.log("\n# store import");
-const folder = join(scratch, "instance");
-cpSync(new URL("../../instance", import.meta.url).pathname, folder, { recursive: true });
-const tenant = `${run}-instance`;
+const folder = join(scratch, "workspace");
+cpSync(naivePath("packages/naive/src/records/examples/workspace"), folder, { recursive: true });
+const tenant = `${run}-workspace`;
 const files = filesOf(folder).length;
 const dry = await importFolder(folder, { tenant, client: pool, check: true });
 expect("import --check writes nothing and counts every file as to be appended", dry.appended === files && dry.chain.rows === 0);
 const first = await importFolder(folder, { tenant, client: pool });
-expect("import loads every file of instance/, reads each back the same, and the chain holds", first.appended === files && first.mismatched.length === 0 && first.chain.rows === files && first.chain.broken.length === 0, JSON.stringify({ ...first, chain: first.chain.broken.slice(0, 3) }));
+expect("import loads every file of the workspace, reads each back the same, and the chain holds", first.appended === files && first.mismatched.length === 0 && first.chain.rows === files && first.chain.broken.length === 0, JSON.stringify({ ...first, chain: first.chain.broken.slice(0, 3) }));
 const second = await importFolder(folder, { tenant, client: pool });
 expect("import run again appends nothing", second.appended === 0 && second.unchanged === files && second.chain.rows === files);
 writeFileSync(join(folder, "workspace.json"), JSON.stringify({ changed: true }) + "\n");
