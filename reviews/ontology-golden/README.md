@@ -23,7 +23,7 @@ A ruling looks like this.
 {
   "idea": "n-001",
   "field": "scope",
-  "value": { "scope": "naive@capabilities", "via": "appends_to" },
+  "value": { "scope": "naive@capabilities", "via": "appends-to" },
   "card": { "thread": "cmsg_01SampleThread", "message": "cmsg_01SampleCard", "chosen_at": "2026-11-05T16:10:00Z" },
   "ruled": "2026-11-05"
 }
