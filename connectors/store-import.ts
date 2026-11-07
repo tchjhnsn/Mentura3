@@ -15,12 +15,12 @@ import { join, relative } from "node:path";
 import { blobSha } from "naive-framework/src/store/connectors/contract.mjs";
 import { connect, poolFrom, verify, type Client } from "./postgres.ts";
 
-/** Every file under a folder by its relative path, skipping dot files, .git and node_modules, as the filesystem connector does. */
+/** Every file under a folder by its relative path, skipping dot files (except .gitkeep, which keeps an empty folder Naive expects, such as a layer folder), .git and node_modules. */
 export function filesOf(dir: string): string[] {
   const out: string[] = [];
   const walk = (d: string) => {
     for (const e of readdirSync(d, { withFileTypes: true })) {
-      if (e.name.startsWith(".") || e.name === "node_modules") continue;
+      if ((e.name.startsWith(".") && e.name !== ".gitkeep") || e.name === "node_modules") continue;
       const p = join(d, e.name);
       if (e.isDirectory()) walk(p); else if (e.isFile()) out.push(relative(dir, p).split("\\").join("/"));
     }

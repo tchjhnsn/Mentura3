@@ -4,13 +4,15 @@
 //
 //   node platform/connectors/postgres-eval.ts
 
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
 import { connect, driverFrom, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
 import { naivePath } from "../../scripts/naive.ts";
 import { exportFolder } from "./store-export.ts";
+import { withWorkingCopy, type Store } from "../hosted/working-copy.ts";
+import { runCommand } from "../hosted/run.ts";
 
 const h = harness("postgres");
 const { expect, throws, skip, scratch, finish } = h;
@@ -82,6 +84,21 @@ expect("export --root writes only the records under that path", part.files === f
 mkdirSync(join(scratch, "busy"), { recursive: true });
 writeFileSync(join(scratch, "busy/keep.md"), "mine\n");
 expect("export refuses a folder that is not empty", await throws(() => exportFolder(join(scratch, "busy"), { tenant, client: pool }), /not empty/));
+
+// The hosted working copy: the same tenant checked out, a Naive check run on it in hosted mode as its own process,
+// and a provenance line appended, which commits as an append with its base (platform/hosted/working-copy.ts).
+console.log("\n# hosted working copy");
+const log = "ventures/northstar/provenance.jsonl";
+const store = connect({ tenant, client: pool }) as unknown as Store;
+const before = (await store.read(log))?.content ?? "";
+const hostedRun = await withWorkingCopy(store, join(scratch, "hosted"), (dir) => {
+  const status = runCommand([process.execPath, naivePath("packages/naive/src/checks/check-ventures.mjs"), "{dir}"])(dir);
+  appendFileSync(join(dir, log), JSON.stringify({ at: "2026-11-07T00:00:00Z", entity: "venture.json", activity: "write", agent: "eval" }) + "\n");
+  return status;
+});
+expect("hosted: Naive's check runs on the working copy in hosted mode and passes", hostedRun.result === 0);
+expect("hosted: the run's provenance line is appended to the store, and nothing else is written", JSON.stringify(hostedRun.commit.appended) === JSON.stringify([log]) && hostedRun.commit.wrote.length === 0 && (await store.read(log))?.content.startsWith(before) === true, JSON.stringify(hostedRun.commit));
+expect("hosted: the tenant's chain still holds after the commit", (await verify(pool, tenant)).broken.length === 0);
 
 await pool.end();
 finish();
