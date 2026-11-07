@@ -148,7 +148,7 @@ try {
   const validate = (field: string, value: unknown): number | null => {
     const file = join(root, "ruling.json");
     writeFileSync(file, JSON.stringify({ idea: "n-001", field, value, comment: "https://github.com/a/b/issues/1#issuecomment-1", ruled: "2026-11-05" }));
-    return spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
+    return spawnSync(process.execPath, [naivePath("packages/naive/src/records/validate.mjs"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: repo, encoding: "utf8" }).status;
   };
   const cases: [string, unknown, boolean][] = [
     ["status", "open", true], ["status", "high", false], ["importance", "low", true], ["relation", [], true],
@@ -157,7 +157,7 @@ try {
     ["scope", { scope: "products", via: "creates" }, false], ["scope", { scope: "naive@it" }, false],
   ];
   for (const [k, [field, value, valid]] of cases.entries()) {
-    assert.equal(validate(field, value), valid ? 0 : 1, `validate.py agrees on ${field} ${JSON.stringify(value)}`);
+    assert.equal(validate(field, value), valid ? 0 : 1, `validate.mjs agrees on ${field} ${JSON.stringify(value)}`);
     idea(`c-${k}`, `Schema case ${k}`);
     propose({ idea: `c-${k}`, field, value });
     reconcile();

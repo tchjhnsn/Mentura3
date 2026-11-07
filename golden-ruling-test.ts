@@ -14,7 +14,7 @@ const dir = mkdtempSync(join(tmpdir(), "golden-ruling-"));
 const validate = (ruling: unknown) => {
   const file = join(dir, "ruling.json");
   writeFileSync(file, JSON.stringify(ruling));
-  const r = spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: root, encoding: "utf8" });
+  const r = spawnSync(process.execPath, [naivePath("packages/naive/src/records/validate.mjs"), "--schema", "golden-ruling.schema.json", "--file", file], { cwd: root, encoding: "utf8" });
   return { status: r.status, out: r.stdout + r.stderr };
 };
 
@@ -43,7 +43,7 @@ try {
 
   const unknown = validate({ ...sample, field: "tags", value: ["x"] });
   assert.equal(unknown.status, 1, "a ruling on a field outside the closed set is rejected");
-  assert.match(unknown.out, /field: 'tags' is not one of/);
+  assert.match(unknown.out, /field: "tags" is not one of/);
 
   assert.equal(validate({ ...sample, field: "status", value: "high" }).status, 1, "a value from another field is rejected");
   assert.equal(validate({ ...sample, field: "importance", value: "high" }).status, 0, "an importance ruling validates");
