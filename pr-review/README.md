@@ -13,7 +13,7 @@ Reads a pull request's Vercel preview and reports what it finds in a PR comment.
 `content.mjs` uses three lists, in this order:
 
 1. Naive's internal terms, `packages/naive/src/engine/internal-terms.json` in the installed `naive-framework` package.
-2. This repository's venture's own list, `instance/ventures/everything-ecosystem/governance/internal-terms.json`.
+2. The founder's own list, frozen in `site/gate/governance/internal-terms.json` (`site/scripts/export-gate.ts` writes it from a venture folder). A missing file is skipped here; the site's page gate fails closed without it.
 3. The built-in fallback patterns (ledger ids, private paths, local paths, unfinished markers, secret shapes, email addresses).
 
 `pr-review.yml` reads no secret, so it installs without the private `naive-framework` package (EE-119). Then the first list is skipped, and the report's Patterns line says so: `Naive's list skipped (naive-framework is not installed)`. The venture's list and the fallback patterns still run.

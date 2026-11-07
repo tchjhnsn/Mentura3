@@ -27,17 +27,17 @@ check("findings carry line numbers", byName["leaky.md"].findings.find((f) => f.r
 check("report gives kind and location, never the matched text", result.markdown.includes("line 7, column 32: AWS access key shape")
   && !/AKIA|mentura|\/Users\/someone/i.test(result.markdown) && !JSON.stringify(result.pages).includes("AKIA"));
 check("report names the leaky page only", result.markdown.includes("leaky.md") && !result.markdown.includes("clean.md"));
-check("both dictionaries load: Naive's and the founder's", loadPatterns().source.includes("packages/naive/src/engine/internal-terms.json") && loadPatterns().source.includes("instance/ventures/everything-ecosystem/governance/internal-terms.json"));
+check("both dictionaries load: Naive's and the founder's", loadPatterns().source.includes("packages/naive/src/engine/internal-terms.json") && loadPatterns().source.includes("site/gate/governance/internal-terms.json"));
 
 // A temporary repo, so the founder's rule below is a made-up term.
 const dict = mkdtempSync(join(tmpdir(), "pr-review-dict-"));
 mkdirSync(join(dict, "packages/naive/src/engine"), { recursive: true });
-mkdirSync(join(dict, "instance/ventures/everything-ecosystem/governance"), { recursive: true });
+mkdirSync(join(dict, "site/gate/governance"), { recursive: true });
 writeFileSync(join(dict, "packages/naive/src/engine/internal-terms.json"), JSON.stringify({ patterns: [{ id: "decision-id", regex: "\\b(?:EE|G|D)-\\d{3}\\b", why: "a ledger id" }] }));
-writeFileSync(join(dict, "instance/ventures/everything-ecosystem/governance/internal-terms.json"), JSON.stringify({ patterns: [{ id: "codename-zephyr", regex: "\\bZephyr\\b", why: "Zephyr is unannounced", severity: "warn" }] }));
+writeFileSync(join(dict, "site/gate/governance/internal-terms.json"), JSON.stringify({ patterns: [{ id: "codename-zephyr", regex: "\\bZephyr\\b", why: "Zephyr is unannounced", severity: "warn" }] }));
 const loaded = loadPatterns(dict, dict).patterns;
 const withoutNaive = loadPatterns(dict, null);
-check("without naive-framework installed, Naive's list is skipped and says so; the venture's list still loads", /Naive's list skipped/.test(withoutNaive.source) && withoutNaive.source.includes("instance/ventures/everything-ecosystem/governance/internal-terms.json") && !withoutNaive.patterns.some((p) => p.id === "decision-id"));
+check("without naive-framework installed, Naive's list is skipped and says so; the venture's list still loads", /Naive's list skipped/.test(withoutNaive.source) && withoutNaive.source.includes("site/gate/governance/internal-terms.json") && !withoutNaive.patterns.some((p) => p.id === "decision-id"));
 const dictRules = (text) => checkMarkdown(text, loaded).map((f) => f.rule);
 check("a dictionary regex is case-sensitive, as in check-leaks", dictRules("see d-100").length === 0 && dictRules("see D-100").includes("decision-id"));
 check("a term on the founder's list is found", dictRules("Zephyr ships").includes("venture-term-1"));
