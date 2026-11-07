@@ -1785,7 +1785,7 @@
       "id": "EE-120",
       "date": "2026-11-06",
       "status": "in-force",
-      "decision": "This company's own venture records, instance/, move out of the repository into our tenant store, a Postgres database on Neon (step 9 of EE-118). The platform's Postgres connector (platform/connectors/postgres.ts) keeps a tenant's records in one append-only table: every write is a new row, a database trigger refuses UPDATE and DELETE, and each row's hash chains to the tenant's previous row. platform/connectors/store-import.ts loads a folder through it and verifies it. The connection string is read from MENTURA_DATABASE_URL and never stored. Not built yet: the import into Neon has not run, so instance/ is still in the repository; the scripts and checks that read instance/ do not yet read the store.",
+      "decision": "This company's own venture records, instance/, move out of the repository into our tenant store, a Postgres database on Neon (step 9 of EE-118). The platform's Postgres connector (platform/connectors/postgres.ts) keeps a tenant's records in one append-only table: every write is a new row, a database trigger refuses UPDATE and DELETE, and each row's hash chains to the tenant's previous row. platform/connectors/store-import.ts loads a folder through it and verifies it. The connection string is read from MENTURA_DATABASE_URL and never stored. Built: the import into Neon ran (300 rows, chain intact) and instance/ is gone from the repository. platform/connectors/store-export.ts writes a tenant's records back out to a folder, and the ontology scripts and Naive's checkers on the company records read that folder, named by --records or MENTURA_RECORDS.",
       "why": "Torian, 2026-11-06 at 03:37Z: \"It will go in a neon database.\" It matches where identity data lives in early versions (Postgres on Neon, the same as Polity), and the layout design (EE-118) keeps real ventures in a tenant's store, outside the product repository.",
       "related": [
         "EE-118",
@@ -1810,6 +1810,18 @@
           "target": "platform/connectors/postgres-eval.ts",
           "root": "repo",
           "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "platform/connectors/store-export.ts",
+          "root": "repo",
+          "expect": "exists"
+        },
+        {
+          "kind": "path",
+          "target": "instance",
+          "root": "repo",
+          "expect": "absent"
         }
       ]
     },
