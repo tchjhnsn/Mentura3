@@ -6,7 +6,7 @@ Reads a pull request's Vercel preview and reports what it finds in a PR comment.
 |---|---|
 | `content.mjs` | Fetches the markdown of each changed site page and checks it for internal terms and secret shapes |
 | `design.mjs` | Reads computed styles from the preview, with screenshots only when asked (`naive.config.json` `pr_review.screenshots`) |
-| `pr-review-test.mjs` | Tests both offline, and checks the two workflows keep their permissions |
+| `pr-review-test.mjs` | Tests both offline, and checks the two workflows keep their permissions. `naive publish --venture <dir> check` runs on Naive's example venture relay |
 
 ## Where the content patterns come from
 

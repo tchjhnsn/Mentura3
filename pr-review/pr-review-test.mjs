@@ -4,7 +4,7 @@
 //   node scripts/pr-review/pr-review-test.mjs
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkMarkdown, FALLBACK_PATTERNS, fetchMarkdown, loadPatterns, pagesFromFiles, run } from "./content.mjs";
@@ -122,7 +122,11 @@ rmSync(zipDir, { recursive: true });
 
 // naive publish routes on the first argument after --venture, wherever the flag sits.
 const naive = (...args) => { try { return execFileSync("node", [naivePath("packages/naive/src/interfaces/cli/naive.mjs"), ...args], { encoding: "utf8", stdio: "pipe" }); } catch (e) { return `${e.stdout}${e.stderr}`; } };
-check("naive publish --venture <dir> check reaches the lint", !naive("publish", "--venture", join(root, "instance/ventures/everything-ecosystem"), "check", "no-such-file.md").includes("no channel check"));
+// On a copy of Naive's example venture: the check writes .naive in the venture it reads.
+const relay = mkdtempSync(join(tmpdir(), "pr-review-relay-"));
+cpSync(naivePath("packages/naive/src/records/examples/software/ventures/relay"), relay, { recursive: true });
+check("naive publish --venture <dir> check reaches the lint", !naive("publish", "--venture", relay, "check", "no-such-file.md").includes("no channel check"));
+rmSync(relay, { recursive: true, force: true });
 
 check("screenshots go into the uploaded artifact", /--shots pr-review-out\/screenshots/.test(wf) && /upload-artifact@v4[\s\S]*path: pr-review-out\//.test(wf));
 
