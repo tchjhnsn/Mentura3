@@ -18,7 +18,7 @@ const git = (...args: string[]) => {
 const header = "| id | Grok id(s) | Claude id(s) | idea | where it lives | date learned | repo status | repo pointer | verbatim text | conflict |\n|---|---|---|---|---|---|---|---|---|---|\n";
 const row = (id: string, pointer: string, where = "Grok audit", status = "open-PR") => `| ${id} |  |  | idea ${id} | ${where} | 2026-11-01 | ${status} | ${pointer} |  |  |\n`;
 const record = (n: string, extra: object = {}) =>
-  write(`instance/people/p-54697df9/ideas/n-${n}.json`, JSON.stringify({ id: `n-${n}`, text: `idea N-${n}`, captured: "2026-11-01", source: `merged-ledger.md row N-${n}`, ...extra }));
+  write(`people/p-54697df9/ideas/n-${n}.json`, JSON.stringify({ id: `n-${n}`, text: `idea N-${n}`, captured: "2026-11-01", source: `merged-ledger.md row N-${n}`, ...extra }));
 const preserve = (pr: number, ledger: string, base: string, baseOid: string, headOid: string) => {
   write(`docs/design/preserved/framework/pr-${pr}/PRESERVED.md`, `---\nstatus: preserved, not reconciled\nledger: ${ledger}\n---\n`);
   write(`docs/design/preserved/framework/pr-${pr}/pr-${pr}.json`, JSON.stringify({ number: pr, baseRefName: base, baseRefOid: baseOid, headRefOid: headOid }));
@@ -37,7 +37,7 @@ const openPrs = [
   [908, "a PR nobody touched"],
 ];
 write("docs/reviews/ontology-program/open-prs.tsv", `number\ttitle\tlisted\n${openPrs.map(([n, t]) => `${n}\t${t}\t${listed}`).join("\n")}\n`);
-const run = () => spawnSync(process.execPath, [script, "--root", root], { encoding: "utf8" });
+const run = () => spawnSync(process.execPath, [script, "--root", root, "--records", root], { encoding: "utf8" });
 // Each verdict line keyed by its first word (`#901`, `framework`, ...), with the section heading above it.
 const verdicts = (stdout: string) => {
   const found = new Map<string, { section: string; text: string }>();

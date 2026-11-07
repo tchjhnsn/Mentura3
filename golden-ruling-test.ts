@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { readSchema } from "naive-framework/src/records/index.mjs";
 import { naivePath } from "./naive.ts";
+import { ideasIn } from "./records-folder.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 const sample = JSON.parse(readFileSync(naivePath("packages/naive/src/records/examples/ontology-golden/n-001.scope.json"), "utf8"));
@@ -57,7 +58,8 @@ try {
   for (const name of readdirSync(folder).filter((f) => f.endsWith(".json"))) {
     const r = JSON.parse(readFileSync(join(folder, name), "utf8"));
     assert.equal(name, `${r.idea}.${r.field}.json`, `${name} is named for its idea and field`);
-    assert.ok(existsSync(join(root, "instance/people/p-54697df9/ideas", `${r.idea}.json`)), `${name} rules on an idea that exists`);
+    // The idea records live in the store since EE-118 step 9c: checked when MENTURA_RECORDS names an export.
+    if (process.env.MENTURA_RECORDS) assert.ok(existsSync(join(ideasIn(process.env.MENTURA_RECORDS), `${r.idea}.json`)), `${name} rules on an idea that exists`);
   }
 } finally {
   rmSync(dir, { recursive: true, force: true });

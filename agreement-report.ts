@@ -1,7 +1,9 @@
 // The agreement report (S3-PR4): how often a gated label matches Torian's golden ruling, per field, with and
 // without the symbolic checks, the spread across scopes and what limits the number.
 //
-//   node --import ./scripts/naive-ts.ts scripts/agreement-report.ts [--root <dir>] [--check]
+//   node --import ./scripts/naive-ts.ts scripts/agreement-report.ts --records <dir> [--root <dir>] [--check]
+//
+// --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see scripts/records-folder.ts).
 // (the --import flag lets Node load Naive's TypeScript from node_modules, through the reconcile runner; temporary)
 //
 // Without the symbolic checks, each ruling is compared with the raw proposal for its idea and field in
@@ -20,7 +22,8 @@
 
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { GOLDEN, IDEAS, PROPOSALS, STATE, readProposals, readState, sameLabel } from "./reconcile-ideas.ts";
+import { GOLDEN, PROPOSALS, STATE, readProposals, readState, sameLabel } from "./reconcile-ideas.ts";
+import { ideasIn, recordsFolder } from "./records-folder.ts";
 import type { Field, Json, Machine, StateName } from "./reconcile-ideas.ts";
 
 const FIELDS: readonly Field[] = ["status", "importance", "relation", "scope"];
@@ -65,10 +68,10 @@ const cell = (t: Tally): string => t.n === 0 ? "n = 0, no percentage" : `${t.agr
 
 export type Report = { date: string; text: string; perField: { field: Field | "all"; raw: Tally; gated: Tally }[]; stale: Stale[] };
 
-export function report(root: string): Report {
-  const ideaFiles = readdirSync(join(root, IDEAS)).filter((f) => f.endsWith(".json"));
+export function report(root: string, records: string): Report {
+  const ideaFiles = readdirSync(ideasIn(records)).filter((f) => f.endsWith(".json"));
   const ideas = new Map(ideaFiles.map((f) => {
-    const r = JSON.parse(readFileSync(join(root, IDEAS, f), "utf8")) as { id: string; text: string; captured?: string };
+    const r = JSON.parse(readFileSync(join(ideasIn(records), f), "utf8")) as { id: string; text: string; captured?: string };
     return [r.id, { id: r.id, text: r.text, relations: [], captured: r.captured }];
   }));
   const { lines } = readProposals(join(root, PROPOSALS), { ideas });
@@ -161,7 +164,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = (name: string): string | undefined => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
   const root = resolve(arg("--root") ?? join(dirname(new URL(import.meta.url).pathname), ".."));
   const check = process.argv.includes("--check");
-  const r = report(root);
+  let records: string;
+  try { records = recordsFolder(); } catch (e) { console.error((e as Error).message); process.exit(2); }
+  const r = report(root, records);
   for (const f of r.perField) console.log(`${f.field}: without the symbolic checks ${cell(f.raw)}; with them ${cell(f.gated)}`);
   for (const s of r.stale) console.log(`STALE ${s.key} (${s.state}): ${s.why}`);
   const staleLine = `${count(r.stale.length, "label")} in ${STATE} ${r.stale.length === 1 ? "is" : "are"} stale: ${r.stale.map((s) => s.key).join(", ")}`;

@@ -3,8 +3,12 @@
 // the working tree, and prints every ledger row whose idea has no copy in the repo, grouped by where
 // its text lives.
 //
-//   node scripts/preservation-coverage.ts           print the uncovered rows, exit 0
-//   node scripts/preservation-coverage.ts --check   the same, exit 1 when any row is uncovered
+//   node scripts/preservation-coverage.ts [--records <dir>]           print the uncovered rows, exit 0
+//   node scripts/preservation-coverage.ts [--records <dir>] --check   the same, exit 1 when any row is uncovered
+//
+// --records adds a folder exported from the company tenant's store (store-export.ts): the founder's idea records
+// left this repository for the store in EE-118 step 9c, so a copy there counts as a copy. Its files are named
+// records/<path>.
 //
 // A row is covered when one of these holds:
 //   1. its repo status is `in-main built`, `in-main decided not built` or `on main`;
@@ -16,7 +20,7 @@
 // Confidential rows are checked like any other row and print their flags.
 
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -145,9 +149,23 @@ export function treeFiles(root: string): Map<string, string> {
   return files;
 }
 
+// Every text file under an exported records folder, named records/<path> so no name matches a repository path.
+export function recordFiles(dir: string): Map<string, string> {
+  const files = new Map<string, string>();
+  for (const path of (readdirSync(dir, { recursive: true }) as string[]).map(String).sort()) {
+    if (/(^|\/)\.env/.test(path)) continue;
+    const full = join(dir, path);
+    if (!statSync(full).isFile()) continue;
+    const text = readFileSync(full, "utf8");
+    if (!text.includes("\0")) files.set(`records/${path.split("\\").join("/")}`, text);
+  }
+  return files;
+}
+
 function main(argv: string[]): number {
   const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-  const files = treeFiles(root);
+  const at = argv.indexOf("--records");
+  const files = new Map([...treeFiles(root), ...(at >= 0 ? recordFiles(argv[at + 1] ?? "") : [])]);
   const ledger = files.get(LEDGER);
   if (ledger === undefined) {
     process.stderr.write(`${LEDGER} not found\n`);

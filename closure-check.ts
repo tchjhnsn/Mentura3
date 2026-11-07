@@ -3,13 +3,16 @@
 // line for every open pull request, every pull request the plan names or main preserves as a patch, the
 // `framework` branch and the `preserve/sources-2026-11-03` branch.
 //
-//   node scripts/closure-check.ts                the full record, as docs/reviews/<date>-closure.md holds it
-//   node scripts/closure-check.ts --root <dir>   read another checkout
+//   node scripts/closure-check.ts --records <dir>               the full record, as docs/reviews/<date>-closure.md holds it
+//   node scripts/closure-check.ts --records <dir> --root <dir>  read another checkout
+//
+// --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see scripts/records-folder.ts).
+// A ledger row's copy counts when it is in the checkout or in the records folder.
 //
 // The plan asks to "confirm each has a settled record on main". Torian deferred his golden rulings on
 // 2026-11-05: labels stay proposals in docs/reviews/ontology-program/reconcile/ and S3-PR5 waits, so no
 // record on main is settled yet. This check therefore reads "settled record" as "an idea record exists
-// under instance/people/p-54697df9/ideas/ for the ledger row" and prints `safe to close` when every idea
+// under people/p-54697df9/ideas/ in the company's records for the ledger row" and prints `safe to close` when every idea
 // has one. The label state (settled, proposed only or unlabelled) is shown as information, not a gate.
 // A pull request whose marker is missing or lists no ideas reads `cannot be checked`, and so does framework
 // while any pull request that reaches it does.
@@ -39,11 +42,12 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { coverage, LEDGER, parseLedger, treeFiles } from "./preservation-coverage.ts";
+import { coverage, LEDGER, parseLedger, recordFiles, treeFiles } from "./preservation-coverage.ts";
+import { IDEAS, ideasIn, recordsFolder } from "./records-folder.ts";
 
 export const PLAN = "docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md";
 export const PRESERVED = "docs/design/preserved/framework";
-export const IDEAS = "instance/people/p-54697df9/ideas";
+export { IDEAS };
 export const PROPOSALS = "docs/reviews/ontology-program/reconcile/proposals.jsonl";
 export const OPEN_PRS = "docs/reviews/ontology-program/open-prs.tsv";
 export const SOURCE_BRANCH = "preserve/sources-2026-11-03";
@@ -283,7 +287,7 @@ export function record(repo: Repo): string {
     "",
     `- The open pull requests are in \`${OPEN_PRS}\`, listed on GitHub at ${repo.listed}. A pull request opened after that time is missing here, and one merged since then reads merged.`,
     `- The program's pull requests are the plan's list in \`${PLAN}\` and every patch preserved under \`${PRESERVED}/\`.`,
-    `- An idea is on main when a file under \`${IDEAS}/\` names its ledger row in \`source\`. Labels (settled, proposed only, unlabelled) are information and do not gate.`,
+    `- An idea is on main when a file under \`${IDEAS}/\` in the company's records names its ledger row in \`source\`. Labels (settled, proposed only, unlabelled) are information and do not gate.`,
     "- The check compares ideas, not bytes. A file that only a closed pull request or a retired branch holds goes with it.",
     "",
     "## Gate G7",
@@ -303,7 +307,7 @@ function git(root: string, args: string[]): { status: number | null; stdout: str
   return { status: out.status, stdout: out.stdout };
 }
 
-export function readRepo(root: string): Repo {
+export function readRepo(root: string, recordsDir: string): Repo {
   const preserved: PreservedPr[] = [];
   for (const dir of readdirSync(join(root, PRESERVED)).filter((d) => /^pr-\d+$/.test(d)).sort()) {
     const marker = join(root, PRESERVED, dir, "PRESERVED.md");
@@ -320,8 +324,8 @@ export function readRepo(root: string): Repo {
     for (const line of readFileSync(proposals, "utf8").split("\n").filter(Boolean)) proposed.add((JSON.parse(line) as { idea: string }).idea);
   }
   const records = new Map<string, { record: string; label: Label }>();
-  for (const file of readdirSync(join(root, IDEAS)).filter((f) => f.endsWith(".json")).sort()) {
-    const idea = JSON.parse(readFileSync(join(root, IDEAS, file), "utf8")) as { id: string; source?: string; status?: string; importance?: string };
+  for (const file of readdirSync(ideasIn(recordsDir)).filter((f) => f.endsWith(".json")).sort()) {
+    const idea = JSON.parse(readFileSync(join(ideasIn(recordsDir), file), "utf8")) as { id: string; source?: string; status?: string; importance?: string };
     const row = /\brow (N-\d{3})\b/.exec(idea.source ?? "");
     if (!row) continue;
     const label: Label = idea.status || idea.importance ? "settled" : proposed.has(idea.id) ? "proposed only" : "unlabelled";
@@ -339,7 +343,7 @@ export function readRepo(root: string): Repo {
   const plan = readFileSync(join(root, PLAN), "utf8");
   const planned = plannedPrs(plan);
   const { listed, open } = parseOpenPrs(readFileSync(join(root, OPEN_PRS), "utf8"));
-  const files = treeFiles(root);
+  const files = new Map([...treeFiles(root), ...recordFiles(recordsDir)]);
   const rows = parseLedger(readFileSync(join(root, LEDGER), "utf8"));
   const numbers = [...new Set([...planned, ...preserved.map((pr) => pr.number), ...open.keys()])];
   const pointers = new Map(numbers.map((n) => [n, rows.filter((row) => new RegExp(`#${n}(?!\\d)`).test(row.pointer)).map((row) => row.id)]));
@@ -366,7 +370,9 @@ export function readRepo(root: string): Repo {
 function main(argv: string[]): number {
   const at = argv.indexOf("--root");
   const root = at >= 0 ? resolve(argv[at + 1]) : join(fileURLToPath(new URL(".", import.meta.url)), "..");
-  process.stdout.write(record(readRepo(root)));
+  let records: string;
+  try { records = recordsFolder(argv); } catch (e) { process.stderr.write(`${(e as Error).message}\n`); return 2; }
+  process.stdout.write(record(readRepo(root, records)));
   return 0;
 }
 

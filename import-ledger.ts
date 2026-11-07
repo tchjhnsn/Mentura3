@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 // Imports the merged preservation ledger as idea records (S3-PR1 of the ontology program, EE-114).
 // Reads docs/reviews/2026-11-03-preservation/merged-ledger.md once and writes one founder-idea record per
-// row to instance/people/p-54697df9/ideas/n-NNN.json, and FLAGS.tsv beside ideas/ with one row per record
-// that trips a flag.
+// row to people/p-54697df9/ideas/n-NNN.json in the company's records, and FLAGS.tsv beside ideas/ with one row
+// per record that trips a flag.
 //
-//   node scripts/import-ledger.ts [--ledger <file>] [--full <file>] [--person <folder>]
+//   node scripts/import-ledger.ts (--records <dir> | --person <folder>) [--ledger <file>] [--full <file>]
+//
+// --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see scripts/records-folder.ts).
+// Load what it writes back with platform/connectors/store-import.ts.
 //
 // The ledger names no person for its rows. Grok Bot and Claude remembered the ideas from work with
 // Torian, so every row goes to his person folder (id p-54697df9, handle tchjhnsn).
@@ -29,10 +32,11 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { PERSON, recordsFolder } from "./records-folder.ts";
 
 const repo = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 export const LEDGER = "docs/reviews/2026-11-03-preservation/merged-ledger.md";
-export const PERSON = "instance/people/p-54697df9";
+export { PERSON };
 const FULL_BRANCH = "preserve/sources-2026-11-03";
 const FULL_PATH = "grok-store/merged-ledger.full.md";
 
@@ -205,7 +209,7 @@ function main(argv: string[]): number {
     const result = importLedger({
       ledger: readFileSync(opt("--ledger") ?? join(repo, LEDGER), "utf8"),
       full: full ? () => readFileSync(full, "utf8") : fullFromBranch,
-      person: opt("--person") ?? join(repo, PERSON),
+      person: opt("--person") ?? join(recordsFolder(argv), PERSON),
       today: new Date().toISOString().slice(0, 10),
     });
     process.stdout.write(`${result.records} records (${result.confidential} confidential), ${result.written} written, ${result.flagged} flagged in FLAGS.tsv\n`);

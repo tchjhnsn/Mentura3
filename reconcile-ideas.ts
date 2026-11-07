@@ -2,9 +2,10 @@
 // and the Lean agreement check, and moves each label through the idea record statechart, Appendix E of
 // docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. It makes no model or network call: proposals are input.
 //
-//   node --import ./scripts/naive-ts.ts scripts/reconcile-ideas.ts [--root <dir>] [--proposals <file>] [--naive <dir>]
+//   node --import ./scripts/naive-ts.ts scripts/reconcile-ideas.ts --records <dir> [--root <dir>] [--proposals <file>] [--naive <dir>]
 //
-// --root is the repository with the idea records, rulings and state (this one). --naive is the Naive checkout whose
+// --records is a folder exported from the company tenant's store, holding the idea records (MENTURA_RECORDS works
+// too; see scripts/records-folder.ts). --root is the repository with the rulings and state (this one). --naive is the Naive checkout whose
 // schemas, ontology, catalog, admitted terms and Lean proofs the gates read (default: the installed naive-framework).
 // The --import flag lets Node load Naive's TypeScript from node_modules (scripts/naive-ts.ts, temporary).
 //
@@ -27,8 +28,9 @@ import type { LinkGraph } from "naive-framework/src/terms/levels.ts";
 import { typedLink } from "naive-framework/src/terms/terms.ts";
 import { recordsIn } from "naive-framework/src/records/index.mjs";
 import { naiveRoot } from "./naive.ts";
+import { IDEAS, ideasIn, recordsFolder } from "./records-folder.ts";
 
-export const IDEAS = "instance/people/p-54697df9/ideas";
+export { IDEAS };
 export const GOLDEN = "docs/reviews/ontology-golden";
 export const STATE = "docs/reviews/ontology-program/reconcile/state.jsonl";
 export const QUEUE = "docs/reviews/ontology-program/reconcile/queue.jsonl";
@@ -106,13 +108,13 @@ export class World {
   private leanCache: string[] | undefined;
   private rulingCache = new Map<string, Ruling | null>();
 
-  constructor(root: string, lines: Map<string, Line>, naive: string = naiveRoot) {
+  constructor(root: string, lines: Map<string, Line>, naive: string, records: string) {
     this.root = root;
     this.naive = naive;
     this.lines = lines;
     this.vocab = vocabulary(naive);
-    this.ideas = new Map(readdirSync(join(root, IDEAS)).filter((f) => f.endsWith(".json")).map((f) => {
-      const r = readJson(join(root, IDEAS, f)) as Idea;
+    this.ideas = new Map(readdirSync(ideasIn(records)).filter((f) => f.endsWith(".json")).map((f) => {
+      const r = readJson(join(ideasIn(records), f)) as Idea;
       return [r.id, { id: r.id, text: r.text, status: r.status, relations: r.relations ?? [], scope: r.scope }];
     }));
     const catalog = readJson(join(naive, "packages/naive/src/terms/ontology-catalog.json")) as { scopes: { scope: string; owner: string; imports: string[] }[] };
@@ -397,7 +399,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = (name: string): string | undefined => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
   const root = resolve(arg("--root") ?? join(dirname(new URL(import.meta.url).pathname), ".."));
   const proposalsFile = arg("--proposals") ? resolve(arg("--proposals")!) : join(root, PROPOSALS);
-  const world = new World(root, new Map(), resolve(arg("--naive") ?? naiveRoot));
+  let records: string;
+  try { records = recordsFolder(); } catch (e) { console.error((e as Error).message); process.exit(2); }
+  const world = new World(root, new Map(), resolve(arg("--naive") ?? naiveRoot), records);
   const { lines, unread } = readProposals(proposalsFile, world);
   world.lines = lines;
   const { machines, steps } = reconcile(readState(join(root, STATE)), world);
