@@ -94,7 +94,7 @@ const prov = spawnSync("node", [naivePath("packages/naive/src/checks/check-prove
 const srcCheck = (d) => spawnSync("node", ["--import", new URL("./preload.mjs", import.meta.url).pathname, naivePath("packages/naive/src/checks/check-sources.mjs"), d], { encoding: "utf8" });
 expect("router: check-provenance accepts entries for records in another source", prov.status === 0, prov.stderr);
 expect("router: check-sources accepts the map", srcCheck(ws).status === 0, srcCheck(ws).stderr);
-const valid = spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
+const valid = spawnSync(process.execPath, [naivePath("packages/naive/src/records/validate.mjs"), "--schema", "knowledge-sources.schema.json", "--file", join(tandem, "knowledge/sources.json")], { encoding: "utf8" });
 expect("router: the map matches its schema", valid.status === 0, valid.stdout + valid.stderr);
 write(tandem, { "knowledge/sources.json": JSON.stringify({ sources: [{ id: "team-repo", connector: "notion" }], records: { product: "team-repo", venture: "team-repo" } }) });
 const broken = srcCheck(ws);

@@ -77,7 +77,7 @@ try {
   expect("J-4: the fetched image's facts are read by code", out.facts?.width === 640 && out.facts?.height === 360 && reg().remote.find((q) => q.id === "hero-photo").fetched.sha256 === factsOf(photo).sha256);
   f = await run([`${base}/a.png`, "--venture", "acme", "--license", "CC-BY-4.0", "--credit", "Ana Photo", "--id", "cc-photo", "--copy", "public/photo.png", "--alt", "Clinic front desk"]);
   expect("J-3: a license that allows a copy keeps one in public/, registered with its origin", f.status === 0 && existsSync(join(dir, "public/photo.png")) && reg().assets.find((q) => q.path === "public/photo.png")?.origin_url === `${base}/a.png` && reg().remote.find((q) => q.id === "cc-photo").copy === "public/photo.png", f.stderr);
-  const v = spawnSync("python3", ["-I", naivePath("packages/naive/src/records/validate.py"), "--schema", "raw-source.schema.json", "--file", join(dir, "raw/sources/hero-photo/source.json")], { encoding: "utf8" });
+  const v = spawnSync(process.execPath, [naivePath("packages/naive/src/records/validate.mjs"), "--schema", "raw-source.schema.json", "--file", join(dir, "raw/sources/hero-photo/source.json")], { encoding: "utf8" });
   expect("the fetched image's note in raw/ validates against its schema", v.status === 0, v.stdout + v.stderr);
   const p = spawnSync("node", [naivePath("packages/naive/src/checks/check-provenance.mjs"), dir], { encoding: "utf8" });
   expect("every fetch kept the provenance chain", p.status === 0, p.stdout + p.stderr);

@@ -17,7 +17,7 @@
 
 import { createHash } from "node:crypto";
 import pg from "pg";
-import { blobSha, isText, matches, safePath } from "naive-framework/src/store/connectors/contract.mjs";
+import { blobSha, checkWrite, isText, matches, safePath } from "naive-framework/src/store/connectors/contract.mjs";
 
 export interface Client {
   query(text: string, params?: unknown[]): Promise<{ rows: Record<string, unknown>[] }>
@@ -180,19 +180,27 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
       }
       return out;
     },
-    /** Appends a row unless the newest row already holds this content; the chain is extended under a per-tenant lock. */
-    async write(p: string, content: string) {
+    /**
+     * Appends a row unless the newest row already holds this content; the chain is extended under a per-tenant lock.
+     * `base` (a version, or null for "not there yet") refuses the write with a VersionConflict when the item moved;
+     * `append` adds whole lines to the stored content. Both are checked inside the lock, by Naive's checkWrite.
+     */
+    async write(p: string, content: string, opts: { base?: string | null, append?: boolean } = {}) {
       if (writes === "none") throw new Error(`${id} is read-only`);
-      const path = full(p), version = blobSha(content);
-      const seq = await tx(async (run) => {
+      const path = full(p);
+      const out = await tx(async (run) => {
         await run("select pg_advisory_xact_lock(hashtext($1))", [`${TABLE}/${tenant}`]);
         const head = (await run(`select hash from ${TABLE} where tenant = $1 order by seq desc limit 1`, [tenant]))[0] ?? null;
-        const now = (await run(`select version from ${TABLE} where tenant = $1 and path = $2 order by seq desc limit 1`, [tenant, path]))[0];
-        if (now?.version === version) return null;
+        const now = (await run(`select content, version from ${TABLE} where tenant = $1 and path = $2 order by seq desc limit 1`, [tenant, path]))[0];
+        if (opts.base !== undefined || opts.append) checkWrite(safePath(p), now?.version ?? null, now?.content ?? null, content, opts);
+        const whole = opts.append ? (now?.content ?? "") + content : content;
+        const version = blobSha(whole);
+        if (now?.version === version) return { version, seq: null };
         const hash = chainHash(head?.hash ?? null, path, version);
-        return Number((await run(`insert into ${TABLE} (tenant, path, content, version, prev_hash, hash) values ($1, $2, $3, $4, $5, $6) returning seq::text as seq`, [tenant, path, content, version, head?.hash ?? null, hash]))[0].seq);
+        const seq = Number((await run(`insert into ${TABLE} (tenant, path, content, version, prev_hash, hash) values ($1, $2, $3, $4, $5, $6) returning seq::text as seq`, [tenant, path, whole, version, head?.hash ?? null, hash]))[0].seq);
+        return { version, seq };
       });
-      return { path: safePath(p), version, ...(seq !== null ? { seq } : { unchanged: true }) };
+      return { path: safePath(p), version: out.version, ...(out.seq !== null ? { seq: out.seq } : { unchanged: true }) };
     },
   };
 }
