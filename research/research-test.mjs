@@ -1,10 +1,10 @@
 // Tests for the research engine (confidential, Mentura). Stubs only: no network, no model.
 //   node platform/research/research-test.mjs
 
-import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Validator, registryOf } from "naive-framework/src/records/validate.mjs";
 import { generate, functions, phases, frames, cellId } from "./cells.mjs";
 import { judgeClaim, sourceCredibility, independent, credibilityFor } from "./credibility.mjs";
 import { jsonlStore } from "./store.mjs";
@@ -22,7 +22,14 @@ const expect = (name, ok) => { console.log(`${ok ? "ok  " : "FAIL"}  ${name}`); 
 const tmp = mkdtempSync(join(tmpdir(), "research-"));
 Object.assign(globalThis, { fetch: () => { throw new Error("network used in a test"); } });
 
-// Schemas: each one accepts a good record and rejects a bad one (python jsonschema).
+// Schemas: each one accepts a good record and rejects a bad one, checked in process by Naive's validator (no Python).
+const schemas = registryOf(join(here, "schemas"));
+const validator = new Validator(schemas);
+const fits = (name, record) => {
+  const file = `${name}.schema.json`, schema = schemas.get(file);
+  if (schema === undefined) throw new Error(`no schema ${file}`);
+  return validator.validate(JSON.parse(JSON.stringify(record)), schema, typeof schema.$id === "string" ? schema.$id : file).length === 0;
+};
 const good = {
   "research-cell": { id: "nike:marketing-and-sales:f:discovery:decision", venture: "nike", function: "marketing-and-sales", frame: "f", time: "discovery", aspect: "decision", status: "open" },
   source: { id: "s1", kind: "retrospective", access_level: "fetched", factors: { access: 4, proximity: 2 } },
@@ -31,8 +38,7 @@ const good = {
 };
 const bad = { "research-cell": { ...good["research-cell"], status: "maybe" }, source: { ...good.source, factors: { access: 5 } }, claim: { ...good.claim, verdict: "certain" }, citation: { ...good.citation, quote: "x".repeat(301) } };
 for (const [name, rec] of Object.entries(good)) {
-  const v = (r) => { const f = join(tmp, "r.json"); writeFileSync(f, JSON.stringify(r));
-    return spawnSync("python3", ["-I", "-c", "import json,sys,jsonschema;s=json.load(open(sys.argv[1]));jsonschema.Draft202012Validator.check_schema(s);jsonschema.validate(json.load(open(sys.argv[2])),s)", join(here, "schemas", `${name}.schema.json`), f]).status === 0; };
+  const v = (r) => fits(name, r);
   expect(`schema ${name}: valid record passes, bad one fails`, v(rec) && !v(bad[name]));
 }
 
@@ -119,8 +125,7 @@ expect("run: a claim the verifier rejects drops to possible", rej.status === "an
 const emptyAgent = async (step, input) => step === "extract" ? { output: { claims: [], citations: [] } } : agent(step, input);
 const empty = await runCell({ ...cells[5], id: "empty" }, { agent: emptyAgent, store, env: {} });
 expect("p5: a cell with no claims is failed, not answered, and the generator offers it again", empty.status === "failed" && store.get("cells", "empty").status === "failed");
-expect("p10: claims stored by runCell fit the claim schema", (() => { const f = join(tmp, "c.json"); writeFileSync(f, JSON.stringify(store.get("claims", "rej#1")));
-  return spawnSync("python3", ["-I", "-c", "import json,sys,jsonschema;jsonschema.validate(json.load(open(sys.argv[2])),json.load(open(sys.argv[1])))", join(here, "schemas", "claim.schema.json"), f]).status === 0; })());
+expect("p10: claims stored by runCell fit the claim schema", fits("claim", store.get("claims", "rej#1")));
 // p6: a separate verifier with fresh fetches, a sample rate and the 90% gate.
 const vstore = jsonlStore(join(tmp, "verify"));
 for (const c of cells.slice(0, 4)) await runCell(c, { agent, store: vstore, env: {}, verify: false });
