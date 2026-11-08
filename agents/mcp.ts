@@ -1,4 +1,4 @@
-// The function agents as MCP tools, for Grokbot (EE-123): stdio, newline-delimited JSON-RPC, protocol 2025-06-18, no
+// The function agents as MCP tools, for any MCP harness and any model (EE-123): stdio, newline-delimited JSON-RPC, protocol 2025-06-18, no
 // dependencies, the house pattern of platform/mcp/research.mjs (an exported handle(), the stdio loop only from
 // serve()). It holds no run state. Each tools/call spawns one `bin.ts run <function>` process with this server's
 // environment unchanged (the caller's trace, model and key variables pass through untouched) and the task on stdin,

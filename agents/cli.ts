@@ -1,4 +1,4 @@
-// mentura-agent: the one way to start a function agent (EE-123). Every caller spawns it: Grokbot through the MCP shim
+// mentura-agent: the one way to start a function agent (EE-123). Every caller spawns it: any MCP harness through the shim
 // (`mentura-agent mcp`, platform/agents/mcp.ts) or a shell call, and later a filesystem trigger. One process per run,
 // so the run's trace context and environment belong to that process and nothing is shared between runs.
 //

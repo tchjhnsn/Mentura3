@@ -102,7 +102,7 @@ try {
   writeFileSync(join(dir, "operations/team-plan.json"), JSON.stringify({ venture: "lab", roles: [{ id: "founder", occupant: "person", needed_by: "discovery", status: "filled" }, researcherTeamPlanEntry(strategy, "discovery")] }, null, 2));
 
   // ---- 2. Refusals before any model: no program yet, then the program a person writes ----
-  const SESSION = "grokbot-9", TRACE = randomUUID(), PARENT = randomUUID();
+  const SESSION = "harness-9", TRACE = randomUUID(), PARENT = randomUUID();
   const caller = { session: SESSION, trace_id: TRACE, parent_span_id: PARENT };
   const noModel: ModelSource = { name: "fake:none", load: async () => { throw new Error("the model was loaded"); } };
   const before = await runResearcher(strategy, { venture: "lab", model: noModel, trace: caller });
@@ -126,7 +126,7 @@ try {
   const textOf = (c: unknown): string => typeof c === "string" ? c : Array.isArray(c) ? c.map((b: { text?: string }) => b.text ?? JSON.stringify(b)).join("\n") : JSON.stringify(c);
   const RUN1 = runIdOf(randomUUID());
   const later = "2030-01-01T00:00:00Z";
-  const r1 = await runResearcher(strategy, { venture: "lab", model: scripted, trace: caller, runId: RUN1, harness: "Grokbot", maxExperiments: 1, readsAsOf: later });
+  const r1 = await runResearcher(strategy, { venture: "lab", model: scripted, trace: caller, runId: RUN1, harness: "claude-code", maxExperiments: 1, readsAsOf: later });
   const p1 = r1.status === "done" ? r1.patterns.find((p) => p.pattern === PATTERN) : undefined;
   ok("run 1 is done and reads as of the plan's cut, not the later cut it was given", r1.status === "done" && Date.parse(r1.reads_as_of) === Date.parse(plan.read_cut), r1);
   ok("run 1 kept one experiment and stopped at the run's limit", p1?.stop === "limit" && p1.experiments.length === 1 && p1.experiments[0].verdict === "keep" && p1.experiments[0].kept_as === "better" && p1.budget?.spent === 1 && p1.budget.of === 2, p1);
@@ -163,8 +163,8 @@ try {
 
   // ---- 6. Traces: the runs nest under the caller's span, provenance shares the trace, check-traces passes ----
   const draftLine = (entries(dir) as { activity: string, agent?: Record<string, string>, span?: { trace_id: string } }[]).find((e) => e.activity === "draft");
-  ok("the keep's provenance line names the run's session, role, model and harness, in the caller's trace", draftLine?.span?.trace_id === TRACE && draftLine.agent?.session === SESSION && draftLine.agent?.id === "strategy-researcher" && draftLine.agent?.model === "fake:scripted" && draftLine.agent?.harness === "Grokbot", draftLine);
-  span(dir, { name: "invoke_agent grokbot", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
+  ok("the keep's provenance line names the run's session, role, model and harness, in the caller's trace", draftLine?.span?.trace_id === TRACE && draftLine.agent?.session === SESSION && draftLine.agent?.id === "strategy-researcher" && draftLine.agent?.model === "fake:scripted" && draftLine.agent?.harness === "claude-code", draftLine);
+  span(dir, { name: "invoke_agent harness", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
   const check = spawnSync("node", [...naiveTs, naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
   ok("check-traces passes with no warnings", check.status === 0 && !/warning:/.test(check.stdout + check.stderr), check.stdout + check.stderr);
 

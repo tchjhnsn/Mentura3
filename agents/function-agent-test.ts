@@ -61,8 +61,8 @@ const pricing: Record<string, unknown> = { ...team, id: "pricing", question: "Wh
 delete pricing.decides; delete pricing.unlocks;
 writeFileSync(join(dir, "decisions/pricing.decision.json"), JSON.stringify(pricing, null, 2) + "\n");
 
-// The caller's trace, as Grokbot would hand it down.
-const SESSION = "grokbot-7", TRACE = randomUUID(), PARENT = randomUUID(), RUN = runIdOf(randomUUID());
+// The caller's trace, as the harness would hand it down.
+const SESSION = "harness-7", TRACE = randomUUID(), PARENT = randomUUID(), RUN = runIdOf(randomUUID());
 const caller = { session: SESSION, trace_id: TRACE, parent_span_id: PARENT };
 const scripted = (m: ReturnType<typeof fakeModel>): ModelSource => ({ name: "fake:scripted", load: async () => m });
 const noModel: ModelSource = { name: "fake:none", load: async () => { throw new Error("the model was loaded"); } };
@@ -80,7 +80,7 @@ const model = fakeModel()
   .respond(step("edit_file", { file_path: "/decisions/pricing", old_string: "\"status\": \"open\"", new_string: "\"status\": \"decided\"" }, "c6"))
   .respond(step("write_file", { file_path: "/governance/board", content: "{}" }, "c7"))
   .respond(new AIMessage("I sharpened the pricing question and proposed deciding it; a person has to accept that."));
-const r = await runFunctionAgent(strategy, "Tighten the pricing decision.", { venture: "kettle", model: scripted(model), trace: caller, runId: RUN, harness: "Grokbot" });
+const r = await runFunctionAgent(strategy, "Tighten the pricing decision.", { venture: "kettle", model: scripted(model), trace: caller, runId: RUN, harness: "claude-code" });
 
 ok("the run is done with the model's answer", r.status === "done" && r.answer.startsWith("I sharpened"), JSON.stringify(r));
 const calls = (model as unknown as { calls: { messages: { content: unknown, getType: () => string }[] }[] }).calls;
@@ -105,10 +105,10 @@ ok("the run is in the caller's session file", !!root, run.map((s) => s.name).joi
 ok("its root span is invoke_agent strategy, nested under the caller's span", root?.name === "invoke_agent strategy" && root.parent_span_id === PARENT, JSON.stringify(root));
 ok("every span of the run is in the caller's trace", run.length > 5 && run.every((s) => s.trace_id === TRACE));
 const lines = (entries(dir) as { span?: { trace_id: string }, agent?: Record<string, string> }[]).filter((e) => e.span?.trace_id === TRACE);
-ok("provenance names the same session, role, model and harness", lines.length > 0 && lines.every((e) => e.agent?.session === SESSION && e.agent?.id === "strategy-agent" && e.agent?.model === "fake:scripted" && e.agent?.harness === "Grokbot"), JSON.stringify(lines.map((e) => e.agent)));
+ok("provenance names the same session, role, model and harness", lines.length > 0 && lines.every((e) => e.agent?.session === SESSION && e.agent?.id === "strategy-agent" && e.agent?.model === "fake:scripted" && e.agent?.harness === "claude-code"), JSON.stringify(lines.map((e) => e.agent)));
 ok("the process environment is restored after the run", RUN_KEYS.every((k) => process.env[k] === undefined) && process.env.MENTURA_WORKSPACE === ws);
-// Grokbot writes its own span when its turn ends; then the venture's traces are whole.
-span(dir, { name: "invoke_agent grokbot", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
+// The harness writes its own span when its turn ends; then the venture's traces are whole.
+span(dir, { name: "invoke_agent harness", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
 const check = spawnSync("node", [...naiveTs, naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
 ok("check-traces passes with no warnings", check.status === 0 && !/warning:/.test(check.stdout + check.stderr), check.stdout + check.stderr);
 

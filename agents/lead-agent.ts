@@ -9,7 +9,7 @@
 // environment and outcome, so a lead run and a function agent run on one venture never overlap.
 //
 //   const result = await runLeadAgent(leadAgent("growth-lead"), "Launch the paid tier.", {
-//     venture: "kettle", model: modelSource(process.env.MENTURA_MODEL), trace: { session: "grokbot-7" },
+//     venture: "kettle", model: modelSource(process.env.MENTURA_MODEL), trace: { session: "harness-7" },
 //   });
 //   result.status === "done" && result.handoffs   // [{ id: "launch-pricing-page", role: "marketing-and-sales-agent", requested_by: "growth-lead" }, ...]
 

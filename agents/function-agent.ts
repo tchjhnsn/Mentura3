@@ -7,7 +7,7 @@
 //
 //   const result = await runFunctionAgent(functionAgent("strategy"), "Tighten the pricing decision.", {
 //     venture: "kettle", model: modelSource(process.env.MENTURA_MODEL),
-//     trace: { session: "grokbot-7", trace_id: T, parent_span_id: P },
+//     trace: { session: "harness-7", trace_id: T, parent_span_id: P },
 //   });
 //   result.status === "done" && result.held   // [{ route: "decisions/pricing", draft, accept: "mentura accept decisions/pricing --venture kettle" }]
 
@@ -58,7 +58,7 @@ export interface RunContext {
   trace: TraceJoin,
   /** The caller's idempotency key. Generated when absent. */
   runId?: RunId,
-  /** Who started the run, for provenance agent.harness (Grokbot, a trigger). */
+  /** Who started the run, for provenance agent.harness (a harness such as Claude Code or Cursor, a trigger). */
   harness?: string,
   /** Aborts the run: open spans end with status error, the lock is released, the result is cancelled. */
   signal?: AbortSignal,

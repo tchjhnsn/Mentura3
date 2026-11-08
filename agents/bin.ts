@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The launch line for function agents (EE-123): `node <EE>/platform/agents/bin.ts run|mcp ...`. It registers the
 // loader that strips types from Naive's .ts files under node_modules (scripts/naive-ts.ts) and only then loads the
-// CLI, so a caller (Grokbot's MCP config, a trigger, the shim spawning a run) needs no --import flag and no working
+// CLI, so a caller (a harness's MCP config, a trigger, the shim spawning a run) needs no --import flag and no working
 // directory. The CLI is imported dynamically on purpose: a static import would resolve Naive's .ts modules before the
 // loader is registered. Remove the first import when Naive ships compiled JavaScript.
 

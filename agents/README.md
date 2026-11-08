@@ -1,11 +1,11 @@
 # Agents
 
-Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its function agents with LangChain deepagents and runs them from Grokbot. The backend and the tracer make such an agent work through Naive's deterministic layers and leave its run in the venture's own files; the function agents (EE-123) are built on them. Naive imports nothing from LangChain; everything that names LangChain is here.
+Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its function agents with LangChain deepagents and any harness runs them: Claude Code, Cursor, Codex, a trigger or Mentura's own interface, with any model LangChain can load. The backend and the tracer make such an agent work through Naive's deterministic layers and leave its run in the venture's own files; the function agents (EE-123) are built on them. Naive imports nothing from LangChain; everything that names LangChain is here.
 
 | File | What it does |
 |---|---|
 | `naive-backend.ts` | `NaiveBackend`, a deepagents backend (`BackendProtocolV2`) over Naive's agent filesystem (`naive-framework/src/router/agent-files.ts`). A deep agent's `ls`, `read_file`, `write_file`, `edit_file`, `glob` and `grep` become Naive router calls on the venture's records, so every write meets the schema, the gate, decision rights and provenance. A gated write is held as a draft, and the agent is told the record did not change. Given the run's tracer, each file operation's span hangs from the tool call that made it |
-| `naive-tracer.ts` | `NaiveTracer`, a LangChain callback handler that writes each agent run, model call and tool call as a span in `<venture>/traces/<session>.jsonl` through Naive's `span()`, so the hash chain, the content rule (inputs and outputs only with `traces.content`) and `check-traces.ts` hold. The run id is the span id; LangGraph's inner node runs are not spans. The session comes from the option or `MENTURA_SESSION`, so a Grokbot run, its function agents and their provenance lines share one trace. Nothing leaves the machine; `../integrations/langsmith-otel.ts` ships the files to LangSmith |
+| `naive-tracer.ts` | `NaiveTracer`, a LangChain callback handler that writes each agent run, model call and tool call as a span in `<venture>/traces/<session>.jsonl` through Naive's `span()`, so the hash chain, the content rule (inputs and outputs only with `traces.content`) and `check-traces.ts` hold. The run id is the span id; LangGraph's inner node runs are not spans. The session comes from the option or `MENTURA_SESSION`, so a harness's turn, its function agents and their provenance lines share one trace. Nothing leaves the machine; `../integrations/langsmith-otel.ts` ships the files to LangSmith |
 | `agents-test.ts` | A deep agent built with `createDeepAgent`, a scripted model, the backend and the tracer, against a made-up venture, offline |
 | `function-spec.ts` | What a function agent is, derived from Naive's data (EE-123): every id in `departments.json` is one, acting in the team-plan role `<function>-agent`, with its function's module (`functions/<fn>/`) for skills and the write routes its role should get (`decisions/*` plus the concrete write routes of the record packages the function owns, never the team plan). There is no list of agents here. It derives each function's researcher the same way (`functionResearcher`): the role `<function>-researcher`, the projected route patterns it works (those in packages the function owns, and those its starter research program lists under Patterns), the write routes `recipes/<pattern>` and nothing else, its research program route and Naive's research skill |
 | `function-agent.ts` | One function agent run: checks the venture's team plan, locks the venture (`.naive/agent-run.lock`), answers a repeated run id from the files, loads the model, runs the deep agent with the function's module mounted read-only at `/function/` and the run's identity set in the process environment, and reports the answer, what it wrote and the drafts held for a person, each with its `mentura accept` command |
@@ -13,7 +13,7 @@ Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its functio
 | `lead-agent.ts` | One lead run, mirroring the function agent run (same process claim, venture lock, run id, trace join and outcome): the deep agent reads every record, has its role's skill mounted read-only at `/lead/`, and writes a lead plan entry and one handoff per function involved, each addressed to `<function>-agent` with `requested_by` set to the lead. Any other write, or a handoff for someone else, is refused before Naive sees it. The result adds whether the plan changed and the handoffs written |
 | `research.ts` | One researcher run (autoresearch build plan item 13): for each pattern the venture's research program lists, one deep agent proposes one change to `/<pattern>.recipe.ts` per turn, written only through Naive's `recipes/<pattern>` route, which scores it; the loop stops at the plan's budget, the run's limit or a turn with no experiment, and reads only as of the plan's cut |
 | `cli.ts`, `bin.ts` | `mentura-agent`, the one way to start a run: `node platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts lead <lead> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]`, or `node platform/agents/bin.ts mcp`. One process per run |
-| `mcp.ts` | The MCP shim for Grokbot: one `agent_<function>` tool per function the venture has staffed and one `lead_<id>` tool per lead it has staffed, each call a `bin.ts run` or `bin.ts lead` child process, a cancel sent to it as SIGTERM, and `route_task`, which applies the routing rule |
+| `mcp.ts` | The MCP shim for any MCP harness: one `agent_<function>` tool per function the venture has staffed and one `lead_<id>` tool per lead it has staffed, each call a `bin.ts run` or `bin.ts lead` child process, a cancel sent to it as SIGTERM, and `route_task`, which applies the routing rule |
 | `function-agent-test.ts` | The strategy agent run offline with a scripted model, through the CLI and through the shim |
 | `lead-agent-test.ts` | The growth lead run offline with a scripted model: a plan entry and one handoff per function, no function record; the routing rule; the CLI and the shim |
 | `research-test.ts` | The strategy researcher run offline with a scripted model: it keeps, discards, and stops at the run's limit and at the plan's budget; every other write is refused; the cut is the plan's; through the CLI too |
@@ -48,9 +48,9 @@ The environment it reads, once, at the start:
 
 A venture staffs a function agent by listing its role in its team plan. Until then a run is refused, and the refusal carries the entry to add, with write routes derived for that function. The role must be an agent's, must list routes (a role without routes could reach every route) and must not be able to write the team plan. The agent never writes the team plan itself.
 
-### Grokbot
+### From a harness
 
-Grokbot adds the shim to the MCP config of each `claude -p` it spawns. The trace variables name Grokbot's session, trace and the span of that turn. The key is a reference Claude Code expands from Grokbot's own environment, so the file holds no key:
+Any harness that speaks MCP adds the shim to its MCP config. Nothing here depends on which harness or which model: the harness's own model only calls the tools, and the agents run on whatever `MENTURA_MODEL` names. The trace variables name the harness's session, trace and the span of its turn. The example is a Claude Code config, where the key is a reference Claude Code expands from its own environment, so the file holds no key; another harness sets the same variables its own way:
 
 ```json
 {
@@ -61,11 +61,11 @@ Grokbot adds the shim to the MCP config of each `claude -p` it spawns. The trace
       "env": {
         "MENTURA_WORKSPACE": "<the folder that holds the ventures>",
         "MENTURA_VENTURE": "kettle",
-        "MENTURA_SESSION": "<Grokbot's session>",
-        "MENTURA_TRACE_ID": "<Grokbot's trace id>",
+        "MENTURA_SESSION": "<the harness's session>",
+        "MENTURA_TRACE_ID": "<the harness's trace id>",
         "MENTURA_SPAN_ID": "<the span of this turn>",
         "MENTURA_MODEL": "anthropic:claude-opus-4-5",
-        "MENTURA_HARNESS": "Grokbot",
+        "MENTURA_HARNESS": "claude-code",
         "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}"
       }
     }
@@ -75,7 +75,7 @@ Grokbot adds the shim to the MCP config of each `claude -p` it spawns. The trace
 
 The calling model sees one tool per function the venture has staffed (`agent_strategy` for kettle), one per lead it has staffed (`lead_growth-lead`), and `route_task`. A run tool takes the input `{ task, venture?, run_id? }`. `venture` defaults to `MENTURA_VENTURE`, and `run_id` (a UUID) makes a retry safe: the same id again reports the first run without running it twice. Each call starts one `bin.ts run` process with the shim's environment unchanged, and a cancel stops that process with SIGTERM, which ends its open spans and releases the venture's lock. The tool result is the run's JSON, as text and as `structuredContent`; `isError` is true for anything other than done or already ran. Node must be 22.18 or later.
 
-`route_task` is how Grokbot decides who takes a task. The calling model labels the task with `{ functions, measure?, classes?, venture? }`, and code decides by Naive's routing rule: one function goes to `agent_<function>`; several functions in one lead's portfolio go to that lead's `lead_<id>`; functions across portfolios go to the lead accountable for the measure (the one lead plan that binds it, else the one lead whose default measure kinds hold its kind); a one-way door, a never-redelegated class, or functions across portfolios with no measure or no single accountable lead go to a person, with no tool. The answer carries the rule and the reason, and when the target is not staffed, the team-plan entry a person would add.
+`route_task` is how any harness decides who takes a task. Whatever model the harness runs, or a person, labels the task with `{ functions, measure?, classes?, venture? }`, and code decides by Naive's routing rule: one function goes to `agent_<function>`; several functions in one lead's portfolio go to that lead's `lead_<id>`; functions across portfolios go to the lead accountable for the measure (the one lead plan that binds it, else the one lead whose default measure kinds hold its kind); a one-way door, a never-redelegated class, or functions across portfolios with no measure or no single accountable lead go to a person, with no tool. The answer carries the rule and the reason, and when the target is not staffed, the team-plan entry a person would add.
 
 Not built yet: filesystem triggers that start a function agent (they would call the same `bin.ts run`), a chat model provider package as a dependency here, and appends that two processes can share, so a venture runs one function agent at a time.
 

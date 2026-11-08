@@ -68,9 +68,9 @@ const model = fakeModel()
   .respond(step("write_file", { file_path: "/operations/handoff/someone-else", content: handoff("someone-else", "finance", "finance-lead") }, "c6"))
   .respond(step("write_file", { file_path: "/operations/handoff/to-a-person", content: handoff("to-a-person", "founder").replace("\"founder-agent\"", "\"founder\"") }, "c7"))
   .respond(new AIMessage("I wrote two handoffs, one to marketing and sales and one to customer service, and added the paid-tier bet to my plan."));
-const SESSION = "grokbot-9", TRACE = randomUUID(), RUN = runIdOf(randomUUID());
+const SESSION = "harness-9", TRACE = randomUUID(), RUN = runIdOf(randomUUID());
 const scripted = (m: ReturnType<typeof fakeModel>): ModelSource => ({ name: "fake:scripted", load: async () => m });
-const r = await runLeadAgent(growth, "Launch the paid tier with support.", { venture: "kettle", model: scripted(model), trace: { session: SESSION, trace_id: TRACE }, runId: RUN, harness: "Grokbot" });
+const r = await runLeadAgent(growth, "Launch the paid tier with support.", { venture: "kettle", model: scripted(model), trace: { session: SESSION, trace_id: TRACE }, runId: RUN, harness: "claude-code" });
 const textOf = (c: unknown): string => typeof c === "string" ? c : Array.isArray(c) ? c.map((b: { text?: string }) => b.text ?? JSON.stringify(b)).join("\n") : JSON.stringify(c);
 const calls = (model as unknown as { calls: { messages: { content: unknown, getType: () => string }[] }[] }).calls;
 const system = textOf(calls[0]?.messages[0]?.content);
