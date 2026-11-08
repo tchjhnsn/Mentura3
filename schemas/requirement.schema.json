@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "requirement.schema.json",
+  "title": "Outside requirement",
+  "description": "A hypothesized reading one function needs that GitHub does not hold. Shape only. Not term admission, and not a store connector.",
+  "type": "object",
+  "required": ["id", "ventureId", "functionId", "statement", "gap", "address", "support"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9-]{0,40}$" },
+    "ventureId": { "type": "string", "minLength": 1, "pattern": "^[a-z0-9][a-z0-9-]{0,40}$" },
+    "functionId": { "type": "string", "minLength": 1 },
+    "statement": { "type": "string", "minLength": 1 },
+    "gap": { "type": "string", "minLength": 1 },
+    "address": { "type": ["string", "null"] },
+    "support": {
+      "type": "object",
+      "required": ["status", "evidence", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "hypothesized" },
+        "evidence": {
+          "type": "object",
+          "required": ["kind", "recordPath"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "founder-statement" },
+            "recordPath": { "type": "string", "minLength": 1 }
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "required": ["by", "at"],
+          "additionalProperties": false,
+          "properties": {
+            "by": { "type": "string", "minLength": 1 },
+            "at": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
