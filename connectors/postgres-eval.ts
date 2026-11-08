@@ -26,6 +26,40 @@ await ensureSchema(pool);
 const run = `eval-${Date.now().toString(36)}-${process.pid}`;
 let n = 0;
 
+function textOrderBoundary(head: number): { early: number, late: number } {
+  if (head < 11) return { early: 11, late: 107 };
+  let late = 10;
+  while (late <= head + 1) late *= 10;
+  return { early: late - 1, late };
+}
+{
+  const headRaw = (await pool.query(`select coalesce(max(seq), 0)::int as n from ${TABLE}`)).rows[0]?.n;
+  const head = typeof headRaw === "number" ? headRaw : Number(headRaw);
+  if (!Number.isFinite(head)) throw new Error("postgres eval could not read the latest sequence");
+  const { early, late } = textOrderBoundary(head);
+  expect(`postgres: sequences ${early} and ${late} disagree as text and as integers`, early < late && String(early) > String(late));
+  const place = (seq: number) => pool.query(`select setval(pg_get_serial_sequence($1, 'seq'), $2, false)`, [TABLE, seq]);
+  const tenant = `${run}-boundary`;
+  const store = connect({ tenant, client: pool });
+  await place(early);
+  const older = await store.write("a-target.md", "version-one\n");
+  await place(late);
+  const newer = await store.write("a-target.md", "version-two\n");
+  const read = await store.read("a-target.md");
+  const listed = await store.list();
+  const dir = join(scratch, "boundary");
+  const exported = await exportFolder(dir, { tenant, client: pool });
+  const file = readFileSync(join(dir, "a-target.md"), "utf8");
+  expect(
+    "postgres: read, list, and export return the newest bytes when an older sequence text-sorts first",
+    "seq" in older && older.seq === early && "seq" in newer && newer.seq === late
+      && read?.content === "version-two\n" && read.seq === late
+      && listed.length === 1 && listed[0]?.version === newer.version
+      && exported.files === 1 && exported.mismatched.length === 0 && file === "version-two\n",
+    JSON.stringify({ early, late, older, newer, content: read?.content, seq: read?.seq, listed, file, mismatched: exported.mismatched }),
+  );
+}
+
 // The contract: the fixture under a root, one item outside it that must never show.
 const make = async ({ writes = "direct" } = {}) => {
   const tenant = `${run}-c${++n}`;
