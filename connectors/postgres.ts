@@ -24,7 +24,16 @@ export interface Client {
   /** A pool hands out one connection for a transaction; a single client is its own. */
   connect?(): Promise<Client & { release(): void }>
 }
-export interface Options { id?: string, url?: string, tenant?: string, root?: string, writes?: string, client?: Client }
+export interface Options {
+  id?: string
+  url?: string
+  tenant?: string
+  root?: string
+  writes?: string
+  client?: Client
+  /** When false, the table must already exist. A runtime role with only select and insert uses this. */
+  schema?: boolean
+}
 interface Row { path: string, content: string, version: string, seq: string, hash: string }
 
 export const TABLE = "naive_records";
@@ -127,7 +136,7 @@ export async function verify(client: Client, tenant: string): Promise<{ rows: nu
   return { rows: rows.length, broken };
 }
 
-export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant, root = "", writes = "direct", client }: Options = {}) {
+export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant, root = "", writes = "direct", client, schema = true }: Options = {}) {
   if (!tenant || !/^[\w.-]+$/.test(tenant)) throw new Error(`the postgres connector needs a tenant id (letters, digits, . _ -), not ${tenant}`);
   if (writes === "pull-request") throw new Error("the postgres connector writes direct or none");
   const base = root ? safePath(root) : "";
@@ -138,7 +147,7 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
   const q = async (text: string, params: unknown[]) => {
     db ??= poolFrom(url);
     const c = db;
-    ready ??= ensureSchema(c);
+    ready ??= schema ? ensureSchema(c) : Promise.resolve();
     await ready;
     return (await c.query(text, params)).rows as unknown as Row[];
   };
@@ -157,9 +166,9 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
   // The newest row of each path under the root. LIKE is escaped so a path's own % and _ match only themselves.
   const latest = (prefix: string) => {
     const like = prefix ? `${prefix.replace(/[\\%_]/g, (m) => `\\${m}`)}/%` : "%";
-    return q(`select distinct on (path) path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and (path like $2 or path = $3) order by path, seq desc`, [tenant, like, prefix]);
+    return q(`select distinct on (path) path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and (path like $2 or path = $3) order by path, ${TABLE}.seq desc`, [tenant, like, prefix]);
   };
-  const one = async (p: string) => (await q(`select path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and path = $2 order by seq desc limit 1`, [tenant, full(p)]))[0] ?? null;
+  const one = async (p: string) => (await q(`select path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and path = $2 order by ${TABLE}.seq desc limit 1`, [tenant, full(p)]))[0] ?? null;
 
   return {
     id, kind: "postgres", writes, tenant, root: base,
