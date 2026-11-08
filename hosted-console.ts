@@ -55,6 +55,8 @@ export async function openAccountOutsideHost(input: {
   readonly functionIds?: readonly string[];
   readonly shapeCheck?: HostOptions["shapeCheck"];
   readonly env?: NodeJS.ProcessEnv;
+  /** Signed session assertion. Required when the log is outside_log. The database reads the account from it. */
+  readonly assertion?: string;
 }): Promise<{ host: ToolHost; close: () => Promise<void>; durable: boolean }> {
   const env = input.env ?? process.env;
   const functionIds = input.functionIds ?? catalogFunctionIds();
@@ -73,6 +75,7 @@ export async function openAccountOutsideHost(input: {
   }
   const url = env.MENTURA_OUTSIDE_DATABASE_URL ?? "";
   if (!url) throw new Error("outside: database URL is refused");
+  if (!input.assertion) throw new Error("outside: assertion refused");
   await proveOutsideSeparate(url, env);
   let pool = pools.get(url);
   if (!pool) {
@@ -81,7 +84,7 @@ export async function openAccountOutsideHost(input: {
   }
   const held = pool;
   return {
-    host: openToolHost({ ...common, log: outsideLog(held, input.sessionUserId) }),
+    host: openToolHost({ ...common, log: outsideLog(held, input.sessionUserId, input.assertion) }),
     close: async () => {
       pools.delete(url);
       await held.end();

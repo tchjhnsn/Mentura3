@@ -5,12 +5,13 @@ import { consoleAccountWorkspace } from "./account-path.ts";
 import { accountId, loadRequirement, ventureId } from "./host.ts";
 import { openAccountOutsideHost } from "./hosted-console.ts";
 
-const [root, sessionUserId, signingKeyFile, inboundKeyFile, receiptId] = process.argv.slice(2);
+const [root, sessionUserId, signingKeyFile, inboundKeyFile, receiptId, assertion] = process.argv.slice(2);
 const opened = await openAccountOutsideHost({
   root,
   sessionUserId,
   signingKeyFile,
   inboundKeyFile,
+  assertion,
   policy: { personMayAct: () => true, personMayApprove: () => true },
   functionIds: ["finance"],
   shapeCheck: { accepted: () => true },

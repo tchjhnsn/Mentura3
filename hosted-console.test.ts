@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import pg from "pg";
+import { signAssertion, type Identity } from "../console/lib/assertion.ts";
 import { consoleAccountWorkspace } from "./account-path.ts";
 import { accountId, loadRequirement, ventureId, type VentureScope } from "./host.ts";
 import { closeOutsidePools, hostedOutsideRequired, openAccountOutsideHost } from "./hosted-console.ts";
@@ -20,7 +21,7 @@ const expect = (name: string, ok: boolean, detail?: unknown) => {
 
 const opener = readFileSync(new URL("../console/lib/outside-host.ts", import.meta.url), "utf8");
 const action = readFileSync(new URL("../console/app/actions.ts", import.meta.url), "utf8");
-expect("the console entrypoint binds the session user id", opener.includes("sessionUserId: identity.userId") && opener.includes("requireIdentity") && !opener.includes("events.jsonl"));
+expect("the console entrypoint binds the session user id", opener.includes("sessionUserId: identity.userId") && opener.includes("requireIdentity") && opener.includes("signAssertion") && !opener.includes("events.jsonl"));
 expect("the server action declares that entrypoint", action.startsWith("\"use server\"") && /export async function submitSignedOutside\(/.test(action) && !action.includes("export { submitSignedOutside"));
 
 async function ensureDatabase(adminUrl: string, name: string): Promise<string> {
@@ -52,7 +53,7 @@ if (hostName !== "localhost" && hostName !== "127.0.0.1" && hostName !== "::1") 
   process.exit(1);
 }
 
-const outsideUrl = await ensureDatabase(evalUrl, "mentura_outside_test");
+const outsideUrl = await ensureDatabase(evalUrl, "mentura_outside_hosted_test");
 const tenantUrl = await ensureDatabase(evalUrl, "mentura_tenant_guard");
 const identityUrl = await ensureDatabase(evalUrl, "mentura_identity_guard");
 const secret = "hosted-secret-must-not-appear-0123456789";
@@ -73,7 +74,10 @@ process.env.BETTER_AUTH_SECRET = secret;
 expect("https origin requires the durable log", hostedOutsideRequired());
 
 await applyOutsideSchema(outsideUrl);
+const accountKey = "outside-hosted-account-key-0123456789";
 const schemaOwner = new pg.Pool({ connectionString: outsideUrl, max: 1 });
+await schemaOwner.query(readFileSync(new URL("./sql/002-outside-account.sql", import.meta.url), "utf8"));
+await schemaOwner.query("insert into outside_log_key (id, secret) values (true, $1) on conflict (id) do update set secret = excluded.secret", [accountKey]);
 await schemaOwner.query(`
   do $$ begin
     if not exists (select 1 from pg_roles where rolname = 'outside_host_test') then
@@ -82,9 +86,10 @@ await schemaOwner.query(`
   end $$;
 `);
 await schemaOwner.query("alter role outside_host_test with login nosuperuser password 'outside-host-test'");
-await schemaOwner.query("grant connect on database mentura_outside_test to outside_host_test");
+await schemaOwner.query("grant connect on database mentura_outside_hosted_test to outside_host_test");
 await schemaOwner.query("grant usage on schema public to outside_host_test");
 await schemaOwner.query("grant select, insert on outside_log to outside_host_test");
+await schemaOwner.query("grant execute on function outside_log_authorize(text), outside_log_account() to outside_host_test");
 await schemaOwner.end();
 const runtimeOutside = new URL(outsideUrl);
 runtimeOutside.username = "outside_host_test";
@@ -99,6 +104,8 @@ const inboundKeyFile = join(secretDir, "inbound");
 writeFileSync(signingKeyFile, "test-key-material-0123456789abcdef", { mode: 0o600 });
 writeFileSync(inboundKeyFile, "test-inbound-material-0123456789abcd", { mode: 0o600 });
 const sessionUserId = "acct-ada";
+const identityFor = (userId: string, name: string): Identity => ({ userId, name, email: `${name.toLowerCase()}@example.com`, organizationId: "org", organizationRole: "owner" });
+const assertionFor = (userId: string, name: string) => signAssertion(identityFor(userId, name), { op: "outside" }, accountKey);
 const workspace = consoleAccountWorkspace(root, sessionUserId);
 const venture = join(workspace, "kettle");
 const fixture = join(workspace, "fixtures", "finance");
@@ -135,6 +142,7 @@ expect("a hosted console without the outside database does not open the file log
 
 const opened = await openAccountOutsideHost({
   root, sessionUserId, signingKeyFile, inboundKeyFile, policy, functionIds: ["finance"], shapeCheck: { accepted: () => true },
+  assertion: assertionFor(sessionUserId, "Ada"),
 });
 expect("the hosted entrypoint is durable", opened.durable);
 const ada = scope(sessionUserId, "Ada");
@@ -152,7 +160,7 @@ expect("the hosted log did not fall back to the events file", !existsSync(join(w
 await opened.close();
 
 const child = await new Promise<{ code: number; out: string }>((resolve) => {
-  const proc = spawn(process.execPath, ["outside/hosted-read.ts", root, sessionUserId, signingKeyFile, inboundKeyFile, receiptId], { stdio: ["ignore", "pipe", "inherit"] });
+  const proc = spawn(process.execPath, ["outside/hosted-read.ts", root, sessionUserId, signingKeyFile, inboundKeyFile, receiptId, assertionFor(sessionUserId, "Ada")], { stdio: ["ignore", "pipe", "inherit"] });
   let out = "";
   proc.stdout.on("data", (chunk) => { out += chunk; });
   proc.on("exit", (code) => resolve({ code: code ?? 1, out }));
@@ -164,6 +172,7 @@ mkdirSync(join(otherRoot, "kettle"), { recursive: true });
 mkdirSync(join(otherRoot, "fixtures", "finance"), { recursive: true });
 const bea = await openAccountOutsideHost({
   root, sessionUserId: "acct-bea", signingKeyFile, inboundKeyFile, policy, functionIds: ["finance"], shapeCheck: { accepted: () => true },
+  assertion: assertionFor("acct-bea", "Bea"),
 });
 const crossed = await bea.host.submit(scope("acct-bea", "Bea", otherRoot), { kind: "read", idempotencyKey: "bea-hosted", connectionId });
 expect("another session account does not read the receipt", crossed.status === "refused" && !("receiptId" in crossed));

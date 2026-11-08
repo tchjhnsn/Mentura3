@@ -146,7 +146,11 @@ function pgCode(error: unknown): string {
 // select and insert, not update, delete, truncate, or create a trigger. It cannot set
 // session_replication_role. It does not own the table, its schema, this database, or a trigger
 // function on the table. It cannot execute a security-definer function, or a function in an
-// untrusted language, outside pg_catalog and information_schema. The user triggers must exist
+// untrusted language, outside pg_catalog and information_schema, except outside_log_account()
+// and outside_log_authorize(text) when the table owner owns them, they return text,
+// account() is sql, authorize(text) is plpgsql, and their only setting is
+// search_path=pg_catalog, public. A matching
+// name with another owner, argument list, or setting is refused. The user triggers must exist
 // and fire in replica mode. The principal is session_user, the authenticated login. A role
 // default can make current_user a safe role while session_user stays a superuser or a member
 // of pg_execute_server_program, and SET ROLE NONE returns to that login. The contract is read
@@ -223,15 +227,44 @@ select (
       join pg_catalog.pg_language l on l.oid = p.prolang
      where pg_catalog.has_function_privilege(me.oid, p.oid, 'EXECUTE')
        and n.nspname not in ('pg_catalog', 'information_schema')
-       and (p.prosecdef or not l.lanpltrusted)
+       and (
+         not l.lanpltrusted
+         or (
+           p.prosecdef
+           and not (
+             n.nspname = 'public'
+             and p.prorettype = 25
+             and p.proowner <> me.oid
+             and exists (
+               select 1
+                 from pg_catalog.pg_class c
+                 join pg_catalog.pg_namespace cn on cn.oid = c.relnamespace
+                where cn.nspname = 'public' and c.relname = 'outside_log' and c.relowner = p.proowner
+             )
+             and (
+               (p.proname = 'outside_log_account' and p.pronargs = 0 and l.lanname = 'sql')
+               or (p.proname = 'outside_log_authorize' and p.pronargs = 1 and p.proargtypes = array[25::oid]::oidvector and l.lanname = 'plpgsql')
+             )
+             and exists (
+               select 1 from pg_catalog.unnest(coalesce(p.proconfig, array[]::text[])) cfg
+               where cfg = 'search_path=pg_catalog, public'
+             )
+             and not exists (
+               select 1 from pg_catalog.unnest(coalesce(p.proconfig, array[]::text[])) cfg
+               where split_part(cfg, '=', 1) in ('role', 'session_authorization', 'session_replication_role')
+                  or cfg <> 'search_path=pg_catalog, public'
+             )
+           )
+         )
+       )
   )
 ) as capable
 from pg_catalog.pg_roles me
 where me.rolname = session_user
 `;
 
-/** The log for one account. The host query names that account. The role's grant is still the whole table. */
-export function outsideLog(pool: OutsidePool, accountId: string): HostLog {
+/** The log for one account. When an assertion is passed, the database, not that argument, names the account. */
+export function outsideLog(pool: OutsidePool, accountId: string, assertion?: string): HostLog {
   return {
     async run(ventureId, fn) {
       if (!/^[A-Za-z0-9_-]{1,80}$/.test(accountId)) throw new Error("outside: account id is not a single safe name");
@@ -242,10 +275,24 @@ export function outsideLog(pool: OutsidePool, accountId: string): HostLog {
         const who = await client.query(runtimeCanDamageLog);
         const row = who.rows[0];
         if (!row || row.capable === true) throw new Error("outside: runtime role must not own the log");
-        await client.query("select pg_advisory_xact_lock(hashtext($1))", [`outside_log/${accountId}/${ventureId}`]);
+        let account = accountId;
+        if (assertion) {
+          const authorized = await client.query("select outside_log_authorize($1) as account", [assertion]);
+          account = String(authorized.rows[0]?.account ?? "");
+          if (account !== accountId) throw new Error("outside: account is not the signed account");
+        } else {
+          const forced = await client.query(
+            `select c.relforcerowsecurity as forced
+               from pg_catalog.pg_class c
+               join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+              where n.nspname = 'public' and c.relname = 'outside_log'`,
+          );
+          if (forced.rows[0]?.forced === true) throw new Error("outside: assertion refused");
+        }
+        await client.query("select pg_advisory_xact_lock(hashtext($1))", [`outside_log/${account}/${ventureId}`]);
         const found = await client.query(
           `select seq, prev_hash, line_hash, line from outside_log where account_id = $1 and venture_id = $2 order by seq`,
-          [accountId, ventureId],
+          [account, ventureId],
         );
         const lines: StoredLine[] = [];
         let prev = "";
@@ -267,7 +314,7 @@ export function outsideLog(pool: OutsidePool, accountId: string): HostLog {
           const hash = lineHash(line);
           await client.query(
             `insert into outside_log (account_id, venture_id, seq, prev_hash, line_hash, line) values ($1, $2, $3, $4, $5, $6::jsonb)`,
-            [accountId, ventureId, seq, prev, hash, JSON.stringify(line)],
+            [account, ventureId, seq, prev, hash, JSON.stringify(line)],
           );
           prev = hash;
           seq += 1;
