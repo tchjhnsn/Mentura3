@@ -6,9 +6,9 @@
 //   node scripts/docs-required.ts --readmes < paths   the README.md nearest each changed code file, searched up to its
 //                                                     top-level folder, that the change does not touch
 //
-// Code is anything that is not Markdown under platform/, console/, identity/, scripts/ and the site's code (site/app, site/lib,
-// site/components, site/scripts). Docs are the site's docs pages, docs/master/*.md, and every README.md, AGENTS.md
-// and SKILL.md.
+// Code is anything that is not Markdown under platform/, console/, identity/, outside/, scripts/ and the site's code
+// (site/app, site/lib, site/components, site/scripts). Docs are the site's docs pages, docs/master/*.md, and every
+// README.md, AGENTS.md and SKILL.md.
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 const repo = fileURLToPath(new URL("..", import.meta.url));
 const hidden = (r: string): boolean => r.split("/").some((p) => p === "node_modules" || p.startsWith("."));
 
-export const isCode = (r: string): boolean => !hidden(r) && /^(platform|console|scripts|identity|site\/(app|lib|components|scripts))\/.*(?<!\.mdx?)$/.test(r);
+export const isCode = (r: string): boolean => !hidden(r) && /^(platform|console|scripts|identity|outside|site\/(app|lib|components|scripts))\/.*(?<!\.mdx?)$/.test(r);
 export const isDocs = (r: string): boolean => !hidden(r) && ((r.startsWith("site/content/docs/") && r.endsWith(".mdx")) || /^docs\/master\/[^/]+\.md$/.test(r) || /(^|\/)(README|AGENTS|SKILL)\.md$/.test(r));
 
 /** The README.md nearest a file, searched up to its top-level folder (never the repository's own README). */
