@@ -23,7 +23,7 @@ Run the tests with `node --import ./scripts/naive-ts.ts platform/agents/agents-t
 
 ## Function agents (EE-123)
 
-A function agent runs one task on one venture in its own process. The process is the run, so its environment carries the run's session, trace, role and model, and every Naive reader (the tracer, the router's acting check, provenance) agrees on them. A run is always traced, whatever the venture's `traces` setting, and LangChain's own tracing is off: the spans stay in `<venture>/traces/<session>.jsonl` beside `provenance.jsonl`.
+A function agent runs one task on one venture in its own process. The process is the run, so its environment carries the run's session, trace, role and model, and every Naive reader (the tracer, the router's acting check, provenance) agrees on them. It does not call the outside host. That host admits only a person, and a function agent is not given its keys. A run is always traced, whatever the venture's `traces` setting, and LangChain's own tracing is off: the spans stay in `<venture>/traces/<session>.jsonl` beside `provenance.jsonl`.
 
 ```sh
 MENTURA_WORKSPACE=~/workspace/ventures MENTURA_MODEL=anthropic:claude-opus-4-5 \
