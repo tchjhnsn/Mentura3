@@ -14,10 +14,23 @@
 //   spec.role                                    // "strategy-agent"
 //   spec.writes                                  // ["decisions/*", "foundation/alignment", ..., "validation/solution"]
 //   teamPlanEntry(spec, "discovery")             // the entry a person adds to the venture's team plan
+//
+// Each function also has a researcher (autoresearch design, everything-ecosystem
+// docs/design/AUTORESEARCH_RECORDS_2026-11-06.md, "program.md per function", build plan item 13), derived the same way:
+//
+//   data-model.json (writer projection)    the projected route patterns, so the recipes a researcher could improve
+//   functions/<fn>/templates/              the starter research program: the patterns its Patterns section lists
+//     research-program.md
+//   interfaces/skills/research/            Naive's one generic research skill, mounted read-only for every researcher
+//
+//   const r = functionResearcher("strategy");    // throws on an id departments.json does not list
+//   r.role                                       // "strategy-researcher"
+//   r.writes                                     // ["recipes/competitors/[id]/signals"]
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { PACKAGE_FUNCTION } from "naive-framework/src/core/venture-paths.mjs";
+import { readDataModel, venturePaths } from "naive-framework/src/records/index.mjs";
 import { PLANS, routeGlob } from "naive-framework/src/engine/access.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
 import { naivePath } from "../../scripts/naive.ts";
@@ -175,4 +188,121 @@ function ownedRoutes(packages: readonly string[]): string[] {
   const owned = (routes() as Route[]).filter((r) => r.actions?.includes("write") && r.files?.length
     && packages.includes(r.files[0].split("/")[0]) && !r.files.some((f) => PLANS.includes(f)));
   return [...new Set(owned.map((r) => r.route.replace("[id]", "*")))].sort();
+}
+
+// ---- Function researchers (autoresearch build plan item 13) ----
+
+/**
+ * One function's researcher: the role that improves the recipes of the projected records its function works, one
+ * experiment at a time, through Naive's recipes/<pattern> route. Invariants, checked when the spec is derived: role is
+ * `${function}-researcher` (the name Naive's read clamp, router/reads-as-of.mjs, recognizes); every pattern is a
+ * projected route pattern in the data model; writes are exactly recipes/<pattern> for those patterns, so no write
+ * reaches the team plan or any record route.
+ */
+export interface FunctionResearcherSpec {
+  readonly [derived]: true,
+  readonly function: FunctionId,
+  readonly label: string,
+  /** The team-plan role the researcher acts in. Naive clamps every read of a role so named to its cut. */
+  readonly role: string,
+  readonly charter: Charter,
+  /**
+   * The projected route patterns the researcher may work: those whose record file sits in a package the function owns
+   * (PACKAGE_FUNCTION), and those the function's starter program lists under Patterns (competitors/[id]/signals for
+   * strategy: the competitors package names no function, and its starter program says strategy researches it).
+   */
+  readonly patterns: readonly string[],
+  /** recipes/<pattern> for each pattern: the only route a researcher writes. */
+  readonly writes: readonly string[],
+  /** The function's research program route, operations/research-program/<function> (programs/<function>.md). */
+  readonly program: string,
+  /** Naive's research skill folder in the installed Naive, mounted read-only at /research/ in the researcher's files. */
+  readonly skill: string,
+}
+
+/** A route pattern as Naive's eval plan schema has it: lowercase segments or a literal [id]. */
+const PATTERN = /^[a-z0-9][a-z0-9-]*(\/([a-z0-9][a-z0-9-]*|\[id\]))*$/;
+
+/**
+ * The patterns a research program lists: each `### <pattern>` heading in its `## Patterns` section, in order. Pure.
+ * Used on Naive's starter programs here and on a venture's own program when a run starts.
+ */
+export function programPatterns(text: string): string[] {
+  const out: string[] = [];
+  let inPatterns = false;
+  for (const line of text.split("\n")) {
+    const h2 = /^##\s+(.+?)\s*$/.exec(line);
+    if (h2) { inPatterns = h2[1].toLowerCase() === "patterns"; continue; }
+    const p = inPatterns ? patternHeading(line) : null;
+    if (p && PATTERN.test(p) && !out.includes(p)) out.push(p);
+  }
+  return out;
+}
+
+/** The text of a program's section for one pattern: from its `### <pattern>` heading to the next heading. Pure. */
+export function programSection(text: string, pattern: string): string {
+  const lines = text.split("\n");
+  const start = lines.findIndex((l) => patternHeading(l) === pattern);
+  if (start < 0) return "";
+  const end = lines.findIndex((l, i) => i > start && /^#{1,3}\s/.test(l));
+  return lines.slice(start, end < 0 ? undefined : end).join("\n").trim();
+}
+
+/** The pattern a `### <pattern>` heading names, with or without backticks, or null. */
+const patternHeading = (line: string): string | null => /^###\s+`?([^`\s]+)`?\s*$/.exec(line)?.[1] ?? null;
+
+interface ModelRecord { id: string, writer?: string, paths?: string[] }
+
+/**
+ * Every projected route pattern in the installed Naive with the package its record file sits in: each record type
+ * with writer projection whose venture path has exactly one * for the subject (competitors/[id]/signals) or none
+ * (market/rounds), and no ** (receptions sit beside any record, so they have no pattern of their own).
+ */
+export function projectedPatterns(): { pattern: string, package: string }[] {
+  const model = readDataModel() as { records: ModelRecord[] };
+  const out = new Map<string, string>();
+  for (const r of model.records.filter((x) => x.writer === "projection")) {
+    for (const p of venturePaths(r) as string[]) {
+      if (p.includes("**") || (p.match(/\*/g) ?? []).length > 1 || !p.endsWith(".json")) continue;
+      out.set(p.replace("*", "[id]").replace(/\.json$/, ""), p.split("/")[0]);
+    }
+  }
+  return [...out].map(([pattern, pkg]) => ({ pattern, package: pkg })).sort((a, b) => a.pattern.localeCompare(b.pattern));
+}
+
+const researchers = new Map<string, FunctionResearcherSpec>();
+
+/**
+ * The researcher for one function id. Throws an Error naming the valid ids when departments.json does not list id,
+ * and an Error naming the pattern when a starter program lists one the data model does not project. Derived once
+ * per process, like functionAgent.
+ */
+export function functionResearcher(id: string): FunctionResearcherSpec {
+  const hit = researchers.get(id);
+  if (hit) return hit;
+  const agent = functionAgent(id);
+  const projected = projectedPatterns();
+  const owned = projected.filter((p) => agent.packages.includes(p.package)).map((p) => p.pattern);
+  const starter = naivePath(`${MODULES}/${id}/templates/research-program.md`);
+  const listed = existsSync(starter) ? programPatterns(readFileSync(starter, "utf8")) : [];
+  for (const p of listed) if (!projected.some((x) => x.pattern === p)) throw new Error(`${starter} lists ${p}, which no record type in the data model projects`);
+  const patterns = [...new Set([...owned, ...listed])].sort();
+  const writes = patterns.map((p) => `recipes/${p}`);
+  if (reachesTeamPlan(writes)) throw new Error(`${id}'s researcher write routes reach the team plan: ${writes.join(", ")}`);
+  const fields: Omit<FunctionResearcherSpec, typeof derived> = {
+    function: agent.function, label: agent.label, role: `${id}-researcher`, charter: agent.charter, patterns, writes,
+    program: `operations/research-program/${id}`, skill: naivePath("packages/naive/src/interfaces/skills/research"),
+  };
+  const spec = fields as FunctionResearcherSpec;
+  researchers.set(id, spec);
+  return spec;
+}
+
+/**
+ * The team-plan entry a person adds so the venture staffs this researcher: write routes recipes/<pattern> only. Reads
+ * are left to every route, because Naive clamps a researcher's every read to its cut and refuses _eval/ to any agent.
+ */
+export function researcherTeamPlanEntry(spec: FunctionResearcherSpec, phase: Phase): TeamPlanRole {
+  return { id: spec.role, name: `${spec.label} researcher`, occupant: "agent", needed_by: phase, status: "filled",
+    why: `Improves the recipes of ${spec.patterns.length ? spec.patterns.join(", ") : "no pattern yet"} against their eval plans`, routes: { write: [...spec.writes] } };
 }

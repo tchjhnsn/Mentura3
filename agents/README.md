@@ -7,11 +7,13 @@ Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its functio
 | `naive-backend.ts` | `NaiveBackend`, a deepagents backend (`BackendProtocolV2`) over Naive's agent filesystem (`naive-framework/src/router/agent-files.ts`). A deep agent's `ls`, `read_file`, `write_file`, `edit_file`, `glob` and `grep` become Naive router calls on the venture's records, so every write meets the schema, the gate, decision rights and provenance. A gated write is held as a draft, and the agent is told the record did not change. Given the run's tracer, each file operation's span hangs from the tool call that made it |
 | `naive-tracer.ts` | `NaiveTracer`, a LangChain callback handler that writes each agent run, model call and tool call as a span in `<venture>/traces/<session>.jsonl` through Naive's `span()`, so the hash chain, the content rule (inputs and outputs only with `traces.content`) and `check-traces.ts` hold. The run id is the span id; LangGraph's inner node runs are not spans. The session comes from the option or `MENTURA_SESSION`, so a Grokbot run, its function agents and their provenance lines share one trace. Nothing leaves the machine; `../integrations/langsmith-otel.ts` ships the files to LangSmith |
 | `agents-test.ts` | A deep agent built with `createDeepAgent`, a scripted model, the backend and the tracer, against a made-up venture, offline |
-| `function-spec.ts` | What a function agent is, derived from Naive's data (EE-123): every id in `departments.json` is one, acting in the team-plan role `<function>-agent`, with its function's module (`functions/<fn>/`) for skills and the write routes its role should get (`decisions/*` plus the concrete write routes of the record packages the function owns, never the team plan). There is no list of agents here |
+| `function-spec.ts` | What a function agent is, derived from Naive's data (EE-123): every id in `departments.json` is one, acting in the team-plan role `<function>-agent`, with its function's module (`functions/<fn>/`) for skills and the write routes its role should get (`decisions/*` plus the concrete write routes of the record packages the function owns, never the team plan). There is no list of agents here. It derives each function's researcher the same way (`functionResearcher`): the role `<function>-researcher`, the projected route patterns it works (those in packages the function owns, and those its starter research program lists under Patterns), the write routes `recipes/<pattern>` and nothing else, its research program route and Naive's research skill |
 | `function-agent.ts` | One function agent run: checks the venture's team plan, locks the venture (`.naive/agent-run.lock`), answers a repeated run id from the files, loads the model, runs the deep agent with the function's module mounted read-only at `/function/` and the run's identity set in the process environment, and reports the answer, what it wrote and the drafts held for a person, each with its `mentura accept` command |
-| `cli.ts`, `bin.ts` | `mentura-agent`, the one way to start a run: `node platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]` with the task on stdin, or `node platform/agents/bin.ts mcp`. One process per run |
+| `research.ts` | One researcher run (autoresearch build plan item 13): for each pattern the venture's research program lists, one deep agent proposes one change to `/<pattern>.recipe.ts` per turn, written only through Naive's `recipes/<pattern>` route, which scores it; the loop stops at the plan's budget, the run's limit or a turn with no experiment, and reads only as of the plan's cut |
+| `cli.ts`, `bin.ts` | `mentura-agent`, the one way to start a run: `node platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]`, or `node platform/agents/bin.ts mcp`. One process per run |
 | `mcp.ts` | The MCP shim for Grokbot: one `agent_<function>` tool per function the venture has staffed, each call a `bin.ts run` child process, a cancel sent to it as SIGTERM |
 | `function-agent-test.ts` | The strategy agent run offline with a scripted model, through the CLI and through the shim |
+| `research-test.ts` | The strategy researcher run offline with a scripted model: it keeps, discards, and stops at the run's limit and at the plan's budget; every other write is refused; the cut is the plan's; through the CLI too |
 
 ```ts
 const tracer = new NaiveTracer(ventureDir, { session, agents: ["strategy"] });
@@ -19,7 +21,7 @@ const agent = createDeepAgent({ model, name: "strategy", backend: new NaiveBacke
 await agent.invoke(input, { callbacks: [tracer] });
 ```
 
-Run the tests with `node --import ./scripts/naive-ts.ts platform/agents/agents-test.ts` and `node --import ./scripts/naive-ts.ts platform/agents/function-agent-test.ts` (the loader strips types from Naive's `.ts` files under node_modules). Outside a function agent run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
+Run the tests with `node --import ./scripts/naive-ts.ts platform/agents/agents-test.ts`, `node --import ./scripts/naive-ts.ts platform/agents/function-agent-test.ts` and `node --import ./scripts/naive-ts.ts platform/agents/research-test.ts` (the loader strips types from Naive's `.ts` files under node_modules). Outside a function agent run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
 
 ## Function agents (EE-123)
 
@@ -71,3 +73,31 @@ Grokbot adds the shim to the MCP config of each `claude -p` it spawns. The trace
 The calling model sees one tool per function the venture has staffed (`agent_strategy` for kettle), with the input `{ task, venture?, run_id? }`. `venture` defaults to `MENTURA_VENTURE`, and `run_id` (a UUID) makes a retry safe: the same id again reports the first run without running it twice. Each call starts one `bin.ts run` process with the shim's environment unchanged, and a cancel stops that process with SIGTERM, which ends its open spans and releases the venture's lock. The tool result is the run's JSON, as text and as `structuredContent`; `isError` is true for anything other than done or already ran. Node must be 22.18 or later.
 
 Not built yet: filesystem triggers that start a function agent (they would call the same `bin.ts run`), a chat model provider package as a dependency here, and appends that two processes can share, so a venture runs one function agent at a time.
+
+## Researchers (autoresearch build plan item 13)
+
+A function's researcher improves the recipes of the projected records its function works (everything-ecosystem docs/design/AUTORESEARCH_RECORDS_2026-11-06.md). Naive does everything that needs no model: plans, scoring inside the write, the experiment log, the held drafts. This is the unattended loop it leaves to Mentura.
+
+```sh
+MENTURA_WORKSPACE=~/workspace/ventures MENTURA_MODEL=anthropic:claude-opus-4-5 \
+  node platform/agents/bin.ts research strategy --venture kettle
+```
+
+`--venture` takes a venture's id, found in `MENTURA_WORKSPACE`, or its folder. There is no task: the venture's research program (`programs/<function>.md`, which only a person writes) is the task. A run:
+
+1. Checks the team plan for `<function>-researcher`. The role must be an agent's, must list routes, and may write only `recipes/<pattern>`. A missing role is refused with the entry to add.
+2. Reads the program live and works each pattern its Patterns section lists that the researcher works, the team plan lets it write, and that has an eval plan (`<pattern>.plan.json`, a person's). Any other listed pattern is reported as skipped, with the reason.
+3. Reads every record as of the cut: the earliest `read_cut` among those plans, or `MENTURA_READS_AS_OF` when that is earlier. A caller can narrow the cut but never widen it. The cut is set in the backend's context and in the process environment, so Naive's read clamp holds for every read in the run.
+4. Gives each pattern its own deep agent, the pattern's subagent, with Naive's research skill mounted read-only at `/research/` and the program's notes for that pattern in its prompt. Each turn the agent edits `/<pattern>.recipe.ts`. Naive's agent files send that to `recipes/<pattern>` with the tip's sha as its base, and Naive scores it inside the write. A keep is held as a draft that becomes the tip. A discard or a fail is refused with its verdict. Any other write is refused here before Naive sees it.
+5. Stops a pattern at the first of these:
+   - the plan's dev evaluations are spent, as Naive counts them (`budget`)
+   - the run wrote `--max-experiments` experiments on it, by default the dev evaluations the plan had left when the run started (`limit`). A failed experiment uses the run's count but not the plan's budget
+   - a turn wrote no experiment (`stopped`)
+   - an error (`failed`)
+
+   No model is loaded when no pattern has budget left.
+
+It prints one JSON result with each pattern's stop, why, its budget, and each experiment as Naive's evaluator logged it (verdict, `kept_as`, the dev aggregate, the reason). It also lists the drafts held for a person, each with its `mentura accept recipes/<pattern> --venture <id>` command. The exit codes, the lock, the run id and the trace variables are those of `bin.ts run`. The run's root span is `invoke_agent <function>-researcher`, and each turn hangs from it.
+
+Not built yet: scheduling runs, spend limits in tokens or money (the limits are counts), and accepting a kept recipe with the holdout check, which is Naive's (build plan item 8). The run needs a Naive with the recipe route (Naive#42).
+

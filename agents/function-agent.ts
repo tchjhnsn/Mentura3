@@ -103,9 +103,7 @@ export type RunResult =
  * invoke under the run's env and derive the outcome.
  */
 export async function runFunctionAgent(spec: FunctionAgentSpec, task: string, ctx: RunContext): Promise<RunResult> {
-  if (active) throw new Error("a function agent run is already active in this process: start another process");
-  active = true;
-  try {
+  return await ownProcess(async () => {
     const dir = ventureDir(ctx.venture, ctx.workspace) as string | null;
     if (!dir) return { status: "refused", reason: `no venture ${ctx.venture} in ${ctx.workspace ?? process.env.MENTURA_WORKSPACE ?? process.cwd()}`, fix: "Set MENTURA_WORKSPACE to the folder that holds the ventures, or pass the venture's id." };
     const role = roleOf(dir, spec.role) as TeamPlanEntryRead | null;
@@ -129,19 +127,31 @@ export async function runFunctionAgent(spec: FunctionAgentSpec, task: string, ct
       return await withRunEnv(run, ctx, () => invoke(dir, spec, task, run, role, model, ctx.workspace, ctx.signal));
     }
     finally { lock.release(); }
-  }
-  finally { active = false; }
+  });
 }
 
-// ---- internals: not exported ----
+// ---- shared with the researcher run (research.ts) ----
 
 /** True while a run owns this process. */
 let active = false;
 
+/**
+ * Runs fn as the one run this process has: a second call while one is active throws, because a run owns the process
+ * environment while it runs. A function agent run and a researcher run share the claim.
+ */
+export async function ownProcess<T>(fn: () => Promise<T>): Promise<T> {
+  if (active) throw new Error("a function agent run is already active in this process: start another process");
+  active = true;
+  try { return await fn(); }
+  finally { active = false; }
+}
+
+// ---- internals ----
+
 /** Steps the graph may take before LangGraph stops it: a bound on what one headless run can spend. */
 const MAX_STEPS = 200;
 
-const MODEL_FIX = "Set MENTURA_MODEL to provider:model (anthropic:claude-opus-4-5) and install that provider's LangChain package (npm install @langchain/anthropic). The package reads its own key from its own variable.";
+export const MODEL_FIX = "Set MENTURA_MODEL to provider:model (anthropic:claude-opus-4-5) and install that provider's LangChain package (npm install @langchain/anthropic). The package reads its own key from its own variable.";
 
 /** How a function agent works, the same for every function. The function-specific part comes from the spec. */
 const RULES = [
@@ -156,22 +166,26 @@ const RULES = [
 const RUN_ENV = ["MENTURA_ACTOR", "MENTURA_ACTOR_ID", "MENTURA_MODEL", "MENTURA_SESSION", "MENTURA_TRACE_ID", "MENTURA_SPAN_ID",
   "MENTURA_HARNESS", "MENTURA_WORKSPACE", "NAIVE_TRACES", "LANGSMITH_TRACING", "LANGCHAIN_TRACING_V2"] as const;
 
+/** Keys a run may add to its environment beyond RUN_ENV, restored the same way. A researcher run sets MENTURA_READS_AS_OF. */
+export type ExtraRunEnv = Partial<Record<"MENTURA_READS_AS_OF", string>>;
+
 /**
  * The run's projection onto the process environment, set before fn and restored after, so every Naive reader agrees
  * with the run: the actor is an agent in the spec's role, with the run's model, session, trace and harness; the root
  * span hangs from the caller's span; traces are on (a function agent run is always traced); and LangChain's own
  * tracing is off, because traces stay in the venture and shipping them is the LangSmith exporter's job.
  */
-async function withRunEnv<T>(run: RunRef, ctx: RunContext, fn: () => Promise<T>): Promise<T> {
-  const saved = RUN_ENV.map((k) => process.env[k]);
-  const set: Record<(typeof RUN_ENV)[number], string | undefined> = {
+export async function withRunEnv<T>(run: RunRef, ctx: Pick<RunContext, "model" | "harness" | "workspace">, fn: () => Promise<T>, extra: ExtraRunEnv = {}): Promise<T> {
+  const keys: string[] = [...RUN_ENV, ...Object.keys(extra)];
+  const saved = keys.map((k) => process.env[k]);
+  const set: Record<string, string | undefined> = { ...extra,
     MENTURA_ACTOR: "agent", MENTURA_ACTOR_ID: run.role, MENTURA_MODEL: ctx.model.name, MENTURA_SESSION: run.session,
     MENTURA_TRACE_ID: run.trace_id, MENTURA_SPAN_ID: run.parent_span_id ?? undefined, MENTURA_HARNESS: ctx.harness,
     MENTURA_WORKSPACE: ctx.workspace ?? process.env.MENTURA_WORKSPACE, NAIVE_TRACES: "1", LANGSMITH_TRACING: "false", LANGCHAIN_TRACING_V2: "false",
   };
-  for (const k of RUN_ENV) { const v = set[k]; if (v === undefined) delete process.env[k]; else process.env[k] = v; }
+  for (const k of keys) { const v = set[k]; if (v === undefined) delete process.env[k]; else process.env[k] = v; }
   try { return await fn(); }
-  finally { RUN_ENV.forEach((k, i) => { if (saved[i] === undefined) delete process.env[k]; else process.env[k] = saved[i]; }); }
+  finally { keys.forEach((k, i) => { if (saved[i] === undefined) delete process.env[k]; else process.env[k] = saved[i]; }); }
 }
 
 /**
@@ -199,7 +213,7 @@ async function invoke(dir: string, spec: FunctionAgentSpec, task: string, run: R
 }
 
 /** The fields of the venture's team-plan entry the run reads. Read fresh on every run (Naive's roleOf). */
-interface TeamPlanEntryRead { id: string, occupant: string, authority?: string[], routes?: { read?: string[], write?: string[] } }
+export interface TeamPlanEntryRead { id: string, occupant: string, authority?: string[], routes?: { read?: string[], write?: string[] } }
 
 /** The system prompt: who the agent is (departments.json), what it may reach (the venture's team plan), and RULES. Pure. */
 function promptOf(spec: FunctionAgentSpec, venture: string, role: TeamPlanEntryRead): string {
@@ -219,7 +233,7 @@ function promptOf(spec: FunctionAgentSpec, venture: string, role: TeamPlanEntryR
  * line whose span is one of them. A draft line whose _drafts/ file still exists is held; any other line is written.
  * Reading the whole log is the point: the same answer before and after a retry.
  */
-function outcomeOf(dir: string, run: RunRef): { wrote: Written[], held: HeldDraft[] } {
+export function outcomeOf(dir: string, run: RunRef): { wrote: Written[], held: HeldDraft[] } {
   const children = new Map<string, string[]>();
   for (const s of spans(dir, run.session) as { span_id: string, parent_span_id?: string }[]) {
     if (s.parent_span_id) children.set(s.parent_span_id, [...(children.get(s.parent_span_id) ?? []), s.span_id]);
@@ -241,7 +255,7 @@ function outcomeOf(dir: string, run: RunRef): { wrote: Written[], held: HeldDraf
  * pid only, so Naive's stealDeadLock can tell a live holder from a crashed one and reclaim the lock after a crash.
  * Never waits: a busy venture is the caller's to retry.
  */
-function lockVenture(dir: string): { release(): void } | { busy: number | null } {
+export function lockVenture(dir: string): { release(): void } | { busy: number | null } {
   const lock = join(dir, ".naive", "agent-run.lock");
   mkdirSync(join(dir, ".naive"), { recursive: true });
   const take = (): boolean => {
@@ -258,7 +272,7 @@ function lockVenture(dir: string): { release(): void } | { busy: number | null }
 }
 
 /** The venture's phase from venture.json, for the suggested team-plan entry. */
-function phaseOf(dir: string): Phase {
+export function phaseOf(dir: string): Phase {
   try { return (JSON.parse(readFileSync(join(dir, "venture.json"), "utf8")) as { phase?: Phase }).phase ?? "discovery"; }
   catch { return "discovery"; }
 }
@@ -272,4 +286,4 @@ function answerOf(out: unknown): string {
   return Array.isArray(last.content) ? last.content.map((b: { text?: string }) => b.text ?? "").join("") : "";
 }
 
-const messageOf = (e: unknown): string => String((e as Error)?.message ?? e);
+export const messageOf = (e: unknown): string => String((e as Error)?.message ?? e);
