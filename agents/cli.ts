@@ -3,6 +3,7 @@
 // so the run's trace context and environment belong to that process and nothing is shared between runs.
 //
 //   node <EE>/platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]   < task.txt
+//   node <EE>/platform/agents/bin.ts lead <lead> --venture <id> [--run-id <uuid>]       < task.txt
 //   node <EE>/platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]
 //   node <EE>/platform/agents/bin.ts mcp
 //
@@ -18,7 +19,10 @@
 // research runs the function's researcher (platform/agents/research.ts, autoresearch build plan item 13): no task,
 // since the venture's research program is the task. Its --venture also takes a venture's folder.
 //
-// Prints one JSON RunResult (or ResearchResult) on stdout, a usage error included. Exit: 0 done or already-ran, 1 failed, 2 refused or
+// lead runs a lead agent (platform/agents/lead-agent.ts, lead agents build plan item 4): a role template with a
+// portfolio, which writes a lead plan entry and one handoff per function involved instead of a function's records.
+//
+// Prints one JSON RunResult (or LeadRunResult, or ResearchResult) on stdout, a usage error included. Exit: 0 done or already-ran, 1 failed, 2 refused or
 // usage, 75 busy (try again later), 130 cancelled. SIGTERM and SIGINT abort the run cleanly.
 //
 // The name is mentura-agent, not `mentura agent`, because the installed Naive package already owns the `mentura` bin
@@ -29,12 +33,15 @@ import { dirname, join, resolve } from "node:path";
 import type { RunId, RunResult, TraceJoin, ModelSource } from "./function-agent.ts";
 import { runFunctionAgent, runIdOf } from "./function-agent.ts";
 import { functionAgent, functionResearcher } from "./function-spec.ts";
+import type { LeadRunResult } from "./lead-agent.ts";
+import { leadAgent } from "./lead-spec.ts";
 import type { ResearchResult } from "./research.ts";
 
 type Env = Readonly<Record<string, string | undefined>>;
 
 /** A run request parsed from argv and the environment. The only place either is read. */
 export interface Invocation {
+  /** The function id, or for lead the lead's id. */
   function: string,
   venture: string,
   runId?: RunId,
@@ -55,17 +62,18 @@ export interface ResearchInvocation extends Invocation {
 
 export type Parsed =
   | { command: "run", invocation: Invocation }
+  | { command: "lead", invocation: Invocation }
   | { command: "research", invocation: ResearchInvocation }
   | { command: "mcp" }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], or mentura-agent mcp";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], or mentura-agent mcp";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
   const val = (k: string): string | undefined => env[k] || undefined;
   if (argv[0] === "mcp" && argv.length === 1) return { command: "mcp" };
-  if ((argv[0] !== "run" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
+  if ((argv[0] !== "run" && argv[0] !== "lead" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
   const known = argv[0] === "research" ? ["--venture", "--run-id", "--max-experiments"] : ["--venture", "--run-id"];
   const flags = new Map<string, string>();
   for (let i = 2; i < argv.length; i += 2) {
@@ -81,7 +89,7 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   const trace: TraceJoin = { session: val("MENTURA_SESSION"), trace_id: val("MENTURA_TRACE_ID"), parent_span_id: val("MENTURA_SPAN_ID") };
   if (trace.parent_span_id && !trace.trace_id) return { command: "usage", usage: "MENTURA_SPAN_ID names a parent span, so MENTURA_TRACE_ID must name its trace" };
   const invocation: Invocation = { function: argv[1], venture, runId, workspace: val("MENTURA_WORKSPACE"), trace, model: val("MENTURA_MODEL") ?? null, harness: val("MENTURA_HARNESS") };
-  if (argv[0] === "run") return { command: "run", invocation };
+  if (argv[0] === "run" || argv[0] === "lead") return { command: argv[0], invocation };
   const max = flags.get("--max-experiments");
   if (max !== undefined && !/^[1-9][0-9]*$/.test(max)) return { command: "usage", usage: `${USAGE} (--max-experiments is a whole number of at least 1, not ${max})` };
   return { command: "research", invocation: { ...invocation, readsAsOf: val("MENTURA_READS_AS_OF"), ...(max ? { maxExperiments: Number(max) } : {}) } };
@@ -116,7 +124,7 @@ export function modelSource(name: string | null): ModelSource {
 }
 
 /** The exit code for a result. The MCP shim reads status instead. */
-export function exitCode(r: Pick<RunResult, "status">): number {
+export function exitCode(r: Pick<RunResult | LeadRunResult, "status">): number {
   switch (r.status) {
     case "done": case "already-ran": return 0;
     case "failed": return 1;
@@ -128,15 +136,16 @@ export function exitCode(r: Pick<RunResult, "status">): number {
 
 /**
  * The CLI. run: parse, derive the spec (an unknown function is a refusal), read the task from stdin, wire SIGTERM and
- * SIGINT to an AbortController, call runFunctionAgent, print the result, return its exit code. mcp: serve the shim
- * until stdin closes.
+ * SIGINT to an AbortController, call runFunctionAgent, print the result, return its exit code. lead: the same with a
+ * lead and runLeadAgent. mcp: serve the shim until stdin closes.
  */
 export async function main(argv: readonly string[], env: Env, stdin: NodeJS.ReadableStream): Promise<number> {
-  const print = (r: RunResult | ResearchResult): number => { process.stdout.write(JSON.stringify(r) + "\n"); return exitCode(r); };
+  const print = (r: RunResult | LeadRunResult | ResearchResult): number => { process.stdout.write(JSON.stringify(r) + "\n"); return exitCode(r); };
   const p = parse(argv, env);
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
   if (p.command === "research") return print(await research(p.invocation));
+  if (p.command === "lead") return print(await lead(p.invocation, stdin));
   const inv = p.invocation;
   let spec;
   try { spec = functionAgent(inv.function); } catch (e) { return print({ status: "refused", reason: (e as Error).message }); }
@@ -146,6 +155,19 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
   return print(await runFunctionAgent(spec, task, { venture: inv.venture, workspace: inv.workspace, trace: inv.trace, runId: inv.runId,
     harness: inv.harness, model: modelSource(inv.model), signal: abort.signal }));
+}
+
+/** lead: derive the lead (an unknown lead is a refusal), read the task from stdin, wire SIGTERM and SIGINT, run it. */
+async function lead(inv: Invocation, stdin: NodeJS.ReadableStream): Promise<LeadRunResult> {
+  let spec;
+  try { spec = leadAgent(inv.function); } catch (e) { return { status: "refused", reason: (e as Error).message }; }
+  const task = (await text(stdin)).trim();
+  if (!task) return { status: "refused", reason: "no task on stdin" };
+  const abort = new AbortController();
+  for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
+  const { runLeadAgent } = await import("./lead-agent.ts");
+  return await runLeadAgent(spec, task, { venture: inv.venture, workspace: inv.workspace, trace: inv.trace, runId: inv.runId,
+    harness: inv.harness, model: modelSource(inv.model), signal: abort.signal });
 }
 
 /** research: derive the researcher (an unknown function is a refusal), wire SIGTERM and SIGINT, run it. No stdin. */

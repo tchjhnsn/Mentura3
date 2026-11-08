@@ -175,7 +175,7 @@ export type ExtraRunEnv = Partial<Record<"MENTURA_READS_AS_OF", string>>;
  * span hangs from the caller's span; traces are on (a function agent run is always traced); and LangChain's own
  * tracing is off, because traces stay in the venture and shipping them is the LangSmith exporter's job.
  */
-export async function withRunEnv<T>(run: RunRef, ctx: Pick<RunContext, "model" | "harness" | "workspace">, fn: () => Promise<T>, extra: ExtraRunEnv = {}): Promise<T> {
+export async function withRunEnv<T>(run: Pick<RunRef, "role" | "session" | "trace_id" | "parent_span_id">, ctx: Pick<RunContext, "model" | "harness" | "workspace">, fn: () => Promise<T>, extra: ExtraRunEnv = {}): Promise<T> {
   const keys: string[] = [...RUN_ENV, ...Object.keys(extra)];
   const saved = keys.map((k) => process.env[k]);
   const set: Record<string, string | undefined> = { ...extra,
@@ -212,7 +212,7 @@ async function invoke(dir: string, spec: FunctionAgentSpec, task: string, run: R
   }
 }
 
-/** The fields of the venture's team-plan entry the run reads. Read fresh on every run (Naive's roleOf). */
+/** The fields of the venture's team-plan entry the run reads. Read fresh on every run (Naive's roleOf). A lead run reads the same. */
 export interface TeamPlanEntryRead { id: string, occupant: string, authority?: string[], routes?: { read?: string[], write?: string[] } }
 
 /** The system prompt: who the agent is (departments.json), what it may reach (the venture's team plan), and RULES. Pure. */
@@ -233,7 +233,7 @@ function promptOf(spec: FunctionAgentSpec, venture: string, role: TeamPlanEntryR
  * line whose span is one of them. A draft line whose _drafts/ file still exists is held; any other line is written.
  * Reading the whole log is the point: the same answer before and after a retry.
  */
-export function outcomeOf(dir: string, run: RunRef): { wrote: Written[], held: HeldDraft[] } {
+export function outcomeOf(dir: string, run: Pick<RunRef, "id" | "session" | "venture">): { wrote: Written[], held: HeldDraft[] } {
   const children = new Map<string, string[]>();
   for (const s of spans(dir, run.session) as { span_id: string, parent_span_id?: string }[]) {
     if (s.parent_span_id) children.set(s.parent_span_id, [...(children.get(s.parent_span_id) ?? []), s.span_id]);
@@ -278,7 +278,7 @@ export function phaseOf(dir: string): Phase {
 }
 
 /** The text of the last AI message the agent returned. */
-function answerOf(out: unknown): string {
+export function answerOf(out: unknown): string {
   const messages = (out as { messages?: { content: unknown, getType?: () => string }[] }).messages ?? [];
   const last = messages.filter((m) => m.getType?.() === "ai").at(-1);
   if (!last) return "";
