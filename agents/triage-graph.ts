@@ -15,6 +15,7 @@ import { Annotation, Command, END, interrupt, START, StateGraph, type BaseCheckp
 import { decide, request, type Answers, type Context, type Decision, type Entry } from "naive-framework/src/engine/triage.ts";
 import { routeTask, type Context as RouteContext, type Routed } from "naive-framework/src/engine/route-task.ts";
 import type { JevReply, JevRequest } from "./jev.ts";
+import { jevSide, outcome, trialsFor, type Ledger } from "./triage-ledger.ts";
 
 export interface RawRef { tenant: string, path: string }
 export interface Loaded { entry: Entry, context: Context, person: string }
@@ -36,6 +37,8 @@ export interface Deps {
   routeContext: RouteContext
   /** triage.confirm_all: hold every Noul label for the founder, sure or not. */
   confirmAll?: boolean
+  /** The triage-accept detection ledger (triage-ledger.ts). Without it the run keeps no trial. */
+  ledger?: Ledger | null
   now?: () => string
 }
 
@@ -134,6 +137,14 @@ export function triageGraph(deps: Deps) {
       const labels = s.jevLabels.map((x) => answered.has(x.key) ? { ...x, person: answered.get(x.key) } : x);
       const triage = { id, entry: s.ref.path, at, model: s.model, line: deps.line, labels, filed, held: [...answered.keys()],
         to_person: d.toPerson, status: answered.size ? "answered" : "filed", ...(s.jevError ? { note: `Jev was not reached: ${s.jevError}` } : {}) };
+      // One triage-accept trial per label Jev answered; a founder's answer to a held label settles its trial now.
+      if (deps.ledger) {
+        for (const t of trialsFor(id, s.jevLabels, deps.line)) {
+          await deps.ledger.trial(t);
+          const person = answered.get(t.key);
+          if (person !== undefined) await deps.ledger.resolve({ trial: t.id, outcome: outcome(t.call, jevSide(s.jevLabels.find((x) => x.key === t.key)?.p ?? 0), person ? 1 : 0), by: { kind: "person", id: l.person } });
+        }
+      }
       const tr = await deps.writer.write(`raw/triage/${id}.json`, JSON.stringify(triage, null, 2) + "\n");
       if (!tr.ok) throw new Error(`could not write the triage record: ${tr.error ?? "refused"}`);
       return { filed };
