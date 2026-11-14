@@ -4,7 +4,7 @@ const DAY = 86400_000;
 const since = (today: string, days: number) => new Date(Date.parse(`${today}T00:00:00Z`) - (days - 1) * DAY).toISOString().slice(0, 10);
 const ACTIVE = new Set(["moderate", "vigorous", "strength"]);
 
-export type GoalView = { id: string; goal: string; by: string | null; state: string | null; minutes: number; last: string | null };
+export type GoalView = { id: string; goal: string; when: string | null; by: string | null; state: string | null; minutes: number; last: string | null };
 
 /**
  * Body's workspace from the person's own records: the week's activity against the guidelines, sleep against seven
@@ -22,7 +22,7 @@ export function bodySpace(records: readonly (RecordFacts & { id: string })[], ac
   const goals: GoalView[] = records.filter((r) => r.kind === "fitness" && r.state !== "reached" && r.state !== "lapsed").map((r) => {
     const mine = acts.filter((a) => a.record === r.id && ACTIVE.has(a.kind));
     return {
-      id: r.id, goal: String(r.body.goal ?? ""), by: typeof r.body.by === "string" ? r.body.by : null, state: r.state,
+      id: r.id, goal: String(r.body.goal ?? ""), when: typeof r.body.when === "string" && r.body.when ? r.body.when : null, by: typeof r.body.by === "string" ? r.body.by : null, state: r.state,
       minutes: mine.filter((a) => a.day >= four && a.day <= today).reduce((s, a) => s + (a.minutes ?? 0), 0),
       last: mine.map((a) => a.day).sort().at(-1) ?? null,
     };

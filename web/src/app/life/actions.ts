@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { kindOf } from "@reflect/core/life";
 import { requireUser } from "@/server/session";
-import { addLifeRecord, keepLifeAct, lifeRecord, removeLifeRecord, restoreLifeRecord, saveLifeRecord, setLifeState } from "@/server/life-store";
+import { addLifeRecord, keepLifeAct, lifeRecords, lifeRecord, removeLifeRecord, restoreLifeRecord, saveLifeRecord, setLifeState } from "@/server/life-store";
 
 /** The form's fields; a field sent more than once (the origins marked) is kept as its values joined by commas. */
 function fields(form: FormData): Record<string, string> {
@@ -45,6 +45,18 @@ export async function actLifeAction(id: string, form: FormData): Promise<void> {
   await keepLifeAct(user.id, id, { kind: String(form.get("kind") ?? ""), day: String(form.get("day") ?? ""), minutes: form.get("minutes") ?? undefined, amount: form.get("amount") ?? undefined, note: form.get("note") ?? undefined });
   revalidatePath("/", "layout");
   redirect(back(form, "/"));
+}
+
+/** Keeps a night's sleep from Body's workspace, in hours, on the person's Health record, which it keeps first when there is none. */
+export async function sleptAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const hours = Number(String(form.get("hours") ?? "").replace(",", "."));
+  if (!(hours > 0 && hours <= 24)) throw new Error("Give the hours you slept, up to 24.");
+  const h = (await lifeRecords(user.id, "body")).find((r) => r.kind === "health");
+  const id = h?.id ?? (await addLifeRecord(user.id, "body", "health", {}));
+  await keepLifeAct(user.id, id, { kind: "slept", day: String(form.get("day") ?? ""), minutes: Math.round(hours * 60) });
+  revalidatePath("/", "layout");
+  redirect("/life/body");
 }
 
 /** Removes a record and returns to its app, where Undo restores it. */

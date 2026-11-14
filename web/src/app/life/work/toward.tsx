@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { BookOpenIcon, PenLineIcon } from "lucide-react";
 import { MEDIA } from "@reflect/core/ways";
+import { stemsOf, tasksTouched } from "@reflect/core/work-browse";
+import { Input } from "@/components/ui/input";
+import { jobOf } from "@/server/work-space";
+import { actLifeAction } from "../actions";
 import { Button } from "@/components/ui/button";
 import { lifeActs, type LifeRecord } from "@/server/life-store";
 import { listItems } from "@/server/ways-store";
@@ -19,6 +23,11 @@ export async function Toward({ userId, record, back }: { userId: string; record:
   const chosen = new Set(typeof record.body.learning === "string" && record.body.learning ? record.body.learning.split(",") : []);
   const offered = items.filter((i) => chosen.has(i.id) || i.status !== "done" || i.subjects.length);
   const title = String(record.kind === "imagined" ? record.body.name ?? "" : record.body.title ?? "");
+  const talked = acts.filter((a) => a.kind === "talked");
+  const job = jobOf(record);
+  const learning = items.filter((i) => chosen.has(i.id) || i.status === "doing" || i.status === "want");
+  const tasks = job ? tasksTouched(job.tasks, stemsOf(learning.flatMap((i) => [i.title, ...i.subjects.map((x) => x.name)]))) : [];
+  const today = new Date().toISOString().slice(0, 10);
   const first = (body: string) => body.replace(/^>.*\n+/, "").trim().split("\n")[0]?.replace(/^#+\s*/, "").slice(0, 120) || "Not written yet";
   return (
     <section id="toward" className="grid scroll-mt-20 gap-6 rounded-xl border p-5">
@@ -60,6 +69,34 @@ export async function Toward({ userId, record, back }: { userId: string; record:
           </form>
         ) : <p className="text-muted-foreground text-sm">Nothing in Learn yet. What you add there can be marked toward this work.</p>}
       </div>
+      <div className="grid gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">People doing it</h2>
+          <p className="text-muted-foreground text-sm">Each time you talked with someone who does this work, and what you learned from them.</p>
+        </div>
+        {talked.length ? (
+          <ul className="divide-y rounded-lg border text-sm">
+            {talked.map((a) => <li key={a.id} className="flex items-baseline justify-between gap-3 px-4 py-2"><span className="min-w-0">{a.note ?? "Talked with someone doing it"}</span><span className="text-muted-foreground shrink-0 text-xs">{a.day}</span></li>)}
+          </ul>
+        ) : null}
+        <form action={actLifeAction.bind(null, record.id)} className="flex flex-wrap items-center gap-2">
+          <input type="hidden" name="kind" value="talked" /><input type="hidden" name="$back" value={back} />
+          <Input name="note" placeholder="Who, and what you learned" aria-label="Who, and what you learned" className="h-8 min-w-0 flex-1" />
+          <Input name="day" type="date" defaultValue={today} aria-label="Day" className="h-8 w-40" />
+          <Button type="submit" size="sm" variant="outline">Keep it</Button>
+        </form>
+      </div>
+      {tasks.length ? (
+        <div className="grid gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">What the work asks</h2>
+            <p className="text-muted-foreground text-sm">Its tasks, from O*NET, with those that meet what you are learning marked. {tasks.filter((t) => t.touched).length} of {tasks.length} do.</p>
+          </div>
+          <ul className="grid gap-1 text-sm">
+            {tasks.map((t) => <li key={t.task} className="flex gap-2"><span aria-hidden className={t.touched ? "" : "text-muted-foreground"}>{t.touched ? "●" : "○"}</span><span className={t.touched ? "" : "text-muted-foreground"}>{t.task}<span className="sr-only">{t.touched ? ", meets what you are learning" : ""}</span></span></li>)}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }

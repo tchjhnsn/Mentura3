@@ -58,7 +58,7 @@ function KindView({ app, kind, records, acts, back }: { app: LifeAppId; kind: Ki
 /** A tile's first view: the person's own workspace for it, or where they stand where a tile has none yet (Legacy). */
 function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   switch (app) {
-    case "home": return <HomeSpace userId={userId} records={records} today={today} />;
+    case "home": return <HomeSpace userId={userId} records={records} acts={acts} today={today} />;
     case "body": return <BodySpace userId={userId} records={records} acts={acts} today={today} />;
     case "friends": return <FriendsSpace userId={userId} records={records} acts={acts} today={today} />;
     case "mate": return <MateSpace userId={userId} records={records} today={today} />;

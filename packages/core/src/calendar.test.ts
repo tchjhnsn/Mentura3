@@ -32,8 +32,16 @@ describe("recordEvents", () => {
       { id: "t", app: "polis", kind: "duty", state: "done", body: { name: "Taxes", due: "2026-11-25" } },
       { id: "f", app: "friends", kind: "friend", state: "friend", body: { name: "Ann" } },
     ]);
-    expect(ev.map((e) => [e.id, e.title, e.tile])).toEqual([["record:d", "Date with R", "mate"], ["record:m", "Mom's birthday", "kin"]]);
+    expect(ev.map((e) => [e.id, e.title, e.tile])).toEqual([["record:d:day", "Date with R", "mate"], ["record:m:born", "Mom's birthday", "kin"]]);
     expect(occurrences(ev, "2026-11-01", "2026-11-30").map((o) => o.day)).toEqual(["2026-11-20", "2026-11-30"]);
     expect(isRecordEvent(ev[0]!)).toBe(true);
+  });
+
+  it("keeps a yearly duty after it is done, and puts the day you plan to vote on the calendar", () => {
+    const ev = recordEvents([
+      { id: "t", app: "polis", kind: "duty", state: "done", body: { name: "Taxes", due: "2026-04-15", repeats: "every-year" } },
+      { id: "e", app: "polis", kind: "election", state: "coming", body: { name: "General", day: "2026-11-30", how: "early-in-person", when: "2026-11-24" } },
+    ]);
+    expect(ev.map((e) => [e.title, e.repeat])).toEqual([["Taxes due", "yearly"], ["General", "none"], ["Vote, early in person: General", "none"]]);
   });
 });

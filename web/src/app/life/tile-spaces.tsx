@@ -7,6 +7,7 @@ import { Upcoming } from "./upcoming";
 
 const ago = (days: number | null) => (days === null ? null : days < 1 ? "today" : days < 14 ? `${days} ${days === 1 ? "day" : "days"} ago` : days < 60 ? `${Math.round(days / 7)} weeks ago` : `${Math.round(days / 30)} months ago`);
 const CARER: Record<string, string> = { me: "you", family: "family", "paid-help": "paid help", "given-by-church-or-charity": "a church or charity", "no-one-yet": "no one yet" };
+const MUSTS: Record<string, string> = { "met-all": "Met all", "met-some": "Met some", "met-none": "Met none", "too-soon-to-tell": "Too soon to tell" };
 const AGAIN: Record<string, string> = { yes: "See them again", no: "Not again", "not-sure": "Not sure about again" };
 
 function Section({ title, note, action, children }: { title: string; note: string; action?: { label: string; href: string }; children: ReactNode }) {
@@ -35,8 +36,12 @@ export async function FriendsSpace({ userId, records, acts, today }: { userId: s
   const s = friendsSpace(records, acts, today);
   return (
     <div className={SPACE}>
-      <Section title="Your friends" note="Longest since time together or a call first." action={{ label: "Add a friend", href: "/life/friends?k=friend" }}>
-        <Rows rows={s.close.map((f) => ({ key: f.id, href: `/life/friends/${f.id}`, main: <>{f.name} <span className="text-muted-foreground font-normal">· {f.state}</span></>, side: f.since === null ? "No time together kept" : `Last ${ago(f.since)}` }))} empty="No friends kept yet." />
+      <Section title="Your friends" note="Those past how often you mean to see them first, then longest since time together or a call. Hours together count toward Hall's 50, 90 and 200." action={{ label: "Add a friend", href: "/life/friends?k=friend" }}>
+        <Rows rows={s.close.map((f) => ({
+          key: f.id, href: `/life/friends/${f.id}`,
+          main: <>{f.name} <span className="text-muted-foreground font-normal">· {f.state}</span>{f.overdue ? <span className="block text-xs font-medium">Due to see: you mean to {f.every?.toLowerCase()}</span> : null}</>,
+          side: <>{f.since === null ? "No time together kept" : `Last ${ago(f.since)}`}{f.hours ? <><br />{`${f.hours} hours together${f.next ? `, ${f.next.hours} for ${f.next.to}` : ""}`}</> : null}</>,
+        }))} empty="No friends kept yet." />
         {s.others.length ? <p className="text-muted-foreground text-sm">Also kept: {s.others.map((f, i) => <span key={f.id}>{i ? ", " : ""}<Link href={`/life/friends/${f.id}`} className="hover:text-foreground underline-offset-2 hover:underline">{f.name}</Link> ({f.state?.toLowerCase()})</span>)}.</p> : null}
       </Section>
       <Section title="Groups you belong to" note="Teams, clubs, a congregation, and when you last went." action={{ label: "Add a group", href: "/life/friends?k=group" }}>
@@ -64,8 +69,9 @@ export async function MateSpace({ userId, records, today }: { userId: string; re
       <Section title="Dates planned" note="Soonest first." action={{ label: "Add a date", href: "/life/mate?k=date" }}>
         <Rows rows={s.planned.map((d) => ({ key: d.id, href: `/life/mate/${d.id}`, main: d.who, side: [d.day, d.where].filter(Boolean).join(", ") || undefined }))} empty="None planned." />
       </Section>
-      <Section title="Dates you went on" note="What you learned from each, latest first.">
-        <Rows rows={s.went.slice(0, 10).map((d) => ({ key: d.id, href: `/life/mate/${d.id}`, main: <>{d.who}{d.learned ? <span className="text-muted-foreground block truncate text-xs font-normal">{d.learned}</span> : null}</>, side: [d.day, d.again ? AGAIN[d.again] : null].filter(Boolean).join(" · ") || undefined }))} empty="None kept yet." />
+      <Section title="Dates you went on" note="What you learned from each, latest first, and how each held against your must-haves.">
+        {s.tally.of ? <p className="text-sm">Of {s.tally.of} {s.tally.of === 1 ? "date" : "dates"}: {s.tally.all} met all your must-haves, {s.tally.some} some, {s.tally.none} none{s.tally.of - s.tally.all - s.tally.some - s.tally.none ? `, ${s.tally.of - s.tally.all - s.tally.some - s.tally.none} not said` : ""}. A dealbreaker came up on {s.tally.dealbreakers}.</p> : null}
+        <Rows rows={s.went.slice(0, 10).map((d) => ({ key: d.id, href: `/life/mate/${d.id}`, main: <>{d.who}{d.learned ? <span className="text-muted-foreground block truncate text-xs font-normal">{d.learned}</span> : null}</>, side: [d.day, d.musts ? MUSTS[d.musts] : null, d.dealbreaker ? "Dealbreaker" : null, d.again ? AGAIN[d.again] : null].filter(Boolean).join(" · ") || undefined }))} empty="None kept yet." />
       </Section>
       <Section title="What Mate asks of Work" note="The household you intend sets what Work needs to provide.">
         <p className="text-sm">{s.seeking?.household ? <span className="line-clamp-3 whitespace-pre-line">{s.seeking.household}</span> : <span className="text-muted-foreground">No household written in what you are looking for.</span>} <Link href="/life/work?k=household" className="underline underline-offset-2">Your intended household in Work</Link>.</p>
@@ -82,6 +88,12 @@ export async function KinSpace({ userId, records, acts, today }: { userId: strin
     <div className={SPACE}>
       <Section title="Kin who need care" note="Who provides it, the care you gave in four weeks, and your last visit." action={{ label: "Add kin", href: "/life/kin?k=relative" }}>
         <Rows rows={s.care.map((k) => ({ key: k.id, href: `/life/kin/${k.id}`, main: <>{k.name}{k.relation ? <span className="text-muted-foreground font-normal"> · {k.relation}</span> : null}<span className="text-muted-foreground block text-xs font-normal">{k.state}{k.carer ? `, care by ${CARER[k.carer] ?? k.carer}` : ", who provides care not said"}</span></>, side: <>{k.careMinutes ? `${Math.round(k.careMinutes / 6) / 10} hours of care` : "No care logged"}<br />{k.visited ? `Visited ${k.visited}` : "No visit kept"}</> }))} empty="No kin needing care kept." />
+      </Section>
+      <Section title="What they want" note="Three questions to ask each of them, in their words: what matters most, who speaks for them if they cannot, and where they want to be cared for (The Conversation Project).">
+        <Rows rows={[...s.care, ...s.others].map((k) => {
+          const said = [k.matters, k.speaks, k.where].filter(Boolean).length;
+          return { key: k.id, href: `/life/kin/${k.id}`, main: <>{k.name}{k.matters ? <span className="text-muted-foreground block truncate text-xs font-normal">{k.matters}</span> : null}</>, side: <>{said} of 3 answered<br />{k.asked ? "Asked them" : "Not asked yet"}</> };
+        })} empty="No kin kept yet." />
       </Section>
       <Section title="Your kin" note="Kin who are independent now, kept so a plan is made before any need starts.">
         <Rows rows={s.others.map((k) => ({ key: k.id, href: `/life/kin/${k.id}`, main: <>{k.name}{k.relation ? <span className="text-muted-foreground font-normal"> · {k.relation}</span> : null}</>, side: [k.age !== null ? `${k.age} years old` : null, k.state].filter(Boolean).join(", ") || undefined }))} empty="No other kin kept." />
@@ -108,11 +120,11 @@ export async function PolisSpace({ userId, records, today }: { userId: string; r
           </Link>
         ) : <p className="text-muted-foreground text-sm">Not stated yet. <Link href="/life/polis?k=civic" className="underline underline-offset-2">Say where</Link>.</p>}
       </Section>
-      <Section title="Elections coming" note="Soonest first." action={{ label: "Add an election", href: "/life/polis?k=election" }}>
-        <Rows rows={s.elections.map((e) => ({ key: e.id, href: `/life/polis/${e.id}`, main: e.name || "An election", side: e.day ? (e.late ? `${e.day}, passed` : e.day) : "Day not given" }))} empty="None kept." />
+      <Section title="Elections coming" note="Soonest first, with your plan to vote: how, which day and where. The day you plan goes on your calendar." action={{ label: "Add an election", href: "/life/polis?k=election" }}>
+        <Rows rows={s.elections.map((e) => ({ key: e.id, href: `/life/polis/${e.id}`, main: e.name || "An election", side: <>{e.day ? (e.late ? `${e.day}, passed` : e.day) : "Day not given"}<br />{e.plan ? [e.plan.how, e.plan.when ? `on ${e.plan.when}` : null, e.plan.place ? `at ${e.plan.place}` : null].filter(Boolean).join(" ") : "No plan to vote yet"}</> }))} empty="None kept." />
       </Section>
-      <Section title="Duties due" note="Jury service, taxes, licenses and permits, soonest first." action={{ label: "Add a duty", href: "/life/polis?k=duty" }}>
-        <Rows rows={s.duties.map((d) => ({ key: d.id, href: `/life/polis/${d.id}`, main: d.name || "A duty", side: d.day ? (d.late ? `Was due ${d.day}` : `Due ${d.day}`) : "No date" }))} empty="Nothing due." />
+      <Section title="Duties due" note="Jury service, taxes, licenses and permits, soonest first. One that comes back every year returns on your calendar." action={{ label: "Add a duty", href: "/life/polis?k=duty" }}>
+        <Rows rows={s.duties.map((d) => ({ key: d.id, href: `/life/polis/${d.id}`, main: d.name || "A duty", side: [d.day ? (d.late ? `Was due ${d.day}` : `Due ${d.day}`) : "No date", d.yearly ? "every year" : null].filter(Boolean).join(", ") }))} empty="Nothing due." />
       </Section>
       <Section title="Where you serve" note="Offices you hold and roles you are trusted with." action={{ label: "Add a role", href: "/life/polis?k=standing" }}>
         <Rows rows={s.serving.map((r) => ({ key: r.id, href: `/life/polis/${r.id}`, main: r.role, side: r.where ?? undefined }))} empty="No office or role kept." />

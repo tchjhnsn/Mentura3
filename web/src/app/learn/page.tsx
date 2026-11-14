@@ -3,7 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mediumOf } from "@reflect/core/ways";
 import { coverUrl } from "@reflect/core/openlibrary";
-import { familyOf } from "@reflect/core/work-browse";
+import { daily, familyOf } from "@reflect/core/work-browse";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { allExcerpts } from "@/server/excerpt-store";
+import { highlightBooks } from "@/server/highlights";
+import { restateAction } from "./actions";
 import { PAGE } from "@/components/page-header";
 import { Head, SPACE } from "@/app/life/space";
 import { Upcoming } from "@/app/life/upcoming";
@@ -63,7 +68,11 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
-  const [view, w, exams] = await Promise.all([learnView(user.id), workspace(user.id), listExaminations(user.id).catch(() => [])]);
+  const [view, w, exams, excerpts] = await Promise.all([learnView(user.id), workspace(user.id), listExaminations(user.id).catch(() => []), allExcerpts(user.id).catch(() => [])]);
+  // Today's highlights to restate: three a day, the same all day, from those not yet put in the person's own words.
+  const unsaid = excerpts.filter((e) => !e.note);
+  const picked = daily(unsaid.length ? unsaid : excerpts, 3, today, user.id);
+  const titles = new Map((await highlightBooks(user.id, picked)).map((b) => [b.work, b.title]));
   const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, href: b.catalog?.work ? `/learn/works/${b.catalog.work}` : `/learn/shelves?book=${b.id}`, kind: "Book", title: b.title, by: b.authors[0] ?? null,
     image: b.catalog ? coverUrl(b.catalog, "M") : null, share: b.place ? Math.min(1, (b.place.chapter - 1 + b.place.at) / b.place.chapters) : null,
@@ -84,6 +93,27 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
+        {picked.length ? (
+          <section className="grid gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <Head title="Today" note="Three of your highlights. Say each in your own words; what you write is kept as its note." />
+              <Link href="/learn/highlights" className={LINK}>All your highlights</Link>
+            </div>
+            <ul className="grid gap-3 lg:grid-cols-3">
+              {picked.map((e) => (
+                <li key={e.id} className="bg-card flex flex-col gap-3 rounded-xl border p-4 shadow-xs">
+                  <blockquote className="line-clamp-6 border-l-2 pl-3 text-sm leading-relaxed">{e.quote}</blockquote>
+                  <Link href={`/learn/works/${e.work}`} className="text-muted-foreground text-xs hover:underline">{titles.get(e.work) ?? "The book"}</Link>
+                  <form action={restateAction.bind(null, e.id, e.work)} className="mt-auto grid gap-2">
+                    <Textarea name="words" defaultValue={e.note ?? ""} rows={3} placeholder="In your own words" aria-label="In your own words" className="text-sm" />
+                    <div><Button type="submit" size="sm" variant="outline">Keep it</Button></div>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
         <section className="grid gap-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <Head title="Learning now" note="Books you are reading and courses, lectures and the rest under way." />
