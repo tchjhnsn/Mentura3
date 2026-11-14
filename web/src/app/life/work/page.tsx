@@ -34,6 +34,7 @@ function WantedCard({ w }: { w: Wanted }) {
         <span className="text-muted-foreground mt-auto text-xs">
           {w.entries ? `${w.entries} ${w.entries === 1 ? "entry" : "entries"}, last ${w.lastEntry}` : "No entries yet"}
           {w.learning.length ? ` · learning ${w.learning.length} toward it` : ""}
+          {w.talked ? ` · talked with ${w.talked} doing it` : ""}
         </span>
       </Link>
     </li>

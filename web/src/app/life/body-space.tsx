@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { bodySpace } from "@reflect/core/body";
 import type { LifeAct, LifeRecord } from "@/server/life-store";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { sleptAction } from "./actions";
 import { Head, SPACE } from "./space";
 import { Upcoming } from "./upcoming";
 
@@ -24,11 +27,18 @@ export async function BodySpace({ userId, records, acts, today }: { userId: stri
           <div className={BOX}><dt className="text-muted-foreground text-xs">Strength</dt><dd className="mt-1 text-2xl font-semibold">{s.week.strengthDays} <span className="text-muted-foreground text-base font-normal">of 2 days</span></dd></div>
           <div className={BOX}><dt className="text-muted-foreground text-xs">Sleep</dt><dd className="mt-1 text-2xl font-semibold">{sleep !== null ? <>{sleep} <span className="text-muted-foreground text-base font-normal">of 7 hours</span></> : "Not known"}</dd><dd className="text-muted-foreground mt-1 text-xs">{s.sleep.logged !== null ? `Average of ${s.sleep.nights} ${s.sleep.nights === 1 ? "night" : "nights"} logged this week.` : s.sleep.usual !== null ? "What you usually sleep, from Health." : <>Say what you usually sleep in <Link href="/life/body?k=health" className="underline underline-offset-2">Health</Link>.</>}</dd></div>
         </dl>
+        <form action={sleptAction} className="flex flex-wrap items-center gap-2 text-sm">
+          <label htmlFor="slept-hours" className="text-muted-foreground">Last night you slept</label>
+          <Input id="slept-hours" name="hours" type="number" step="0.25" min="0.25" max="24" required className="h-8 w-20" />
+          <span className="text-muted-foreground">hours</span>
+          <input type="hidden" name="day" value={today} />
+          <Button type="submit" size="sm" variant="outline">Keep it</Button>
+        </form>
       </section>
 
       <section className="grid gap-3">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <Head title="Goals under way" note="Your own goals, with the minutes you put toward each in the last four weeks." />
+          <Head title="Goals under way" note="Your own goals, when you do each, and the minutes you put toward it in the last four weeks." />
           <Link href="/life/body?k=fitness" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Set a goal</Link>
         </div>
         {s.goals.length ? (
@@ -37,6 +47,7 @@ export async function BodySpace({ userId, records, acts, today }: { userId: stri
               <li key={g.id}>
                 <Link href={`/life/body/${g.id}`} className="bg-card hover:bg-accent flex h-full flex-col gap-2 rounded-xl border p-4 shadow-xs transition">
                   <span className="font-medium leading-snug">{g.goal || "A goal"}</span>
+                  {g.when ? <span className="text-sm">{g.when}</span> : null}
                   <span className="text-sm">{g.minutes} minutes in four weeks</span>
                   <span className="text-muted-foreground mt-auto text-xs">{[g.by ? `By ${g.by}` : null, g.last ? `last on ${g.last}` : "Nothing logged toward it yet"].filter(Boolean).join(", ")}</span>
                 </Link>

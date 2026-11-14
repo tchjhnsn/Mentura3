@@ -22,4 +22,9 @@ describe("home", () => {
     expect(c.covered.map((n) => n.label)).toEqual(["Food"]);
     expect(homeCost(homeNeeds([])).pay).toBeNull();
   });
+
+  it("comes back when its check lapses", () => {
+    const n = homeNeeds([{ id: "w", kind: "water", state: null, body: { cycle: "every-6-months" } }], [{ kind: "checked", record: "w", day: "2026-04-01", minutes: null, amount: null }], "2026-11-14");
+    expect(n.find((x) => x.id === "water")).toMatchObject({ cycle: "Every 6 months", checked: "2026-04-01", due: "2026-09-30", lapsed: true });
+  });
 });

@@ -63,22 +63,25 @@ export type DatedRecord = { id: string; app: string; kind: string; state: string
 // The days the tiles' records already hold, which put them on the calendar without being entered twice: a date
 // planned (Mate), an election and a duty due (Polis), a fitness goal's day (Body), and a relative's birthday each
 // year (Kin). Each names the field, how to title it, and states that keep it off.
-const DATED: { app: CalTile; kind: string; key: string; title: (b: DatedRecord["body"]) => string; repeat?: Repeat; skip?: string[] }[] = [
-  { app: "mate", kind: "date", key: "day", title: (b) => `Date with ${String(b.who || "someone")}`, skip: ["missed"] },
+const DATED: { app: CalTile; kind: string; key: string; title: (b: DatedRecord["body"]) => string; repeat?: (b: DatedRecord["body"]) => Repeat; skip?: (r: DatedRecord) => boolean }[] = [
+  { app: "mate", kind: "date", key: "day", title: (b) => `Date with ${String(b.who || "someone")}`, skip: (r) => r.state === "missed" },
   { app: "polis", kind: "election", key: "day", title: (b) => String(b.name || "Election") },
-  { app: "polis", kind: "duty", key: "due", title: (b) => `${String(b.name || "A duty")} due`, skip: ["done"] },
-  { app: "body", kind: "fitness", key: "by", title: (b) => `Goal: ${String(b.goal || "a goal")}`, skip: ["reached", "lapsed"] },
-  { app: "kin", kind: "relative", key: "born", title: (b) => `${String(b.name || "Kin")}'s birthday`, repeat: "yearly", skip: ["died"] },
+  { app: "polis", kind: "election", key: "when", title: (b) => `Vote${b.how ? `, ${String(b.how).replace(/-/g, " ")}` : ""}: ${String(b.name || "election")}`, skip: (r) => r.state === "voted" || r.state === "did-not-vote" },
+  // A duty that comes back each year stays on the calendar after it is done; one that comes once leaves it.
+  { app: "polis", kind: "duty", key: "due", title: (b) => `${String(b.name || "A duty")} due`, repeat: (b) => (b.repeats === "every-year" ? "yearly" : "none"), skip: (r) => r.state === "done" && r.body.repeats !== "every-year" },
+  { app: "body", kind: "fitness", key: "by", title: (b) => `Goal: ${String(b.goal || "a goal")}`, skip: (r) => r.state === "reached" || r.state === "lapsed" },
+  { app: "kin", kind: "relative", key: "born", title: (b) => `${String(b.name || "Kin")}'s birthday`, repeat: () => "yearly", skip: (r) => r.state === "died" },
 ];
 
-/** Calendar events from the days the person's records hold. Their id is `record:<record id>`; they are edited on the record. */
+/** Calendar events from the days the person's records hold. Their id is `record:<record id>:<field>`; they are edited on the record. */
 export function recordEvents(records: readonly DatedRecord[]): CalEvent[] {
   const out: CalEvent[] = [];
   for (const r of records) {
-    const d = DATED.find((x) => x.app === r.app && x.kind === r.kind);
-    const day = d ? r.body[d.key] : null;
-    if (!d || typeof day !== "string" || !DAY.test(day) || (r.state && d.skip?.includes(r.state))) continue;
-    out.push({ id: `record:${r.id}`, tile: d.app, title: d.title(r.body), note: null, day, starts: null, ends: null, repeat: d.repeat ?? "none", until: null, recordId: r.id });
+    for (const d of DATED.filter((x) => x.app === r.app && x.kind === r.kind)) {
+      const day = r.body[d.key];
+      if (typeof day !== "string" || !DAY.test(day) || d.skip?.(r)) continue;
+      out.push({ id: `record:${r.id}:${d.key}`, tile: d.app, title: d.title(r.body), note: null, day, starts: null, ends: null, repeat: d.repeat?.(r.body) ?? "none", until: null, recordId: r.id });
+    }
   }
   return out;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { batchOrder, daily, familyOf, filingsFrom, forLater, forNow, formingBatches, matches, needsNow, parseRef, ranked, refHref, stemsOf, toEarn, type Company, type Job } from "./work-browse";
+import { tasksTouched, batchOrder, daily, familyOf, filingsFrom, forLater, forNow, formingBatches, matches, needsNow, parseRef, ranked, refHref, stemsOf, toEarn, type Company, type Job } from "./work-browse";
 
 const co = (name: string, batch: string): Company => ({ slug: name.toLowerCase(), name, line: "", about: "", batch, status: "Active", industries: ["B2B"], logo: null, site: null, team: null, where: null, launched: null });
 
@@ -78,5 +78,9 @@ describe("the workspace", () => {
     const all = [job("15-2041.00", "Statisticians", { zone: 5 }), job("43-9111.00", "Statistical Assistants"), job("41-2011.00", "Cashiers")];
     const stems = stemsOf(["Introduction to Statistics", "Statistical inference"]);
     expect(forLater(all, { stems, wanted: [] }).map((s) => s.job.title)).toEqual(["Statisticians", "Statistical Assistants"]);
+  });
+
+  it("marks the tasks that meet what the person is learning", () => {
+    expect(tasksTouched(["Analyze statistical data", "Greet visitors"], stemsOf(["Statistical inference"]))).toEqual([{ task: "Analyze statistical data", touched: true }, { task: "Greet visitors", touched: false }]);
   });
 });

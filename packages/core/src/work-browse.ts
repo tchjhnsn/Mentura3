@@ -168,6 +168,11 @@ export function stemsOf(texts: readonly string[]): string[] {
   for (const t of texts) for (const w of t.toLowerCase().normalize("NFKD").replace(/[^a-z ]+/g, " ").split(" ")) if (w.length >= 4 && !STOP.has(w)) out.add(w.slice(0, 7));
   return [...out];
 }
+/** A job's tasks, each marked where its words meet what the person is learning (O*NET lists tasks, not the skills behind them). */
+export function tasksTouched(tasks: readonly string[], stems: readonly string[]): { task: string; touched: boolean }[] {
+  const mine = new Set(stems);
+  return tasks.map((task) => ({ task, touched: stemsOf([task]).some((s) => mine.has(s)) }));
+}
 const jobStems = (j: Job) => new Set(stemsOf([j.title, ...j.titles]));
 
 /** A job suggested to the person, with why, in their terms. */

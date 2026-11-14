@@ -33,8 +33,28 @@ describe("tile spaces", () => {
   it("orders elections and duties by day and flags what is late", () => {
     const s = polisSpace([rec("c", "civic", "voting", { residence: "Austin", registered: true }), rec("e", "election", "coming", { name: "General", day: "2026-11-30" }), rec("t", "duty", "due", { name: "Taxes", due: "2026-11-01" }), rec("r", "standing", "serving", { role: "Deacon", body: "Church" })], today);
     expect(s.civic).toMatchObject({ residence: "Austin", registered: true, state: "Voting" });
-    expect(s.elections).toEqual([{ id: "e", name: "General", day: "2026-11-30", late: false }]);
+    expect(s.elections).toEqual([{ id: "e", name: "General", day: "2026-11-30", late: false, plan: null }]);
     expect(s.duties[0]).toMatchObject({ name: "Taxes", late: true });
     expect(s.serving).toEqual([{ id: "r", role: "Deacon", where: "Church" }]);
+  });
+
+  it("puts a friend past how often you mean to see them first, with hours toward Hall's next milestone", () => {
+    const s = friendsSpace([rec("a", "friend", "close", { name: "Ann", every: "every-week" }), rec("b", "friend", "friend", { name: "Ben", every: "every-3-months" })],
+      [act("saw", "a", "2026-11-01", 3000), act("saw", "b", "2026-08-01", 60)], today);
+    expect(s.close.map((f) => [f.name, f.overdue, f.every])).toEqual([["Ben", true, "Every 3 months"], ["Ann", true, "Every week"]]);
+    expect(s.close.find((f) => f.name === "Ann")).toMatchObject({ hours: 50, next: { hours: 90, to: "friend" } });
+  });
+
+  it("tallies dates against the must-haves and dealbreakers", () => {
+    const s = mateSpace([rec("1", "date", "went", { who: "A", musts: "met-all" }), rec("2", "date", "went", { who: "B", musts: "met-some", dealbreaker: true }), rec("3", "date", "went", { who: "C" })], today);
+    expect(s.tally).toEqual({ all: 1, some: 1, none: 0, dealbreakers: 1, of: 3 });
+  });
+
+  it("keeps kin's own answers and whether they were asked, and the plan to vote and duties that come back", () => {
+    const k = kinSpace([rec("m", "relative", "some-help", { name: "Mom", matters: "Being at home", speaks: "Me", asked: true })], [], today);
+    expect(k.care[0]).toMatchObject({ matters: "Being at home", speaks: "Me", where: null, asked: true });
+    const p = polisSpace([rec("e", "election", "coming", { name: "G", day: "2026-11-30", how: "early-in-person", when: "2026-11-25" }), rec("t", "duty", "due", { name: "Taxes", due: "2027-04-15", repeats: "every-year" })], today);
+    expect(p.elections[0]!.plan).toEqual({ how: "Early in person", when: "2026-11-25", place: null });
+    expect(p.duties[0]!.yearly).toBe(true);
   });
 });

@@ -170,6 +170,16 @@ export async function reviseExcerptAction(id: string, work: string, change: { co
   return next;
 }
 
+/** Keep a highlight restated in the person's own words as its note, from Learn's Today row. */
+export async function restateAction(id: string, work: string, form: FormData): Promise<void> {
+  const user = await requireUser();
+  const words = String(form.get("words") ?? "").trim();
+  if (words) await reviseExcerpt(user.id, String(id), { note: words });
+  revalidatePath(`/learn/works/${String(work)}`);
+  revalidatePath("/learn/highlights");
+  redirect("/learn");
+}
+
 /** Bring Kindle highlights in: the browser reads My Clippings.txt and sends its text. */
 export async function importKindleAction(text: string): Promise<{ error: string } | KindleReport> {
   const user = await requireUser();

@@ -43,6 +43,19 @@ const opts = (...l: string[]): Option[] => l.map((x) => ({ id: x.toLowerCase().r
 /** How a need is met and by whom (adopted 2026-11-09; gifts added in the domain design's Income section). */
 export const MET = opts("Self-provided", "Stocked", "Supplied", "Cared for");
 export const PROVIDER = opts("Self", "Market", "Nature", "Polis", "Kin", "Gifts");
+/** How often a standard is checked again, or a duty comes back (FEMA's app reminds yearly and twice a year; Torian, 2026-11-14 20:53Z). */
+export const CYCLE = opts("Every month", "Every 3 months", "Every 6 months", "Every year");
+/** How often the person means to see a friend, kept by them, never set for them. */
+export const EVERY = opts("Every week", "Every 2 weeks", "Every month", "Every 3 months", "Every 6 months", "Every year");
+
+/** The days in one of CYCLE's or EVERY's choices; null for none or "Once". */
+export function everyDays(v: unknown): number | null {
+  const m = typeof v === "string" ? /^every-(?:(\d+)-)?(week|weeks|month|months|year)$/.exec(v) : null;
+  if (!m) return null;
+  const n = Number(m[1] ?? 1);
+  const unit = m[2] ?? "";
+  return Math.round(n * (unit.startsWith("week") ? 7 : unit.startsWith("month") ? 30.4 : 365));
+}
 
 const need = (id: string, label: string, intro: string, standard: { text: string; source: string }, checks: [string, string][]): Kind => ({
   id, label, plural: label, title: "how", one: true, intro, standard,
@@ -50,9 +63,11 @@ const need = (id: string, label: string, intro: string, standard: { text: string
     { key: "how", label: "How it is met", kind: "choice", options: MET },
     { key: "by", label: "By whom", kind: "choice", options: PROVIDER },
     ...checks.map(([key, label]) => ({ key, label, kind: "check" as const })),
+    { key: "cycle", label: "Check the standard again", kind: "choice", options: CYCLE },
     { key: "cost", label: "What it costs a month", kind: "money" },
     { key: "note", label: "Notes", kind: "long" },
   ],
+  acts: [{ id: "checked", label: "Checked the standard", done: "Checked the standard for" }],
 });
 
 export const APPS: readonly LifeApp[] = [
@@ -116,7 +131,7 @@ export const APPS: readonly LifeApp[] = [
           { key: "learning", label: "Learning toward it", kind: "text", internal: true },
         ],
         states: [{ id: "drawn", label: "Drawn to it" }, { id: "exploring", label: "Exploring it", active: true }, { id: "pursuing", label: "Pursuing it", active: true }, { id: "let-go", label: "Let go" }],
-        acts: [{ id: "wrote", label: "Journal entry", done: "Wrote toward", hidden: true }],
+        acts: [{ id: "wrote", label: "Journal entry", done: "Wrote toward", hidden: true }, { id: "talked", label: "Talked with someone doing it", done: "Talked with someone doing" }],
       },
       {
         id: "imagined", label: "Imagined work", plural: "Imagined", title: "name",
@@ -170,6 +185,18 @@ export const APPS: readonly LifeApp[] = [
         ],
         acts: [{ id: "trained", label: "Training", done: "Trained with", minutes: true }],
       },
+      {
+        id: "belonging", label: "Belonging", plural: "Belongings", title: "name",
+        intro: "What you own of value, where it is kept and what it is worth, so a loss can be shown and claimed. Keep a copy away from home too.",
+        standard: { text: "A home inventory with photos or video of each room and the receipts of what is worth most, kept somewhere other than the home.", source: "NAIC" },
+        fields: [
+          { key: "name", label: "What it is", kind: "text" },
+          { key: "where", label: "Where it is kept", kind: "text" },
+          { key: "value", label: "What it is worth", kind: "money" },
+          { key: "proof", label: "Photo or receipt kept", kind: "check" },
+          { key: "note", label: "Notes", kind: "long" },
+        ],
+      },
     ],
   },
   {
@@ -195,6 +222,7 @@ export const APPS: readonly LifeApp[] = [
         standard: { text: "150 minutes a week of moderate activity (or 75 vigorous) and muscle strengthening on two days.", source: "Physical Activity Guidelines for Americans" },
         fields: [
           { key: "goal", label: "Goal", kind: "text", hint: "Run a 5K, squat my bodyweight" },
+          { key: "when", label: "After what, or when, you do it", kind: "text", hint: "After work, before breakfast" },
           { key: "by", label: "By when", kind: "day" },
           { key: "note", label: "Notes", kind: "long" },
         ],
@@ -220,9 +248,10 @@ export const APPS: readonly LifeApp[] = [
           { key: "why", label: "Why you consider them a friend", kind: "long" },
           { key: "habits", label: "Habits you share", kind: "long" },
           { key: "kind", label: "Kind of friendship, if you use Aristotle's (Nicomachean Ethics VIII)", kind: "choice", options: opts("Utility", "Pleasure", "Virtue") },
+          { key: "every", label: "How often you mean to see them", kind: "choice", options: EVERY },
         ],
         states: [{ id: "acquaintance", label: "Acquaintance" }, { id: "friend", label: "Friend", active: true }, { id: "close", label: "Close friend", active: true }, { id: "drifted", label: "Drifted" }],
-        acts: [{ id: "saw", label: "Time together", done: "Spent time with" }, { id: "called", label: "Called or wrote", done: "Called or wrote" }],
+        acts: [{ id: "saw", label: "Time together", done: "Spent time with", minutes: true }, { id: "called", label: "Called or wrote", done: "Called or wrote" }],
       },
       {
         id: "group", label: "Group", plural: "Groups", title: "name",
@@ -259,6 +288,8 @@ export const APPS: readonly LifeApp[] = [
           { key: "where", label: "Where", kind: "text" },
           { key: "how", label: "How it went", kind: "long" },
           { key: "learned", label: "What I learned", kind: "long" },
+          { key: "musts", label: "Against my must-haves", kind: "choice", options: opts("Met all", "Met some", "Met none", "Too soon to tell") },
+          { key: "dealbreaker", label: "A dealbreaker came up", kind: "check" },
           { key: "again", label: "See them again", kind: "choice", options: opts("Yes", "No", "Not sure") },
         ],
         states: [{ id: "planned", label: "Planned", active: true }, { id: "went", label: "Went" }, { id: "missed", label: "Missed" }],
@@ -279,6 +310,10 @@ export const APPS: readonly LifeApp[] = [
           { key: "health", label: "Health", kind: "long" },
           { key: "wishes", label: "What they would want", kind: "long" },
           { key: "carer", label: "Who provides care", kind: "choice", options: opts("Me", "Family", "Paid help", "Given by church or charity", "No one yet") },
+          { key: "matters", label: "What matters most to them, in their words", kind: "long" },
+          { key: "speaks", label: "Who speaks for them if they cannot", kind: "text" },
+          { key: "where", label: "Where they want to be cared for", kind: "text" },
+          { key: "asked", label: "Asked them these, not guessed", kind: "check" },
           { key: "note", label: "Notes", kind: "long" },
         ],
         states: [{ id: "independent", label: "Independent" }, { id: "some-help", label: "Needs some help", active: true }, { id: "regular-care", label: "Needs regular care", active: true }, { id: "full-care", label: "In full care", active: true }, { id: "died", label: "Died" }],
@@ -306,7 +341,13 @@ export const APPS: readonly LifeApp[] = [
       {
         id: "election", label: "Election", plural: "Elections", title: "name",
         intro: "Elections coming and past, and whether you voted.",
-        fields: [{ key: "name", label: "Election", kind: "text" }, { key: "day", label: "Day", kind: "day" }, { key: "note", label: "What is on the ballot, and how I decided", kind: "long" }],
+        fields: [
+          { key: "name", label: "Election", kind: "text" }, { key: "day", label: "Day", kind: "day" },
+          { key: "how", label: "How I will vote", kind: "choice", options: opts("Early in person", "On election day", "By mail") },
+          { key: "when", label: "The day I will vote", kind: "day" },
+          { key: "place", label: "Where", kind: "text", hint: "Polling place, or where I mail it" },
+          { key: "note", label: "What is on the ballot, and how I decided", kind: "long" },
+        ],
         states: [{ id: "coming", label: "Coming", active: true }, { id: "voted", label: "Voted" }, { id: "did-not-vote", label: "Did not vote" }],
       },
       {
@@ -319,7 +360,7 @@ export const APPS: readonly LifeApp[] = [
       {
         id: "duty", label: "Duty", plural: "Duties", title: "name",
         intro: "Jury service, taxes, licenses and permits, and other things the law asks of you.",
-        fields: [{ key: "name", label: "Duty", kind: "text" }, { key: "due", label: "Due", kind: "day" }, { key: "note", label: "Notes", kind: "long" }],
+        fields: [{ key: "name", label: "Duty", kind: "text" }, { key: "due", label: "Due", kind: "day" }, { key: "repeats", label: "Comes back", kind: "choice", options: opts("Once", "Every year") }, { key: "note", label: "Notes", kind: "long" }],
         states: [{ id: "due", label: "Due", active: true }, { id: "done", label: "Done" }],
       },
     ],

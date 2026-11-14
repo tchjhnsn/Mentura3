@@ -20,6 +20,6 @@ describe("bodySpace", () => {
   });
 
   it("keeps the goals still under way with four weeks of minutes toward each", () => {
-    expect(s.goals).toEqual([{ id: "g", goal: "Run a 5K", by: "2027-01-01", state: "in-progress", minutes: 50, last: "2026-11-13" }]);
+    expect(s.goals).toEqual([{ id: "g", goal: "Run a 5K", when: null, by: "2027-01-01", state: "in-progress", minutes: 50, last: "2026-11-13" }]);
   });
 });

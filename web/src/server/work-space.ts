@@ -13,7 +13,7 @@ import { learningMinutes, listItems, type LearnItem } from "./ways-store";
 const NEEDS = ["food", "water", "shelter", "transport", "safety"] as const;
 export const WANTED_KINDS = new Set(["inspiration", "imagined"]);
 
-export type Wanted = { record: LifeRecord; title: string; job: Job | null; entries: number; lastEntry: string | null; learning: string[] };
+export type Wanted = { record: LifeRecord; title: string; job: Job | null; entries: number; lastEntry: string | null; learning: string[]; talked: number };
 export type Entry = { id: string; title: string; day: string; toward: string; towardId: string };
 export type Workspace = {
   wanted: Wanted[];
@@ -49,7 +49,7 @@ export async function workspace(userId: string, today = new Date().toISOString()
   const wantedRecords = work.filter((r) => WANTED_KINDS.has(r.kind) && r.state !== "let-go").reverse();
   const wanted: Wanted[] = wantedRecords.map((r) => {
     const mine = byRecord.get(r.id) ?? [];
-    return { record: r, title: titleOfWanted(r), job: jobOf(r), entries: mine.length, lastEntry: mine[0]?.day ?? null, learning: learningIds(r) };
+    return { record: r, title: titleOfWanted(r), job: jobOf(r), entries: mine.length, lastEntry: mine[0]?.day ?? null, learning: learningIds(r), talked: acts.filter((a) => a.record === r.id && a.kind === "talked").length };
   });
 
   const n = needsNow(home.filter((r) => (NEEDS as readonly string[]).includes(r.kind)).map((r) => ({

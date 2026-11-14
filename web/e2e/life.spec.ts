@@ -108,3 +108,10 @@ test("a venture of your own in Work's workspace, with a journal entry toward it"
   await expect(page.getByRole("link", { name: new RegExp(name) }).first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText(/1 entry, last/).first()).toBeVisible();
 });
+
+test("last night's sleep logged from Body's workspace counts in the week", async ({ page }) => {
+  await page.goto("/life/body");
+  await page.getByLabel("Last night you slept").fill("7.5");
+  await page.getByRole("button", { name: "Keep it" }).click();
+  await expect(page.getByText(/nights? logged this week/)).toBeVisible({ timeout: 60_000 });
+});
