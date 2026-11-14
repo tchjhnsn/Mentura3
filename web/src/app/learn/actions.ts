@@ -338,7 +338,7 @@ export async function removeItemAction(form: FormData): Promise<void> {
   const id = field(form, "item");
   await removeItem(user.id, id);
   revalidatePath("/learn");
-  redirect(`/learn?removed=${id}`);
+  redirect(`/learn/shelves?removed=${id}`);
 }
 
 export async function restoreItemAction(form: FormData): Promise<void> {

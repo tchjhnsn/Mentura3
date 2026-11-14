@@ -15,9 +15,9 @@ export function TileIcon({ label, href, here = false, children }: { label: strin
  * tile's name, or the part open in it, and icons for the tools, the journal and the tile's calendar, after any the
  * tile adds (Work: browse). No search and no tabs; the tile's parts open from its workspace, and back returns to it.
  */
-export function TileHeader({ tile, label, part, icons }: { tile: CalTile; label: string; part?: string | null; icons?: ReactNode }) {
+export function TileHeader({ tile, label, part, icons, workspace = `/life/${tile}` }: { tile: CalTile; label: string; part?: string | null; icons?: ReactNode; workspace?: string }) {
   return (
-    <SectionHeader back={part ? `/life/${tile}` : "/"} backLabel={part ? label : "Home"} title={part ?? label} icons={
+    <SectionHeader back={part ? workspace : "/"} backLabel={part ? label : "Home"} title={part ?? label} icons={
       <div className="flex items-center gap-1">
         {icons}
         <TileIcon label="Journal" href="/journal"><NotebookPenIcon /></TileIcon>

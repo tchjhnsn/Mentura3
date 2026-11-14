@@ -45,6 +45,11 @@ test("a duty kept in Polis shows on Polis' calendar and in what is coming up", a
 });
 
 test("each tile opens to its own workspace", async ({ page }) => {
+  await page.goto("/learn");
+  await expect(page.getByRole("heading", { name: "Learning now" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "What Learn gives Work" })).toBeVisible();
+  await page.getByRole("link", { name: "My shelves" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "My shelves" })).toBeVisible({ timeout: 60_000 });
   await page.goto("/life/home");
   await expect(page.getByRole("heading", { name: "Your needs" })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole("heading", { name: "What Home asks of Work" })).toBeVisible();

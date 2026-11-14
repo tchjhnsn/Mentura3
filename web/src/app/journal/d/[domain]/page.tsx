@@ -81,7 +81,7 @@ export default async function DomainPage({ params }: { params: Promise<{ domain:
                   ) : null}
                   {s.books.length ? (
                     <ul className="text-muted-foreground space-y-0.5">
-                      {s.books.map((b) => <li key={b.id}><Link href={`/learn?book=${b.id}`} className="hover:text-foreground">{b.title}</Link>{b.authors.length ? `, ${b.authors[0]}` : ""}</li>)}
+                      {s.books.map((b) => <li key={b.id}><Link href={`/learn/shelves?book=${b.id}`} className="hover:text-foreground">{b.title}</Link>{b.authors.length ? `, ${b.authors[0]}` : ""}</li>)}
                     </ul>
                   ) : null}
                   {!s.claims.length && !s.books.length ? <p className="text-muted-foreground">Nothing kept under it yet.</p> : null}
