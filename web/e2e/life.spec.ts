@@ -7,7 +7,7 @@ test("a friend kept from the Friends tile, with a state and a visit, shows in th
   await page.goto("/");
   await page.getByRole("link", { name: /^Friends,/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Friends" })).toBeVisible({ timeout: 60_000 });
-  await page.getByRole("navigation", { name: "Friends parts" }).getByRole("link", { name: "Friends" }).click();
+  await page.getByRole("link", { name: "Add a friend" }).click();
   const add = page.locator("details", { hasText: "Add friend" });
   if ((await add.getAttribute("open")) === null) await add.locator("summary").click();
   await page.getByLabel("Name").fill(name);
@@ -23,6 +23,25 @@ test("a friend kept from the Friends tile, with a state and a visit, shows in th
   await expect(page.getByText(`${name}: Close friend`)).toBeVisible();
   await page.goto("/life/friends");
   await expect(page.getByRole("link", { name: new RegExp(name) })).toContainText("Last today", { timeout: 60_000 });
+});
+
+test("a duty kept in Polis shows on Polis' calendar and in what is coming up", async ({ page }, info) => {
+  const name = `Renew a permit ${info.project.name} ${Date.now()}`;
+  const due = new Date(Date.now() + 3 * 86400_000).toISOString().slice(0, 10);
+  await page.goto("/life/polis?k=duty");
+  await page.waitForLoadState("networkidle");
+  const add = page.locator("details", { hasText: "Add duty" });
+  if ((await add.getAttribute("open")) === null) await add.locator("summary").click();
+  await page.getByLabel("Duty", { exact: true }).fill(name);
+  await page.getByLabel("Due", { exact: true }).fill(due);
+  await page.getByRole("button", { name: "Keep this duty" }).click();
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible({ timeout: 30_000 });
+  await page.goto("/life/polis");
+  await expect(page.getByRole("link", { name: new RegExp(`${name} due`) })).toBeVisible({ timeout: 60_000 });
+  await page.goto(`/calendar?tile=polis&day=${due}`);
+  const item = page.locator("details", { hasText: `${name} due` });
+  await item.locator("summary").click({ timeout: 60_000 });
+  await expect(item.getByRole("link", { name: "Open it" })).toBeVisible();
 });
 
 test("each tile opens to its own workspace", async ({ page }) => {

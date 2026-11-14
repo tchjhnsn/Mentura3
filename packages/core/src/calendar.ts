@@ -56,3 +56,30 @@ export function monthGrid(month: string): string[] {
   return Array.from({ length: 42 }, (_, i) => addDays(first, i));
 }
 export const shiftMonth = (month: string, n: number) => addMonths(`${month}-01`, n)!.slice(0, 7);
+
+/** A record from a tile, as the calendar reads it: its id, tile, kind, state and fields. */
+export type DatedRecord = { id: string; app: string; kind: string; state: string | null; body: Record<string, string | number | boolean> };
+
+// The days the tiles' records already hold, which put them on the calendar without being entered twice: a date
+// planned (Mate), an election and a duty due (Polis), a fitness goal's day (Body), and a relative's birthday each
+// year (Kin). Each names the field, how to title it, and states that keep it off.
+const DATED: { app: CalTile; kind: string; key: string; title: (b: DatedRecord["body"]) => string; repeat?: Repeat; skip?: string[] }[] = [
+  { app: "mate", kind: "date", key: "day", title: (b) => `Date with ${String(b.who || "someone")}`, skip: ["missed"] },
+  { app: "polis", kind: "election", key: "day", title: (b) => String(b.name || "Election") },
+  { app: "polis", kind: "duty", key: "due", title: (b) => `${String(b.name || "A duty")} due`, skip: ["done"] },
+  { app: "body", kind: "fitness", key: "by", title: (b) => `Goal: ${String(b.goal || "a goal")}`, skip: ["reached", "lapsed"] },
+  { app: "kin", kind: "relative", key: "born", title: (b) => `${String(b.name || "Kin")}'s birthday`, repeat: "yearly", skip: ["died"] },
+];
+
+/** Calendar events from the days the person's records hold. Their id is `record:<record id>`; they are edited on the record. */
+export function recordEvents(records: readonly DatedRecord[]): CalEvent[] {
+  const out: CalEvent[] = [];
+  for (const r of records) {
+    const d = DATED.find((x) => x.app === r.app && x.kind === r.kind);
+    const day = d ? r.body[d.key] : null;
+    if (!d || typeof day !== "string" || !DAY.test(day) || (r.state && d.skip?.includes(r.state))) continue;
+    out.push({ id: `record:${r.id}`, tile: d.app, title: d.title(r.body), note: null, day, starts: null, ends: null, repeat: d.repeat ?? "none", until: null, recordId: r.id });
+  }
+  return out;
+}
+export const isRecordEvent = (e: Pick<CalEvent, "id">) => e.id.startsWith("record:");
