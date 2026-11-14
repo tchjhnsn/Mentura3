@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
-import { SectionHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
-import { Segmented } from "@/components/segmented";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "@/server/life-store";
@@ -14,6 +12,7 @@ import { BodySpace } from "../body-space";
 import { FriendsSpace, KinSpace, MateSpace, PolisSpace } from "../tile-spaces";
 import { restoreLifeAction } from "../actions";
 import { WorkHeader, type WorkTab } from "../work/parts";
+import { TileHeader } from "../tile-header";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -88,9 +87,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const today = new Date().toISOString().slice(0, 10);
   return (
     <main className={PAGE}>
-      {app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : <SectionHeader back="/" backLabel="Home" title={a.label} tabs={
-        <Segmented label={`${a.label} parts`} items={[{ label: "Overview", href: `/life/${app}`, on: !kind }, ...a.kinds.filter((k) => !k.hidden).map((k) => ({ label: k.plural, href: `/life/${app}?k=${k.id}`, on: kind?.id === k.id })), { label: "Calendar", href: `/calendar?tile=${app}`, on: false }]} />
-      } />}
+      {app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
       {removed ? (
         <form action={restoreLifeAction.bind(null, removed, back)} className="bg-muted mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>

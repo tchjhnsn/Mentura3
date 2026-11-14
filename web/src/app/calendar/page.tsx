@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "lucide-react";
-import { CAL_TILES, isCalTile, monthGrid, occurrences, REPEATS, shiftMonth, tileLabel, type CalTile, type Occurrence } from "@reflect/core/calendar";
+import { CAL_TILES, isCalTile, isRecordEvent, monthGrid, occurrences, REPEATS, shiftMonth, tileLabel, type CalTile, type Occurrence } from "@reflect/core/calendar";
 import { PAGE, PageHeader } from "@/components/page-header";
 import { Segmented } from "@/components/segmented";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
-import { events } from "@/server/calendar-store";
+import { calendar } from "@/server/calendar-store";
 import { addEventAction, removeEventAction, restoreEventAction, saveEventAction } from "./actions";
 
 export const metadata: Metadata = { title: "Calendar" };
@@ -48,7 +48,8 @@ function EventForm({ tile, day, back, e }: { tile: CalTile | null; day: string; 
 
 /**
  * The calendar, a tool (Torian, 2026-11-14 17:44Z, 17:52Z): every tile's events in one master calendar, and each
- * tile's own calendar as the same view filtered to its tag (`?tile=work`).
+ * tile's own calendar as the same view filtered to its tag (`?tile=work`). The days the tiles' records hold (a date,
+ * an election, a duty due, a goal's day, a birthday) show too, and open their record.
  */
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
@@ -58,7 +59,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
   const picked = /^\d{4}-\d{2}-\d{2}$/.test(one(sp.day)) ? one(sp.day) : null;
   const month = /^\d{4}-\d{2}$/.test(one(sp.month)) ? one(sp.month) : (picked ?? today).slice(0, 7);
   const grid = monthGrid(month);
-  const list = occurrences(await events(user.id, grid[0]!, grid[41]!, tile), grid[0]!, grid[41]!);
+  const list = occurrences(await calendar(user.id, grid[0]!, grid[41]!, tile), grid[0]!, grid[41]!);
   const byDay = new Map<string, Occurrence[]>();
   for (const o of list) byDay.set(o.day, [...(byDay.get(o.day) ?? []), o]);
   const q = (over: Record<string, string | null>) => {
@@ -133,11 +134,15 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                       {o.event.repeat !== "none" ? <RepeatIcon className="text-muted-foreground size-3.5" aria-label={REPEATS.find((r) => r.id === o.event.repeat)!.label} /> : null}
                       <span className="text-muted-foreground text-xs">{tileLabel(o.event.tile)}</span>
                     </summary>
-                    <div className="grid gap-3 border-t p-4">
-                      {o.event.note ? <p className="text-sm whitespace-pre-line">{o.event.note}</p> : null}
-                      <EventForm tile={tile} day={day} back={back} e={o.event} />
-                      <form action={removeEventAction.bind(null, o.event.id)}><input type="hidden" name="$back" value={back} /><Button type="submit" variant="ghost" size="sm">Remove</Button></form>
-                    </div>
+                    {isRecordEvent(o.event) ? (
+                      <p className="text-muted-foreground border-t p-4 text-sm">From your {tileLabel(o.event.tile)} records. <Link href={`/life/${o.event.tile}/${o.event.recordId}`} className="text-foreground underline underline-offset-2">Open it</Link> to change it.</p>
+                    ) : (
+                      <div className="grid gap-3 border-t p-4">
+                        {o.event.note ? <p className="text-sm whitespace-pre-line">{o.event.note}</p> : null}
+                        <EventForm tile={tile} day={day} back={back} e={o.event} />
+                        <form action={removeEventAction.bind(null, o.event.id)}><input type="hidden" name="$back" value={back} /><Button type="submit" variant="ghost" size="sm">Remove</Button></form>
+                      </div>
+                    )}
                   </details>
                 </li>
               ))}

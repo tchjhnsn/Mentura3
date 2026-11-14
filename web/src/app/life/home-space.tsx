@@ -48,16 +48,19 @@ export async function HomeSpace({ userId, records, today }: { userId: string; re
         </dl>
       </section>
 
-      {guns.length ? (
-        <section className="grid gap-3">
+      <section className="grid gap-3">
+        <div className="flex flex-wrap items-end justify-between gap-3">
           <Head title="Firearms" note="Training and safe storage for each one you keep." />
+          <Link href="/life/home?k=firearm" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Add a firearm</Link>
+        </div>
+        {guns.length ? (
           <ul className="divide-y rounded-xl border text-sm">
             {guns.map((g) => (
               <li key={g.id}><Link href={`/life/home/${g.id}`} className="hover:bg-accent flex items-baseline justify-between gap-3 px-4 py-2"><span className="font-medium">{String(g.body.name ?? "Firearm")}</span><span className="text-muted-foreground text-xs">{g.body.training === true ? "Trained" : "Not trained yet"}, {g.body.storage === true ? "stored safely" : "storage not in place"}</span></Link></li>
             ))}
           </ul>
-        </section>
-      ) : null}
+        ) : <p className="text-muted-foreground text-sm">None kept.</p>}
+      </section>
 
       <Upcoming userId={userId} tile="home" today={today} />
     </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { monthGrid, occurrences, shiftMonth, type CalEvent } from "./calendar";
+import { isRecordEvent, monthGrid, occurrences, recordEvents, shiftMonth, type CalEvent } from "./calendar";
 
 const ev = (o: Partial<CalEvent>): CalEvent => ({ id: "e", tile: "work", title: "Shift", note: null, day: "2026-11-02", starts: null, ends: null, repeat: "none", until: null, recordId: null, ...o });
 
@@ -20,5 +20,20 @@ describe("the calendar", () => {
     expect(g[0]).toBe("2026-10-26");
     expect(g).toHaveLength(42);
     expect(shiftMonth("2026-12", 1)).toBe("2027-01");
+  });
+});
+
+describe("recordEvents", () => {
+  it("puts the days records hold on the calendar, birthdays each year", () => {
+    const ev = recordEvents([
+      { id: "d", app: "mate", kind: "date", state: "planned", body: { who: "R", day: "2026-11-20" } },
+      { id: "x", app: "mate", kind: "date", state: "missed", body: { who: "S", day: "2026-11-21" } },
+      { id: "m", app: "kin", kind: "relative", state: "independent", body: { name: "Mom", born: "1950-11-30" } },
+      { id: "t", app: "polis", kind: "duty", state: "done", body: { name: "Taxes", due: "2026-11-25" } },
+      { id: "f", app: "friends", kind: "friend", state: "friend", body: { name: "Ann" } },
+    ]);
+    expect(ev.map((e) => [e.id, e.title, e.tile])).toEqual([["record:d", "Date with R", "mate"], ["record:m", "Mom's birthday", "kin"]]);
+    expect(occurrences(ev, "2026-11-01", "2026-11-30").map((o) => o.day)).toEqual(["2026-11-20", "2026-11-30"]);
+    expect(isRecordEvent(ev[0]!)).toBe(true);
   });
 });

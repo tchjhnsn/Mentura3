@@ -1,7 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { isCalTile, isRepeat, type CalEvent, type CalTile } from "@reflect/core/calendar";
+import { isCalTile, isRepeat, recordEvents, type CalEvent, type CalTile } from "@reflect/core/calendar";
+import { isLifeApp } from "@reflect/core/life";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
+import { lifeRecords } from "./life-store";
 
 // The calendar's events (migration 0030): sealed titles and notes, tagged with a tile, removable with undo.
 
@@ -58,4 +60,13 @@ export async function events(userId: string, from: string, to: string, tile?: Ca
     id: x.id as string, tile: (x.tile as CalTile | null) ?? null, title: open(userId, x.title_ct as string), note: x.note_ct ? open(userId, x.note_ct as string) : null,
     day: x.day as string, starts: (x.starts as string | null) ?? null, ends: (x.ends as string | null) ?? null, repeat: x.repeat as CalEvent["repeat"], until: (x.until as string | null) ?? null, recordId: (x.record_id as string | null) ?? null,
   }));
+}
+
+/**
+ * A calendar's events with the days the person's records hold (a date planned, an election, a duty due, a goal's
+ * day, a birthday), so nothing is entered twice. Filtered to a tile when given.
+ */
+export async function calendar(userId: string, from: string, to: string, tile?: CalTile | null): Promise<CalEvent[]> {
+  const [own, records] = await Promise.all([events(userId, from, to, tile), !tile ? lifeRecords(userId) : isLifeApp(tile) ? lifeRecords(userId, tile) : Promise.resolve([])]);
+  return [...own, ...recordEvents(records)];
 }

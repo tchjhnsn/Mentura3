@@ -1,35 +1,24 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { BuildingIcon, CalendarIcon, ChevronRightIcon, CompassIcon, NotebookPenIcon, SparklesIcon } from "lucide-react";
+import { BuildingIcon, ChevronRightIcon, CompassIcon, SparklesIcon } from "lucide-react";
 import { ORIGINS } from "@reflect/core/origins";
 import { familyOf, parseRef, refHref, type Company, type Filing, type Job, type WikiWork } from "@reflect/core/work-browse";
-import { SectionHeader, ThingHeader } from "@/components/headers";
+import { ThingHeader } from "@/components/headers";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { LifeRecord } from "@/server/life-store";
 import { inspireAction } from "./inspire-action";
+import { TileHeader, TileIcon } from "../tile-header";
 
 export type WorkTab = "space" | "browse" | "work" | "income" | "household" | "credential";
 
-/**
- * Work's header (Torian, 2026-11-14 18:21Z: "The only thing needed is the workspace and the icons"): the title, which
- * leads back to the workspace, and icons for browsing work, the journal and Work's calendar. No search and no tabs;
- * income, the intended household, the work you do and credentials are reached from the workspace.
- */
+const PART: Partial<Record<WorkTab, string>> = { work: "Work you do", income: "Income", household: "Intended household", credential: "Credentials" };
+
+/** Work's header: the tile's header with browsing work first among its icons (Torian, 2026-11-14 18:21Z: "Browse should be an icon"). */
 export function WorkHeader({ on }: { on: WorkTab | null }) {
-  const icon = (label: string, href: string, here: boolean, children: ReactNode) => (
-    <Button asChild variant={here ? "secondary" : "ghost"} size="icon" aria-label={label} title={label}><Link href={href} aria-current={here ? "page" : undefined}>{children}</Link></Button>
-  );
-  return (
-    <SectionHeader back={on === "space" ? "/" : "/life/work"} backLabel={on === "space" ? "Home" : "Workspace"} title="Work" icons={
-      <div className="flex items-center gap-1">
-        {icon("Browse work", "/life/work/browse", on === "browse", <CompassIcon />)}
-        {icon("Journal", "/journal", false, <NotebookPenIcon />)}
-        {icon("Work's calendar", "/calendar?tile=work", false, <CalendarIcon />)}
-      </div>
-    } />
-  );
+  const part = on === "space" ? null : on === "browse" ? "Browse work" : on ? PART[on] ?? null : null;
+  return <TileHeader tile="work" label="Work" part={part} icons={<TileIcon label="Browse work" href="/life/work/browse" here={on === "browse"}><CompassIcon /></TileIcon>} />;
 }
 
 /** A titled row of cards that scrolls sideways, with a link to all of them. */
