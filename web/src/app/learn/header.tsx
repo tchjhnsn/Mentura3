@@ -1,32 +1,20 @@
-import Link from "next/link";
-import { SearchIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SectionHeader } from "@/components/headers";
-import { Segmented } from "@/components/segmented";
+import { CompassIcon, LibraryIcon } from "lucide-react";
+import { TileHeader, TileIcon } from "@/app/life/tile-header";
+
+export type LearnPart = "space" | "shelves" | "reading" | "claims" | "highlights" | "browse";
+const PART: Record<LearnPart, string | null> = { space: null, shelves: "My shelves", reading: "Reading", claims: "Claims", highlights: "Highlights", browse: "Browse" };
 
 /**
- * The header of Learn's five sections: your own catalog (shelves, reading, highlights, claims) as tabs, and Browse
- * apart from them, since browsing is for what is not yours yet. One thing's page and a page where you are doing
- * something have their own headers (`@/components/headers`).
+ * Learn's header, a tile's like the rest (Torian, 2026-11-14 18:21Z: "The only thing needed is the workspace and the
+ * icons"): Learn, or the part open in it, with icons for browsing, your shelves, the journal and Learn's calendar.
+ * Reading, highlights and claims open from the workspace. One thing's page and a page where you are doing something
+ * have their own headers (`@/components/headers`).
  */
-export function LearnHeader({ on }: { on: "shelves" | "reading" | "claims" | "highlights" | "browse" }) {
+export function LearnHeader({ on }: { on: LearnPart }) {
   return (
-    <SectionHeader back="/" backLabel="Home" title="Learn" tabs={
-      <>
-        <Segmented
-          label="Your catalog"
-          items={[
-            { label: "My shelves", href: "/learn", on: on === "shelves" },
-            { label: "Reading", href: "/learn/reading", on: on === "reading" },
-            { label: "Highlights", href: "/learn/highlights", on: on === "highlights" },
-            { label: "Claims", href: "/learn?tab=claims", on: on === "claims" },
-            { label: "Calendar", href: "/calendar?tile=learn", on: false },
-          ]}
-        />
-        <Button asChild variant={on === "browse" ? "default" : "outline"} aria-current={on === "browse" ? "page" : undefined} className="shrink-0">
-          <Link href="/learn/browse"><SearchIcon />Browse</Link>
-        </Button>
-      </>
-    } />
+    <TileHeader tile="learn" label="Learn" part={PART[on]} workspace="/learn" icons={<>
+      <TileIcon label="Browse" href="/learn/browse" here={on === "browse"}><CompassIcon /></TileIcon>
+      <TileIcon label="My shelves" href="/learn/shelves" here={on === "shelves"}><LibraryIcon /></TileIcon>
+    </>} />
   );
 }
