@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import { SectionHead } from "@/components/section-head";
 import type { Row } from "@/server/rows";
 import { BookGrid } from "../book-card";
 import { moreRowsAction } from "./actions";
@@ -10,10 +10,7 @@ import { moreRowsAction } from "./actions";
 export function BookRow({ row, mine }: { row: Row; mine: Map<string, string> }) {
   return (
     <section className="space-y-4">
-      <div className="flex items-baseline justify-between gap-3 pt-2">
-        <h2 className="text-lg font-semibold">{row.title}</h2>
-        <Link href={row.href} className="text-muted-foreground shrink-0 text-sm underline-offset-4 hover:underline">See all</Link>
-      </div>
+      <SectionHead title={row.title} href={row.href} className="pt-2" />
       <BookGrid books={row.books} mine={mine} row />
     </section>
   );

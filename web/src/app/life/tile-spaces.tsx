@@ -13,10 +13,7 @@ const AGAIN: Record<string, string> = { yes: "See them again", no: "Not again", 
 function Section({ title, note, action, children }: { title: string; note: string; action?: { label: string; href: string }; children: ReactNode }) {
   return (
     <section className="grid gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <Head title={title} note={note} />
-        {action ? <Link href={action.href} className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">{action.label}</Link> : null}
-      </div>
+      <Head title={title} note={note} add={action} />
       {children}
     </section>
   );

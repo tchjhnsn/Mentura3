@@ -3,19 +3,18 @@ import { BookIcon, BookOpenIcon, HeadphonesIcon, StarIcon } from "lucide-react";
 import type { CatalogEntry } from "@reflect/core/openlibrary";
 import { categoryOf } from "@reflect/core/thema";
 import { WAYS, bookWay } from "@reflect/core/ways";
-import { Badge } from "@/components/ui/badge";
-import { AddBook } from "./add-book";
+import { KeepBook, KeptMark } from "./keep-mark";
 
 // Also rendered in the browser (More), so it imports nothing from openlibrary.ts at run time: that module reads files.
 const coverUrl = (e: Pick<CatalogEntry, "cover">, size: "M" | "L" = "M") => (e.cover ? `https://covers.openlibrary.org/b/id/${e.cover}-${size}.jpg` : null);
 
 export const STATUS: Record<string, string> = { want: "Want to read", reading: "Reading", read: "Read", abandoned: "Set aside", referenced: "Referenced" };
 
-/** One book from the library: its cover and title open its book page; below, add it or see it is yours. */
+/** One book from the library: its cover and title open its book page; the bookmark on its cover puts it on Want to read. */
 export function BookCard({ b, have, className = "" }: { b: CatalogEntry; have: string | undefined; className?: string }) {
   const cover = coverUrl(b);
   return (
-    <li className={`flex flex-col gap-2 ${className}`}>
+    <li className={`relative flex flex-col gap-2 ${className}`}>
       <Link href={`/schole/works/${b.work}`} className="group flex flex-col gap-2">
         <div className="bg-muted relative aspect-[2/3] overflow-hidden rounded-md border transition group-hover:opacity-90">
           {cover ? (
@@ -37,7 +36,7 @@ export function BookCard({ b, have, className = "" }: { b: CatalogEntry; have: s
         {b.rating ? <p className="text-muted-foreground flex items-center gap-1 text-xs"><StarIcon className="size-3 fill-current" />{b.rating.average.toFixed(1)} <span>({b.rating.count.toLocaleString("en-US")})</span></p> : null}
         <p className="text-muted-foreground text-[11px]" title="Way of learning">{WAYS.find((w) => w.id === bookWay(categoryOf(b), b.subjects))!.label}</p>
       </div>
-      {have ? <Badge variant="secondary" className="h-8 w-fit max-w-full truncate">On your shelf · {STATUS[have] ?? have}</Badge> : <AddBook entry={b} />}
+      {have ? <KeptMark label={`On your shelves: ${STATUS[have] ?? have}`} /> : <KeepBook entry={b} />}
     </li>
   );
 }
@@ -63,7 +62,7 @@ export function AuthorName({ name, id, className }: { name: string | undefined; 
 export function BookGrid({ books, mine, cols = "md:grid-cols-4 lg:grid-cols-6", row = false }: { books: CatalogEntry[]; mine: Map<string, string>; /** Column classes from md up, for a grid in a narrower column. */ cols?: string; /** On a phone, one row to swipe through instead of a grid. */ row?: boolean }) {
   if (row) {
     return (
-      <ul className={`-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${cols}`}>
+      <ul className={`-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${cols}`}>
         {books.map((b) => <BookCard key={b.work} b={b} have={mine.get(b.work)} className="w-36 shrink-0 snap-start sm:w-auto" />)}
       </ul>
     );

@@ -12,7 +12,7 @@ import { highlightBooks } from "@/server/highlights";
 import { restateAction } from "./actions";
 import { PAGE } from "@/components/page-header";
 import { Suspense } from "react";
-import { SearchIcon } from "lucide-react";
+import { ChevronRightIcon, SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Head, SPACE } from "@/app/life/space";
 import { DiscoverRows } from "./browse/media-page";
@@ -28,8 +28,7 @@ export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 // The shelves' own parameters, from links made before Learn opened to the workspace.
 const SHELF_KEYS = ["tab", "book", "filled", "show", "sort", "removed"];
-const ROW = "-mx-6 flex snap-x gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&>li]:w-72 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto";
-const LINK = "text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline";
+const ROW = "-mx-6 flex snap-x scroll-px-6 gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&>li]:w-72 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto";
 
 type Card = { key: string; href: string; kind: string; title: string; by: string | null; image: string | null; share: number | null; go?: string };
 
@@ -126,29 +125,20 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
         ) : null}
 
         <section className="grid grid-cols-1 gap-3">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <Head title="Discover" note="To read, hear, watch and look at here." />
-            <Link href="/schole/browse" className={LINK}>Browse everything</Link>
-          </div>
+          <Head title="Discover" href="/schole/browse" note="To read, hear, watch and look at here." />
           <Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} /></Suspense>
         </section>
 
         <Upcoming userId={user.id} tile="learn" today={today} title="Events" note="Lectures, readings and gatherings on your Scholē calendar in the next two weeks." />
 
         <section id="library" className="grid grid-cols-1 scroll-mt-20 gap-6">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <Head title="Your library" note={kept ? `${kept} kept, on your shelves by the ways of learning.` : "What you keep, on your shelves by the ways of learning."} />
-            <Link href="/schole/shelves" className={LINK}>Open your shelves</Link>
-          </div>
+          <Head title="Your library" href="/schole/shelves" note={kept ? `${kept} kept, on your shelves by the ways of learning.` : "What you keep, on your shelves by the ways of learning."} />
           <ul className="flex flex-wrap gap-2 text-sm">
             {[["Reading", "/schole/reading"], ["Highlights", "/schole/highlights"], ["Claims", "/schole/shelves?tab=claims"], ["Lists", "/schole/lists"]].map(([label, href]) => <li key={href}><Link href={href!} className="hover:bg-accent block rounded-lg border px-3 py-2 font-medium">{label}</Link></li>)}
           </ul>
           {next.length ? (
             <div className="grid grid-cols-1 gap-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-3">
-                <h3 className="font-semibold">Next</h3>
-                {next.length > 6 ? <Link href="/schole/shelves?show=want" className={LINK}>All {next.length}</Link> : null}
-              </div>
+              <h3 className="font-semibold"><Link href="/schole/shelves?show=want" className="group inline-flex items-center gap-0.5 hover:underline hover:underline-offset-4">Next{next.length > 6 ? <span className="text-muted-foreground ml-1 font-normal">{next.length}</span> : null}<ChevronRightIcon className="text-muted-foreground size-4" /></Link></h3>
               <Cards cards={next.slice(0, 6)} />
             </div>
           ) : null}

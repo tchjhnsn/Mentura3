@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SectionHead } from "@/components/section-head";
 import { SearchIcon } from "lucide-react";
 import { batchOrder, FAMILIES, formingBatches, industries, ranked, type Company, type Job, type WikiWork } from "@reflect/core/work-browse";
 import { PAGE } from "@/components/page-header";
@@ -78,10 +79,7 @@ export default async function BrowseWorkPage({ searchParams }: { searchParams: P
       <div className="grid gap-8">
         {shown.map((s) => (
           <section key={s.mode} className="grid gap-3">
-            <div className="flex items-end justify-between gap-3">
-              <h2 className="text-lg font-semibold tracking-tight">{s.title} <span className="text-muted-foreground text-sm font-normal">{s.count}</span></h2>
-              {s.count > 8 ? <Link href={url({ m: s.mode })} className="text-muted-foreground hover:text-foreground text-sm">See all</Link> : null}
-            </div>
+            <SectionHead title={<>{s.title} <span className="text-muted-foreground text-sm font-normal">{s.count}</span></>} href={s.count > 8 ? url({ m: s.mode }) : undefined} />
             <ul className={GRID}>{s.cards}</ul>
           </section>
         ))}

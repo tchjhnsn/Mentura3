@@ -100,7 +100,7 @@ test("a venture of your own in Work's workspace, with a journal entry toward it"
   await page.goto("/life/work");
   await expect(page.getByRole("heading", { name: "Right now" })).toBeVisible({ timeout: 60_000 });
   await page.getByLabel("Name of the work").fill(name);
-  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("button", { name: "Add it" }).click();
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible({ timeout: 30_000 });
   await page.getByRole("button", { name: "Write an entry" }).click();
   await expect(page).toHaveURL(/\/journal\/w\//, { timeout: 30_000 });

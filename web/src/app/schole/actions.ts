@@ -303,6 +303,7 @@ async function addFromForm(userId: string, form: FormData): Promise<void> {
   if (same && go && same.status === "want") await changeItem(user.id, id, { status: "doing", day: field(form, "day") });
   revalidatePath("/schole");
   revalidatePath("/schole/browse");
+  revalidatePath("/schole/find");
   if (go) redirect(`/schole/items/${id}`);
 }
 
