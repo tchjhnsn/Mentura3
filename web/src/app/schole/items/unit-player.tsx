@@ -233,9 +233,9 @@ export function UnitPlayer(p: UnitProps) {
           ) : <Button size="sm" disabled={pending} onClick={() => finish(true)}>{p.next ? "Finished, next" : "Finished"}</Button>}
         </div>}
 
-        {p.between}
-
         {transcriptPanel}
+
+        {p.between}
 
         <div className="space-y-2">
           <div className="flex items-center gap-1">

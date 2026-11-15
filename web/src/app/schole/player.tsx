@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ListMusicIcon, MoonIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, ListMusicIcon, ListOrderedIcon, Maximize2Icon, MoonIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
 import type { Audiobook } from "@reflect/core/librivox";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,6 +102,16 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   const [follow, setFollow] = useState(false);
   const [queue, setQueue] = useState<Track[]>([]);
   const [sleep, setSleep] = useState<Sleep>(null);
+  // Full screen (Torian, 2026-11-15 07:57Z): what is playing, large, with its chapters.
+  const [full, setFull] = useState(false);
+  useEffect(() => {
+    if (!full) return;
+    const was = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") setFull(false); };
+    window.addEventListener("keydown", key);
+    return () => { document.body.style.overflow = was; window.removeEventListener("keydown", key); };
+  }, [full]);
   const [fx, setFx] = useState<{ even: boolean; silence: boolean }>({ even: false, silence: false });
   const [fxBlocked, setFxBlocked] = useState(false);
   const fxOn = fx.even || fx.silence;
@@ -280,6 +290,74 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   const chap = track?.chapters?.length ? [...track.chapters].reverse().find((x) => x.at <= time) ?? null : null;
   const left = sleep && "until" in sleep ? Math.max(0, Math.ceil((sleep.until - Date.now()) / 60000)) : null;
   const useFx = fxOn && !fxBlocked;
+  const chapters = track?.chapters ?? [];
+  const chapAt = chap ? chapters.indexOf(chap) : -1;
+  // The place in the recording, with a mark where each chapter starts (Torian, 2026-11-15 07:57Z).
+  const scrubber = (
+    <div className="relative">
+      <input
+        type="range" min={0} max={Math.max(1, Math.floor(total))} step={1} value={Math.floor(time)} aria-label="Place in the recording"
+        onChange={(e) => seek(Number(e.target.value))} className="accent-foreground block h-1 w-full cursor-pointer"
+      />
+      {total ? chapters.filter((x) => x.at > 0 && x.at < total).map((x) => (
+        <span key={x.at} aria-hidden className="bg-background pointer-events-none absolute top-1/2 h-2 w-0.5 -translate-y-1/2" style={{ left: `${(x.at / total) * 100}%` }} />
+      )) : null}
+    </div>
+  );
+  const chaptersMenu = chapters.length ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Chapters" title="Chapters"><ListOrderedIcon /></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="max-h-80 w-80 overflow-y-auto">
+        <DropdownMenuLabel>Chapters</DropdownMenuLabel>
+        {chapters.map((x, i) => (
+          <DropdownMenuItem key={`${x.at}-${i}`} onSelect={() => seek(x.at)} className={`flex items-baseline gap-2 ${i === chapAt ? "bg-muted font-medium" : ""}`}>
+            <span className="text-muted-foreground w-12 shrink-0 text-xs tabular-nums">{stamp(x.at)}</span><span className="min-w-0 flex-1 truncate">{x.title}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+  const sleepMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Sleep timer" className={sleep ? "text-foreground" : ""}><MoonIcon className={sleep ? "fill-current" : ""} /></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Stop playing</DropdownMenuLabel>
+        <DropdownMenuRadioGroup value={sleep ? ("end" in sleep ? "end" : "time") : "off"}>
+          <DropdownMenuRadioItem value="off" onSelect={() => setSleep(null)}>Don&apos;t stop</DropdownMenuRadioItem>
+          {[15, 30, 45, 60].map((m) => <DropdownMenuItem key={m} onSelect={() => setSleep({ until: Date.now() + m * 60000 })}>In {m} minutes</DropdownMenuItem>)}
+          <DropdownMenuRadioItem value="end" onSelect={() => setSleep({ end: true })}>At the end of {track ? "the episode" : "the part"}</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+  const soundMenu = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Sound"><SlidersHorizontalIcon /></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="max-w-72">
+        <DropdownMenuCheckboxItem checked={fx.even} onCheckedChange={(v) => setEffects({ ...fx, even: Boolean(v) })}>Even out voices</DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem checked={fx.silence} onCheckedChange={(v) => setEffects({ ...fx, silence: Boolean(v) })}>Skip silences</DropdownMenuCheckboxItem>
+        {fxOn && fxBlocked ? <p className="text-muted-foreground px-2 py-1.5 text-xs">This recording&apos;s host doesn&apos;t let the browser change its sound, so it plays as published.</p> : null}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+  const queueMenu = queue.length ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label={`Up next, ${queue.length}`} className="relative"><ListMusicIcon /><span className="bg-foreground text-background absolute -top-0.5 -right-0.5 rounded-full px-1 text-[10px] leading-4">{queue.length}</span></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72">
+        <DropdownMenuLabel>Up next</DropdownMenuLabel>
+        {queue.map((q) => (
+          <DropdownMenuItem key={q.id} onSelect={() => playTrack(q)} className="flex items-start gap-2">
+            <span className="min-w-0 flex-1"><span className="block truncate">{q.title}</span><span className="text-muted-foreground block truncate text-xs">{q.show}</span></span>
+            <button type="button" aria-label={`Take ${q.title} off up next`} className="text-muted-foreground hover:text-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); value.dequeue(q.id); }}><XIcon className="size-4" /></button>
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onSelect={() => saveQueue([])}>Clear up next</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+  const speed = <Button size="sm" variant="ghost" className="tabular-nums" aria-label={`Speed ${rate} times`} onClick={() => setRate(RATES[(RATES.indexOf(rate) + 1) % RATES.length]!)}>{rate}×</Button>;
+  const name = track ? track.title : book?.bookTitle ?? "";
   return (
     <ListenContext.Provider value={value}>
       {children}
@@ -316,14 +394,11 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
             onEnded={ended}
           />
           <div className="mx-auto max-w-3xl px-4 pt-1.5 pb-2 sm:px-6">
-            <input
-              type="range" min={0} max={Math.max(1, Math.floor(total))} step={1} value={Math.floor(time)} aria-label="Place in the recording"
-              onChange={(e) => seek(Number(e.target.value))} className="accent-foreground block h-1 w-full cursor-pointer"
-            />
+            {scrubber}
             <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:flex-nowrap">
               <div className="order-first flex min-w-0 flex-1 basis-[calc(100%-3rem)] items-center gap-2.5 px-1 sm:order-none sm:basis-auto">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                {art ? <Link href={href} className="shrink-0" aria-hidden tabIndex={-1}><img src={art} alt="" className="size-10 rounded-md border object-cover" /></Link> : null}
+                {art ? <button type="button" className="shrink-0" aria-label="Full screen" onClick={() => setFull(true)}><img src={art} alt="" className="size-10 rounded-md border object-cover" /></button> : null}
                 <div className="min-w-0 flex-1">
                 <Link href={href} className="block truncate text-sm font-medium">{track ? track.title : book!.bookTitle}</Link>
                 <p className="text-muted-foreground truncate text-xs tabular-nums">
@@ -336,44 +411,56 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
               <Button size="icon" variant="ghost" aria-label="Back 15 seconds" onClick={() => skip(-15)}><RotateCcwIcon /></Button>
               <Button size="icon" className="rounded-full" aria-label={playing ? "Pause" : "Play"} onClick={toggle}>{playing ? <PauseIcon /> : <PlayIcon />}</Button>
               <Button size="icon" variant="ghost" aria-label="Forward 30 seconds" onClick={() => skip(30)}><RotateCwIcon /></Button>
-              <Button size="sm" variant="ghost" className="tabular-nums" aria-label={`Speed ${rate} times`} onClick={() => setRate(RATES[(RATES.indexOf(rate) + 1) % RATES.length]!)}>{rate}×</Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Sleep timer" className={sleep ? "text-foreground" : ""}><MoonIcon className={sleep ? "fill-current" : ""} /></Button></DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Stop playing</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup value={sleep ? ("end" in sleep ? "end" : "time") : "off"}>
-                    <DropdownMenuRadioItem value="off" onSelect={() => setSleep(null)}>Don&apos;t stop</DropdownMenuRadioItem>
-                    {[15, 30, 45, 60].map((m) => <DropdownMenuItem key={m} onSelect={() => setSleep({ until: Date.now() + m * 60000 })}>In {m} minutes</DropdownMenuItem>)}
-                    <DropdownMenuRadioItem value="end" onSelect={() => setSleep({ end: true })}>At the end of {track ? "the episode" : "the part"}</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Sound"><SlidersHorizontalIcon /></Button></DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="max-w-72">
-                  <DropdownMenuCheckboxItem checked={fx.even} onCheckedChange={(v) => setEffects({ ...fx, even: Boolean(v) })}>Even out voices</DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem checked={fx.silence} onCheckedChange={(v) => setEffects({ ...fx, silence: Boolean(v) })}>Skip silences</DropdownMenuCheckboxItem>
-                  {fxOn && fxBlocked ? <p className="text-muted-foreground px-2 py-1.5 text-xs">This recording&apos;s host doesn&apos;t let the browser change its sound, so it plays as published.</p> : null}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              {queue.length ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label={`Up next, ${queue.length}`} className="relative"><ListMusicIcon /><span className="bg-foreground text-background absolute -top-0.5 -right-0.5 rounded-full px-1 text-[10px] leading-4">{queue.length}</span></Button></DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-72">
-                    <DropdownMenuLabel>Up next</DropdownMenuLabel>
-                    {queue.map((q) => (
-                      <DropdownMenuItem key={q.id} onSelect={() => playTrack(q)} className="flex items-start gap-2">
-                        <span className="min-w-0 flex-1"><span className="block truncate">{q.title}</span><span className="text-muted-foreground block truncate text-xs">{q.show}</span></span>
-                        <button type="button" aria-label={`Take ${q.title} off up next`} className="text-muted-foreground hover:text-foreground" onClick={(e) => { e.preventDefault(); e.stopPropagation(); value.dequeue(q.id); }}><XIcon className="size-4" /></button>
-                      </DropdownMenuItem>
-                    ))}
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => saveQueue([])}>Clear up next</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : null}
+              {speed}
+              {chaptersMenu}
+              {sleepMenu}
+              {soundMenu}
+              {queueMenu}
+              <Button size="icon" variant="ghost" aria-label="Full screen" title="Full screen" onClick={() => setFull(true)}><Maximize2Icon /></Button>
               </div>
             </div>
+          </div>
+        </div>
+      ) : null}
+      {src && full ? (
+        <div role="dialog" aria-modal="true" aria-label={`Playing ${name}`} className="bg-background fixed inset-0 z-50 overflow-y-auto">
+          <div className="mx-auto flex min-h-full max-w-md flex-col gap-5 px-6 pt-4 pb-10">
+            <div className="flex items-center justify-between">
+              <Button size="icon" variant="ghost" aria-label="Leave full screen" onClick={() => setFull(false)}><ChevronDownIcon /></Button>
+              <Link href={href} onClick={() => setFull(false)} className="text-muted-foreground truncate text-sm underline-offset-4 hover:underline">{track ? track.show : book?.bookTitle}</Link>
+              <span className="size-9" />
+            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {art ? <img src={art} alt="" className="mx-auto aspect-square w-full max-w-sm rounded-xl border object-cover shadow-md" /> : null}
+            <div className="space-y-1">
+              {chap ? <p className="text-muted-foreground truncate text-sm">{chap.title}</p> : c && !track ? <p className="text-muted-foreground truncate text-sm">{c.title}</p> : null}
+              <h2 className="text-xl font-semibold leading-snug tracking-tight">{name}</h2>
+            </div>
+            <div className="space-y-1.5">
+              {scrubber}
+              <p className="text-muted-foreground flex justify-between text-xs tabular-nums"><span>{stamp(time)}</span><span>-{stamp(Math.max(0, total - time))}</span></p>
+            </div>
+            <div className="flex items-center justify-center gap-6">
+              <Button size="icon" variant="ghost" className="size-12 [&_svg]:size-6" aria-label="Back 15 seconds" onClick={() => skip(-15)}><RotateCcwIcon /></Button>
+              <Button size="icon" className="size-16 rounded-full [&_svg]:size-7" aria-label={playing ? "Pause" : "Play"} onClick={toggle}>{playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}</Button>
+              <Button size="icon" variant="ghost" className="size-12 [&_svg]:size-6" aria-label="Forward 30 seconds" onClick={() => skip(30)}><RotateCwIcon /></Button>
+            </div>
+            <div className="flex items-center justify-center gap-2">{speed}{sleepMenu}{soundMenu}{queueMenu}</div>
+            {left !== null || sleep ? <p className="text-muted-foreground text-center text-xs">{left !== null ? `Stops in ${left} min` : "Stops at the end"}</p> : null}
+            {chapters.length ? (
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium">Chapters</h3>
+                <ol className="divide-y rounded-lg border text-sm">
+                  {chapters.map((x, i) => (
+                    <li key={`${x.at}-${i}`}>
+                      <button type="button" onClick={() => seek(x.at)} aria-current={i === chapAt ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${i === chapAt ? "bg-muted font-medium" : ""}`}>
+                        <span className="text-muted-foreground w-14 shrink-0 tabular-nums">{stamp(x.at)}</span><span className="min-w-0 flex-1">{x.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : null}
           </div>
         </div>
       ) : null}
