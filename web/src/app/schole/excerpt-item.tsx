@@ -54,24 +54,24 @@ export function ExcerptItem({ row, reader }: { row: ExcerptRow; /** Reflect's re
           </div>
         </div>
       ) : null}
-      <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+      <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs">
         {row.where ? reader && row.chapter ? <Link className="underline-offset-4 hover:underline" href={`${reader}?c=${row.chapter}`}>{row.where}</Link> : <span>{row.where}</span> : null}
         <span className="inline-flex items-center gap-1" role="group" aria-label="Colour">
           {HIGHLIGHT_COLORS.map((c) => (
             <button key={c} type="button" aria-label={COLOR[c].name} aria-pressed={c === row.color} disabled={pending || c === row.color} onClick={() => act(() => reviseExcerptAction(row.id, row.work, { color: c }))} className={cn("size-3 rounded-full", COLOR[c].dot, c === row.color ? "ring-foreground/60 ring-2 ring-offset-1" : "opacity-60 hover:opacity-100")} />
           ))}
         </span>
-        <button type="button" className="hover:text-foreground inline-flex items-center gap-1" onClick={copy}>{copied ? <CheckIcon className="size-3" /> : <CopyIcon className="size-3" />}{copied ? "Copied" : "Copy quote"}</button>
-        {editing ? null : <button type="button" className="hover:text-foreground inline-flex items-center gap-1" onClick={() => setEditing(true)}><MessageSquareIcon className="size-3" />{row.note ? "Edit note" : "Add a note"}</button>}
+        <button type="button" className="hover:text-foreground inline-flex size-6 items-center justify-center rounded-md hover:bg-muted [&_svg]:size-3.5" onClick={copy} aria-label={copied ? "Copied" : "Copy quote"} title={copied ? "Copied" : "Copy quote"}>{copied ? <CheckIcon /> : <CopyIcon />}</button>
+        {editing ? null : <button type="button" className="hover:text-foreground inline-flex size-6 items-center justify-center rounded-md hover:bg-muted [&_svg]:size-3.5" onClick={() => setEditing(true)} aria-label={row.note ? "Edit note" : "Add a note"} title={row.note ? "Edit note" : "Add a note"}><MessageSquareIcon /></button>}
         {row.published ? (
           <>
             <Link href={`/q/${row.published}`} className="text-foreground inline-flex items-center gap-1 underline-offset-4 hover:underline"><GlobeIcon className="size-3" />Published</Link>
             <button type="button" className="hover:text-foreground" disabled={pending} onClick={() => act(() => unpublishQuoteAction(row.published!))}>Take down</button>
           </>
         ) : (
-          <button type="button" className="hover:text-foreground inline-flex items-center gap-1" onClick={() => setAsking(true)}><GlobeIcon className="size-3" />Publish</button>
+          <button type="button" className="hover:text-foreground inline-flex size-6 items-center justify-center rounded-md hover:bg-muted [&_svg]:size-3.5" onClick={() => setAsking(true)} aria-label="Publish" title="Publish"><GlobeIcon /></button>
         )}
-        <button type="button" className="hover:text-foreground inline-flex items-center gap-1" disabled={pending} onClick={() => act(() => removeExcerptAction(row.id, row.work))}><Trash2Icon className="size-3" />Remove</button>
+        <button type="button" className="hover:text-foreground inline-flex size-6 items-center justify-center rounded-md hover:bg-muted [&_svg]:size-3.5" disabled={pending} onClick={() => act(() => removeExcerptAction(row.id, row.work))} aria-label="Remove" title="Remove"><Trash2Icon /></button>
       </div>
       {asking ? (
         <div className="mt-2 space-y-2 rounded-md border p-3 text-sm">
