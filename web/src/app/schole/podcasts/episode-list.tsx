@@ -17,7 +17,7 @@ export type EpisodeRow = {
 type Shown = "all" | "new" | "begun" | "played" | "favorite";
 // Played, Not played and Continue, as podcast apps say it (Torian, 2026-11-15 06:46Z).
 const SHOWN: [Shown, string][] = [["all", "All"], ["new", "Not played"], ["begun", "Continue"], ["played", "Played"], ["favorite", "Favorites"]];
-const STEP = 100;
+const STEP = 30;
 
 /**
  * A show's whole catalog (Torian, 2026-11-15): seasons to pick from when the show has them, a filter by where you are

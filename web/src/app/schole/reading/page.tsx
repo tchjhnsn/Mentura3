@@ -8,6 +8,7 @@ import { requireUser } from "@/server/session";
 import { goalFor, learnView, readingDays } from "@/server/learn-store";
 import { listItems } from "@/server/ways-store";
 import { mediumOf } from "@reflect/core/ways";
+import { ROW_LINE } from "../row-line";
 import { LearnHeader } from "../header";
 import { FinishedDay, Goal, WantList } from "./parts";
 import { heardIn } from "@reflect/core/podcast-library";
@@ -55,7 +56,7 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
         <section className="space-y-4">
           <h2 className="text-base font-semibold">Reading now</h2>
           {reading.length ? (
-            <ul className="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4">
+            <ul className={ROW_LINE}>
               {reading.map((b, n) => {
                 const href = b.catalog?.work ? `/schole/works/${b.catalog.work}${b.place ? "/read" : ""}` : null;
                 const pct = b.place ? Math.round((b.place.chapter / b.place.chapters) * 100) : null;

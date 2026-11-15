@@ -1,3 +1,4 @@
+import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { LENGTHS, READERS, TOPICS, topicOf } from "@reflect/core/audiobooks";
 import { Button } from "@/components/ui/button";
@@ -69,10 +70,10 @@ export function AudiobookBrowse({ p, way }: { p: AudiobookParams; way: WayPick |
             {p.language ? <input type="hidden" name="language" value={p.language} /> : null}
             <label htmlFor="q" className="sr-only">Search audiobooks by title or author</label>
             <Input id="q" name="q" defaultValue={p.q} placeholder="Search audiobooks by title or author" className="h-10" />
-            <Button type="submit" className="h-10">Search</Button>
+            <Button type="submit" variant="outline" size="icon" className="size-10 shrink-0" aria-label="Search" title="Search"><SearchIcon /></Button>
           </form>
         </BrowseNav>
-        <div className="flex flex-wrap gap-2">
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&>*]:shrink-0">
           <Menu label="Topic" lead={1} items={[{ href: href({ ...keep, topic: "" }), label: "Every topic", on: !p.topic }, ...TOPICS.filter((t) => t.genre).map((t) => ({ href: href({ ...keep, topic: t.id }), label: t.label, on: p.topic === t.id }))]} />
           <Menu label="Length" lead={1} items={[{ href: href({ ...keep, length: "" }), label: "Any length", on: !p.length }, ...LENGTHS.map((l) => ({ href: href({ ...keep, length: l.id }), label: l.label, on: p.length === l.id }))]} />
           <Menu label="Read by" lead={1} items={[{ href: href({ ...keep, readers: "" }), label: "Any reader", on: !p.readers }, ...READERS.map((r) => ({ href: href({ ...keep, readers: r.id }), label: r.label, on: p.readers === r.id }))]} />
