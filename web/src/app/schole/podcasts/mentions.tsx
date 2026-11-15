@@ -83,15 +83,13 @@ export async function ShowBooks({ show, userId, limit = 12, cols }: { show: Pick
 }
 
 /**
- * A show's hosts as one line in its hero (Scholē page priority guides, show page, 2026-11-15): their faces small and
- * stacked, then "with" and their names, each opening their profile.
+ * People as one line in a hero (Scholē page priority guides, 2026-11-15): their faces small and stacked, then "with"
+ * and their names, each opening their profile. A show's hosts, an episode's guests.
  */
-export async function HostsLine({ show, link }: { show: Show; link: string | null }) {
-  const hosts = (await hostsOf(show, link).catch(() => [])).slice(0, 6);
-  if (!hosts.length) return null;
-  const refs: PersonRef[] = hosts.map((h) => ({ name: h.name, ...(h.wiki ? { wiki: h.wiki } : {}), ...(h.qid ? { qid: h.qid } : {}) }));
-  const bios = await Promise.all(refs.slice(0, 4).map((p) => bioFor(p.name, p.wiki).catch(() => null)));
-  const ref = { feed: show.feed, title: show.title };
+export async function PeopleLine({ people, show }: { people: PersonRef[]; show: { feed: string; title: string } | null }) {
+  const refs = people.slice(0, 6);
+  if (!refs.length) return null;
+  const bios = await Promise.all(refs.slice(0, 4).map((p) => (p.image ? Promise.resolve({ image: p.image }) : bioFor(p.name, p.wiki).catch(() => null))));
   return (
     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
       <span className="flex -space-x-1.5" aria-hidden>
@@ -102,8 +100,14 @@ export async function HostsLine({ show, link }: { show: Show; link: string | nul
       </span>
       <span className="text-muted-foreground">with</span>
       <span>{refs.map((p, i) => (
-        <span key={p.name}>{i ? (i === refs.length - 1 ? " and " : ", ") : ""}<Link href={guestHref(p, ref)} className="font-medium underline-offset-4 hover:underline">{p.name}</Link></span>
-      ))}</span>
+        <span key={p.name}>{i ? (i === refs.length - 1 ? " and " : ", ") : ""}<Link href={guestHref(p, show)} className="font-medium underline-offset-4 hover:underline">{p.name}</Link></span>
+      ))}{people.length > refs.length ? <span className="text-muted-foreground"> and {people.length - refs.length} more</span> : null}</span>
     </p>
   );
+}
+
+/** A show's hosts as one line in its hero. */
+export async function HostsLine({ show, link }: { show: Show; link: string | null }) {
+  const hosts = await hostsOf(show, link).catch(() => []);
+  return <PeopleLine people={hosts.map((h) => ({ name: h.name, ...(h.wiki ? { wiki: h.wiki } : {}), ...(h.qid ? { qid: h.qid } : {}) }))} show={{ feed: show.feed, title: show.title }} />;
 }

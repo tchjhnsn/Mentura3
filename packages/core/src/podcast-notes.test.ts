@@ -11,6 +11,11 @@ describe("chapters from show notes", () => {
       { at: 1327, title: "Jesus' Temptations" }, { at: 1614, title: "Prayer for Wes Huff" },
     ]);
   });
+  it("reads times in parentheses or brackets, as All-In writes them", () => {
+    expect(chaptersFromNotes([block("(0:00) Axon CEO Rick Smith joins"), block("(2:39) History of TASER"), block("[1:02:05] Drones")])).toEqual([
+      { at: 0, title: "Axon CEO Rick Smith joins" }, { at: 159, title: "History of TASER" }, { at: 3725, title: "Drones" },
+    ]);
+  });
   it("is nothing when fewer than three lines have times", () => {
     expect(chaptersFromNotes([block("0:00 Intro"), block("12:00 Outro"), block("Thanks")])).toEqual([]);
   });

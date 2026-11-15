@@ -262,7 +262,7 @@ export function chaptersFromNotes(notes: readonly NoteBlock[]): Chapter[] {
   const out: Chapter[] = [];
   for (const b of notes) {
     const text = b.parts.map((p) => p.text).join(" ").replace(/\s+/g, " ").trim();
-    const m = text.match(/^(?:[~=*_-]{2,}\s*)?(?:\d{1,3}[.)]\s*)?((?:\d{1,2}:)?\d{1,2}:\d{2})\s*[-–—:|]?\s*(.+)$/);
+    const m = text.match(/^(?:[~=*_-]{2,}\s*)?(?:\d{1,3}[.)]\s*)?[([]?((?:\d{1,2}:)?\d{1,2}:\d{2})[)\]]?\s*[-–—:|]?\s*(.+)$/);
     if (!m) continue;
     const title = m[2]!.replace(/[{}]/g, "").replace(/\s+/g, " ").trim().slice(0, 200);
     if (title) out.push({ at: stampSeconds(m[1]!), title });

@@ -6,7 +6,7 @@ import { chaptersFromNotes, episodeDay } from "@reflect/core/podcasts";
 import { episodeGuests } from "@reflect/core/guests";
 import { commentsOn } from "@/server/comment-store";
 import { Comments } from "../../../../podcasts/comments";
-import { EpisodeBooks, PeopleRow } from "../../../../podcasts/mentions";
+import { EpisodeBooks, PeopleLine } from "../../../../podcasts/mentions";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { favoritesOf } from "@/server/favorite-store";
@@ -17,7 +17,7 @@ import { getItem, listUnits } from "@/server/ways-store";
 import { chaptersOf, showFor, transcriptOf } from "@/server/podcasts";
 import { keepTranscript, keptTranscript } from "@/server/transcript-store";
 import { Chapters } from "../../../../podcasts/chapters";
-import { Notes, People } from "../../../../podcasts/parts";
+import { Notes } from "../../../../podcasts/parts";
 import { TaskHeader } from "@/components/headers";
 import { listClaims } from "@/server/claims-store";
 import { UnitPlayer } from "../../../unit-player";
@@ -64,40 +64,43 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const art = e.image ?? item.image ?? show.image;
   const line = [episodeDay(e.date, today), e.season && e.number ? `S${e.season} E${e.number}` : e.number ? `E${e.number}` : null, e.seconds ? said(e.seconds) : null].filter(Boolean).join(" · ");
   const shownNotes = e.notes.length
-    ? <section className="space-y-2"><h2 className="text-sm font-medium">Show notes</h2><Notes blocks={e.notes} track={e.kind === "audio" ? track : null} /></section>
+    ? <Notes blocks={e.notes} track={e.kind === "audio" ? track : null} />
     : e.about ? <p className="max-w-prose text-sm whitespace-pre-line">{e.about}</p> : null;
+  const shownComments = comments.filter((c) => !c.removed).length;
   return (
     <main className={PAGE}>
       <TaskHeader back={{ href: `/schole/items/${id}`, label: "Back to the show" }} title={item.title} />
-      <div className="mt-6 space-y-5">
-        <header className="flex gap-4">
-          {art ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={art} alt="" className="size-24 shrink-0 rounded-lg border object-cover sm:size-28" />
-          ) : null}
-          <div className="min-w-0 space-y-1">
-            <p className="flex flex-wrap items-center gap-1.5 text-xs font-semibold tabular-nums">
-              {line ? <span>{line}</span> : null}
-              {e.type !== "full" ? <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{e.type === "trailer" ? "Trailer" : "Bonus"}</Badge> : null}
-              {e.kind === "video" ? <Badge variant="outline" className="h-4 px-1.5 text-[10px]">Video</Badge> : null}
-            </p>
-            <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{e.title}</h1>
-            {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
-          </div>
-        </header>
-        <People people={e.people.filter((p) => p.role !== "guest")} />
-        <Suspense fallback={null}><PeopleRow people={episodeGuests(e, show)} show={{ feed: show.feed, title: item.title }} /></Suspense>
+      <div className="mt-6 space-y-10">
         <UnitPlayer
           item={id} unit={key} title={e.title} by={item.by} cite={cite}
           youtube={null} media={{ src: e.audio, kind: e.kind }} place={at0 ?? unit?.place ?? null} done={Boolean(unit?.doneOn)} of={null}
           transcript={transcript} notes={item.notes.filter((x) => x.unit === key)} next={older ? `/schole/items/${id}/episodes/${older.key}` : null}
           track={track} favorite={favorites.has(key)}
-          between={<>{e.kind === "audio" ? <Chapters chapters={chapters} track={track} /> : null}{shownNotes}</>}
+          between={e.kind === "audio" ? <Chapters chapters={chapters} track={track} /> : null}
           noTranscript={<p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>}
+          episode={{
+            art: art ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={art} alt="" className="size-24 shrink-0 rounded-xl border object-cover shadow-md sm:size-32" />
+            ) : <span />,
+            heading: <>
+              <p className="flex flex-wrap items-center gap-1.5 text-xs font-semibold tabular-nums">
+                {line ? <span>{line}</span> : null}
+                {e.type !== "full" ? <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{e.type === "trailer" ? "Trailer" : "Bonus"}</Badge> : null}
+                {e.kind === "video" ? <Badge variant="outline" className="h-4 px-1.5 text-[10px]">Video</Badge> : null}
+              </p>
+              <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-[26px] sm:leading-tight">{e.title}</h1>
+              <p className="text-muted-foreground text-sm"><Link href={`/schole/items/${id}`} className="hover:text-foreground underline-offset-4 hover:underline">{item.title}</Link></p>
+              <Suspense fallback={null}><PeopleLine people={episodeGuests(e, show)} show={{ feed: show.feed, title: item.title }} /></Suspense>
+            </>,
+            showNotes: shownNotes,
+            comments: <Comments comments={comments} feed={show.feed} episode={key} path={`/schole/items/${id}/episodes/${key}`} track={track} heading={false} />,
+            commentCount: shownComments,
+          }}
         />
         {mineHere.length ? (
           <section className="space-y-2">
-            <h2 className="text-sm font-medium">Claims you kept from this episode</h2>
+            <h2 className="text-base font-semibold">Claims you kept from this episode</h2>
             <ul className="divide-y rounded-lg border text-sm">
               {mineHere.map((c) => {
                 const at = c.holders.map((h) => h.citation?.match(/, at ((?:\d+:)?\d+:\d\d)$/)?.[1]).find(Boolean);
@@ -112,7 +115,6 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
           </section>
         ) : null}
         <Suspense fallback={null}><EpisodeBooks notes={e.notes} userId={user.id} /></Suspense>
-        <Comments comments={comments} feed={show.feed} episode={key} path={`/schole/items/${id}/episodes/${key}`} track={track} />
         {older || newer ? (
           <nav aria-label="Other episodes" className="grid gap-2 sm:grid-cols-2">
             {older ? (
