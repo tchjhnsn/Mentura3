@@ -11,7 +11,7 @@ import { browseAddAction } from "../actions";
 import { LocalDay } from "../items/local-day";
 import { ROW_LINE } from "../row-line";
 
-const ICON: Record<Medium | "books", ReactNode> = {
+export const ICON: Record<Medium | "books", ReactNode> = {
   books: <BookOpenIcon />, course: <GraduationCapIcon />, lecture: <PresentationIcon />, debate: <MessagesSquareIcon />, discussion: <MessagesSquareIcon />,
   podcast: <MicIcon />, film: <FilmIcon />, series: <TvIcon />, theatre: <DramaIcon />, music: <MusicIcon />, art: <ImageIcon />, game: <Gamepad2Icon />, article: <BookOpenIcon />,
 };
