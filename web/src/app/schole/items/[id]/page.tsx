@@ -30,6 +30,7 @@ import { EpisodeList } from "../../podcasts/episode-list";
 import { ShowFacts } from "../../podcasts/parts";
 import { episodeRows, episodeTrack } from "../../podcasts/track";
 import { ShowActions } from "../../podcasts/show-actions";
+import { favoritesOf } from "@/server/favorite-store";
 import { shelfCrumbs } from "../../crumbs";
 import {
   addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, keepItemClaimAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
@@ -73,6 +74,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
     item.medium === "course" || item.medium === "podcast" ? listUnits(user.id, item.id) : [],
     item.medium === "course" && item.url ? reasonFor(user.id, item.url) : null,
   ]);
+  const favorites = item.medium === "podcast" ? await favoritesOf(user.id, item.id) : null;
   // A play or a debate kept in writing is read (and often heard) in Reflect, as a book.
   const text = (item.medium === "theatre" || (item.medium === "debate" && !embedOf(item.url)))
     ? (await searchBooks([item.title.replace(/\s*\(.*\)\s*$/, ""), item.by].filter(Boolean).join(" "), openLibrary, 5).catch((): CatalogEntry[] => [])).find((b) => b.free)
@@ -167,7 +169,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         {show?.episodes.length ? section("Episodes", (
           <>
-            <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
+            <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units, favorites)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
             <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all.</p>
           </>
         ), "episodes") : item.medium === "podcast" && item.url ? section("Episodes", <Note>The show&apos;s feed could not be read just now.</Note>) : null}
