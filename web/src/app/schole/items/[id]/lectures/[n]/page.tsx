@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { COURSE_SITES } from "@reflect/core/courses";
 import { requireUser } from "@/server/session";
@@ -50,6 +51,12 @@ export default async function LecturePage({ params }: { params: Promise<{ id: st
           />
         ) : <p className="text-muted-foreground text-sm">{site.name} did not answer just now. Try again in a moment.</p>}
         {lecture?.transcript.length ? <LectureQuiz item={id} unit={n} transcript={lecture.transcript} start={quiz} /> : null}
+        {!next ? (
+          <section className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">This is the last lecture of the course.</p>
+            <Button asChild size="sm" variant="outline"><Link href={`/schole/examinations/new?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`}>Put yourself under examination</Link></Button>
+          </section>
+        ) : null}
         <p className="text-muted-foreground text-xs">From {site.name}, under the {site.license} license. Reflect plays it from the publisher and keeps no copy.</p>
       </div>
     </CourseShell>

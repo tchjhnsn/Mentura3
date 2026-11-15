@@ -53,6 +53,12 @@ export default async function PreviewLecturePage({ searchParams }: { searchParam
             place={null} done={false} of={course.lectures.length} transcript={lecture.transcript} notes={[]} next={next?.href ?? null}
           />
         ) : <p className="text-muted-foreground text-sm">{credit.name} did not answer just now. Try again in a moment.</p>}
+        {!next ? (
+          <section className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">This is the last lecture of the course.</p>
+            <Button asChild size="sm" variant="outline"><Link href={`/schole/examinations/new?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title || ref.title)}`}>Put yourself under examination</Link></Button>
+          </section>
+        ) : null}
         <p className="text-muted-foreground text-xs">From {credit.name}, under the {credit.license} license. Reflect plays it from the publisher and keeps no copy.</p>
       </div>
     </CourseShell>

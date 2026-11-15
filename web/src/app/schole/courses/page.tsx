@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { COURSE_SITES, OUTLINE, courseOutline, courseSite } from "@reflect/core/courses";
-import { ExternalLinkIcon } from "lucide-react";
+import { BookmarkIcon, ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
@@ -10,8 +10,6 @@ import { listItems, listUnits } from "@/server/ways-store";
 import { courseInfoOf, syllabusTexts } from "@/server/courses";
 import { listExaminations } from "@/server/examination-store";
 import { reasonFor } from "@/server/learn-reason-store";
-import { originLabel } from "@reflect/core/origins";
-import { END_KINDS } from "@reflect/core/learn-reason";
 import { LearnHeader } from "../header";
 import { ThingHeader } from "@/components/headers";
 import { browseCrumbs, shelfCrumbs } from "../crumbs";
@@ -55,10 +53,10 @@ export default async function CoursePage({ searchParams }: { searchParams: Promi
   const unfound = texts.filter((t) => !t.book && !/:$/.test(t.line)).map((t) => t.line);
   const mine = new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]));
   const lectures = course.lectures.map((l) => ({ n: l.n, title: l.title, href: href(l.n), done: finished.has(String(l.n)), youtube: l.youtube }));
-  const toc = [{ id: "why", label: "Why I am learning this" }, { id: "course", label: "About the course" }];
+  const toc = [{ id: "course", label: "About the course" }];
   const prereqs = outline.sections.prerequisites.flatMap((p) => p.lines);
   const textCount = books.length + unfound.length;
-  const facts = [`From ${credit.name}`, course.lectures.length ? `${course.lectures.length} lectures` : "No lecture videos", textCount ? `${textCount} required ${textCount === 1 ? "text" : "texts"}` : "No required texts listed", prereqs.length ? `Prerequisites: ${prereqs.slice(0, 2).map((p) => (p.length > 60 ? `${p.slice(0, 57)}...` : p)).join("; ")}` : "No prerequisites listed", kept ? `${finished.size} finished` : null].filter(Boolean);
+  const facts = [course.lectures.length ? `${course.lectures.length} lectures` : "No lecture videos", textCount ? `${textCount} required ${textCount === 1 ? "text" : "texts"}` : null, prereqs.length ? `${prereqs.length} ${prereqs.length === 1 ? "prerequisite" : "prerequisites"}` : null, kept ? `${finished.size} finished` : null].filter(Boolean);
   const whyHref = (start: boolean) => `/schole/courses/why?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}${by ? `&by=${encodeURIComponent(by)}` : ""}${course.image ? `&img=${encodeURIComponent(course.image)}` : ""}${start ? "&go=start" : ""}`;
   const allDone = Boolean(kept && course.lectures.length && course.lectures.every((l) => finished.has(String(l.n))));
   const none = (what: string) => <p className="text-muted-foreground text-sm">{credit.name} lists no {what} for this course.</p>;
@@ -78,75 +76,50 @@ export default async function CoursePage({ searchParams }: { searchParams: Promi
     : reason
       ? <form action={browseAddAction}><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /><Button size="sm" name="go" value="start">Start the course</Button></form>
       : <Button asChild size="sm"><Link href={whyHref(true)}>Start the course</Link></Button>;
+  const hidden = <><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /></>;
+  // The one filled button (priority guides, course page): Start, or Continue naming the next lecture.
+  const big = "h-11 w-full px-6 text-base sm:w-auto";
+  const start = kept
+    ? (next ? <Button asChild size="lg" className={big}><Link href={href(next.n)}>{finished.size ? "Continue" : "Start"}: Lecture {next.n}, {next.title}</Link></Button> : <p className="text-sm">You have finished every lecture.</p>)
+    : reason
+      ? <form action={browseAddAction}>{hidden}<Button size="lg" className={big} name="go" value="start">Start the course</Button></form>
+      : <Button asChild size="lg" className={big}><Link href={whyHref(true)}>Start the course</Link></Button>;
+  // Want to is the bookmark cards already use, beside the title; filled once the course is on your shelves.
+  const keep = kept
+    ? <Button asChild size="icon" variant="ghost" aria-label="On your shelves" title="On your shelves"><Link href={`/schole/items/${kept.id}`}><BookmarkIcon className="fill-current" /></Link></Button>
+    : <form action={browseAddAction}>{hidden}<Button size="icon" variant="ghost" aria-label="Want to take this course" title="Want to"><BookmarkIcon /></Button></form>;
   const header = <ThingHeader back={kept ? "/schole" : "/schole/browse?m=course"} crumbs={kept ? shelfCrumbs(kept.way ?? "teaching") : browseCrumbs("course")} title={title} action={primary} />;
 
   return (
     <CourseShell header={header} course={title} overview={courseHref(site.url, title)} lectures={lectures} current={null} toc={toc}>
-      <header className="space-y-4">
-        <div className="flex flex-col gap-5 sm:flex-row">
+      <header className="space-y-5">
+        <div className="flex flex-col gap-5 sm:flex-row sm:gap-6">
           {course.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={course.image} alt="" className="aspect-video w-full rounded-lg border object-cover sm:w-56" />
+            <img src={course.image} alt="" className="aspect-video w-full rounded-lg border object-cover shadow-sm sm:w-56" />
           ) : null}
-          <div className="min-w-0 space-y-2">
-            <h1 id="page-title" className="text-3xl font-semibold tracking-tight">{title}</h1>
-            {by ? <p className="text-muted-foreground">{by}</p> : null}
-            <p className="text-muted-foreground text-sm">{facts.join(" · ")}</p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {kept ? (
-                <>
-                  {next ? <Button asChild size="sm"><Link href={href(next.n)}>{finished.size ? "Continue" : "Start"}: {next.title}</Link></Button> : null}
-                  <Button asChild size="sm" variant="outline"><Link href={`/schole/items/${kept.id}`}>On your shelves</Link></Button>
-                </>
-              ) : (
-                reason ? <form action={browseAddAction} className="flex flex-wrap gap-2">
-                  <input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />
-                  {by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay />
-                  <Button size="sm" name="go" value="start">Start the course</Button>
-                  <Button size="sm" variant="outline">Want to</Button>
-                </form> : (
-                  <>
-                    <Button asChild size="sm"><Link href={whyHref(true)}>Start the course</Link></Button>
-                    <form action={browseAddAction}>
-                      <input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />
-                      {by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay />
-                      <Button size="sm" variant="outline">Want to</Button>
-                    </form>
-                  </>
-                )
-              )}
-              <Button asChild size="sm" variant="outline"><Link href={`/schole/examinations/new?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}`}>Put yourself under examination</Link></Button>
+          <div className="min-w-0 flex-1 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1 space-y-1">
+                <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
+                <p className="text-muted-foreground text-base">{[by, credit.name].filter(Boolean).join(" · ")}</p>
+                <p className="text-muted-foreground text-[13px]">{facts.join(" · ")}</p>
+              </div>
+              {keep}
             </div>
-            {exams.length ? (
-              <p className="text-sm">Your examinations: {exams.map((x, i) => <span key={x.id}>{i ? ", " : ""}<Link href={`/schole/examinations/${x.id}`} className="underline underline-offset-4">{new Date(x.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} ({x.status === "open" ? "open" : `closed, ${x.examiners.filter((y) => y.attests).length} attested`})</Link></span>)}</p>
+            {start}
+            {reason ? (
+              <p id="why" className="scroll-mt-20 max-w-prose font-serif text-[15px] leading-relaxed italic">
+                <span className="text-muted-foreground not-italic font-sans text-xs font-medium">{allDone ? "Why you began" : "Why I am learning this"} </span>
+                “{reason.cause.length > 200 ? `${reason.cause.slice(0, 197)}...` : reason.cause}”{" "}
+                <Link href={whyHref(false)} className="text-muted-foreground font-sans text-xs not-italic underline underline-offset-4">Edit</Link>
+              </p>
+            ) : kept ? (
+              <p id="why" className="scroll-mt-20 text-muted-foreground text-sm"><Link href={whyHref(false)} className="underline underline-offset-4">Write why you are learning this</Link></p>
             ) : null}
           </div>
         </div>
       </header>
-
-      <section id="why" className="scroll-mt-20 rounded-lg border p-4">
-        {reason ? (
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-baseline justify-between gap-2">
-              <h2 className="font-semibold">{allDone ? "You have finished. Read again why you began" : "Why I am learning this"}</h2>
-              <div className="flex gap-3 text-sm"><Link href={whyHref(false)} className="underline underline-offset-4">Change it</Link><Link href={`/journal/w/${reason.workId}`} className="text-muted-foreground underline underline-offset-4">In your journal</Link></div>
-            </div>
-            <p className="max-w-prose leading-relaxed whitespace-pre-line">{reason.cause}</p>
-            {reason.origins.length ? <p className="text-muted-foreground text-sm">From {reason.origins.map(originLabel).join(", ").toLowerCase()}</p> : null}
-            {reason.end || reason.endKind ? (
-              <p className="max-w-prose text-sm leading-relaxed"><span className="font-medium">For the sake of what: </span>{reason.end}{reason.endKind ? <span className="text-muted-foreground">{reason.end ? " " : ""}({END_KINDS.find((k) => k.id === reason.endKind)!.label.toLowerCase()})</span> : null}</p>
-            ) : null}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <h2 className="font-semibold">Why I am learning this</h2>
-              <p className="text-muted-foreground text-sm">Before you start: what is causing you to learn this, and for the sake of what?</p>
-            </div>
-            <Button asChild size="sm" variant="outline"><Link href={whyHref(!kept)}>Write it</Link></Button>
-          </div>
-        )}
-      </section>
 
       <section id="course" className="scroll-mt-20">
         <SyllabusTabs tabs={OUTLINE.filter((o) => o.id !== "more" || outline.sections.more.length).map((o) => ({
@@ -161,6 +134,12 @@ export default async function CoursePage({ searchParams }: { searchParams: Promi
                 <dt className="text-muted-foreground">Official website</dt>
                 <dd><a href={site.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline underline-offset-4">{new URL(site.url).host}{new URL(site.url).pathname.replace(/\/$/, "")}<ExternalLinkIcon className="size-3.5" /></a></dd>
               </dl>
+              <div className="max-w-prose space-y-2 border-t pt-5">
+                <Button asChild size="sm" variant="outline"><Link href={`/schole/examinations/new?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}`}>Put yourself under examination</Link></Button>
+                {exams.length ? (
+                  <p className="text-muted-foreground text-sm">Your examinations: {exams.map((x, i) => <span key={x.id}>{i ? ", " : ""}<Link href={`/schole/examinations/${x.id}`} className="underline underline-offset-4">{new Date(x.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} ({x.status === "open" ? "open" : `closed, ${x.examiners.filter((y) => y.attests).length} attested`})</Link></span>)}</p>
+                ) : null}
+              </div>
             </div>
           ) : o.id === "texts" ? (
             texts.length ? (
