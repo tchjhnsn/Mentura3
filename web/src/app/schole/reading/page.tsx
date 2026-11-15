@@ -49,9 +49,9 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
 
   return (
     <>
-      <LearnHeader on="reading" />
-      <main className="mx-auto w-full max-w-5xl px-4 pt-4 pb-24 sm:px-6">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
+      <main className="mx-auto w-full max-w-5xl px-4 pb-24 sm:px-6">
+        <LearnHeader on="reading" />
+        <div className="mt-4 grid gap-12 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-10">
           <div className="min-w-0 space-y-12">
         <section className="space-y-4">
           <h2 className="text-base font-semibold">Reading now</h2>

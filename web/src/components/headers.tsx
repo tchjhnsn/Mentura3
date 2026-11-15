@@ -33,17 +33,24 @@ function Back({ fallback, label }: { fallback: string; label: string }) {
  */
 export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: string; backLabel: string; title: string; tabs?: ReactNode; icons?: ReactNode }) {
   return (
+    <>
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
         <Back fallback={back} label={backLabel} />
-        <h1 className="truncate text-2xl font-semibold tracking-tight">{title}</h1>
+        {/* With icons, a phone gives the title its own line under them (a large title, as iOS does), so a larger
+            text size or a long name never cuts it to "Sc...". */}
+        <h1 className={cn("truncate text-2xl font-semibold tracking-tight", icons && "hidden sm:block")}>{title}</h1>
         <div className="ml-auto flex items-center gap-2">
           {tabs ? <div className="hidden items-center gap-2 md:flex">{tabs}</div> : null}
           {icons ?? <SearchButton />}
         </div>
       </div>
+
       {tabs ? <div className="-mx-1 mt-2 flex items-center gap-2 overflow-x-auto px-1 pb-1 md:hidden">{tabs}</div> : null}
     </header>
+    {/* The phone's large title scrolls with the page, under the bar that stays. */}
+    {icons ? <h1 className="pt-1 text-3xl font-semibold tracking-tight break-words sm:hidden">{title}</h1> : null}
+    </>
   );
 }
 

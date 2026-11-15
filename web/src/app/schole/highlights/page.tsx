@@ -46,9 +46,9 @@ export default async function HighlightsPage({ searchParams }: { searchParams: P
 
   return (
     <>
-      <LearnHeader on="highlights" />
-      <main className="mx-auto w-full max-w-3xl px-4 pt-4 pb-24 sm:px-6">
-        <div className="flex flex-wrap items-center gap-2">
+      <main className="mx-auto w-full max-w-3xl px-4 pb-24 sm:px-6">
+        <LearnHeader on="highlights" />
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <form className="flex min-w-0 flex-1 gap-2" role="search">
             {books ? <input type="hidden" name="in" value="books" /> : isHighlightColor(color) ? <input type="hidden" name="color" value={color} /> : null}
             <Input name="q" defaultValue={q} placeholder={books ? "A word or phrase inside your books" : "Search your highlights"} aria-label={books ? "Search inside your books" : "Search your highlights"} className="h-9" />

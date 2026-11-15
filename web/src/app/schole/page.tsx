@@ -7,7 +7,8 @@ import { BROWSE_MEDIA } from "@reflect/core/browse-media";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { Suspense } from "react";
-import { SearchIcon } from "lucide-react";
+import { ChevronRightIcon, SearchIcon } from "lucide-react";
+import { CoverImg } from "./cover-img";
 import { Input } from "@/components/ui/input";
 import { Head, SPACE } from "@/app/life/space";
 import { DiscoverRows } from "./browse/media-page";
@@ -32,10 +33,7 @@ function Hero({ c }: { c: Card }) {
   return (
     <div className="bg-card flex gap-4 rounded-xl border p-4 shadow-xs">
       <Link href={c.href} className="shrink-0" aria-label={c.title}>
-        {c.image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={c.image} alt="" className="size-24 rounded-lg border object-cover shadow-sm" />
-        ) : <span className="bg-muted text-muted-foreground flex size-24 items-center justify-center rounded-lg border text-xs">{c.kind}</span>}
+        <span className="bg-muted text-muted-foreground relative flex size-24 items-center justify-center overflow-hidden rounded-lg border text-xs shadow-sm">{c.kind}{c.image ? <CoverImg src={c.image} className="absolute inset-0 size-full object-cover" /> : null}</span>
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-muted-foreground text-xs">{c.kind}</span>
@@ -55,10 +53,7 @@ function UnderWay({ cards }: { cards: Card[] }) {
       {cards.map((c) => (
         <li key={c.key} className="w-28 shrink-0 snap-start">
           <Link href={c.href} className="group block space-y-1.5">
-            {c.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={c.image} alt="" loading="lazy" className="aspect-square w-full rounded-lg border object-cover transition-opacity group-hover:opacity-90" />
-            ) : <span className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center rounded-lg border px-2 text-center text-xs">{c.kind}</span>}
+            <span className="bg-muted text-muted-foreground relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border px-2 text-center text-xs transition-opacity group-hover:opacity-90">{c.kind}{c.image ? <CoverImg src={c.image} className="absolute inset-0 size-full object-cover" /> : null}</span>
             <span className="line-clamp-2 text-sm font-medium leading-tight group-hover:underline">{c.title}</span>
             {c.share !== null ? <span className="bg-muted block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : <span className="text-muted-foreground block text-xs">{c.kind}</span>}
           </Link>
@@ -144,17 +139,18 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
 
         {last ? (
           <section className="grid grid-cols-1 gap-3" aria-label="Continue">
-            <h2 className="text-base font-semibold">Continue</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
             <Hero c={last} />
             {rest.length ? <UnderWay cards={rest} /> : null}
           </section>
         ) : null}
 
-        <Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense>
+        <div className="[&_h2]:text-xl"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
 
         <section className="grid grid-cols-1 gap-3">
-          <Head title="Discover" href="/schole/browse" note="To hear, watch and take here." />
-          <Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} focus /></Suspense>
+          {/* Discover is a section and its rows are parts of it, so its heading is larger and theirs smaller. */}
+          <h2 className="text-xl font-semibold tracking-tight"><Link href="/schole/browse" className="group inline-flex items-center gap-0.5 hover:underline hover:underline-offset-4">Discover<ChevronRightIcon className="text-muted-foreground size-5 transition group-hover:translate-x-0.5" /></Link></h2>
+          <div className="space-y-6 [&_h2]:text-base"><Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} focus /></Suspense></div>
           <nav aria-label="More to explore" className="pt-2">
             <h3 className="text-muted-foreground mb-2 text-sm">More to explore</h3>
             <ul className="flex flex-wrap gap-1.5">
