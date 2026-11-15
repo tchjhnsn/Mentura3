@@ -5,7 +5,7 @@ import type { Episode } from "./podcasts";
 
 export type UnitMark = { unit: string; place: number | null; doneOn: string | null };
 export type KeptShow = { item: string; title: string; image: string | null; episodes: readonly Episode[]; units: readonly UnitMark[] };
-export type NewEpisode = { item: string; show: string; key: string; title: string; date: string; seconds: number | null; image: string | null };
+export type NewEpisode = { item: string; show: string; key: string; title: string; date: string; seconds: number | null; image: string | null; audio: string; kind: "audio" | "video" };
 
 /** Episodes published on or after `since` that the person has neither begun nor heard, newest first, a few per show. */
 export function newEpisodes(shows: readonly KeptShow[], since: string, opts: { perShow?: number; limit?: number } = {}): NewEpisode[] {
@@ -13,7 +13,7 @@ export function newEpisodes(shows: readonly KeptShow[], since: string, opts: { p
   for (const s of shows) {
     const touched = new Set(s.units.filter((u) => u.doneOn || (u.place ?? 0) > 0).map((u) => u.unit));
     const fresh = s.episodes.filter((e) => e.date && e.date >= since && !touched.has(e.key) && e.type !== "trailer").slice(0, opts.perShow ?? 3);
-    for (const e of fresh) out.push({ item: s.item, show: s.title, key: e.key, title: e.title, date: e.date!, seconds: e.seconds, image: e.image ?? s.image });
+    for (const e of fresh) out.push({ item: s.item, show: s.title, key: e.key, title: e.title, date: e.date!, seconds: e.seconds, image: e.image ?? s.image, audio: e.audio, kind: e.kind });
   }
   return out.sort((a, b) => b.date.localeCompare(a.date)).slice(0, opts.limit ?? 12);
 }

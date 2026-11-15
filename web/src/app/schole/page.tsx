@@ -22,9 +22,8 @@ import { learnView } from "@/server/learn-store";
 import { listExaminations } from "@/server/examination-store";
 import { listItems, mergeInputs } from "@/server/ways-store";
 import { LearnHeader } from "./header";
-import { newEpisodes } from "@reflect/core/podcast-library";
-import { clock } from "@reflect/core/media";
-import { keptShows } from "@/server/podcast-library";
+import { newEpisodeCards } from "@/server/new-episodes";
+import { NewEpisodeCards } from "./podcasts/new-episodes";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -60,12 +59,12 @@ function Cards({ cards }: { cards: Card[] }) {
 /** Episodes of the shows the person keeps, out in the last two weeks and not yet begun. Nothing when there are none. */
 async function NewFromShows({ userId, today }: { userId: string; today: string }) {
   const since = new Date(Date.parse(today) - 14 * 86400000).toISOString().slice(0, 10);
-  const fresh = newEpisodes(await keptShows(userId).catch(() => []), since);
+  const fresh = await newEpisodeCards(userId, since, today, { limit: 6 });
   if (!fresh.length) return null;
   return (
     <section className="grid grid-cols-1 gap-3">
-      <Head title="New from your shows" note="Episodes out in the last two weeks that you have not begun." />
-      <Cards cards={fresh.map((e) => ({ key: `${e.item}/${e.key}`, href: `/schole/items/${e.item}/episodes/${e.key}`, kind: "Episode", title: e.title, by: e.show, image: e.image, share: null, go: [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ") }))} />
+      <Head title="New from your shows" href="/schole/podcasts/new" note="Episodes out in the last two weeks that you have not begun." />
+      <NewEpisodeCards cards={fresh} row />
     </section>
   );
 }
