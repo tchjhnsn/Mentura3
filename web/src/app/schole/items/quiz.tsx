@@ -10,7 +10,7 @@ import { checkAnswerAction, quizAction } from "../actions";
 
 type Quiz = { id: string; questions: Question[]; checked: Checked[] };
 
-function One({ quizId, seq, q, checked, passage, onChecked }: { quizId: string; seq: number; q: Question; checked: Checked | undefined; passage: Passage | null; onChecked: (c: Checked) => void }) {
+function One({ quizId, seq, q, checked, passage, onChecked, of }: { quizId: string; seq: number; q: Question; checked: Checked | undefined; passage: Passage | null; onChecked: (c: Checked) => void; of: string }) {
   const [answer, setAnswer] = useState("");
   const [shown, setShown] = useState(false);
   const [pending, run] = useTransition();
@@ -31,7 +31,7 @@ function One({ quizId, seq, q, checked, passage, onChecked }: { quizId: string; 
           )}
           {open ? (
             <div className="bg-muted/40 space-y-2 rounded-md p-3 text-sm leading-relaxed">
-              <p><span className="font-medium">The lecture: </span>{q.answer}</p>
+              <p><span className="font-medium">{of}: </span>{q.answer}</p>
               {passage ? <blockquote className="text-muted-foreground border-l-2 pl-3">{passage.text.length > 500 ? `${passage.text.slice(0, 497)}...` : passage.text}</blockquote> : null}
             </div>
           ) : null}
@@ -56,7 +56,7 @@ function One({ quizId, seq, q, checked, passage, onChecked }: { quizId: string; 
  * memory, then set beside the lecture's own answer and passage. You say whether you knew it. Only you see it, and
  * nothing is graded; people, not a model, examine you.
  */
-export function LectureQuiz({ item, unit, transcript, start }: { item: string; unit: string; transcript: Passage[]; start: Quiz | null }) {
+export function LectureQuiz({ item, unit, transcript, start, of = "The lecture" }: { item: string; unit: string; transcript: Passage[]; start: Quiz | null; /** What the answers come from: "The lecture", "The episode". */ of?: string }) {
   const [quiz, setQuiz] = useState<Quiz | null>(start);
   const [error, setError] = useState<string | null>(null);
   const [pending, run] = useTransition();
@@ -72,14 +72,14 @@ export function LectureQuiz({ item, unit, transcript, start }: { item: string; u
     <section id="quiz" className="scroll-mt-20 space-y-4">
       <div className="space-y-1">
         <h2 className="text-xl font-semibold tracking-tight">Quiz yourself</h2>
-        <p className="text-muted-foreground text-sm">Questions on what the lecture said and why, written by a model from its transcript. Answer from memory, then check. Only you see this, and it is not graded.</p>
+        <p className="text-muted-foreground text-sm">Questions on what {of.toLowerCase()} said and why, written by a model from its transcript. Answer from memory, then check. Only you see this, and it is not graded.</p>
       </div>
       {quiz ? (
         <>
           <ol className="space-y-3">
             {quiz.questions.map((q, seq) => (
               <One key={`${quiz.id}-${seq}`} quizId={quiz.id} seq={seq} q={q} checked={quiz.checked.find((c) => c.seq === seq)} passage={q.passage !== null ? transcript[q.passage] ?? null : null}
-                onChecked={(c) => setQuiz((cur) => (cur ? { ...cur, checked: [...cur.checked, c] } : cur))} />
+                onChecked={(c) => setQuiz((cur) => (cur ? { ...cur, checked: [...cur.checked, c] } : cur))} of={of} />
             ))}
           </ol>
           {done ? (
@@ -91,7 +91,7 @@ export function LectureQuiz({ item, unit, transcript, start }: { item: string; u
           <Button size="sm" variant="outline" disabled={pending} onClick={make}>{pending ? "Writing a new quiz..." : "A new quiz"}</Button>
         </>
       ) : (
-        <Button size="sm" disabled={pending} onClick={make}>{pending ? "Writing the quiz..." : "Quiz yourself on this lecture"}</Button>
+        <Button size="sm" disabled={pending} onClick={make}>{pending ? "Writing the quiz..." : `Quiz yourself on this ${of.replace(/^The /, "").toLowerCase()}`}</Button>
       )}
       {error ? <p className="text-destructive text-sm">{error}</p> : null}
     </section>
