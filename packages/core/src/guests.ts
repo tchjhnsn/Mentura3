@@ -170,7 +170,7 @@ export function appleAppearances(text: string | null, name: string): Appearance[
   });
 }
 
-export type Bio = { name: string; about: string; description: string | null; image: string | null; href: string };
+export type Bio = { name: string; about: string; description: string | null; image: string | null; href: string; /** Its Wikidata item. */ qid?: string };
 
 /** Wikipedia's page summary (`/api/rest_v1/page/summary/<title>`) read into a bio, or null when it is not one person's page. */
 export function wikiBio(text: string | null): Bio | null {
@@ -182,5 +182,6 @@ export function wikiBio(text: string | null): Bio | null {
   if (description && /disambiguation|^(city|town|village|country|river|company|album|film|song|band|genus|species)\b/i.test(description)) return null;
   const urls = (j.content_urls as { desktop?: { page?: string } } | undefined)?.desktop?.page;
   const thumb = (j.thumbnail as { source?: string } | undefined)?.source ?? null;
-  return { name: typeof j.title === "string" ? j.title : "", about: j.extract.trim(), description, image: thumb, href: urls ?? "" };
+  const qid = typeof j.wikibase_item === "string" && /^Q\d+$/.test(j.wikibase_item) ? j.wikibase_item : null;
+  return { name: typeof j.title === "string" ? j.title : "", about: j.extract.trim(), description, image: thumb, href: urls ?? "", ...(qid ? { qid } : {}) };
 }
