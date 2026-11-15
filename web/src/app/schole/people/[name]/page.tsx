@@ -17,6 +17,8 @@ import { GlobeIcon } from "lucide-react";
 import { PersonFollowButton } from "../follow-button";
 import { LatestCards, type LatestCard } from "../latest";
 import { Clamp } from "../clamp";
+import { ShowTiles, type ShowTile } from "../show-tiles";
+import type { Track } from "../../player";
 
 export const metadata: Metadata = { title: "Person" };
 export const dynamic = "force-dynamic";
@@ -28,16 +30,16 @@ type Row = { key: string; title: string; show: string | null; date: string | nul
 
 function Episodes({ rows, today }: { rows: Row[]; today: string }) {
   return (
-    <ul className="divide-y rounded-lg border">
+    <ul className="divide-y">
       {rows.map((r) => (
         <li key={r.key}>
-          <Link href={r.href} className="hover:bg-accent flex items-center gap-3 p-3">
+          <Link href={r.href} className="hover:bg-accent -mx-2 flex items-center gap-3 rounded-md px-2 py-2.5">
             {r.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={r.image} alt="" loading="lazy" className="size-12 shrink-0 rounded-md border object-cover" />
             ) : <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-md border"><MicIcon className="size-4" /></span>}
             <span className="min-w-0 flex-1">
-              <span className="line-clamp-2 text-sm font-medium">{unshout(r.title)}</span>
+              <span className="line-clamp-2 text-[15px] leading-snug font-medium">{unshout(r.title)}</span>
               <span className="text-muted-foreground block truncate text-xs">{[r.show, episodeDay(r.date, today), r.seconds ? said(r.seconds) : null].filter(Boolean).join(" · ")}</span>
             </span>
           </Link>
@@ -61,8 +63,9 @@ const H2 = "text-base font-semibold";
  * A person's own profile (Torian, 2026-11-15 16:20Z, widened 16:47Z, laid out 17:07Z, 17:22Z): it belongs to no
  * show. Their name with Follow at the top right, as a show's page has it; who they are in two lines from Wikipedia;
  * their accounts as icons (X first); the podcasts they host and the newest episodes of them; and their guest
- * appearances on any show, each heard here. Reached from a show, it also lists their episodes on that show. On a
- * wide screen their podcasts stand beside the episodes.
+ * appearances on any show, each heard here. Reached from a show, it also lists their episodes on that show. Laid out
+ * by the Scholē page priority guides (2026-11-15): the podcasts they host are tiles in the hero, since hosting is the
+ * most important thing to know about a host, with the latest episode played from the art.
  */
 export default async function PersonPage({ params, searchParams }: { params: Promise<{ name: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
@@ -105,69 +108,69 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
     return { key: `${a.feed}|${k}`, title: a.title, show: a.show, date: a.date, seconds: a.seconds, image: a.image, href: kept ? `/schole/items/${kept}/episodes/${k}` : `/schole/podcasts/episode?u=${encodeURIComponent(a.feed)}&k=${k}&t=${encodeURIComponent(a.show)}` };
   });
   const follow = <PersonFollowButton name={name} qid={qid} following={following} />;
-  const count = (n: number) => <span className="text-muted-foreground font-normal"> · {n}</span>;
+  const count = (n: number) => <span className="text-muted-foreground font-normal"> {n}</span>;
+  const tiles: ShowTile[] = facts.shows.map((x) => {
+    const link = x.feed ?? (x.apple ? `https://podcasts.apple.com/us/podcast/id${x.apple}` : null);
+    const s = theirs.find((t) => t.x.title === x.title)?.s ?? null;
+    const e = s?.episodes.find((y) => y.kind === "audio");
+    const kept = x.feed ? keptBy.get(x.feed) ?? (s ? keptBy.get(s.feed) : undefined) ?? null : null;
+    const latestTrack: Track | null = s && e ? { id: `episode:${kept ?? s.feed}:${e.key}`, src: e.audio, title: unshout(e.title), show: x.title, image: e.image ?? s.image ?? x.image ?? null, href: kept ? `/schole/items/${kept}/episodes/${e.key}` : `/schole/podcasts/episode?u=${encodeURIComponent(s.feed)}&k=${e.key}&t=${encodeURIComponent(x.title)}`, item: kept, unit: e.key, place: null, seconds: e.seconds, next: null } : null;
+    return { title: x.title, image: x.image ?? s?.image ?? null, latest: latestTrack, href: link ? `/schole/podcasts?u=${encodeURIComponent(link)}&t=${encodeURIComponent(x.title)}${x.image ? `&i=${encodeURIComponent(x.image)}` : ""}` : null };
+  });
+  const accounts = facts.links.length ? (
+    <ul className="flex flex-wrap items-center gap-0.5">
+      {facts.links.map((l) => (
+        <li key={l.href}>
+          <a href={l.href} target="_blank" rel="noreferrer nofollow" aria-label={`${name} on ${NAMED[l.kind]}${l.kind === "x" || l.kind === "site" ? ` (${l.label})` : ""}`} title={l.kind === "x" || l.kind === "site" ? l.label : NAMED[l.kind]} className="hover:bg-accent text-muted-foreground hover:text-foreground flex size-8 items-center justify-center rounded-full">
+            {ICON[l.kind]}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : null;
+  const photo = bio?.image ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={bio.image} alt="" className="size-24 shrink-0 rounded-full border object-cover shadow-sm sm:size-[120px]" />
+  ) : <span aria-hidden className="bg-muted text-muted-foreground flex size-24 shrink-0 items-center justify-center rounded-full text-2xl font-medium sm:size-[120px]">{name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>;
   return (
     <main className={PAGE}>
       <ThingHeader back={showHref ?? "/schole/browse?m=podcast"} crumbs={browseCrumbs("podcast")} title={name} action={follow} />
-      <div className="mt-6 space-y-8">
-        <header className="flex items-start gap-4">
-          {bio?.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={bio.image} alt="" className="size-20 shrink-0 rounded-full border object-cover sm:size-28" />
-          ) : <span aria-hidden className="bg-muted text-muted-foreground flex size-20 shrink-0 items-center justify-center rounded-full text-2xl font-medium sm:size-28">{name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{name}</h1>
-                {bio?.description ? <p className="text-muted-foreground">{bio.description.replace(/^./, (c) => c.toUpperCase())}</p> : null}
+      <div className="mt-6 space-y-10">
+        {/* On a phone the photo sits on its own row with Follow beside it, so the name gets the full width. */}
+        <header className="sm:flex sm:items-start sm:gap-6">
+          <div className="flex items-start justify-between gap-4">
+            {photo}
+            <div className="sm:hidden">{follow}</div>
+          </div>
+          <div className="mt-4 min-w-0 flex-1 space-y-4 sm:mt-0">
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1 space-y-1">
+                <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{name}</h1>
+                {bio?.description ? <p className="text-muted-foreground text-base">{bio.description.replace(/^./, (c) => c.toUpperCase())}</p> : null}
               </div>
-              {follow}
+              <div className="hidden items-center gap-2 sm:flex">{accounts}{follow}</div>
             </div>
+            <div className="sm:hidden">{accounts}</div>
             {bio ? (
-              <Clamp text={bio.about}>
-                From <a href={bio.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">Wikipedia</a>{sure ? "." : ". A Wikipedia page by this name may be about someone else."}
-              </Clamp>
+              <div className="text-muted-foreground">
+                <Clamp text={bio.about}>
+                  From <a href={bio.href} target="_blank" rel="noreferrer" className="underline underline-offset-2">Wikipedia</a>{sure ? "." : ". A Wikipedia page by this name may be about someone else."}
+                </Clamp>
+              </div>
             ) : null}
-            {facts.links.length ? (
-              <ul className="flex flex-wrap gap-1.5 pt-1">
-                {facts.links.map((l) => (
-                  <li key={l.href}>
-                    <a href={l.href} target="_blank" rel="noreferrer nofollow" aria-label={`${name} on ${NAMED[l.kind]}${l.kind === "x" || l.kind === "site" ? ` (${l.label})` : ""}`} title={l.kind === "x" || l.kind === "site" ? l.label : NAMED[l.kind]} className="hover:bg-accent text-muted-foreground hover:text-foreground flex size-9 items-center justify-center rounded-full border">
-                      {ICON[l.kind]}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+            {tiles.length ? (
+              <section className="space-y-2 pt-1">
+                <h2 className="text-muted-foreground text-sm font-medium">{tiles.length === 1 ? "Their podcast" : "Their podcasts"}</h2>
+                <ShowTiles tiles={tiles} />
+              </section>
             ) : null}
           </div>
         </header>
-        <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-start lg:gap-10 lg:space-y-0">
-          {facts.shows.length ? (
-            <aside className="space-y-3 lg:sticky lg:top-20 lg:order-2">
-              <h2 className={H2}>{facts.shows.length === 1 ? "Their podcast" : "Their podcasts"}</h2>
-              <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                {facts.shows.map((x) => {
-                  const link = x.feed ?? (x.apple ? `https://podcasts.apple.com/us/podcast/id${x.apple}` : null);
-                  const inner = (
-                    <>
-                      {x.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={x.image} alt="" loading="lazy" className="size-12 shrink-0 rounded-md border object-cover" />
-                      ) : <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-md border"><MicIcon className="size-4" /></span>}
-                      <span className="min-w-0"><span className="line-clamp-2 text-sm font-medium">{x.title}</span>{x.by ? <span className="text-muted-foreground block truncate text-xs">{x.by}</span> : null}</span>
-                    </>
-                  );
-                  return <li key={x.title}>{link ? <Link href={`/schole/podcasts?u=${encodeURIComponent(link)}&t=${encodeURIComponent(x.title)}${x.image ? `&i=${encodeURIComponent(x.image)}` : ""}`} className="hover:bg-accent flex items-center gap-3 rounded-lg border p-2">{inner}</Link> : <div className="flex items-center gap-3 rounded-lg border p-2">{inner}</div>}</li>;
-                })}
-              </ul>
-            </aside>
-          ) : null}
-          <div className="min-w-0 space-y-8">
-            {latest.length ? <section className="space-y-3"><h2 className={H2}>Latest from {facts.shows.length === 1 ? "their podcast" : "their podcasts"}</h2><LatestCards cards={latest} /></section> : null}
-            {onShow.length ? <section className="space-y-3"><h2 className={H2}>On {title}{count(onShow.length)}</h2><p className="text-muted-foreground -mt-2 text-xs">The show you came from.</p><Episodes rows={onShow} today={today} /></section> : null}
-            {others.length ? <section className="space-y-3"><h2 className={H2}>Guest appearances{count(others.length)}</h2><Episodes rows={others} today={today} /><p className="text-muted-foreground text-xs">Episodes of other people&apos;s shows that name {name}, from Apple Podcasts&apos; search; each plays here.</p></section> : null}
-            {!onShow.length && !others.length && !latest.length ? <p className="text-muted-foreground text-sm">No episodes found that name {name}.</p> : null}
-          </div>
+        <div className="max-w-3xl space-y-10">
+          {latest.length ? <section className="space-y-3"><h2 className={H2}>Latest from {facts.shows.length === 1 ? "their podcast" : "their podcasts"}</h2><LatestCards cards={latest} /></section> : null}
+          {onShow.length ? <section className="space-y-3"><h2 className={H2}>On {title}{count(onShow.length)}</h2><p className="text-muted-foreground -mt-2 text-xs">The show you came from.</p><Episodes rows={onShow} today={today} /></section> : null}
+          {others.length ? <section className="space-y-3"><h2 className={H2}>Guest appearances{count(others.length)}</h2><Episodes rows={others} today={today} /><p className="text-muted-foreground text-xs">Episodes of other people&apos;s shows that name {name}, from Apple Podcasts&apos; search; each plays here.</p></section> : null}
+          {!onShow.length && !others.length && !latest.length ? <p className="text-muted-foreground text-sm">No episodes found that name {name}.</p> : null}
         </div>
       </div>
     </main>
