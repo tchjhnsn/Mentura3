@@ -124,7 +124,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
           ) : null}
           <GoodreadsImport />
         </div>
-        <p className="text-muted-foreground text-sm">Books from Open Library. Add one and it goes in its section in My shelves.</p>
+        <p className="text-muted-foreground text-sm">Books from Open Library. Add one and it goes in its section in your library.</p>
         {body}
         <p className="text-muted-foreground pt-6 text-center text-xs">Categories from Thema, the book trade&apos;s subject scheme (EDItEUR). Books, covers and ratings from Open Library.</p>
       </div>

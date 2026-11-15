@@ -5,15 +5,15 @@ import { calendar } from "@/server/calendar-store";
 const shortDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 
 /** A tile's calendar for the next two weeks: the events tagged with it and the days its records hold. */
-export async function Upcoming({ userId, tile, today }: { userId: string; tile: CalTile; today: string }) {
+export async function Upcoming({ userId, tile, today, title = "Coming up", note }: { userId: string; tile: CalTile; today: string; title?: string; note?: string }) {
   const to = addDays(today, 13);
   const list = occurrences(await calendar(userId, today, to, tile), today, to).slice(0, 8);
   return (
     <section className="grid gap-3">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold tracking-tight">Coming up</h2>
-          <p className="text-muted-foreground text-sm">The next two weeks on your {tileLabel(tile)} calendar.</p>
+          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+          <p className="text-muted-foreground text-sm">{note ?? `The next two weeks on your ${tileLabel(tile)} calendar.`}</p>
         </div>
         <Link href={`/calendar?tile=${tile}`} className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Open the calendar</Link>
       </div>
