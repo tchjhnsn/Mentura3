@@ -4,13 +4,26 @@ import type { NoteBlock, Show } from "@reflect/core/podcasts";
 import { booksFound } from "@/server/guests";
 import { learnView } from "@/server/learn-store";
 import { BookGrid } from "../book-card";
+import { hostsOf } from "@/server/people";
+
+/** A show's hosts, from Wikidata or its feed, each opening their page. */
+export async function ShowHosts({ show, link }: { show: Show; link: string | null; }) {
+  const hosts = await hostsOf(show, link).catch(() => []);
+  return <GuestChips guests={hosts.map((h) => ({ name: h.name, ...(h.wiki ? { wiki: h.wiki } : {}), ...(h.qid ? { qid: h.qid } : {}) }))} show={{ feed: show.feed, title: show.title }} title={hosts.length === 1 ? "Host" : "Hosts"} />;
+}
 
 /** A guest's page, carrying the show they were found on. */
-export const guestHref = (g: Guest, show: { feed: string; title: string }) =>
-  `/schole/guests/${encodeURIComponent(bareName(g.name))}?u=${encodeURIComponent(show.feed)}&t=${encodeURIComponent(show.title)}${g.wiki ? `&w=${encodeURIComponent(g.wiki)}` : ""}`;
+export type PersonRef = Guest & { qid?: string };
+export const guestHref = (g: PersonRef, show?: { feed: string; title: string } | null) => {
+  const q = new URLSearchParams();
+  if (show) { q.set("u", show.feed); q.set("t", show.title); }
+  if (g.wiki) q.set("w", g.wiki);
+  if (g.qid) q.set("q", g.qid);
+  return `/schole/people/${encodeURIComponent(bareName(g.name))}${q.size ? `?${q}` : ""}`;
+};
 
 /** Guests as chips, each opening the guest's page. */
-export function GuestChips({ guests, show, title = "Guests" }: { guests: Guest[]; show: { feed: string; title: string }; title?: string }) {
+export function GuestChips({ guests, show, title = "Guests" }: { guests: PersonRef[]; show: { feed: string; title: string } | null; title?: string }) {
   if (!guests.length) return null;
   return (
     <section className="space-y-2">

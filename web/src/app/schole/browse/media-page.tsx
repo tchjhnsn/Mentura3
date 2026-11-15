@@ -190,7 +190,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
           </form>
         ) : null}
         {m === "podcast" ? (
-          <p className="text-sm"><Link href="/schole/podcasts/search" className="underline underline-offset-4">Search inside your episodes</Link></p>
+          <p className="flex flex-wrap gap-x-4 text-sm"><Link href="/schole/podcasts/search" className="underline underline-offset-4">Search inside your episodes</Link><Link href="/schole/people" className="underline underline-offset-4">People you follow</Link></p>
         ) : null}
         {body}
         <p className="text-muted-foreground pt-6 text-center text-xs">Courses from Open Yale Courses and MIT OpenCourseWare (through MIT Learn), podcasts from Apple&apos;s podcast search, films from Wikidata and the Internet Archive, art from the Art Institute of Chicago, music from MusicBrainz, series from TVmaze, games from Steam.</p>
