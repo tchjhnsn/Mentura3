@@ -26,7 +26,7 @@ import { excerptsOf } from "@/server/excerpt-store";
 import { publishedBy } from "@/server/published-store";
 import { whereOf } from "@/server/highlights";
 import { Excerpts } from "./excerpts";
-import { Listen } from "./listen";
+import { AudiobookPlay } from "../../audiobooks/[id]/play";
 import { AuthorName, BookGrid } from "../../book-card";
 import { setBookStatusAction } from "../../actions";
 
@@ -115,6 +115,9 @@ export default async function WorkPage({ params }: { params: Promise<{ work: str
               {!details?.rating ? <span className="text-muted-foreground">No ratings yet</span> : null}
             </div>
           </div>
+          {/* What plays here leads (Torian, 2026-11-15 08:24Z: listening first); a book that can be neither read nor heard says so. */}
+          {audio ? <div id="listen"><AudiobookPlay book={audio} work={work} title={title} cover={cover} /></div> : null}
+          {!audio && !text && !preview ? <p className="bg-muted/50 rounded-lg border p-3 text-sm">This book can&apos;t be heard or read in Reflect yet: there is no free recording or text of it. You can still keep it in your library.{links.length ? " A copy elsewhere is linked below." : ""}</p> : null}
           <div className="flex flex-wrap items-center gap-3">
             {mine ? (
               <form action={setBookStatusAction} className="flex flex-wrap gap-2">
@@ -125,7 +128,6 @@ export default async function WorkPage({ params }: { params: Promise<{ work: str
             {mine ? <span className="text-muted-foreground text-xs">On your shelves</span> : null}
           </div>
           {text || preview || links.length ? <Reader links={links} work={work} kept={mine?.place ?? null} preview={preview} {...(text ? { here: `/schole/works/${work}/read` } : {})} /> : null}
-          {audio ? <div id="listen"><Listen book={audio} work={work} title={title} cover={cover} /></div> : null}
           <Excerpts work={work} rows={excerpts.map((e) => ({ id: e.id, work, title, author: authors[0] ?? "", quote: e.quote, where: whereOf(e), chapter: e.anchor?.chapter ?? null, note: e.note, color: e.color, published: published.find((p) => p.work === work && p.quote === e.quote.replace(/\s+/g, " ").trim())?.id ?? null }))} {...(text ? { reader: `/schole/works/${work}/read` } : {})} />
           <dl className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
             <div><dt className="text-muted-foreground text-xs">Category</dt><dd>{category ? <Link className="underline-offset-4 hover:underline" href={`/schole/browse?cat=${category.code}`}>{category.heading}</Link> : "Not yet placed"}</dd></div>

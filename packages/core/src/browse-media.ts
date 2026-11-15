@@ -9,17 +9,20 @@ import { embedOf } from "./media";
 import { searchMedium, type Found } from "./lookup";
 import { mediumOf, type Medium, type Way } from "./ways";
 
-export type BrowseMedium = "books" | Medium;
-/** The media Browse offers, in its menu's order (articles are found by their link, not browsed). */
+export type BrowseMedium = "audiobooks" | "books" | Medium;
+/**
+ * The media Browse offers, in its menu's order (articles are found by their link, not browsed). What plays here
+ * comes first: audiobooks, then podcasts (Torian, 2026-11-15 08:24Z: listening and watching first, reading later).
+ */
 export const BROWSE_MEDIA: readonly { id: BrowseMedium; label: string }[] = [
-  { id: "books", label: "Books" }, { id: "course", label: "Courses" }, { id: "lecture", label: "Lectures" }, { id: "debate", label: "Debates" },
-  { id: "podcast", label: "Podcasts" }, { id: "theatre", label: "Plays" }, { id: "film", label: "Films" }, { id: "series", label: "Series" },
-  { id: "music", label: "Music" }, { id: "art", label: "Art" }, { id: "game", label: "Games" },
+  { id: "audiobooks", label: "Audiobooks" }, { id: "podcast", label: "Podcasts" }, { id: "course", label: "Courses" }, { id: "lecture", label: "Lectures" }, { id: "debate", label: "Debates" },
+  { id: "theatre", label: "Plays" }, { id: "film", label: "Films" }, { id: "series", label: "Series" },
+  { id: "music", label: "Music" }, { id: "art", label: "Art" }, { id: "game", label: "Games" }, { id: "books", label: "Books" },
 ];
 export const isBrowseMedium = (m: unknown): m is BrowseMedium => typeof m === "string" && BROWSE_MEDIA.some((x) => x.id === m);
 
 /** The way a medium belongs to, or rest for music, art and games until the person says what they taught. */
-export const browseWay = (m: BrowseMedium): Way | "leisure" => (m === "books" ? "teaching" : mediumOf(m).lesson ? "leisure" : mediumOf(m).way);
+export const browseWay = (m: BrowseMedium): Way | "leisure" => (m === "books" || m === "audiobooks" ? "teaching" : mediumOf(m).lesson ? "leisure" : mediumOf(m).way);
 
 /**
  * Whether Reflect can play or show it inside the app: a course from Open Yale or MIT OpenCourseWare, a podcast from

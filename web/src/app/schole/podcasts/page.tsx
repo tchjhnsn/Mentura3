@@ -1,3 +1,4 @@
+import { hoursOf, usualLength } from "@reflect/core/audiobooks";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -44,7 +45,7 @@ export default async function ShowPage({ searchParams }: { searchParams: Promise
           <div className="min-w-0 space-y-2">
             <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{title}</h1>
             {by ? <p className="text-muted-foreground">{by}</p> : null}
-            <p className="text-muted-foreground text-sm">{show ? `${show.episodes.length} episodes, each heard here` : "The show's feed could not be read just now."}</p>
+            <p className="text-muted-foreground text-sm">{show ? `${show.episodes.length} episodes, each heard here${usualLength(show.episodes.map((e) => e.seconds)) ? `, usually about ${hoursOf(usualLength(show.episodes.map((e) => e.seconds))!)} long` : ""}` : "The show's feed could not be read just now."}</p>
             {kept ? <Button asChild size="sm" variant="outline"><Link href={`/schole/items/${kept.id}`}>On your shelves</Link></Button> : (
               <form action={browseAddAction} className="flex flex-wrap gap-2">
                 <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} />

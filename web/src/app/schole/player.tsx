@@ -13,7 +13,7 @@ import { keepUnitPlaceAction, setUnitDoneAction } from "./actions";
 import { localDay } from "./items/youtube";
 
 /** An audiobook playing in Scholē: the recording and which book's page it belongs to. */
-export type Playing = Audiobook & { work: string; bookTitle: string; cover?: string | null };
+export type Playing = Audiobook & { work: string; bookTitle: string; cover?: string | null; /** Its page when it is not a book page (an audiobook from the catalog). */ page?: string };
 /**
  * An episode (or any one recording) playing in Scholē's player: what plays, what it is called and where its page is,
  * and, when it is on the person's shelves, the item and unit its place and finishing are kept against.
@@ -286,7 +286,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   const c = book?.chapters[chapter];
   const src = track ? track.src : c?.url ?? null;
   const total = duration || (track ? track.seconds ?? 0 : c?.seconds ?? 0);
-  const href = track ? track.href : book ? `/schole/works/${book.work}` : "#";
+  const href = track ? track.href : book ? book.page ?? `/schole/works/${book.work}` : "#";
   const chap = track?.chapters?.length ? [...track.chapters].reverse().find((x) => x.at <= time) ?? null : null;
   const left = sleep && "until" in sleep ? Math.max(0, Math.ceil((sleep.until - Date.now()) / 60000)) : null;
   const useFx = fxOn && !fxBlocked;
@@ -304,6 +304,21 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
       )) : null}
     </div>
   );
+  // A book's parts are its chapters (Torian, 2026-11-15 08:26Z): each a file of its own, played by its number.
+  const parts = !track && book && book.chapters.length > 1 ? book.chapters : [];
+  const partsMenu = parts.length ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Chapters" title="Chapters"><ListOrderedIcon /></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="max-h-80 w-80 overflow-y-auto">
+        <DropdownMenuLabel>Chapters</DropdownMenuLabel>
+        {parts.map((x, i) => (
+          <DropdownMenuItem key={x.url} onSelect={() => play(book!, i)} className={`flex items-baseline gap-2 ${i === chapter ? "bg-muted font-medium" : ""}`}>
+            <span className="min-w-0 flex-1 truncate">{x.title}</span><span className="text-muted-foreground shrink-0 text-xs tabular-nums">{x.seconds ? stamp(x.seconds) : ""}</span>
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
   const chaptersMenu = chapters.length ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label="Chapters" title="Chapters"><ListOrderedIcon /></Button></DropdownMenuTrigger>
@@ -412,7 +427,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
               <Button size="icon" className="rounded-full" aria-label={playing ? "Pause" : "Play"} onClick={toggle}>{playing ? <PauseIcon /> : <PlayIcon />}</Button>
               <Button size="icon" variant="ghost" aria-label="Forward 30 seconds" onClick={() => skip(30)}><RotateCwIcon /></Button>
               {speed}
-              {chaptersMenu}
+              {chaptersMenu ?? partsMenu}
               {sleepMenu}
               {soundMenu}
               {queueMenu}
@@ -455,6 +470,19 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
                     <li key={`${x.at}-${i}`}>
                       <button type="button" onClick={() => seek(x.at)} aria-current={i === chapAt ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${i === chapAt ? "bg-muted font-medium" : ""}`}>
                         <span className="text-muted-foreground w-14 shrink-0 tabular-nums">{stamp(x.at)}</span><span className="min-w-0 flex-1">{x.title}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ) : parts.length ? (
+              <section className="space-y-2">
+                <h3 className="text-sm font-medium">Chapters</h3>
+                <ol className="divide-y rounded-lg border text-sm">
+                  {parts.map((x, i) => (
+                    <li key={x.url}>
+                      <button type="button" onClick={() => play(book!, i)} aria-current={i === chapter ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${i === chapter ? "bg-muted font-medium" : ""}`}>
+                        <span className="min-w-0 flex-1">{x.title}</span><span className="text-muted-foreground shrink-0 text-xs tabular-nums">{x.seconds ? stamp(x.seconds) : ""}</span>
                       </button>
                     </li>
                   ))}

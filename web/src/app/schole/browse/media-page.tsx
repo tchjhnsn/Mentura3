@@ -15,13 +15,16 @@ import { LearnHeader } from "../header";
 import { BookGrid } from "../book-card";
 import { Menu } from "./category-menu";
 import { MediaGrid, MediaRow, keyOf, type Find } from "./media";
+import { AudiobookRow } from "../audiobooks/cards";
+import { listAudiobooks } from "@/server/audiobooks";
+import { TOPICS } from "@reflect/core/audiobooks";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
 export const isWayPick = (v: string): v is WayPick => WAY_PICKS.some((w) => w.id === v);
 
 /** Books belong to teaching, imitation (stories) and dialectic (dialogues); every other medium to its own way. */
-const inWay = (m: BrowseMedium, way: WayPick | null) => !way || (m === "books" ? way === "teaching" || way === "imitation" || way === "dialectic" : browseWay(m) === way);
+const inWay = (m: BrowseMedium, way: WayPick | null) => !way || (m === "books" || m === "audiobooks" ? way === "teaching" || way === "imitation" || way === "dialectic" : browseWay(m) === way);
 const href = (m: BrowseMedium | "all", way: WayPick | null, q?: string) => {
   const p = new URLSearchParams();
   if (m !== "all") p.set("m", m);
@@ -77,25 +80,26 @@ export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: str
   ]);
   return (
     <div className="space-y-8">
+      {inWay("audiobooks", way) ? <AudiobookRow title="Audiobooks to hear here" books={listAudiobooks({}, n)} href={href("audiobooks", way)} /> : null}
+      <MediaRow title={subjects[0] ? <>Podcasts on {subjects[0]}</> : "Podcasts on philosophy"} finds={podcasts} mine={mine} href={href("podcast", way)} />
+      <MediaRow title="Films to watch here" finds={films} mine={mine} href={href("film", way)} note="Feature films in the public domain, from the Internet Archive." />
       <MediaRow title="Courses to take here" finds={courses} mine={mine} href={href("course", way)} />
+      {show("lecture") ? <MediaRow title="Lectures" finds={listFinds("lecture").slice(0, n)} mine={mine} href={href("lecture", way)} /> : null}
+      {show("debate") ? <MediaRow title="Debates" finds={listFinds("debate").slice(0, n)} mine={mine} href={href("debate", way)} /> : null}
+      {show("theatre") ? <MediaRow title="Plays to read here" finds={here(listFinds("theatre").slice(0, n))} mine={mine} href={href("theatre", way)} /> : null}
+      <MediaRow title="Art to look at here" finds={art} mine={mine} href={href("art", way)} note="Public-domain works at the Art Institute of Chicago." />
       {books?.length ? (
         <section className="space-y-4">
           <SectionHead title="Books read this week" href={href("books", way)} className="pt-2" />
           <BookGrid books={books} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
         </section>
       ) : null}
-      <MediaRow title={subjects[0] ? <>Podcasts on {subjects[0]}</> : "Podcasts on philosophy"} finds={podcasts} mine={mine} href={href("podcast", way)} />
-      {show("lecture") ? <MediaRow title="Lectures" finds={listFinds("lecture").slice(0, n)} mine={mine} href={href("lecture", way)} /> : null}
-      {show("debate") ? <MediaRow title="Debates" finds={listFinds("debate").slice(0, n)} mine={mine} href={href("debate", way)} /> : null}
-      {show("theatre") ? <MediaRow title="Plays to read here" finds={here(listFinds("theatre").slice(0, n))} mine={mine} href={href("theatre", way)} /> : null}
-      <MediaRow title="Films to watch here" finds={films} mine={mine} href={href("film", way)} note="Feature films in the public domain, from the Internet Archive." />
-      <MediaRow title="Art to look at here" finds={art} mine={mine} href={href("art", way)} note="Public-domain works at the Art Institute of Chicago." />
     </div>
   );
 }
 
 const SEARCH_HINT: Record<string, string> = {
-  all: "Search books, courses, podcasts, films and art", course: "Search courses from Open Yale and MIT", lecture: "Search lectures", debate: "Search debates",
+  all: "Search audiobooks, podcasts, films, courses, art and books", course: "Search courses from Open Yale and MIT", lecture: "Search lectures", debate: "Search debates",
   podcast: "Search podcasts", theatre: "Search plays", film: "Search films", series: "Search series", music: "Search music", art: "Search the Art Institute of Chicago", game: "Search games",
 };
 const NOT_HERE: Partial<Record<Medium, string>> = {
@@ -120,6 +124,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
       const results = await Promise.all(media.map((x) => finds(x, q).then((r) => r.found.slice(0, 6)).catch(() => [])));
       body = (
         <div className="space-y-8">
+          {inWay("audiobooks", way) ? <AudiobookRow title="Audiobooks" books={listAudiobooks({ q }, 6)} href={href("audiobooks", way, q)} /> : null}
           {inWay("books", way) ? <p className="text-sm"><Link href={`/schole/browse?q=${encodeURIComponent(q)}`} className="underline underline-offset-4">Books matching “{q}”</Link></p> : null}
           {media.map((x, i) => <MediaRow key={x} title={BROWSE_MEDIA.find((b) => b.id === x)!.label} finds={results[i]!} mine={mine} href={href(x, way, q)} />)}
           {results.every((r) => !r.length) ? <p className="text-muted-foreground text-sm">Nothing found beyond books.</p> : null}
@@ -134,6 +139,15 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
     const extra: ReactNode[] = [];
     if (!q && m === "film") extra.push(<MediaRow key="free" title="Free to watch here" finds={await filmsToWatch()} mine={mine} note="Feature films in the public domain, from the Internet Archive." />);
     if (!q && m === "podcast") {
+      // One set of topics for podcasts and audiobooks (Torian, 2026-11-15 08:26Z); each topic's page shows both.
+      extra.push(
+        <nav key="topics" aria-label="Topics" className="space-y-2">
+          <h2 className="pt-2 text-lg font-semibold">Topics</h2>
+          <ul className="flex flex-wrap gap-1.5">
+            {TOPICS.map((t) => <li key={t.id}><Link href={`/schole/topics/${t.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm whitespace-nowrap">{t.label}</Link></li>)}
+          </ul>
+        </nav>,
+      );
       const topics = [...subjects, "philosophy", "history", "theology"].filter((t, i, a) => a.indexOf(t) === i).slice(0, 4);
       const rows = await Promise.all(topics.map((t) => finds("podcast", t).then((x) => x.found.slice(0, 12)).catch(() => [])));
       topics.forEach((t, i) => extra.push(<MediaRow key={t} title={<>On {t}</>} finds={rows[i]!} mine={mine} href={href("podcast", way, t)} />));

@@ -1,3 +1,4 @@
+import { hoursOf, usualLength } from "@reflect/core/audiobooks";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
@@ -171,7 +172,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         {show?.episodes.length ? section("Episodes", (
           <>
             <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units, favorites)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
-            <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all.</p>
+            <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all{usualLength(show.episodes.map((e) => e.seconds)) ? `, usually about ${hoursOf(usualLength(show.episodes.map((e) => e.seconds))!)} long` : ""}.</p>
           </>
         ), "episodes") : item.medium === "podcast" && item.url ? section("Episodes", <Note>The show&apos;s feed could not be read just now.</Note>) : null}
 
