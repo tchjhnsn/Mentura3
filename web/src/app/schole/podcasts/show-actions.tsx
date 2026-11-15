@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useListen, type Track } from "../player";
 import { changeItemAction } from "../actions";
 import { localDay } from "../items/youtube";
+import { hoursOf } from "@reflect/core/audiobooks";
 
 /**
  * A show's own acts (Torian, 2026-11-15 06:37Z): play the latest episode, or continue the one under way, in Scholē's
@@ -16,12 +17,11 @@ export function ShowActions({ track, resume }: { track: Track | null; resume: bo
   const on = Boolean(track && listen?.track?.id === track.id);
   if (!track || !listen) return null;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button onClick={() => (on ? listen.toggle() : listen.playTrack(track))}>
-        {on && listen.playing ? <PauseIcon /> : <PlayIcon />}
-        {on && listen.playing ? "Pause" : resume ? "Continue" : "Play latest"}
-      </Button>
-    </div>
+    <Button size="lg" className="h-10 px-5" onClick={() => (on ? listen.toggle() : listen.playTrack(track))}>
+      {on && listen.playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}
+      {on && listen.playing ? "Pause" : resume ? "Continue" : "Play latest"}
+      {track.seconds && !(on && listen.playing) ? <span className="font-normal opacity-70">{hoursOf(track.place && resume ? Math.max(60, track.seconds - track.place) : track.seconds)}{resume && track.place ? " left" : ""}</span> : null}
+    </Button>
   );
 }
 

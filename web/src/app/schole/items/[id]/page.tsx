@@ -1,8 +1,6 @@
-import { hoursOf, usualLength } from "@reflect/core/audiobooks";
 import type { Metadata } from "next";
-import { Suspense, type ReactNode } from "react";
-import { showGuests } from "@reflect/core/guests";
-import { PeopleRow, ShowBooks, ShowHosts } from "../../podcasts/mentions";
+import type { ReactNode } from "react";
+import { ShowView } from "../../podcasts/show-view";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { STANCES } from "@reflect/core/claims";
@@ -29,10 +27,6 @@ import { learnView } from "@/server/learn-store";
 import { listClaims } from "@/server/claims-store";
 import { publishedBy } from "@/server/published-store";
 import { ThingHeader } from "@/components/headers";
-import { EpisodeList } from "../../podcasts/episode-list";
-import { ShowFacts } from "../../podcasts/parts";
-import { episodeRows, episodeTrack } from "../../podcasts/track";
-import { FollowButton, ShowActions } from "../../podcasts/show-actions";
 import { favoritesOf } from "@/server/favorite-store";
 import { shelfCrumbs } from "../../crumbs";
 import {
@@ -50,11 +44,15 @@ export const dynamic = "force-dynamic";
 const SELECT = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm";
 const STANCE_LABEL: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
 const Note = ({ children }: { children: ReactNode }) => <p className="text-muted-foreground text-sm">{children}</p>;
-const section = (title: string, body: ReactNode, id?: string) => (
+const cardSection = (title: string, body: ReactNode, id?: string) => (
   <Card className="gap-3 py-5" id={id}>
     <CardHeader className="px-5"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
     <CardContent className="space-y-3 px-5">{body}</CardContent>
   </Card>
+);
+// On a show's page these sit in its About column, as plain sections, not cards (priority guides, 2026-11-15).
+const plainSection = (title: string, body: ReactNode, id?: string) => (
+  <section className="space-y-3" id={id}><h2 className="text-base font-semibold">{title}</h2><div className="space-y-3">{body}</div></section>
 );
 const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
 
@@ -101,88 +99,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const recent = item.sessions.filter((s) => s.day >= since);
   const minutes = item.sessions.reduce((n, s) => n + (s.minutes ?? 0), 0);
   const hidden = <input type="hidden" name="item" value={item.id} />;
-  // A show plays from the newest episode under way, else from its latest.
-  const resumeAt = show ? show.episodes.findIndex((e) => { const u = begun.get(e.key); return Boolean(u?.place && !u.doneOn); }) : -1;
-  return (
-    <main className={PAGE}>
-      <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} action={nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: Lecture {nextLecture.n}</Link></Button> : undefined} />
-      <div className="mt-6 space-y-6">
-        <header className="flex gap-4">
-          {item.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.image} alt="" className="size-20 shrink-0 rounded-lg object-cover sm:size-28" />
-          ) : null}
-          <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{m.label}</Badge>{item.tookPart ? <Badge variant="outline">Took part</Badge> : null}</div>
-            <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{item.title}</h1>
-            {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
-            {course ? <p className="text-muted-foreground text-sm">From {COURSE_SITES[course.site].name} · {lectures.length} lectures · {finished.size} finished · <Link href={`/schole/courses?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">About the course and its syllabus</Link></p> : null}
-            {course ? <p className="max-w-prose text-sm leading-relaxed"><span className="font-medium">Why I am learning this: </span>{reason ? <>{reason.cause.length > 220 ? `${reason.cause.slice(0, 217)}...` : reason.cause} <Link href={`/journal/w/${reason.workId}`} className="text-muted-foreground underline underline-offset-4">In your journal</Link></> : <Link href={`/schole/courses/why?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">Write it</Link>}</p> : null}
-            {adapts ? <p className="text-sm">Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
-          </div>
-          {item.medium === "podcast" ? <FollowButton item={item.id} following={item.status === "doing"} /> : null}
-        </header>
-
-        {show ? <ShowFacts show={show} /> : null}
-        {show && item.medium === "podcast" ? <Suspense fallback={null}><ShowHosts show={show} link={item.url} /></Suspense> : null}
-        {show && item.medium === "podcast" ? <Suspense fallback={null}><PeopleRow people={showGuests(show, 16)} show={{ feed: show.feed, title: item.title }} title="Recent guests" /></Suspense> : null}
-        {show && item.medium === "podcast" ? <Suspense fallback={null}><ShowBooks show={show} userId={user.id} /></Suspense> : null}
-        {item.medium === "podcast" ? (
-          <ShowActions resume={resumeAt >= 0} track={show?.episodes.length ? episodeTrack({ episodes: show.episodes, at: Math.max(0, resumeAt), show: item.title, image: item.image ?? show.image, item: item.id, feed: show.feed, units }) : null} />
-        ) : <>
-        <form action={changeItemAction} className="flex flex-wrap gap-2">
-          {hidden}<LocalDay />
-          {(["want", "doing", "done"] as const).map((s) => (
-            <Button key={s} size="sm" name="status" value={s} variant={item.status === s ? "default" : "outline"} aria-pressed={item.status === s}>{s === "want" ? "Want to" : s === "doing" ? m.doing : m.done}</Button>
-          ))}
-        </form>
-
-        <form action={setItemDatesAction} className="flex flex-wrap items-end gap-3 text-sm">
-          {hidden}
-          <label className="space-y-1">Started<Input type="date" name="started" defaultValue={item.startedOn ?? ""} className="h-9 w-40" /></label>
-          <label className="space-y-1">Finished<Input type="date" name="finished" defaultValue={item.finishedOn ?? ""} className="h-9 w-40" /></label>
-          <Button size="sm" variant="outline">Save dates</Button>
-        </form>
-        </>}
-
-        {item.medium === "art" && item.image ? section("Look at it here", <Artwork src={item.image} title={item.title} />, "artwork") : null}
-
-        {text ? section(text.free?.read ? "Read it here" : "Listen here", (
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            {text.free?.read ? <Button size="sm" asChild><Link href={`/schole/works/${text.work}/read`}>Read {text.title}</Link></Button> : null}
-            {text.free?.listen ? <Button size="sm" variant="outline" asChild><Link href={`/schole/works/${text.work}#listen`}>Listen to it</Link></Button> : null}
-            <span className="text-muted-foreground">{text.authors.join(", ")}{text.year ? `, ${text.year}` : ""}, in Reflect&apos;s reader with highlights and excerpts.</span>
-          </div>
-        ), "text") : null}
-
-        {lectures.length ? section("Lectures", (
-          <>
-            {nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: {nextLecture.title}</Link></Button> : <Note>You have finished every lecture.</Note>}
-            <ol className="divide-y text-sm">
-              {lectures.map((l) => {
-                const u = begun.get(String(l.n));
-                return (
-                  <li key={l.n} className="flex items-center gap-3 py-2">
-                    <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">{l.n}</span>
-                    <Link href={`/schole/items/${item.id}/lectures/${l.n}`} className="min-w-0 flex-1 underline-offset-4 hover:underline">{l.title}</Link>
-                    <span className="text-muted-foreground shrink-0 text-xs">{u?.doneOn ? "Finished" : u?.place ? "Under way" : ""}</span>
-                  </li>
-                );
-              })}
-            </ol>
-            <p className="text-muted-foreground text-xs">Each lecture plays here from {COURSE_SITES[course!.site].name}, under the {COURSE_SITES[course!.site].license} license, with its transcript beside it.</p>
-          </>
-        ), "lectures") : null}
-
-        {show?.episodes.length ? section("Episodes", (
-          <>
-            <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units, favorites)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
-            <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all{usualLength(show.episodes.map((e) => e.seconds)) ? `, usually about ${hoursOf(usualLength(show.episodes.map((e) => e.seconds))!)} long` : ""}.</p>
-          </>
-        ), "episodes") : item.medium === "podcast" && item.url ? section("Episodes", <Note>The show&apos;s feed could not be read just now.</Note>) : null}
-
-        {embed || item.notes.some((n) => !n.unit) || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Notes", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} notes={item.notes.filter((n) => !n.unit)} transcript={item.transcriptText} />) : null}
-
+  const section = item.medium === "podcast" ? plainSection : cardSection;
+  const taught = <>
         {section("What it taught you", (
           <>
             {item.lessons.length ? (
@@ -217,6 +135,127 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             ))}
           </div>
         )) : null}
+  </>;
+  const shelfFacts = <>
+        {section("Way of learning", (
+          <form action={changeItemAction} className="space-y-2">
+            {hidden}
+            <div className="flex flex-wrap gap-2">{WAYS.map((w) => <Button key={w.id} size="sm" name="way" value={w.id} variant={way === w.id ? "default" : "outline"} aria-pressed={way === w.id}>{w.label}</Button>)}</div>
+            {item.way ? <Button size="sm" variant="ghost" name="way" value="">Back to {WAYS.find((w) => w.id === m.way)!.label.toLowerCase()}, from its medium</Button> : null}
+          </form>
+        ))}
+
+        {section("Subjects", (
+          <>
+            {item.subjects.length ? (
+              <div className="flex flex-wrap gap-1.5">
+                {item.subjects.map((s) => (
+                  <form key={s.id} action={removeItemSubjectAction}>{hidden}<input type="hidden" name="subject" value={s.id} /><Badge variant="secondary" className="gap-1">{s.name}<button aria-label={`Remove ${s.name}`} className="ml-1">×</button></Badge></form>
+                ))}
+              </div>
+            ) : <Note>Subjects it is about, like a book&apos;s, count toward what you are learning.</Note>}
+            <form action={addItemSubjectsAction} className="flex gap-2">{hidden}<Input name="subjects" placeholder="Justice, Utilitarianism" className="h-9" required /><Button size="sm" variant="outline">Add</Button></form>
+            {related.length ? <p className="text-sm">Books on your shelves on the same subjects: {related.slice(0, 6).map((b, i) => <span key={b.id}>{i ? ", " : ""}{b.catalog?.work ? <Link href={`/schole/works/${b.catalog.work}`} className="underline underline-offset-4">{b.title}</Link> : b.title}</span>)}</p> : null}
+          </>
+        ))}
+  </>;
+  const editing = <>
+        <details className="rounded-lg border p-4">
+          <summary className="cursor-pointer text-sm font-medium">Edit</summary>
+          <form action={editItemAction} className="mt-4 grid gap-3 sm:grid-cols-2">
+            {hidden}
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Title<Input name="title" defaultValue={item.title} required maxLength={300} /></label>
+            <label className="block space-y-1.5 text-sm font-medium">By<Input name="by" defaultValue={item.by ?? ""} maxLength={200} /></label>
+            <label className="block space-y-1.5 text-sm font-medium">Link<Input name="url" type="url" defaultValue={item.url ?? ""} maxLength={1000} /></label>
+            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Picture (https link)<Input name="image" type="url" defaultValue={item.image ?? ""} maxLength={1000} /></label>
+            {books.length ? (
+              <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Adapts or stages a book on your shelves
+                <select name="work" className={SELECT} defaultValue={item.work ?? ""}>
+                  <option value="">None</option>
+                  {books.map((b) => <option key={b.id} value={b.catalog!.work}>{b.title}</option>)}
+                </select>
+              </label>
+            ) : null}
+            <div className="sm:col-span-2"><Button size="sm">Save</Button></div>
+          </form>
+        </details>
+
+        <form action={removeItemAction}>{hidden}<Button size="sm" variant="ghost">Remove from your shelves</Button></form>
+  </>;
+  if (item.medium === "podcast") {
+    return (
+      <main className={PAGE}>
+        <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} />
+        <ShowView show={show} title={item.title} by={item.by ?? ""} image={item.image ?? ""} url={item.url ?? ""} userId={user.id} kept={{ id: item.id, following: item.status === "doing" }} units={units} favorites={favorites} episodeHref={(k) => `/schole/items/${item.id}/episodes/${k}`} footer={<div className="space-y-8">{taught}{shelfFacts}{editing}</div>} />
+      </main>
+    );
+  }
+  return (
+    <main className={PAGE}>
+      <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} action={nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: Lecture {nextLecture.n}</Link></Button> : undefined} />
+      <div className="mt-6 space-y-6">
+        <header className="flex gap-4">
+          {item.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={item.image} alt="" className="size-20 shrink-0 rounded-lg object-cover sm:size-28" />
+          ) : null}
+          <div className="min-w-0 flex-1 space-y-1">
+            <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{m.label}</Badge>{item.tookPart ? <Badge variant="outline">Took part</Badge> : null}</div>
+            <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{item.title}</h1>
+            {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
+            {course ? <p className="text-muted-foreground text-sm">From {COURSE_SITES[course.site].name} · {lectures.length} lectures · {finished.size} finished · <Link href={`/schole/courses?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">About the course and its syllabus</Link></p> : null}
+            {course ? <p className="max-w-prose text-sm leading-relaxed"><span className="font-medium">Why I am learning this: </span>{reason ? <>{reason.cause.length > 220 ? `${reason.cause.slice(0, 217)}...` : reason.cause} <Link href={`/journal/w/${reason.workId}`} className="text-muted-foreground underline underline-offset-4">In your journal</Link></> : <Link href={`/schole/courses/why?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">Write it</Link>}</p> : null}
+            {adapts ? <p className="text-sm">Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
+          </div>
+        </header>
+
+        <form action={changeItemAction} className="flex flex-wrap gap-2">
+          {hidden}<LocalDay />
+          {(["want", "doing", "done"] as const).map((s) => (
+            <Button key={s} size="sm" name="status" value={s} variant={item.status === s ? "default" : "outline"} aria-pressed={item.status === s}>{s === "want" ? "Want to" : s === "doing" ? m.doing : m.done}</Button>
+          ))}
+        </form>
+
+        <form action={setItemDatesAction} className="flex flex-wrap items-end gap-3 text-sm">
+          {hidden}
+          <label className="space-y-1">Started<Input type="date" name="started" defaultValue={item.startedOn ?? ""} className="h-9 w-40" /></label>
+          <label className="space-y-1">Finished<Input type="date" name="finished" defaultValue={item.finishedOn ?? ""} className="h-9 w-40" /></label>
+          <Button size="sm" variant="outline">Save dates</Button>
+        </form>
+
+        {item.medium === "art" && item.image ? section("Look at it here", <Artwork src={item.image} title={item.title} />, "artwork") : null}
+
+        {text ? section(text.free?.read ? "Read it here" : "Listen here", (
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {text.free?.read ? <Button size="sm" asChild><Link href={`/schole/works/${text.work}/read`}>Read {text.title}</Link></Button> : null}
+            {text.free?.listen ? <Button size="sm" variant="outline" asChild><Link href={`/schole/works/${text.work}#listen`}>Listen to it</Link></Button> : null}
+            <span className="text-muted-foreground">{text.authors.join(", ")}{text.year ? `, ${text.year}` : ""}, in Reflect&apos;s reader with highlights and excerpts.</span>
+          </div>
+        ), "text") : null}
+
+        {lectures.length ? section("Lectures", (
+          <>
+            {nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: {nextLecture.title}</Link></Button> : <Note>You have finished every lecture.</Note>}
+            <ol className="divide-y text-sm">
+              {lectures.map((l) => {
+                const u = begun.get(String(l.n));
+                return (
+                  <li key={l.n} className="flex items-center gap-3 py-2">
+                    <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">{l.n}</span>
+                    <Link href={`/schole/items/${item.id}/lectures/${l.n}`} className="min-w-0 flex-1 underline-offset-4 hover:underline">{l.title}</Link>
+                    <span className="text-muted-foreground shrink-0 text-xs">{u?.doneOn ? "Finished" : u?.place ? "Under way" : ""}</span>
+                  </li>
+                );
+              })}
+            </ol>
+            <p className="text-muted-foreground text-xs">Each lecture plays here from {COURSE_SITES[course!.site].name}, under the {COURSE_SITES[course!.site].license} license, with its transcript beside it.</p>
+          </>
+        ), "lectures") : null}
+
+
+        {embed || item.notes.some((n) => !n.unit) || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Notes", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} notes={item.notes.filter((n) => !n.unit)} transcript={item.transcriptText} />) : null}
+
+        {taught}
 
         {!lectures.length && (item.medium === "course" || item.parts) ? section("Parts", (
           <form action={setItemFactsAction} className="flex flex-wrap items-center gap-2 text-sm">
@@ -279,27 +318,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           </>
         )) : null}
 
-        {section("Way of learning", (
-          <form action={changeItemAction} className="space-y-2">
-            {hidden}
-            <div className="flex flex-wrap gap-2">{WAYS.map((w) => <Button key={w.id} size="sm" name="way" value={w.id} variant={way === w.id ? "default" : "outline"} aria-pressed={way === w.id}>{w.label}</Button>)}</div>
-            {item.way ? <Button size="sm" variant="ghost" name="way" value="">Back to {WAYS.find((w) => w.id === m.way)!.label.toLowerCase()}, from its medium</Button> : null}
-          </form>
-        ))}
-
-        {section("Subjects", (
-          <>
-            {item.subjects.length ? (
-              <div className="flex flex-wrap gap-1.5">
-                {item.subjects.map((s) => (
-                  <form key={s.id} action={removeItemSubjectAction}>{hidden}<input type="hidden" name="subject" value={s.id} /><Badge variant="secondary" className="gap-1">{s.name}<button aria-label={`Remove ${s.name}`} className="ml-1">×</button></Badge></form>
-                ))}
-              </div>
-            ) : <Note>Subjects it is about, like a book&apos;s, count toward what you are learning.</Note>}
-            <form action={addItemSubjectsAction} className="flex gap-2">{hidden}<Input name="subjects" placeholder="Justice, Utilitarianism" className="h-9" required /><Button size="sm" variant="outline">Add</Button></form>
-            {related.length ? <p className="text-sm">Books on your shelves on the same subjects: {related.slice(0, 6).map((b, i) => <span key={b.id}>{i ? ", " : ""}{b.catalog?.work ? <Link href={`/schole/works/${b.catalog.work}`} className="underline underline-offset-4">{b.title}</Link> : b.title}</span>)}</p> : null}
-          </>
-        ))}
+        {shelfFacts}
 
         {embed || item.transcript ? section("Transcript", (
           <form action={setTranscriptAction} className="space-y-2">
@@ -310,27 +329,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           </form>
         )) : null}
 
-        <details className="rounded-lg border p-4">
-          <summary className="cursor-pointer text-sm font-medium">Edit</summary>
-          <form action={editItemAction} className="mt-4 grid gap-3 sm:grid-cols-2">
-            {hidden}
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Title<Input name="title" defaultValue={item.title} required maxLength={300} /></label>
-            <label className="block space-y-1.5 text-sm font-medium">By<Input name="by" defaultValue={item.by ?? ""} maxLength={200} /></label>
-            <label className="block space-y-1.5 text-sm font-medium">Link<Input name="url" type="url" defaultValue={item.url ?? ""} maxLength={1000} /></label>
-            <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Picture (https link)<Input name="image" type="url" defaultValue={item.image ?? ""} maxLength={1000} /></label>
-            {books.length ? (
-              <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">Adapts or stages a book on your shelves
-                <select name="work" className={SELECT} defaultValue={item.work ?? ""}>
-                  <option value="">None</option>
-                  {books.map((b) => <option key={b.id} value={b.catalog!.work}>{b.title}</option>)}
-                </select>
-              </label>
-            ) : null}
-            <div className="sm:col-span-2"><Button size="sm">Save</Button></div>
-          </form>
-        </details>
-
-        <form action={removeItemAction}>{hidden}<Button size="sm" variant="ghost">Remove from your shelves</Button></form>
+        {editing}
       </div>
     </main>
   );
