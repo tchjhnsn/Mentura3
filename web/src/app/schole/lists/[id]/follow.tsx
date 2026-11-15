@@ -10,8 +10,8 @@ export function FollowList({ id, missing }: { id: string; /** How many of its bo
   const [note, setNote] = useState<string | null>(null);
   const [pending, run] = useTransition();
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button variant="outline" size="sm" disabled={pending || missing === 0} onClick={() => run(async () => {
+    <div className="flex flex-wrap items-center gap-2 sm:flex-row-reverse">
+      <Button variant={missing === 0 ? "outline" : "default"} disabled={pending || missing === 0} onClick={() => run(async () => {
         const n = await followListAction(id);
         setNote(`Added ${n} ${n === 1 ? "book" : "books"} to Want to read, in this order.`);
       })}><ListOrderedIcon />{pending ? "Adding..." : missing === 0 ? "All on your shelves" : "Read in this order"}</Button>
