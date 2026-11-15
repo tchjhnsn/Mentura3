@@ -36,7 +36,7 @@ export type App = "learn" | "work" | "body" | "home" | "friends" | "mate" | "kin
 export type Tile = { id: string; label: string; app: App };
 
 export const MINE: readonly Tile[] = [
-  { id: "learn", label: "Learn", app: "learn" },
+  { id: "learn", label: "Scholē", app: "learn" },
   { id: "work", label: "Work", app: "work" },
   { id: "income", label: "Income", app: "work" },
   { id: "food", label: "Food", app: "home" },
@@ -68,7 +68,7 @@ export const OURS: readonly Tile[] = [
  * names (Income opens Work's income, Food opens Home's food). OURS's tiles go nowhere yet.
  */
 export function hrefOf(t: Tile): string | null {
-  if (t.app === "learn") return "/learn";
+  if (t.app === "learn") return "/schole";
   if (t.app === "journal") return "/journal";
   const life = TILE_KIND[t.id];
   return life ? `/life/${life.app}${life.kind ? `?k=${life.kind}` : ""}` : null;

@@ -51,9 +51,9 @@ export async function Toward({ userId, record, back }: { userId: string; record:
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">Learning toward it</h2>
-            <p className="text-muted-foreground text-sm">What you are learning or want to learn in Learn that is for this work.</p>
+            <p className="text-muted-foreground text-sm">What you are learning or want to learn in Scholē that is for this work.</p>
           </div>
-          <Button asChild size="sm" variant="outline"><Link href={`/learn/browse?q=${encodeURIComponent(title)}`}><BookOpenIcon />Find something to learn</Link></Button>
+          <Button asChild size="sm" variant="outline"><Link href={`/schole/browse?q=${encodeURIComponent(title)}`}><BookOpenIcon />Find something to learn</Link></Button>
         </div>
         {offered.length ? (
           <form action={learningTowardAction.bind(null, record.id, back)} className="grid gap-3">
@@ -67,7 +67,7 @@ export async function Toward({ userId, record, back }: { userId: string; record:
             </div>
             <div><Button type="submit" size="sm" variant="outline">Save</Button></div>
           </form>
-        ) : <p className="text-muted-foreground text-sm">Nothing in Learn yet. What you add there can be marked toward this work.</p>}
+        ) : <p className="text-muted-foreground text-sm">Nothing in Scholē yet. What you add there can be marked toward this work.</p>}
       </div>
       <div className="grid gap-3">
         <div>

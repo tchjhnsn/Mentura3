@@ -133,7 +133,7 @@ export async function POST(req: Request) {
                 if (!full?.transcriptText) continue;
                 for (const part of searchTranscript(readTranscript(full.transcriptText), words, 3)) {
                   const cite = `${[i.by, i.title].filter(Boolean).join(", ")}, at ${clock(part.at)}`;
-                  show({ kind: "quote", text: part.text, cite, href: `/learn/items/${i.id}` });
+                  show({ kind: "quote", text: part.text, cite, href: `/schole/items/${i.id}` });
                   out.push(`"${part.text}" (${cite})`);
                   if (out.length >= 5) break;
                 }
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
           search_library: tool({
             description: "Search the open library by title, author or topic; the person can add a result to their shelves.",
             inputSchema: z.object({ query: z.string().min(1).max(200) }),
-            execute: async ({ query }) => library(`"${query}"`, () => searchBooks(query, openLibrary, 5), `/learn/browse?q=${encodeURIComponent(query)}`),
+            execute: async ({ query }) => library(`"${query}"`, () => searchBooks(query, openLibrary, 5), `/schole/browse?q=${encodeURIComponent(query)}`),
           }),
           browse_category: tool({
             description: "Show the best rated books in one Thema section (one letter) or category (two letters).",
@@ -170,7 +170,7 @@ export async function POST(req: Request) {
               const c = themaCode(input.code);
               const q = c ? themaQuery(c) : null;
               if (!c || !q) return "That is not a Thema section or category Reflect knows.";
-              return library((themaCategory(c) ?? themaSection(c))!.short, () => browseQuery(q, openLibrary, { limit: 5 }), `/learn/browse?cat=${c}`);
+              return library((themaCategory(c) ?? themaSection(c))!.short, () => browseQuery(q, openLibrary, { limit: 5 }), `/schole/browse?cat=${c}`);
             },
           }),
           quote_book: tool({
@@ -185,7 +185,7 @@ export async function POST(req: Request) {
               const cites = r.hits.map((h, i) => {
                 const text = `${h.before}${h.match}${h.after}`.trim();
                 const cite = [r.author, r.title, r.chapters[i]].filter(Boolean).join(", ");
-                show({ kind: "quote", text, cite, href: `/learn/works/${r.work}/read?c=${h.chapter}&find=${encodeURIComponent(words)}&p=${h.p}` });
+                show({ kind: "quote", text, cite, href: `/schole/works/${r.work}/read?c=${h.chapter}&find=${encodeURIComponent(words)}&p=${h.p}` });
                 return `"${text}" (${cite})`;
               });
               return `Shown, ${r.total} ${r.total === 1 ? "place" : "places"} in all: ${cites.join("; ")}`;

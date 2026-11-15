@@ -128,7 +128,7 @@ export function Editor({ work, ideals, subjects }: { work: Work; ideals: IdealOp
               tool("Quote", QuoteIcon, marks?.quote, () => editor.chain().focus().toggleBlockquote().run()),
             ] : null}
             <Button type="button" size="sm" variant="ghost" className="ml-1 h-8" disabled={!marks?.selected} onMouseDown={(e) => e.preventDefault()} onClick={() => { setMark(null); setSend({ passage: marks!.selected }); }}>
-              Send to Learn
+              Send to Scholē
             </Button>
             <Button type="button" size="sm" variant="ghost" className="h-8" disabled={!marks?.selected} onMouseDown={(e) => e.preventDefault()} onClick={() => { setSend(null); setMark({ passage: marks!.selected }); }}>
               Mark as a belief
@@ -143,7 +143,7 @@ export function Editor({ work, ideals, subjects }: { work: Work; ideals: IdealOp
             <blockquote className="border-l-2 pl-3 font-serif text-base italic">{send.passage}</blockquote>
             {send.sent !== undefined ? (
               <p className="text-sm">
-                Kept in Learn under {send.sent}. <Link href="/learn/shelves?tab=claims" className="underline underline-offset-2">See your claims</Link>
+                Kept in Scholē under {send.sent}. <Link href="/schole/shelves?tab=claims" className="underline underline-offset-2">See your claims</Link>
                 <button type="button" className="text-muted-foreground ml-2 text-xs" onClick={() => setSend(null)}>Close</button>
               </p>
             ) : (

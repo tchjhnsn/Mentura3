@@ -7,7 +7,7 @@ import { SearchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { searchMineAction, type Found } from "@/app/learn/search-action";
+import { searchMineAction, type Found } from "@/app/schole/search-action";
 
 /**
  * Search from any page: what is on your shelves matches as you type, and Enter searches everything in Browse (books,
@@ -51,7 +51,7 @@ export function SearchButton({ keys = true }: { keys?: boolean }) {
   const everything = () => {
     if (!q.trim()) return;
     setOpen(false);
-    router.push(`/learn/browse?m=all&q=${encodeURIComponent(q.trim())}`);
+    router.push(`/schole/browse?m=all&q=${encodeURIComponent(q.trim())}`);
   };
 
   return (

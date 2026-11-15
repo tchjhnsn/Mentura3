@@ -22,7 +22,7 @@ export type Way = (typeof WAYS)[number]["id"];
 export const isWay = (w: unknown): w is Way => typeof w === "string" && WAYS.some((x) => x.id === w);
 
 /** Kept, but not yet learning: play and leisure the person has not said taught them anything. */
-export const LEISURE = { id: "leisure", label: "Rest and leisure", about: "Games, music and art kept for rest and enjoyment, until you say what one taught you." } as const;
+export const LEISURE = { id: "leisure", label: "Play", about: "Games, music and art kept for play and rest, until you say what one taught you." } as const;
 
 export const MEDIA = [
   { id: "lecture", label: "Lecture", way: "teaching", done: "Watched", doing: "Watching", lesson: false },

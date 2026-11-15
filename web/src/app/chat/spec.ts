@@ -50,7 +50,7 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
           props: { title: b.title, by: b.authors.join(", ") || "unknown author", shelf: shelfName(b), onShelves: p.kept.has(b.work), entry: JSON.stringify(b) },
         });
       }
-      if (p.books.length && p.href?.startsWith("/learn/browse")) add({ type: "BrowseLink", props: { href: p.href, label: `See more of ${p.label} on Browse` } });
+      if (p.books.length && p.href?.startsWith("/schole/browse")) add({ type: "BrowseLink", props: { href: p.href, label: `See more of ${p.label} on Browse` } });
     } else {
       const claim = { text: p.text, holders: p.holders, stance: p.stance, ...(p.subject ? { subject: p.subject } : {}) };
       add({
