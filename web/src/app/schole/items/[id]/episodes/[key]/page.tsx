@@ -12,8 +12,6 @@ import { requireUser } from "@/server/session";
 import { getItem, listUnits } from "@/server/ways-store";
 import { chaptersOf, showFor, transcriptOf } from "@/server/podcasts";
 import { keepTranscript, keptTranscript } from "@/server/transcript-store";
-import { latestQuiz } from "@/server/quiz-store";
-import { LectureQuiz } from "../../../quiz";
 import { Chapters } from "../../../../podcasts/chapters";
 import { Notes, People } from "../../../../podcasts/parts";
 import { TaskHeader } from "@/components/headers";
@@ -40,8 +38,8 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const at = show?.episodes.findIndex((e) => e.key === key) ?? -1;
   if (!show || at < 0) notFound();
   const e = show.episodes[at]!;
-  const [published, units, given, kept, quiz, claims, books, view, favorites] = await Promise.all([
-    transcriptOf(e), listUnits(user.id, id), chaptersOf(e), keptTranscript(user.id, id, key), latestQuiz(user.id, id, key),
+  const [published, units, given, kept, claims, books, view, favorites] = await Promise.all([
+    transcriptOf(e), listUnits(user.id, id), chaptersOf(e), keptTranscript(user.id, id, key),
     listClaims(user.id).catch(() => []),
     // The books the show notes link to, found in Open Library; one that is not found is left out.
     Promise.all(booksInNotes(e.notes).map((q) => searchBooks(q, openLibrary, 1).then((r) => r[0] ?? null).catch(() => null))),
@@ -98,7 +96,6 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
           between={<>{e.kind === "audio" ? <Chapters chapters={chapters} track={track} /> : null}{shownNotes}</>}
           noTranscript={<p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>}
         />
-        {transcript.length ? <LectureQuiz item={id} unit={key} transcript={transcript} start={quiz} of="The episode" compact /> : null}
         {mineHere.length ? (
           <section className="space-y-2">
             <h2 className="text-sm font-medium">Claims you kept from this episode</h2>

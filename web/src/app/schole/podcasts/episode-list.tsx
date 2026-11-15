@@ -12,6 +12,7 @@ export type EpisodeRow = {
   key: string; title: string; date: string | null; /** The day as a person reads it ("Nov 14"). */ day: string | null; seconds: number | null; about: string | null; audio: string; image: string | null;
   season: number | null; number: number | null; type: "full" | "trailer" | "bonus"; kind: "audio" | "video";
   href: string; status: "played" | "begun" | "new"; place: number | null; /** Null where favorites are not kept (a show not on the shelves). */ favorite: boolean | null;
+  /** Its chapters, for the player. */ chapters: { at: number; title: string }[];
 };
 type Shown = "all" | "new" | "begun" | "played" | "favorite";
 // Played, Not played and Continue, as podcast apps say it (Torian, 2026-11-15 06:46Z).
@@ -29,7 +30,7 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
   const [n, setN] = useState(STEP);
   const list = rows.filter((r) => (season === null || r.season === season) && (shown === "all" || (shown === "favorite" ? r.favorite === true : r.status === shown)));
   const trackOf = (i: number): Track => {
-    const one = (r: EpisodeRow): Omit<Track, "next"> => ({ id: `episode:${item ?? feed}:${r.key}`, src: r.audio, title: r.title, show, href: r.href, image: r.image ?? image, item, unit: r.key, place: r.status === "played" ? 0 : r.place, seconds: r.seconds });
+    const one = (r: EpisodeRow): Omit<Track, "next"> => ({ id: `episode:${item ?? feed}:${r.key}`, src: r.audio, title: r.title, show, href: r.href, image: r.image ?? image, item, unit: r.key, place: r.status === "played" ? 0 : r.place, seconds: r.seconds, chapters: r.chapters });
     const r = list[i]!;
     const after = item ? list[i + 1] : undefined;
     return { ...one(r), next: after && after.kind === "audio" ? one(after) : null };

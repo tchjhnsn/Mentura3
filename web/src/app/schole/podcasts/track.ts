@@ -1,4 +1,4 @@
-import { episodeDay, episodeSummary, type Episode } from "@reflect/core/podcasts";
+import { chaptersFromNotes, episodeDay, episodeSummary, type Episode } from "@reflect/core/podcasts";
 import type { Track } from "../player";
 
 type Unit = { unit: string; place: number | null; doneOn: string | null };
@@ -14,7 +14,7 @@ export function episodeTrack(o: { episodes: Episode[]; at: number; show: string;
     return {
       id: `episode:${o.item ?? o.feed}:${e.key}`, src: e.audio, title: e.title, show: o.show, image: e.image ?? o.image,
       href: o.item ? `/schole/items/${o.item}/episodes/${e.key}` : o.previewHref?.(e.key) ?? "/schole",
-      item: o.item, unit: e.key, place: u?.doneOn ? 0 : u?.place ?? null, seconds: e.seconds, chapters: e.chapters,
+      item: o.item, unit: e.key, place: u?.doneOn ? 0 : u?.place ?? null, seconds: e.seconds, chapters: e.chapters.length ? e.chapters : chaptersFromNotes(e.notes),
     };
   };
   // What follows is the next one down the show's list, as the episode page's Next goes.
@@ -32,6 +32,7 @@ export function episodeRows(episodes: Episode[], hrefOf: (key: string) => string
       key: e.key, title: e.title, date: e.date, day: episodeDay(e.date, today), seconds: e.seconds, about: episodeSummary(e.about), audio: e.audio, image: e.image,
       season: e.season, number: e.number, type: e.type, kind: e.kind, href: hrefOf(e.key),
       status: u?.doneOn ? "played" : u?.place ? "begun" : "new", place: u?.place ?? null, favorite: favorites ? favorites.has(e.key) : null,
+      chapters: (e.chapters.length ? e.chapters : chaptersFromNotes(e.notes)).map((c) => ({ at: c.at, title: c.title })),
     };
   });
 }
