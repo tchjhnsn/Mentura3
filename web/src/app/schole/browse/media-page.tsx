@@ -38,7 +38,7 @@ export function BrowseNav({ m, way, children }: { m: BrowseMedium | "all"; way: 
   const media = BROWSE_MEDIA.filter((x) => inWay(x.id, way));
   return (
     <div className="space-y-3">
-      <nav aria-label="What to browse" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      <nav aria-label="What to browse" className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:px-0">
         <ul className="flex gap-1.5 pb-1">
           {[{ id: "all" as const, label: "All" }, ...media].map((x) => (
             <li key={x.id}>

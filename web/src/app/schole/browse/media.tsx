@@ -64,7 +64,7 @@ function MediaCard({ f, mine, showMedium }: { f: Find; mine: Map<string, string>
 
 export function MediaGrid({ finds, mine, showMedium = false, row = false }: { finds: Find[]; mine: Map<string, string>; showMedium?: boolean; row?: boolean }) {
   return (
-    <ul className={row ? "-mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-6 [&>li]:w-36 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto" : "grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6"}>
+    <ul className={row ? "-mx-6 flex snap-x gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-6 [&>li]:w-36 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto" : "grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6"}>
       {finds.map((f) => <MediaCard key={`${keyOf(f)}|${f.url ?? ""}`} f={f} mine={mine} showMedium={showMedium} />)}
     </ul>
   );

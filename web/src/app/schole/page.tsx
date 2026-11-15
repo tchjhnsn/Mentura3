@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 // The shelves' own parameters, from links made before Learn opened to the workspace.
 const SHELF_KEYS = ["tab", "book", "filled", "show", "sort", "removed"];
-const ROW = "-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&>li]:w-72 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto";
+const ROW = "-mx-6 flex snap-x gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&>li]:w-72 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto";
 const LINK = "text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline";
 
 type Card = { key: string; href: string; kind: string; title: string; by: string | null; image: string | null; share: number | null; go?: string };
@@ -105,13 +105,13 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <form action="/schole/browse" role="search" className="relative">
             <input type="hidden" name="m" value="all" />
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input name="q" placeholder="Search books, courses, podcasts, films, music and art" aria-label="Search Scholē" className="h-11 pl-9" />
           </form>
-          <nav aria-label="Every medium" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+          <nav aria-label="Every medium" className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:px-0">
             <ul className="flex gap-1.5 pb-1">
               {BROWSE_MEDIA.map((m) => <li key={m.id}><Link href={`/schole/browse?m=${m.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm whitespace-nowrap">{m.label}</Link></li>)}
             </ul>
@@ -119,13 +119,13 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
         </div>
 
         {now.length ? (
-          <section className="grid gap-3">
+          <section className="grid grid-cols-1 gap-3">
             <Head title="Continue" note="What you are in the middle of, where you left it." />
             <Cards cards={now} />
           </section>
         ) : null}
 
-        <section className="grid gap-3">
+        <section className="grid grid-cols-1 gap-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <Head title="Discover" note="To read, hear, watch and look at here." />
             <Link href="/schole/browse" className={LINK}>Browse everything</Link>
@@ -135,7 +135,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
 
         <Upcoming userId={user.id} tile="learn" today={today} title="Events" note="Lectures, readings and gatherings on your Scholē calendar in the next two weeks." />
 
-        <section id="library" className="grid scroll-mt-20 gap-6">
+        <section id="library" className="grid grid-cols-1 scroll-mt-20 gap-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <Head title="Your library" note={kept ? `${kept} kept, on your shelves by the ways of learning.` : "What you keep, on your shelves by the ways of learning."} />
             <Link href="/schole/shelves" className={LINK}>Open your shelves</Link>
@@ -144,7 +144,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             {[["Reading", "/schole/reading"], ["Highlights", "/schole/highlights"], ["Claims", "/schole/shelves?tab=claims"], ["Lists", "/schole/lists"]].map(([label, href]) => <li key={href}><Link href={href!} className="hover:bg-accent block rounded-lg border px-3 py-2 font-medium">{label}</Link></li>)}
           </ul>
           {next.length ? (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div className="flex flex-wrap items-baseline justify-between gap-3">
                 <h3 className="font-semibold">Next</h3>
                 {next.length > 6 ? <Link href="/schole/shelves?show=want" className={LINK}>All {next.length}</Link> : null}
@@ -153,7 +153,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             </div>
           ) : null}
           {picked.length ? (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <div>
                 <h3 className="font-semibold">Today</h3>
                 <p className="text-muted-foreground text-sm">Three of your highlights. Say each in your own words; what you write is kept as its note.</p>
@@ -173,7 +173,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             </div>
           ) : null}
           {open.length ? (
-            <div className="grid gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <h3 className="font-semibold">Your examinations</h3>
               <ul className="divide-y rounded-xl border text-sm">
                 {open.slice(0, 5).map((e) => <li key={e.id}><Link href={`/schole/examinations/${e.id}`} className="hover:bg-accent flex items-baseline justify-between gap-3 px-4 py-2"><span className="min-w-0 truncate font-medium">{e.courseTitle}</span><span className="text-muted-foreground shrink-0 text-xs">{e.examiners.length} {e.examiners.length === 1 ? "examiner" : "examiners"}</span></Link></li>)}
