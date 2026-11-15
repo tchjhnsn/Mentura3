@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { duration, episodeChapters, episodeKey, episodeTranscript, feedOf, readChapters, readFeed, showOf } from "./podcasts";
+import { booksInNotes, duration, episodeChapters, episodeKey, episodeTranscript, feedOf, readChapters, readFeed, showOf } from "./podcasts";
 
 const FEED = `<?xml version="1.0"?><rss><channel><title>Philosophize This!</title>
 <item><title><![CDATA[Episode #2 ... Plato]]></title><guid>ep-2</guid><pubDate>Tue, 27 Oct 2026 10:00:00 GMT</pubDate><itunes:duration>36:04</itunes:duration>
@@ -74,5 +74,21 @@ describe("reading a feed fully", () => {
     const f = async () => JSON.stringify({ version: "1.2.0", chapters: [{ startTime: 61.2, title: "Two" }, { startTime: 0, title: "One", url: "https://x.example" }, { startTime: 90, title: "Hidden", toc: false }] });
     expect(await episodeChapters(t, f)).toEqual([{ at: 0, title: "One", href: "https://x.example", image: null }, { at: 61, title: "Two", href: null, image: null }]);
     expect(readChapters("not json")).toEqual([]);
+  });
+});
+
+describe("books named in show notes", () => {
+  it("takes links to booksellers and catalogs only, by ISBN when the link has one", () => {
+    const blocks = [
+      { list: true, parts: [{ text: "The Republic", href: "https://www.amazon.com/Republic-Plato/dp/0465069347/ref=x" }] },
+      { list: true, parts: [{ text: "Nicomachean Ethics", href: "https://bookshop.org/p/books/nicomachean-ethics/123?ean=9780226026756" }] },
+      { list: true, parts: [{ text: "After Virtue", href: "https://www.goodreads.com/book/show/1234.After_Virtue" }] },
+      { list: false, parts: [{ text: "Our sponsor", href: "https://example.com/deal" }, { text: "here", href: "https://amzn.to/abc" }] },
+      { list: true, parts: [{ text: "The Republic", href: "https://www.amazon.com/Republic-Plato/dp/0465069347" }, { text: "no link" }] },
+    ];
+    expect(booksInNotes(blocks)).toEqual(["isbn:0465069347", "isbn:9780226026756", "After Virtue"]);
+  });
+  it("finds nothing in notes without book links", () => {
+    expect(booksInNotes([{ list: false, parts: [{ text: "Hello", href: "https://example.com" }] }])).toEqual([]);
   });
 });

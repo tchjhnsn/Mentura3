@@ -2,15 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { CheckIcon, ChevronRightIcon, CopyIcon, ListPlusIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { CheckIcon, ChevronRightIcon, CopyIcon, ListPlusIcon, PauseIcon, PlayIcon, ScaleIcon, XIcon } from "lucide-react";
+import { STANCES } from "@reflect/core/claims";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { passageAt, type Passage } from "@reflect/core/courses";
 import { clock } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { addItemNoteAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
+import { addItemNoteAction, keepItemClaimAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
 import { loadYouTube, localDay, type YTPlayer } from "./youtube";
 import { useListen, type Track } from "../player";
 
@@ -44,8 +45,11 @@ export function UnitPlayer(p: UnitProps) {
   const [q, setQ] = useState("");
   const [text, setText] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
+  const [claiming, setClaiming] = useState<number | null>(null);
+  const [claimed, setClaimed] = useState<number | null>(null);
   const [pending, run] = useTransition();
   const router = useRouter();
+  const path = usePathname();
 
   const listen = useListen();
   const shared = p.track && p.media?.kind === "audio" && listen ? p.track : null;
@@ -132,11 +136,29 @@ export function UnitPlayer(p: UnitProps) {
                         </p>
                       )}
                       {!x.heading && p.item ? (
-                        <span className="mt-1 hidden gap-1 group-hover:flex group-focus-within:flex">
+                        <span className="mt-1 hidden gap-1 group-hover:flex group-focus-within:flex pointer-coarse:flex">
                             <Button type="button" size="sm" variant="outline" className="h-7" disabled={pending} onClick={() => note({ at: t, quote: x.text })}>Quote in a note</Button>
                             <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Copy as a cited quote" onClick={() => { navigator.clipboard?.writeText(quoteOf(x, i)).catch(() => {}); setCopied(i); }}><CopyIcon /></Button>
+                            <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Keep as a claim" title="Keep as a claim" aria-expanded={claiming === i} onClick={() => setClaiming(claiming === i ? null : i)}><ScaleIcon /></Button>
                             {copied === i ? <span role="status" className="text-muted-foreground self-center text-xs">Copied</span> : null}
                         </span>
+                      ) : null}
+                      {claimed === i ? <p role="status" className="text-muted-foreground mt-1 text-xs">Kept as a claim</p> : null}
+                      {claiming === i && p.item ? (
+                        <form
+                          className="mt-2 space-y-2 rounded-md border p-2"
+                          action={(fd) => run(async () => { await keepItemClaimAction(fd); setClaiming(null); setClaimed(i); router.refresh(); })}
+                        >
+                          <input type="hidden" name="item" value={p.item} />
+                          <input type="hidden" name="cite" value={`${p.cite}${t !== null ? `, at ${clock(t)}` : ""}`} />
+                          <input type="hidden" name="back" value={path} />
+                          <label className="block space-y-1 text-xs font-medium">The claim, in your words or theirs<Textarea name="claim" required maxLength={500} rows={2} defaultValue={x.text.slice(0, 500)} /></label>
+                          <label className="block space-y-1 text-xs font-medium">Who holds it, one per line<Textarea name="holders" rows={1} defaultValue={x.who ?? (p.by && !/ and |, /.test(p.by) ? p.by : "")} /></label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {STANCES.map((s) => <Button key={s.id} size="sm" variant="outline" className="h-7" name="stance" value={s.id} disabled={pending}>{s.text}</Button>)}
+                            <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Close" onClick={() => setClaiming(null)}><XIcon /></Button>
+                          </div>
+                        </form>
                       ) : null}
                     </li>
                   );
