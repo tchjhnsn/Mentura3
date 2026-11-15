@@ -17,7 +17,7 @@ export const PER = 24;
  * (imitation) and written dialogues (dialectic). A way is applied to each page after it is fetched, so a page can
  * hold fewer books.
  */
-export const FILTERS = { free: "Free to read", recent: "Published in the last two years", old: "Published before 1924", teaching: "Books that teach", imitation: "Stories (imitation)", dialectic: "Dialogues (dialectic)" } as const;
+export const FILTERS = { free: "Free to read or hear here", recent: "Published in the last two years", old: "Published before 1924", teaching: "Books that teach", imitation: "Stories (imitation)", dialectic: "Dialogues (dialectic)" } as const;
 export type Filter = keyof typeof FILTERS;
 export const isFilter = (f: unknown): f is Filter => typeof f === "string" && Object.hasOwn(FILTERS, f);
 function clause(f: Filter | undefined): string {

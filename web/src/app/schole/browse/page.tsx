@@ -22,6 +22,7 @@ import { isFilter, listBooks, newQuery, openLibrary, PER, type BookSource, type 
 import { isBrowseMedium } from "@reflect/core/browse-media";
 import type { Medium } from "@reflect/core/ways";
 import { BrowseNav, isWayPick, MediaBrowse } from "./media-page";
+import { AudiobookBrowse } from "../audiobooks/browse";
 
 export const metadata: Metadata = { title: "Browse" };
 export const dynamic = "force-dynamic";
@@ -39,6 +40,10 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
   const q = one(sp.q).trim().slice(0, 200);
   const way = isWayPick(one(sp.way)) ? (one(sp.way) as Parameters<typeof BrowseNav>[0]["way"]) : null;
   const m = one(sp.m);
+  if (m === "audiobooks") {
+    const page = Math.max(1, Math.min(200, Number(one(sp.page)) || 1));
+    return <AudiobookBrowse way={way} p={{ topic: one(sp.topic), length: one(sp.length), readers: one(sp.readers), language: one(sp.language).slice(0, 40), q, page, all: one(sp.all) === "1" }} />;
+  }
   // Books are browsed as before; with no medium and nothing about books asked for, Browse shows every medium.
   const books = m === "books" || (!m && Boolean(q || one(sp.cat) || one(sp.view)));
   if (!books) return <MediaBrowse userId={user.id} m={isBrowseMedium(m) && m !== "books" ? (m as Medium) : "all"} way={way} q={q} />;
@@ -125,7 +130,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
           ) : null}
           <GoodreadsImport />
         </div>
-        <p className="text-muted-foreground text-sm">Books from Open Library. Add one and it goes in its section in your library.</p>
+        <p className="text-muted-foreground text-sm">Books from Open Library. Those marked Listen or Read can be heard or read here; the rest can be kept in your library but not read or heard here yet. <Link href="/schole/browse?m=audiobooks" className="underline underline-offset-2">Audiobooks</Link> all play here.</p>
         {body}
         <p className="text-muted-foreground pt-6 text-center text-xs">Categories from Thema, the book trade&apos;s subject scheme (EDItEUR). Books, covers and ratings from Open Library.</p>
       </div>
