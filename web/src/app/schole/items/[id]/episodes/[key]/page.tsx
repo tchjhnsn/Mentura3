@@ -8,6 +8,7 @@ import { getItem, listUnits } from "@/server/ways-store";
 import { showFor, transcriptOf } from "@/server/podcasts";
 import { TaskHeader } from "@/components/headers";
 import { UnitPlayer } from "../../../unit-player";
+import { episodeTrack } from "../../../../podcasts/track";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -38,6 +39,7 @@ export default async function EpisodePage({ params }: { params: Promise<{ id: st
           item={id} unit={key} title={e.title} by={item.by} cite={[item.by, `${item.title}, “${e.title}”`].filter(Boolean).join(", ")}
           youtube={null} media={{ src: e.audio, kind: "audio" }} place={unit?.place ?? null} done={Boolean(unit?.doneOn)} of={null}
           transcript={transcript} notes={item.notes.filter((x) => x.unit === key)} next={older ? `/schole/items/${id}/episodes/${older.key}` : null}
+          track={episodeTrack({ episodes: show.episodes, at, show: item.title, image: item.image, item: id, feed: show.feed, units })}
         />
         <p className="text-muted-foreground text-xs">Played from the show&apos;s own feed. Reflect keeps no copy.</p>
       </div>

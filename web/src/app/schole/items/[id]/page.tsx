@@ -27,6 +27,8 @@ import { learnView } from "@/server/learn-store";
 import { listClaims } from "@/server/claims-store";
 import { publishedBy } from "@/server/published-store";
 import { ThingHeader } from "@/components/headers";
+import { EpisodeButtons } from "../../podcasts/episode-buttons";
+import { episodeTrack } from "../../podcasts/track";
 import { shelfCrumbs } from "../../crumbs";
 import {
   addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, keepItemClaimAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
@@ -158,12 +160,13 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         {show?.episodes.length ? section("Episodes", (
           <>
             <ol className="divide-y text-sm">
-              {show.episodes.slice(0, 50).map((e) => {
+              {show.episodes.slice(0, 50).map((e, i) => {
                 const u = begun.get(e.key);
                 return (
                   <li key={e.key} className="flex items-center gap-3 py-2">
                     <Link href={`/schole/items/${item.id}/episodes/${e.key}`} className="min-w-0 flex-1 underline-offset-4 hover:underline">{e.title}</Link>
                     <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{u?.doneOn ? "Heard" : u?.place ? "Under way" : [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ")}</span>
+                    <EpisodeButtons track={episodeTrack({ episodes: show.episodes, at: i, show: item.title, image: item.image, item: item.id, feed: show.feed, units: [...begun.values()] })} />
                   </li>
                 );
               })}
