@@ -28,8 +28,8 @@ export const browseWay = (m: BrowseMedium): Way | "leisure" => (m === "books" ? 
  */
 export function playsHere(f: { medium: Medium; url?: string | null | undefined; image?: string | null | undefined }): boolean {
   if (f.medium === "course") return courseSite(f.url) !== null;
-  // A show from Apple by its id, or by its feed (Podcast Index); a Spotify page has no feed to play.
-  if (f.medium === "podcast") return Boolean(f.url && (/podcasts\.apple\.com\/.+\/id\d+/.test(f.url) || (/^https:\/\//.test(f.url) && !/spotify\.com|podcasts\.apple\.com/.test(f.url))));
+  // A show from Apple by its id, or by its feed (Podcast Index, fyyd, gpodder.net); a Spotify page has no feed to play.
+  if (f.medium === "podcast") return Boolean(f.url && (/podcasts\.apple\.com\/.+\/id\d+/.test(f.url) || (/^https?:\/\//.test(f.url) && !/spotify\.com|podcasts\.apple\.com/.test(f.url))));
   if (f.medium === "art") return Boolean(f.url?.includes("artic.edu/artworks/") && f.image);
   const e = embedOf(f.url);
   return e !== null && (e.kind === "youtube" || /vimeo|archive/i.test(e.site));

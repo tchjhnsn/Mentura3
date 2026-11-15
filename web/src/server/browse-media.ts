@@ -3,7 +3,7 @@
 import { findMedium, freeFilmsToWatch, type Fetch } from "@reflect/core/browse-media";
 import { ITEM_LISTS } from "@reflect/core/item-lists";
 import type { Found } from "@reflect/core/lookup";
-import { mergeShowFinds, podcastIndexHeaders, podcastIndexSearchUrl, readPodcastIndex } from "@reflect/core/podcastindex";
+import { fyydSearchUrl, gpodderSearchUrl, mergeShowFinds, podcastIndexHeaders, podcastIndexSearchUrl, readFyyd, readGpodder, readPodcastIndex } from "@reflect/core/podcastindex";
 import type { Medium } from "@reflect/core/ways";
 
 export const textFetch: Fetch = async (url) => {
@@ -18,8 +18,15 @@ export const textFetch: Fetch = async (url) => {
 /** Finds for a medium: a search, or the catalog's own list when there is no search. */
 export async function finds(m: Medium, q = ""): Promise<{ found: Found[]; error?: string }> {
   const oycHtml = m === "course" ? await textFetch("https://oyc.yale.edu/courses") : null;
-  const [apple, index] = await Promise.all([findMedium(m, q, textFetch, { oycHtml }), m === "podcast" && q.trim() ? indexShows(q) : Promise.resolve([])]);
-  return index.length ? { ...apple, found: mergeShowFinds(apple.found, index) } : apple;
+  const more = m === "podcast" && q.trim();
+  const [apple, ...others] = await Promise.all([findMedium(m, q, textFetch, { oycHtml }), ...(more ? [openShows(fyydSearchUrl(q), readFyyd), openShows(gpodderSearchUrl(q), readGpodder), indexShows(q)] : [])]);
+  return others.some((o) => o.length) ? { ...apple, found: mergeShowFinds(apple.found, others) } : apple;
+}
+
+/** Shows from an open index that needs no key (fyyd, gpodder.net); none when it does not answer. */
+async function openShows(url: string, read: (body: unknown) => Found[]): Promise<Found[]> {
+  const t = await textFetch(url);
+  try { return t ? read(JSON.parse(t)) : []; } catch { return []; }
 }
 
 /** Shows from Podcast Index, when its key and secret are set (`PODCASTINDEX_KEY`, `PODCASTINDEX_SECRET`); else none. */

@@ -32,8 +32,48 @@ export function readPodcastIndex(body: unknown): Found[] {
   return out;
 }
 
-/** Apple's finds first, then Podcast Index's shows Apple did not find, matched by title. */
-export function mergeShowFinds(apple: readonly Found[], index: readonly Found[], limit = 16): Found[] {
+// Two open indexes that need no key (Torian, 2026-11-15 06:14Z "go"): fyyd (fyyd.de) and gpodder.net. Both give
+// each show's feed.
+
+export const fyydSearchUrl = (term: string, count = 10) => `https://api.fyyd.de/0.2/search/podcast?title=${encodeURIComponent(term)}&count=${count}`;
+export const gpodderSearchUrl = (term: string) => `https://gpodder.net/search.json?q=${encodeURIComponent(term)}`;
+
+const feedUrl = (v: unknown): string | undefined => (typeof v === "string" && /^https?:\/\//i.test(v) ? v : undefined);
+
+/** fyyd's shows in Reflect's language (or with none given), leaving out feeds fyyd last found broken. */
+export function readFyyd(body: unknown): Found[] {
+  const data = body && typeof body === "object" && Array.isArray((body as { data?: unknown }).data) ? (body as { data: unknown[] }).data : [];
+  const out: Found[] = [];
+  for (const d of data) {
+    if (!d || typeof d !== "object") continue;
+    const r = d as Record<string, unknown>;
+    const title = text(r.title), url = feedUrl(r.xmlURL);
+    if (!title || !url || (typeof r.status === "number" && r.status >= 400) || (text(r.language) && !/^en/i.test(String(r.language)))) continue;
+    const by = text(r.author), image = https(r.imgURL) ?? https(r.smallImageURL);
+    out.push({ medium: "podcast", title, ...(by ? { by } : {}), url, ...(image ? { image } : {}), source: "fyyd" });
+  }
+  return out;
+}
+
+/** gpodder.net's shows, most followed first, up to ten. */
+export function readGpodder(body: unknown): Found[] {
+  const rows = Array.isArray(body) ? body : [];
+  return rows
+    .filter((r): r is Record<string, unknown> => Boolean(r) && typeof r === "object")
+    .sort((a, b) => Number(b.subscribers ?? 0) - Number(a.subscribers ?? 0))
+    .flatMap((r) => {
+      const title = text(r.title), url = feedUrl(r.url);
+      if (!title || !url) return [];
+      const by = text(r.author)?.replace(/\s*\([^)]*@[^)]*\)\s*$/, ""), image = https(r.logo_url);
+      return [{ medium: "podcast" as const, title, ...(by ? { by } : {}), url, ...(image ? { image } : {}), source: "gpodder.net" }];
+    })
+    .slice(0, 10);
+}
+
+/** Apple's finds first, then each other index's shows not already found, matched by title. */
+export function mergeShowFinds(apple: readonly Found[], others: readonly (readonly Found[])[], limit = 20): Found[] {
   const seen = new Set(apple.map((f) => f.title.toLowerCase()));
-  return [...apple, ...index.filter((f) => !seen.has(f.title.toLowerCase()))].slice(0, limit);
+  const out = [...apple];
+  for (const list of others) for (const f of list) { const k = f.title.toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push(f); } }
+  return out.slice(0, limit);
 }
