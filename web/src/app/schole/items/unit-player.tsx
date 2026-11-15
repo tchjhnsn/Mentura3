@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckIcon, ChevronRightIcon, CopyIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, CopyIcon, ListPlusIcon, PauseIcon, PlayIcon, XIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { passageAt, type Passage } from "@reflect/core/courses";
 import { clock } from "@reflect/core/media";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addItemNoteAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
 import { loadYouTube, localDay, type YTPlayer } from "./youtube";
+import { useListen, type Track } from "../player";
 
 type Note = { id: string; at: number | null; quote: string | null; note: string | null };
 export type UnitProps = {
@@ -20,6 +21,8 @@ export type UnitProps = {
   youtube: string | null; media: { src: string; kind: "audio" | "video" } | null;
   place: number | null; done: boolean; of: number | null;
   transcript: Passage[]; notes: Note[]; next: string | null;
+  /** An episode's audio, played by Scholē's one player instead of a player on the page, so it keeps playing. */
+  track?: Track | null;
 };
 
 /**
@@ -42,8 +45,14 @@ export function UnitPlayer(p: UnitProps) {
   const [pending, run] = useTransition();
   const router = useRouter();
 
-  const time = useCallback(() => (yt.current ? yt.current.getCurrentTime() : el.current ? el.current.currentTime : 0), []);
-  const keep = useCallback(() => { const s = time(); if (s > 1 && p.item) keepUnitPlaceAction(p.item, p.unit, s, localDay()).catch(() => {}); }, [p.item, p.unit, time]);
+  const listen = useListen();
+  const shared = p.track && p.media?.kind === "audio" && listen ? p.track : null;
+  const mine = Boolean(shared && listen?.track?.id === shared.id);
+  const sharedTime = useRef(0);
+  sharedTime.current = mine ? listen!.time : p.place ?? 0;
+  const time = useCallback(() => (shared ? sharedTime.current : yt.current ? yt.current.getCurrentTime() : el.current ? el.current.currentTime : 0), [shared]);
+  // Scholē's player keeps the place of what it plays; a player on the page keeps its own.
+  const keep = useCallback(() => { if (shared) return; const s = time(); if (s > 1 && p.item) keepUnitPlaceAction(p.item, p.unit, s, localDay()).catch(() => {}); }, [p.item, p.unit, time, shared]);
 
   useEffect(() => {
     if (!p.youtube || !holder.current) return;
@@ -78,6 +87,7 @@ export function UnitPlayer(p: UnitProps) {
   }, [current, follow, q, open]);
 
   const seek = (s: number) => {
+    if (shared) { listen!.playTrack(shared, s); setNow(s); return; }
     if (yt.current) { yt.current.seekTo(s, true); yt.current.playVideo(); }
     else if (el.current) { el.current.currentTime = s; el.current.play().catch(() => {}); }
     setNow(s);
@@ -141,10 +151,23 @@ export function UnitPlayer(p: UnitProps) {
           <div className="aspect-video w-full overflow-hidden rounded-lg border bg-black"><div ref={holder} className="size-full" /></div>
         ) : p.media?.kind === "video" ? (
           <video ref={(v) => { el.current = v; }} src={p.media.src} controls preload="metadata" className="aspect-video w-full rounded-lg border bg-black" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
+        ) : shared ? (
+          <div className="flex items-center gap-3 rounded-lg border p-3">
+            <Button size="icon" className="size-11 rounded-full" aria-label={mine && listen!.playing ? "Pause" : "Play"} onClick={() => (mine ? listen!.toggle() : listen!.playTrack(shared))}>{mine && listen!.playing ? <PauseIcon /> : <PlayIcon />}</Button>
+            <div className="min-w-0 flex-1 text-sm">
+              <p className="font-medium">{mine ? (listen!.playing ? "Playing" : "Paused") : p.place ? `Play from ${clock(p.place)}` : "Play"}</p>
+              <p className="text-muted-foreground text-xs">{mine ? `${clock(Math.floor(listen!.time))} of ${clock(Math.floor(listen!.duration || shared.seconds || 0))}` : shared.seconds ? clock(shared.seconds) : "In Scholē's player, which keeps playing as you move around"}</p>
+            </div>
+            {!mine ? (
+              listen!.queue.some((x) => x.id === shared.id)
+                ? <span className="text-muted-foreground text-xs">Up next</span>
+                : <Button size="icon" variant="ghost" aria-label="Play after what is playing" title="Up next" onClick={() => listen!.enqueue(shared)}><ListPlusIcon /></Button>
+            ) : null}
+          </div>
         ) : p.media ? (
           <audio ref={(a) => { el.current = a; }} src={p.media.src} controls preload="metadata" className="w-full" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
         ) : <p className="text-muted-foreground text-sm">This one has no recording Reflect can play.</p>}
-        {p.place ? <p className="text-muted-foreground text-xs">Picks up at {clock(p.place)}, where you stopped.</p> : null}
+        {p.place && !shared ? <p className="text-muted-foreground text-xs">Picks up at {clock(p.place)}, where you stopped.</p> : null}
 
         {p.item ? <><div className="flex flex-wrap items-center gap-2">
           {p.done ? (

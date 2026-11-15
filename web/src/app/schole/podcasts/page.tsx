@@ -11,6 +11,8 @@ import { ThingHeader } from "@/components/headers";
 import { browseCrumbs } from "../crumbs";
 import { browseAddAction } from "../actions";
 import { LocalDay } from "../items/local-day";
+import { EpisodeButtons } from "./episode-buttons";
+import { episodeTrack } from "./track";
 
 export const metadata: Metadata = { title: "Podcast" };
 export const dynamic = "force-dynamic";
@@ -56,11 +58,12 @@ export default async function ShowPage({ searchParams }: { searchParams: Promise
         </header>
         {show?.episodes.length ? (
           <ol className="divide-y rounded-lg border px-4 text-sm">
-            {show.episodes.slice(0, 100).map((e) => (
+            {show.episodes.slice(0, 100).map((e, i) => (
               <li key={e.key} className="space-y-1 py-3">
                 <div className="flex items-center gap-3">
                   <Link href={episodeHref(e.key)} className="min-w-0 flex-1 font-medium underline-offset-4 hover:underline">{e.title}</Link>
                   <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{heard.has(e.key) ? "Heard" : [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ")}</span>
+                  <EpisodeButtons track={episodeTrack({ episodes: show.episodes, at: i, show: title, image: /^https:\/\//.test(image) ? image : null, item: kept?.id ?? null, feed: show.feed, units, previewHref: (k) => episodeHref(k) })} />
                 </div>
                 {e.about ? <p className="text-muted-foreground line-clamp-2">{e.about}</p> : null}
               </li>

@@ -39,7 +39,8 @@ export function Page({ work, chapter, chapters, title, author, chapterTitle, par
   const [pending, run] = useTransition();
   const { look, setAt } = useReader();
   // The bars sit above Learn's audio player when it is open.
-  const lift = useListen()?.book ? "bottom-[60px]" : "bottom-0";
+  const listen = useListen();
+  const lift = listen?.book || listen?.track ? "bottom-[124px] sm:bottom-[76px]" : "bottom-0";
   const router = useRouter();
 
   useEffect(() => {

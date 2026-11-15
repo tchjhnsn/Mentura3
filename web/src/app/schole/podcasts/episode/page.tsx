@@ -11,6 +11,7 @@ import { TaskHeader } from "@/components/headers";
 import { browseAddAction } from "../../actions";
 import { LocalDay } from "../../items/local-day";
 import { UnitPlayer } from "../../items/unit-player";
+import { episodeTrack } from "../track";
 
 export const metadata: Metadata = { title: "Episode" };
 export const dynamic = "force-dynamic";
@@ -44,7 +45,8 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
           <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} /><LocalDay />
           <Button size="sm" name="go" value="start">Keep the show</Button>
         </form>
-        <UnitPlayer item={null} unit={key} title={e.title} by={null} cite={`${title}, “${e.title}”`} youtube={null} media={{ src: e.audio, kind: "audio" }} place={null} done={false} of={null} transcript={transcript} notes={[]} next={null} />
+        <UnitPlayer item={null} unit={key} title={e.title} by={null} cite={`${title}, “${e.title}”`} youtube={null} media={{ src: e.audio, kind: "audio" }} place={null} done={false} of={null} transcript={transcript} notes={[]} next={null}
+          track={episodeTrack({ episodes: show.episodes, at: show.episodes.indexOf(e), show: title, image: /^https:\/\//.test(one(sp.i)) ? one(sp.i) : null, item: null, feed: show.feed, previewHref: (k) => `/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${k}&t=${encodeURIComponent(title)}` })} />
       </div>
     </main>
   );
