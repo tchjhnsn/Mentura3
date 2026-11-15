@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { clock } from "@reflect/core/media";
@@ -13,6 +14,10 @@ import { browseAddAction } from "../../actions";
 import { LocalDay } from "../../items/local-day";
 import { UnitPlayer } from "../../items/unit-player";
 import { episodeTrack } from "../track";
+import { episodeGuests } from "@reflect/core/guests";
+import { commentsOn } from "@/server/comment-store";
+import { Comments } from "../comments";
+import { EpisodeBooks, GuestChips } from "../mentions";
 
 export const metadata: Metadata = { title: "Episode" };
 export const dynamic = "force-dynamic";
@@ -32,7 +37,7 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
   const e = show?.episodes.find((x) => x.key === key);
   if (!show || !e) notFound();
   const title = one(sp.t) || show.title;
-  const [transcript, chapters] = await Promise.all([transcriptOf(e), chaptersOf(e)]);
+  const [transcript, chapters, comments] = await Promise.all([transcriptOf(e), chaptersOf(e), commentsOn(user.id, show.feed, e.key)]);
   const track = { ...episodeTrack({ episodes: show.episodes, at: show.episodes.indexOf(e), show: title, image: /^https:\/\//.test(one(sp.i)) ? one(sp.i) : show.image, item: null, feed: show.feed, previewHref: (k) => `/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${k}&t=${encodeURIComponent(title)}` }), chapters };
   return (
     <main className={PAGE}>
@@ -42,7 +47,8 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
           <EpisodeMarks e={e} />
           <h1 className="text-2xl font-semibold tracking-tight">{e.title}</h1>
         </header>
-        <People people={e.people} />
+        <People people={e.people.filter((p) => p.role !== "guest")} />
+        <GuestChips guests={episodeGuests(e, show)} show={{ feed: show.feed, title }} />
         <form action={browseAddAction} className="bg-muted/50 flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
           <span className="min-w-0 flex-1">Keep the show to keep your place in each episode and take notes.</span>
           <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} /><LocalDay />
@@ -52,6 +58,8 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
           track={track} />
         <Chapters chapters={chapters} track={e.kind === "audio" ? track : null} />
         {e.notes.length ? <section className="space-y-2"><h2 className="text-sm font-medium">Show notes</h2><Notes blocks={e.notes} /></section> : e.about ? <p className="max-w-prose text-sm whitespace-pre-line">{e.about}</p> : null}
+        <Suspense fallback={null}><EpisodeBooks notes={e.notes} userId={user.id} /></Suspense>
+        <Comments comments={comments} feed={show.feed} episode={e.key} path={`/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${key}`} track={e.kind === "audio" ? track : null} />
       </div>
     </main>
   );

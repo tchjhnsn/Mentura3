@@ -1,11 +1,15 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { booksInNotes, chaptersFromNotes, episodeDay } from "@reflect/core/podcasts";
+import { chaptersFromNotes, episodeDay } from "@reflect/core/podcasts";
+import { episodeGuests } from "@reflect/core/guests";
+import { commentsOn } from "@/server/comment-store";
+import { Comments } from "../../../../podcasts/comments";
+import { EpisodeBooks, GuestChips } from "../../../../podcasts/mentions";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { favoritesOf } from "@/server/favorite-store";
-import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
 import { STANCES } from "@reflect/core/claims";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
@@ -16,9 +20,6 @@ import { Chapters } from "../../../../podcasts/chapters";
 import { Notes, People } from "../../../../podcasts/parts";
 import { TaskHeader } from "@/components/headers";
 import { listClaims } from "@/server/claims-store";
-import { learnView } from "@/server/learn-store";
-import { openLibrary } from "@/server/browse";
-import { BookGrid } from "../../../../book-card";
 import { UnitPlayer } from "../../../unit-player";
 import { episodeTrack } from "../../../../podcasts/track";
 
@@ -38,12 +39,10 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const at = show?.episodes.findIndex((e) => e.key === key) ?? -1;
   if (!show || at < 0) notFound();
   const e = show.episodes[at]!;
-  const [published, units, given, kept, claims, books, view, favorites] = await Promise.all([
+  const [published, units, given, kept, claims, comments, favorites] = await Promise.all([
     transcriptOf(e), listUnits(user.id, id), chaptersOf(e), keptTranscript(user.id, id, key),
     listClaims(user.id).catch(() => []),
-    // The books the show notes link to, found in Open Library; one that is not found is left out.
-    Promise.all(booksInNotes(e.notes).map((q) => searchBooks(q, openLibrary, 1).then((r) => r[0] ?? null).catch(() => null))),
-    learnView(user.id),
+    commentsOn(user.id, show.feed, key),
     favoritesOf(user.id, id),
   ]);
   // A show that publishes no chapters often lists times in its notes; those are its chapters then.
@@ -51,7 +50,6 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const cite = [item.by, `${item.title}, “${e.title}”`].filter(Boolean).join(", ");
   // Claims kept from this episode's transcript carry its citation.
   const mineHere = claims.filter((c) => item.claimIds.includes(c.id) && c.holders.some((h) => h.citation?.startsWith(cite)));
-  const named = [...new Map(books.filter((b): b is CatalogEntry => b !== null).map((b) => [b.work, b])).values()];
   // A published transcript is kept too, so it can be searched with the rest.
   if (published.length && !kept) await keepTranscript(user.id, id, key, "published", published).catch(() => {});
   const transcript = published.length ? published : kept?.passages ?? [];
@@ -87,7 +85,8 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
             {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
           </div>
         </header>
-        <People people={e.people} />
+        <People people={e.people.filter((p) => p.role !== "guest")} />
+        <GuestChips guests={episodeGuests(e, show)} show={{ feed: show.feed, title: item.title }} />
         <UnitPlayer
           item={id} unit={key} title={e.title} by={item.by} cite={cite}
           youtube={null} media={{ src: e.audio, kind: e.kind }} place={at0 ?? unit?.place ?? null} done={Boolean(unit?.doneOn)} of={null}
@@ -112,12 +111,8 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
             </ul>
           </section>
         ) : null}
-        {named.length ? (
-          <section className="space-y-3">
-            <h2 className="text-sm font-medium">Books in the show notes</h2>
-            <BookGrid books={named} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
-          </section>
-        ) : null}
+        <Suspense fallback={null}><EpisodeBooks notes={e.notes} userId={user.id} /></Suspense>
+        <Comments comments={comments} feed={show.feed} episode={key} path={`/schole/items/${id}/episodes/${key}`} track={track} />
         {older || newer ? (
           <nav aria-label="Other episodes" className="grid gap-2 sm:grid-cols-2">
             {older ? (

@@ -73,7 +73,7 @@ export const clock = (s: number) => {
   const m = Math.floor((s % 3600) / 60);
   return h ? `${h} h ${m} min` : `${m} min`;
 };
-const stamp = (s: number) => {
+export const stamp = (s: number) => {
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
   const ss = String(Math.floor(s % 60)).padStart(2, "0");
