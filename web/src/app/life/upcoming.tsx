@@ -6,9 +6,10 @@ import { SectionHead } from "@/components/section-head";
 const shortDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 
 /** A tile's calendar for the next two weeks: the events tagged with it and the days its records hold. */
-export async function Upcoming({ userId, tile, today, title = "Coming up", note }: { userId: string; tile: CalTile; today: string; title?: string; note?: string }) {
+export async function Upcoming({ userId, tile, today, title = "Coming up", note, hideEmpty = false }: { userId: string; tile: CalTile; today: string; title?: string; note?: string; /** Show nothing when the two weeks are empty. */ hideEmpty?: boolean }) {
   const to = addDays(today, 13);
   const list = occurrences(await calendar(userId, today, to, tile), today, to).slice(0, 8);
+  if (hideEmpty && !list.length) return null;
   return (
     <section className="grid gap-3">
       <SectionHead title={title} href={`/calendar?tile=${tile}`} add={{ label: `Add an event tagged ${tileLabel(tile)}`, href: `/calendar?tile=${tile}&day=${today}` }} note={note ?? `The next two weeks on your ${tileLabel(tile)} calendar.`} />

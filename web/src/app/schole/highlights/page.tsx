@@ -11,6 +11,7 @@ import { allExcerpts } from "@/server/excerpt-store";
 import { highlightBooks } from "@/server/highlights";
 import { publishedBy } from "@/server/published-store";
 import { LearnHeader } from "../header";
+import { TodayHighlights } from "./today";
 import { ExcerptItem } from "../excerpt-item";
 import { COLOR } from "../colors";
 import { KindleImport } from "./kindle";
@@ -62,6 +63,7 @@ export default async function HighlightsPage({ searchParams }: { searchParams: P
           ))}
         </div>
         <p className="text-muted-foreground mt-4 text-sm">{excerpts.length === 0 ? "Highlight a passage while you read, add an excerpt on a book's page, or import your Kindle highlights, and it shows here." : `${count} ${count === 1 ? "excerpt" : "excerpts"} from ${shown.length} ${shown.length === 1 ? "book" : "books"}${q || isHighlightColor(color) ? ` (of ${excerpts.length})` : ""}.`}</p>
+        {!q && !isHighlightColor(color) ? <div className="mt-6"><TodayHighlights userId={user.id} excerpts={excerpts} today={new Date().toISOString().slice(0, 10)} /></div> : null}
         <div className="mt-6 space-y-10">
           {shown.map((b) => {
             const cover = coverUrl(b, "S");
