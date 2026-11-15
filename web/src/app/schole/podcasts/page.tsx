@@ -1,3 +1,6 @@
+import { Suspense } from "react";
+import { showGuests } from "@reflect/core/guests";
+import { GuestChips, ShowBooks } from "./mentions";
 import { hoursOf, usualLength } from "@reflect/core/audiobooks";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -57,6 +60,8 @@ export default async function ShowPage({ searchParams }: { searchParams: Promise
           </div>
         </header>
         {show ? <ShowFacts show={show} /> : null}
+        {show ? <GuestChips guests={showGuests(show, 16)} show={{ feed: show.feed, title }} title="Recent guests" /> : null}
+        {show ? <Suspense fallback={null}><ShowBooks show={show} userId={user.id} /></Suspense> : null}
         {show?.episodes.length ? <EpisodeList rows={episodeRows(show.episodes, episodeHref, units)} show={title} image={/^https:\/\//.test(image) ? image : show.image} item={kept?.id ?? null} feed={show.feed} /> : null}
         <p className="text-muted-foreground text-xs">Played from the show&apos;s own feed. Reflect keeps no copy.</p>
       </div>
