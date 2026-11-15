@@ -22,6 +22,9 @@ import { learnView } from "@/server/learn-store";
 import { listExaminations } from "@/server/examination-store";
 import { listItems, mergeInputs } from "@/server/ways-store";
 import { LearnHeader } from "./header";
+import { newEpisodes } from "@reflect/core/podcast-library";
+import { clock } from "@reflect/core/media";
+import { keptShows } from "@/server/podcast-library";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -51,6 +54,19 @@ function Cards({ cards }: { cards: Card[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** Episodes of the shows the person keeps, out in the last two weeks and not yet begun. Nothing when there are none. */
+async function NewFromShows({ userId, today }: { userId: string; today: string }) {
+  const since = new Date(Date.parse(today) - 14 * 86400000).toISOString().slice(0, 10);
+  const fresh = newEpisodes(await keptShows(userId).catch(() => []), since);
+  if (!fresh.length) return null;
+  return (
+    <section className="grid grid-cols-1 gap-3">
+      <Head title="New from your shows" note="Episodes out in the last two weeks that you have not begun." />
+      <Cards cards={fresh.map((e) => ({ key: `${e.item}/${e.key}`, href: `/schole/items/${e.item}/episodes/${e.key}`, kind: "Episode", title: e.title, by: e.show, image: e.image, share: null, go: [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ") }))} />
+    </section>
   );
 }
 
@@ -123,6 +139,8 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             <Cards cards={now} />
           </section>
         ) : null}
+
+        <Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense>
 
         <section className="grid grid-cols-1 gap-3">
           <Head title="Discover" href="/schole/browse" note="To read, hear, watch and look at here." />
