@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLinkIcon, UserIcon } from "lucide-react";
 import { AUTHOR_ID, authorDetails, authorPhotoUrl, booksLike, isSort, SORTS, type CatalogEntry, type Sort } from "@reflect/core/openlibrary";
-import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
@@ -13,6 +12,9 @@ import { browseCrumbs } from "../../crumbs";
 import { BookGrid } from "../../book-card";
 import { FilterMenu, SortMenu, type ListState } from "../../browse/list-menus";
 import { MoreBooks } from "../../browse/more-books";
+import { Clamp } from "../../people/clamp";
+import { AudiobookRow } from "../../audiobooks/cards";
+import { listAudiobooks } from "@/server/audiobooks";
 
 export const metadata: Metadata = { title: "Author" };
 export const dynamic = "force-dynamic";
@@ -41,72 +43,80 @@ export default async function AuthorPage({ params, searchParams }: { params: Pro
   const related = [...new Map(near.flatMap((b) => (b.authorKeys?.[0] && b.authors[0] && b.authorKeys[0] !== author ? [[b.authorKeys[0], b.authors[0]] as const] : []))).entries()].slice(0, 8);
   const mine = new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]));
   const photo = authorPhotoUrl(a.photo, "L");
+  // Their recordings on LibriVox.
+  const names = a.name.toLowerCase().split(/\s+/).filter(Boolean);
+  const surname = names[names.length - 1] ?? a.name.toLowerCase();
+  // The first name and the surname both, so a namesake (Homer Greene for Robert Greene) is not taken for them.
+  const heard = listAudiobooks({ q: surname }, 80).filter((x) => { const by = (x.by ?? "").toLowerCase(); return by.includes(surname) && by.includes(names[0] ?? surname); }).slice(0, 12);
+  const meta = [a.birth || a.death ? `${a.birth ?? "?"} – ${a.death ?? ""}` : null, open.length ? freeLine(open.filter((b) => b.free?.read).length, open.filter((b) => b.free?.listen).length) : null].filter(Boolean).join(" · ");
+  const H2 = "text-base font-semibold";
 
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole/browse?m=books" crumbs={browseCrumbs("books")} title={a.name} />
-      <div className="mt-8 grid gap-8 md:grid-cols-[13rem_1fr]">
-        <div className="mx-auto w-40 md:mx-0 md:w-full">
-          <div className="bg-muted aspect-[4/5] overflow-hidden rounded-md border shadow-sm">
-            {photo ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt={`Photo of ${a.name}`} className="size-full object-cover" />
-            ) : <div className="text-muted-foreground flex size-full items-center justify-center"><UserIcon className="size-8" /></div>}
+      <div className="mt-6 space-y-10">
+        {/* The hero, as a person's page has it (priority guides, author page): photo, name, one metadata line, two lines of biography. */}
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+          {photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photo} alt={`Photo of ${a.name}`} className="size-24 shrink-0 rounded-full border object-cover shadow-sm sm:size-[120px]" />
+          ) : <span aria-hidden className="bg-muted text-muted-foreground flex size-24 shrink-0 items-center justify-center rounded-full sm:size-[120px]"><UserIcon className="size-8" /></span>}
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="space-y-1">
+              <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{a.name}</h1>
+              {meta ? <p className="text-muted-foreground text-[13px]">{meta}</p> : null}
+            </div>
+            {a.bio ? (
+              <div className="text-muted-foreground">
+                <Clamp text={plainBio(a.bio)}>
+                  {a.wikipedia ? <a href={a.wikipedia} target="_blank" rel="noreferrer" className="mr-3 inline-flex items-center gap-1 underline-offset-4 hover:underline">Wikipedia<ExternalLinkIcon className="size-3" /></a> : null}
+                  <a href={`https://openlibrary.org/authors/${author}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline-offset-4 hover:underline">Open Library<ExternalLinkIcon className="size-3" /></a>
+                </Clamp>
+              </div>
+            ) : <p className="text-muted-foreground text-sm">The open library has no biography for this author yet.</p>}
           </div>
-        </div>
-        <div className="min-w-0 space-y-4">
-          <div className="space-y-1">
-            <h1 id="page-title" className="text-3xl leading-tight font-semibold tracking-tight">{a.name}</h1>
-            {a.birth || a.death ? <p className="text-muted-foreground">{a.birth ?? "?"} – {a.death ?? ""}</p> : null}
+        </header>
+        {heard.length ? <AudiobookRow title="Hear them here" books={heard} href={`/schole/browse?m=audiobooks&q=${encodeURIComponent(a.name)}`} /> : null}
+        <section className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className={H2}>Books <span className="text-muted-foreground font-normal">{SORTS[sort ?? "rating"].toLowerCase()}</span></h2>
+            <div className="flex flex-wrap gap-2">
+              <FilterMenu path={`/schole/authors/${author}`} base={{}} state={state} />
+              <SortMenu path={`/schole/authors/${author}`} base={{}} state={state} />
+            </div>
           </div>
-          {a.bio ? <Bio text={a.bio} /> : <p className="text-muted-foreground text-sm">The open library has no biography for this author yet.</p>}
-          {open.length ? <p className="text-sm">{freeLine(open.filter((b) => b.free?.read).length, open.filter((b) => b.free?.listen).length)}</p> : null}
-          <div className="flex flex-wrap gap-2">
-            {a.wikipedia ? <Button asChild variant="ghost" size="sm"><a href={a.wikipedia} target="_blank" rel="noreferrer">Wikipedia<ExternalLinkIcon /></a></Button> : null}
-            <Button asChild variant="ghost" size="sm"><a href={`https://openlibrary.org/authors/${author}`} target="_blank" rel="noreferrer">Open Library<ExternalLinkIcon /></a></Button>
-          </div>
-        </div>
-      </div>
-      {open.length ? (
-        <section className="mt-10 space-y-5">
-          <h2 className="text-lg font-semibold">Free to read or hear in Reflect</h2>
-          <BookGrid books={open.slice(0, 12)} mine={mine} />
+          {books === null ? <p className="text-muted-foreground text-sm">The open library did not answer. Try again in a moment.</p> : !books.length ? <p className="text-muted-foreground text-sm">No books in English by this author in the catalog.</p> : (
+            <div className="space-y-8">
+              <BookGrid books={state.hide ? books.filter((b) => !mine.has(b.work)) : books} mine={mine} />
+              <MoreBooks key={JSON.stringify(state)} source={source} sort={sort ?? "rating"} {...(state.filter ? { filter: state.filter } : {})} hide={state.hide} per={PER} first={books.length} />
+            </div>
+          )}
         </section>
-      ) : null}
-      <section className="mt-10 space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Books by {a.name}, {SORTS[sort ?? "rating"].toLowerCase()}</h2>
-          <div className="flex flex-wrap gap-2">
-            <FilterMenu path={`/schole/authors/${author}`} base={{}} state={state} />
-            <SortMenu path={`/schole/authors/${author}`} base={{}} state={state} />
-          </div>
-        </div>
-        {books === null ? <p className="text-muted-foreground text-sm">The open library did not answer. Try again in a moment.</p> : !books.length ? <p className="text-muted-foreground text-sm">No books in English by this author in the catalog.</p> : (
-          <div className="space-y-8">
-            <BookGrid books={state.hide ? books.filter((b) => !mine.has(b.work)) : books} mine={mine} />
-            <MoreBooks key={JSON.stringify(state)} source={source} sort={sort ?? "rating"} {...(state.filter ? { filter: state.filter } : {})} hide={state.hide} per={PER} first={books.length} />
-          </div>
-        )}
         {related.length ? (
-          <div className="space-y-3 pt-4">
-            <h2 className="text-lg font-semibold">Authors on the same subjects</h2>
-            <ul className="flex flex-wrap gap-2">
+          <section className="space-y-3">
+            <h2 className={H2}>Authors on the same subjects</h2>
+            <ul className="flex flex-wrap gap-4">
               {related.map(([id, name]) => (
-                <li key={id}>
-                  <Link href={`/schole/authors/${id}`} className="hover:bg-muted flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-sm transition">
+                <li key={id} className="w-20">
+                  <Link href={`/schole/authors/${id}`} className="group flex flex-col items-center gap-1.5 text-center">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={`https://covers.openlibrary.org/a/olid/${id}-S.jpg`} alt="" loading="lazy" className="bg-muted size-7 rounded-full object-cover" />
-                    {name}
+                    <img src={`https://covers.openlibrary.org/a/olid/${id}-M.jpg`} alt="" loading="lazy" className="bg-muted size-12 rounded-full border object-cover" />
+                    <span className="line-clamp-2 text-xs leading-tight group-hover:underline">{name}</span>
                   </Link>
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         ) : null}
-        <p className="text-muted-foreground pt-4 text-xs">Biography, photo and books from Open Library, written by its contributors. <Link href="/schole/browse" className="underline underline-offset-2">Browse more books</Link></p>
-      </section>
+        <p className="text-muted-foreground text-xs">Biography, photo and books from Open Library, written by its contributors.</p>
+      </div>
     </main>
   );
+}
+
+/** A biography as plain sentences: Open Library's often carries HTML links and a Markdown source line. */
+function plainBio(text: string): string {
+  return text.replace(/<a\b[^>]*>(.*?)<\/a>/gi, "$1").replace(/<[^>]+>/g, "").replace(/\(\[Source\]\[\d+\]\)|\*\*Source\*\*.*$/gims, "").replace(/\[(.*?)\]\[\d+\]/g, "$1").replace(/^\s*\[\d+\]:.*$/gm, "").replace(/\s+\n/g, "\n").trim();
 }
 
 /** "12 of their most read books can be read free in Reflect, and 9 heard." */
@@ -115,19 +125,4 @@ function freeLine(read: number, listen: number): string {
   if (read && listen) return `${books(read)} can be read free in Reflect, and ${listen} heard.`;
   if (read) return `${books(read)} can be read free in Reflect.`;
   return `${books(listen)} can be heard free in Reflect.`;
-}
-
-/** A biography, its opening shown and the rest a click away when it runs long. */
-function Bio({ text }: { text: string }) {
-  const cut = text.length > 700 ? text.indexOf(". ", 450) : -1;
-  if (cut < 0 || cut > 800) return <p className="max-w-prose text-sm leading-relaxed whitespace-pre-line">{text}</p>;
-  return (
-    <details className="group max-w-prose text-sm leading-relaxed">
-      <summary className="cursor-pointer list-none whitespace-pre-line [&::-webkit-details-marker]:hidden">
-        {text.slice(0, cut + 1)}
-        <span className="text-muted-foreground group-open:hidden"> … <span className="text-foreground underline underline-offset-2">Read more</span></span>
-      </summary>
-      <p className="whitespace-pre-line">{text.slice(cut + 2)}</p>
-    </details>
-  );
 }
