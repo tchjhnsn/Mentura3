@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon } from "lucide-react";
-import { workAccess, workEntry } from "@reflect/core/openlibrary";
+import { coverUrl, workAccess, workEntry } from "@reflect/core/openlibrary";
 import { carryPlace, findSpans, searchBook, wordsOf } from "@reflect/core/reading";
 import { locate } from "@reflect/core/excerpts";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export default async function ReadPage({ params, searchParams }: { params: Promi
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm" className="max-w-[50%]"><Link href={`/schole/works/${work}`}><ArrowLeftIcon /><span className="truncate">{entry.title}</span></Link></Button>
           <div className="flex items-center gap-1">
-            {audio ? <ListenAlong book={audio} work={work} title={entry.title} map={map} chapter={n} /> : null}
+            {audio ? <ListenAlong book={audio} work={work} title={entry.title} map={map} chapter={n} cover={entry.cover ? coverUrl(entry, "M") : null} /> : null}
             <Contents work={work} current={n} suffix={keep.size ? `&${keep}` : ""} chapters={book.chapters.map((c, i) => ({ title: c.title, words: words[i]! }))} />
             <ReaderSettings />
           </div>

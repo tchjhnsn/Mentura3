@@ -29,7 +29,7 @@ import { ThingHeader } from "@/components/headers";
 import { EpisodeList } from "../../podcasts/episode-list";
 import { ShowFacts } from "../../podcasts/parts";
 import { episodeRows, episodeTrack } from "../../podcasts/track";
-import { ShowActions } from "../../podcasts/show-actions";
+import { FollowButton, ShowActions } from "../../podcasts/show-actions";
 import { favoritesOf } from "@/server/favorite-store";
 import { shelfCrumbs } from "../../crumbs";
 import {
@@ -109,7 +109,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             // eslint-disable-next-line @next/next/no-img-element
             <img src={item.image} alt="" className="size-20 shrink-0 rounded-lg object-cover sm:size-28" />
           ) : null}
-          <div className="min-w-0 space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{m.label}</Badge>{item.tookPart ? <Badge variant="outline">Took part</Badge> : null}</div>
             <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{item.title}</h1>
             {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
@@ -117,11 +117,12 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             {course ? <p className="max-w-prose text-sm leading-relaxed"><span className="font-medium">Why I am learning this: </span>{reason ? <>{reason.cause.length > 220 ? `${reason.cause.slice(0, 217)}...` : reason.cause} <Link href={`/journal/w/${reason.workId}`} className="text-muted-foreground underline underline-offset-4">In your journal</Link></> : <Link href={`/schole/courses/why?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">Write it</Link>}</p> : null}
             {adapts ? <p className="text-sm">Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
           </div>
+          {item.medium === "podcast" ? <FollowButton item={item.id} following={item.status === "doing"} /> : null}
         </header>
 
         {show ? <ShowFacts show={show} /> : null}
         {item.medium === "podcast" ? (
-          <ShowActions item={item.id} following={item.status === "doing"} resume={resumeAt >= 0} track={show?.episodes.length ? episodeTrack({ episodes: show.episodes, at: Math.max(0, resumeAt), show: item.title, image: item.image ?? show.image, item: item.id, feed: show.feed, units }) : null} />
+          <ShowActions resume={resumeAt >= 0} track={show?.episodes.length ? episodeTrack({ episodes: show.episodes, at: Math.max(0, resumeAt), show: item.title, image: item.image ?? show.image, item: item.id, feed: show.feed, units }) : null} />
         ) : <>
         <form action={changeItemAction} className="flex flex-wrap gap-2">
           {hidden}<LocalDay />
