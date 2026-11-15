@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { feedForms, feedHosts, hostsQuery, namedShows, personQuery, readHosts, readPerson } from "./people";
+import { feedForms, feedHosts, hostsQuery, namedShows, personQuery, readHosts, readPerson, unshout } from "./people";
 
 const sparql = (bindings: Record<string, string>[]) => JSON.stringify({ results: { bindings: bindings.map((b) => Object.fromEntries(Object.entries(b).map(([k, v]) => [k, { value: v }]))) } });
 
@@ -45,7 +45,9 @@ describe("people", () => {
 
   it("reads a person's accounts, X first, and the shows they host", () => {
     const { links, shows } = readPerson(sparql([
+      { kind: "site", v: "https://feedlink.io/officialbenshapiro" },
       { kind: "site", v: "https://www.benshapiro.com/" },
+      { kind: "site", v: "https://www.dailywire.com/author/ben-shapiro" },
       { kind: "instagram", v: "benshapiro" },
       { kind: "x", v: "benshapiro" },
       { kind: "x", v: "otherhandle" },
@@ -69,5 +71,12 @@ describe("people", () => {
     expect(namedShows(text, "Ben Shapiro")).toEqual([{ title: "The Ben Shapiro Show", apple: "1047335260", feed: "https://f.example/feed", image: "https://i.example/a.jpg", by: "The Daily Wire" }]);
     expect(namedShows(JSON.stringify({ results: [{ collectionId: 5, collectionName: "Titans on Tomorrow with Ben Shapiro" }] }), "Ben Shapiro").map((x) => x.title)).toEqual(["Titans on Tomorrow with Ben Shapiro"]);
     expect(namedShows("bad", "x")).toEqual([]);
+  });
+
+  it("puts a title written in capitals in title case, and leaves others alone", () => {
+    expect(unshout("BEN SHAPIRO TALKS ABOUT HIS NEW MOVIE: RUN, HIDE, FIGHT: INFIDELS")).toBe("Ben Shapiro Talks About His New Movie: Run, Hide, Fight: Infidels");
+    expect(unshout("THE FUTURE OF AI AND THE CEO")).toBe("The Future of AI and the CEO");
+    expect(unshout("Has America Completely Lost Its Mind? - Ben Shapiro - #845")).toBe("Has America Completely Lost Its Mind? - Ben Shapiro - #845");
+    expect(unshout("DOGE updates + Liberation Day")).toBe("DOGE updates + Liberation Day");
   });
 });
