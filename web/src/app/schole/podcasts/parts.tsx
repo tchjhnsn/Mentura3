@@ -1,5 +1,6 @@
 import type { Episode, NoteBlock, Person, Show } from "@reflect/core/podcasts";
 import { Badge } from "@/components/ui/badge";
+import { Face } from "./face";
 
 // What a feed says about a show and its episodes, beyond the audio (Torian, 2026-11-15 "Build all"): show notes with
 // their links, the people on it, its season and number, and whether it is a trailer or a bonus.
@@ -29,10 +30,7 @@ export function People({ people }: { people: Person[] }) {
       {people.map((p) => {
         const inner = (
           <>
-            {p.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={p.image} alt="" className="size-6 rounded-full object-cover" />
-            ) : null}
+            {p.image ? <Face src={p.image} /> : null}
             <span>{p.name}</span><span className="text-muted-foreground text-xs">{ROLE[p.role] ?? p.role}</span>
           </>
         );

@@ -1,4 +1,4 @@
-import type { Episode } from "@reflect/core/podcasts";
+import { episodeDay, episodeSummary, type Episode } from "@reflect/core/podcasts";
 import type { Track } from "../player";
 
 type Unit = { unit: string; place: number | null; doneOn: string | null };
@@ -25,10 +25,11 @@ export function episodeTrack(o: { episodes: Episode[]; at: number; show: string;
 /** A show's episodes as its list shows them, with where the person is with each. */
 export function episodeRows(episodes: Episode[], hrefOf: (key: string) => string, units: Unit[] = []): import("./episode-list").EpisodeRow[] {
   const by = new Map(units.map((u) => [u.unit, u]));
+  const today = new Date().toISOString().slice(0, 10);
   return episodes.map((e) => {
     const u = by.get(e.key);
     return {
-      key: e.key, title: e.title, date: e.date, seconds: e.seconds, about: e.about ? e.about.slice(0, 240) : null, audio: e.audio, image: e.image,
+      key: e.key, title: e.title, date: e.date, day: episodeDay(e.date, today), seconds: e.seconds, about: episodeSummary(e.about), audio: e.audio, image: e.image,
       season: e.season, number: e.number, type: e.type, kind: e.kind, href: hrefOf(e.key),
       status: u?.doneOn ? "heard" : u?.place ? "begun" : "new", place: u?.place ?? null,
     };
