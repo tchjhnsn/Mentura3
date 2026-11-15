@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
+import { CourseView } from "../../courses/course-view";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { STANCES } from "@reflect/core/claims";
@@ -8,7 +9,6 @@ import { embedOf } from "@reflect/core/media";
 import { WAYS, mediumOf, placeOf } from "@reflect/core/ways";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PAGE } from "@/components/page-header";
@@ -20,7 +20,7 @@ import { showFor } from "@/server/podcasts";
 import { openLibrary } from "@/server/browse";
 import "@/server/free";
 import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
-import { COURSE_SITES } from "@reflect/core/courses";
+import { COURSE_SITES, courseSite } from "@reflect/core/courses";
 import { listIdeas, type IdeaOut } from "@/server/ideas-store";
 import { ideasNaming } from "@reflect/core/ideas";
 import { learnView } from "@/server/learn-store";
@@ -44,13 +44,7 @@ export const dynamic = "force-dynamic";
 const SELECT = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm";
 const STANCE_LABEL: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
 const Note = ({ children }: { children: ReactNode }) => <p className="text-muted-foreground text-sm">{children}</p>;
-const cardSection = (title: string, body: ReactNode, id?: string) => (
-  <Card className="gap-3 py-5" id={id}>
-    <CardHeader className="px-5"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
-    <CardContent className="space-y-3 px-5">{body}</CardContent>
-  </Card>
-);
-// On a show's page these sit in its About column, as plain sections, not cards (priority guides, 2026-11-15).
+// Plain sections, not cards (priority guides, 2026-11-15).
 const plainSection = (title: string, body: ReactNode, id?: string) => (
   <section className="space-y-3" id={id}><h2 className="text-base font-semibold">{title}</h2><div className="space-y-3">{body}</div></section>
 );
@@ -99,7 +93,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const recent = item.sessions.filter((s) => s.day >= since);
   const minutes = item.sessions.reduce((n, s) => n + (s.minutes ?? 0), 0);
   const hidden = <input type="hidden" name="item" value={item.id} />;
-  const section = item.medium === "podcast" ? plainSection : cardSection;
+  // Every kept item's own sections are plain sections in one "Yours" block at the foot (priority guides, kept items).
+  const section = plainSection;
   const taught = <>
         {section("What it taught you", (
           <>
@@ -111,7 +106,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
             <form action={changeItemAction} className="space-y-2">
               {hidden}
               <Textarea name="lesson" rows={3} maxLength={4000} aria-label={item.lessons.length ? "Add a later lesson" : "What it taught you"} placeholder={item.lessons.length ? "Something it taught you since" : "What it taught you"} required />
-              <Button size="sm">Keep</Button>
+              <Button size="sm" variant="outline">Keep</Button>
             </form>
             {item.lesson ? <PublishLesson id={item.id} /> : null}
             {lessonsOut.map((p) => (
@@ -140,7 +135,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         {section("Way of learning", (
           <form action={changeItemAction} className="space-y-2">
             {hidden}
-            <div className="flex flex-wrap gap-2">{WAYS.map((w) => <Button key={w.id} size="sm" name="way" value={w.id} variant={way === w.id ? "default" : "outline"} aria-pressed={way === w.id}>{w.label}</Button>)}</div>
+            <div className="flex flex-wrap gap-2">{WAYS.map((w) => <Button key={w.id} size="sm" name="way" value={w.id} variant={way === w.id ? "secondary" : "ghost"} aria-pressed={way === w.id}>{w.label}</Button>)}</div>
             {item.way ? <Button size="sm" variant="ghost" name="way" value="">Back to {WAYS.find((w) => w.id === m.way)!.label.toLowerCase()}, from its medium</Button> : null}
           </form>
         ))}
@@ -182,6 +177,27 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         <form action={removeItemAction}>{hidden}<Button size="sm" variant="ghost">Remove from your shelves</Button></form>
   </>;
+  const statusLabel = (st: "want" | "doing" | "done") => (st === "want" ? "Want to" : st === "doing" ? m.doing : m.done);
+  const status = section("Status", (
+    <>
+      <form action={changeItemAction} className="bg-muted/60 inline-flex rounded-lg p-0.5 text-sm" role="group" aria-label="Status">
+        {hidden}<LocalDay />
+        {(["want", "doing", "done"] as const).map((st) => (
+          <button key={st} name="status" value={st} aria-pressed={item.status === st} className={item.status === st ? "bg-background rounded-md px-3 py-1 font-medium shadow-xs" : "text-muted-foreground hover:text-foreground rounded-md px-3 py-1"}>{statusLabel(st)}</button>
+        ))}
+      </form>
+      <form action={setItemDatesAction} className="flex flex-wrap items-end gap-3 text-sm">
+        {hidden}
+        <label className="space-y-1">Started<Input type="date" name="started" defaultValue={item.startedOn ?? ""} className="h-9 w-40" /></label>
+        <label className="space-y-1">Finished<Input type="date" name="finished" defaultValue={item.finishedOn ?? ""} className="h-9 w-40" /></label>
+        <Button size="sm" variant="outline">Save dates</Button>
+      </form>
+    </>
+  ));
+  const yoursHead = <h2 className="text-lg font-semibold tracking-tight">Yours</h2>;
+  if (item.medium === "course" && courseSite(item.url)) {
+    return <CourseView userId={user.id} u={item.url!} t={item.title} by={item.by ?? ""} footer={<div className="space-y-8">{yoursHead}{taught}{status}{shelfFacts}{editing}</div>} />;
+  }
   if (item.medium === "podcast") {
     return (
       <main className={PAGE}>
@@ -190,38 +206,23 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       </main>
     );
   }
+  const metaLine = [m.label, item.by, statusLabel(item.status as "want" | "doing" | "done"), item.tookPart ? "took part" : null, item.parts ? `${item.part ?? 0} of ${item.parts}` : null].filter(Boolean).join(" · ");
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} action={nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: Lecture {nextLecture.n}</Link></Button> : undefined} />
-      <div className="mt-6 space-y-6">
-        <header className="flex gap-4">
-          {item.image ? (
+      <div className="mt-6 space-y-8">
+        {/* The hero (priority guides, kept items): picture, title and one metadata line; the page's own act follows it. */}
+        <header className="flex items-start gap-4 sm:gap-6">
+          {item.image && item.medium !== "art" ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.image} alt="" className="size-20 shrink-0 rounded-lg object-cover sm:size-28" />
+            <img src={item.image} alt="" className="size-24 shrink-0 rounded-xl border object-cover shadow-md sm:size-40" />
           ) : null}
           <div className="min-w-0 flex-1 space-y-1">
-            <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{m.label}</Badge>{item.tookPart ? <Badge variant="outline">Took part</Badge> : null}</div>
-            <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{item.title}</h1>
-            {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
-            {course ? <p className="text-muted-foreground text-sm">From {COURSE_SITES[course.site].name} · {lectures.length} lectures · {finished.size} finished · <Link href={`/schole/courses?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">About the course and its syllabus</Link></p> : null}
-            {course ? <p className="max-w-prose text-sm leading-relaxed"><span className="font-medium">Why I am learning this: </span>{reason ? <>{reason.cause.length > 220 ? `${reason.cause.slice(0, 217)}...` : reason.cause} <Link href={`/journal/w/${reason.workId}`} className="text-muted-foreground underline underline-offset-4">In your journal</Link></> : <Link href={`/schole/courses/why?u=${encodeURIComponent(course.url)}&t=${encodeURIComponent(item.title)}`} className="underline underline-offset-4">Write it</Link>}</p> : null}
+            <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{item.title}</h1>
+            <p className="text-muted-foreground text-[13px]">{metaLine}</p>
             {adapts ? <p className="text-sm">Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
           </div>
         </header>
-
-        <form action={changeItemAction} className="flex flex-wrap gap-2">
-          {hidden}<LocalDay />
-          {(["want", "doing", "done"] as const).map((s) => (
-            <Button key={s} size="sm" name="status" value={s} variant={item.status === s ? "default" : "outline"} aria-pressed={item.status === s}>{s === "want" ? "Want to" : s === "doing" ? m.doing : m.done}</Button>
-          ))}
-        </form>
-
-        <form action={setItemDatesAction} className="flex flex-wrap items-end gap-3 text-sm">
-          {hidden}
-          <label className="space-y-1">Started<Input type="date" name="started" defaultValue={item.startedOn ?? ""} className="h-9 w-40" /></label>
-          <label className="space-y-1">Finished<Input type="date" name="finished" defaultValue={item.finishedOn ?? ""} className="h-9 w-40" /></label>
-          <Button size="sm" variant="outline">Save dates</Button>
-        </form>
 
         {item.medium === "art" && item.image ? section("Look at it here", <Artwork src={item.image} title={item.title} />, "artwork") : null}
 
@@ -254,8 +255,6 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
 
         {embed || item.notes.some((n) => !n.unit) || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Notes", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} notes={item.notes.filter((n) => !n.unit)} transcript={item.transcriptText} />) : null}
-
-        {taught}
 
         {!lectures.length && (item.medium === "course" || item.parts) ? section("Parts", (
           <form action={setItemFactsAction} className="flex flex-wrap items-center gap-2 text-sm">
@@ -318,6 +317,10 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           </>
         )) : null}
 
+        <div className="space-y-8 border-t pt-8">
+        {yoursHead}
+        {taught}
+        {status}
         {shelfFacts}
 
         {embed || item.transcript ? section("Transcript", (
@@ -330,6 +333,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         )) : null}
 
         {editing}
+        </div>
       </div>
     </main>
   );
