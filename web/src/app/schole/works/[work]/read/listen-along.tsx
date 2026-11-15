@@ -12,7 +12,7 @@ import { useListen } from "../../../player";
  * by how far through the part the recording is, turning to the next chapter when the next part starts. Shown only
  * where the recording's parts line up with the text's chapters.
  */
-export function ListenAlong({ book, work, title, map, chapter }: { book: Audiobook; work: string; title: string; /** For each chapter, the recorded part that reads it. */ map: (number | null)[]; chapter: number }) {
+export function ListenAlong({ book, work, title, map, chapter, cover = null }: { book: Audiobook; work: string; title: string; cover?: string | null; /** For each chapter, the recorded part that reads it. */ map: (number | null)[]; chapter: number }) {
   const listen = useListen();
   const router = useRouter();
   const last = useRef(-1);
@@ -37,7 +37,7 @@ export function ListenAlong({ book, work, title, map, chapter }: { book: Audiobo
   if (!listen || section === null) return null;
   if (following) return <Button variant="outline" size="sm" onClick={() => listen.setFollow(false)}><HeadphonesIcon />Stop following</Button>;
   return (
-    <Button variant="outline" size="sm" onClick={() => listen.play({ ...book, work, bookTitle: title }, section, { follow: true })}>
+    <Button variant="outline" size="sm" onClick={() => listen.play({ ...book, work, bookTitle: title, cover }, section, { follow: true })}>
       <HeadphonesIcon />Listen along
     </Button>
   );

@@ -13,7 +13,7 @@ import { keepUnitPlaceAction, setUnitDoneAction } from "./actions";
 import { localDay } from "./items/youtube";
 
 /** An audiobook playing in Scholē: the recording and which book's page it belongs to. */
-export type Playing = Audiobook & { work: string; bookTitle: string };
+export type Playing = Audiobook & { work: string; bookTitle: string; cover?: string | null };
 /**
  * An episode (or any one recording) playing in Scholē's player: what plays, what it is called and where its page is,
  * and, when it is on the person's shelves, the item and unit its place and finishing are kept against.
@@ -187,10 +187,11 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   // The lock screen and headphone buttons.
   const title = track ? track.title : book ? book.chapters[chapter]?.title ?? book.bookTitle : null;
   const artist = track ? track.show : book ? book.bookTitle : null;
+  const art = track ? track.image ?? null : book?.cover ?? null;
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator) || !title) return;
     const ms = navigator.mediaSession;
-    ms.metadata = new MediaMetadata({ title, artist: artist ?? "", album: "Scholē", artwork: track?.image ? [{ src: track.image, sizes: "512x512" }] : [] });
+    ms.metadata = new MediaMetadata({ title, artist: artist ?? "", album: "Scholē", artwork: art ? [{ src: art, sizes: "512x512" }] : [] });
     const on = (a: MediaSessionAction, h: MediaSessionActionHandler | null) => { try { ms.setActionHandler(a, h); } catch { /* not supported here */ } };
     on("play", () => { void audio.current?.play(); });
     on("pause", () => audio.current?.pause());
@@ -199,7 +200,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
     on("seekto", (d) => { if (d.seekTime !== undefined) seek(d.seekTime); });
     on("nexttrack", queue.length || track?.next ? () => ended() : null);
     return () => { for (const a of ["play", "pause", "seekbackward", "seekforward", "seekto", "nexttrack"] as MediaSessionAction[]) on(a, null); };
-  }, [title, artist, track, queue.length, skip, seek, ended]);
+  }, [title, artist, art, track, queue.length, skip, seek, ended]);
   useEffect(() => {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState = playing ? "playing" : "paused";
@@ -320,11 +321,15 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
               onChange={(e) => seek(Number(e.target.value))} className="accent-foreground block h-1 w-full cursor-pointer"
             />
             <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:flex-nowrap">
-              <div className="order-first min-w-0 flex-1 basis-[calc(100%-3rem)] px-1 sm:order-none sm:basis-auto">
+              <div className="order-first flex min-w-0 flex-1 basis-[calc(100%-3rem)] items-center gap-2.5 px-1 sm:order-none sm:basis-auto">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {art ? <Link href={href} className="shrink-0" aria-hidden tabIndex={-1}><img src={art} alt="" className="size-10 rounded-md border object-cover" /></Link> : null}
+                <div className="min-w-0 flex-1">
                 <Link href={href} className="block truncate text-sm font-medium">{track ? track.title : book!.bookTitle}</Link>
                 <p className="text-muted-foreground truncate text-xs tabular-nums">
                   {[track ? track.show : c?.title, chap?.title, `${stamp(time)} / ${stamp(total)}`, left !== null ? `stops in ${left} min` : sleep ? "stops at the end" : null, follow ? "the text follows" : null].filter(Boolean).join(" · ")}
                 </p>
+                </div>
               </div>
               <Button size="icon" variant="ghost" aria-label="Close the player" className="order-first sm:order-last" onClick={value.close}><XIcon /></Button>
               <div className="flex w-full items-center justify-between gap-1 sm:contents">

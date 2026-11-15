@@ -47,6 +47,12 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
         <ol className="divide-y border-y text-sm">
           {list.slice(0, n).map((r, i) => (
             <li key={r.key} className="flex gap-3 py-4 sm:gap-4">
+              {r.image ?? image ? (
+                <Link href={r.href} tabIndex={-1} aria-hidden className="shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={(r.image ?? image)!} alt="" loading="lazy" className="size-16 rounded-md border object-cover sm:size-20" />
+                </Link>
+              ) : null}
               <div className="min-w-0 flex-1 space-y-1">
                 <p className="flex flex-wrap items-center gap-1.5 text-xs font-semibold tabular-nums">
                   <span>{r.day ?? "Undated"}</span>
@@ -60,12 +66,6 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
                   {r.kind === "audio" ? <EpisodeButtons track={trackOf(i)} status={r.status} favorite={r.favorite} /> : <Link href={r.href} className="text-sm underline underline-offset-4">Watch{r.seconds ? ` · ${clock(r.seconds)}` : ""}</Link>}
                 </div>
               </div>
-              {r.image ?? image ? (
-                <Link href={r.href} tabIndex={-1} aria-hidden className="shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={(r.image ?? image)!} alt="" loading="lazy" className="size-16 rounded-md border object-cover sm:size-20" />
-                </Link>
-              ) : null}
             </li>
           ))}
         </ol>

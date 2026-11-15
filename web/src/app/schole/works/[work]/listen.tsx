@@ -10,11 +10,11 @@ import { clock, useListen } from "../../player";
  * The free audiobook from LibriVox: its parts in order, played by Learn's player, which keeps playing across
  * pages, goes on to the next part, and picks up where you stopped in this browser.
  */
-export function Listen({ book, work, title }: { book: Audiobook; work: string; title: string }) {
+export function Listen({ book, work, title, cover = null }: { book: Audiobook; work: string; title: string; cover?: string | null }) {
   const [open, setOpen] = useState(false);
   const listen = useListen();
   const here = listen?.book?.id === book.id;
-  const playing = { ...book, work, bookTitle: title };
+  const playing = { ...book, work, bookTitle: title, cover };
   if (!open) {
     return (
       <Button variant="outline" onClick={() => { setOpen(true); if (!here) listen?.play(playing); }}>
