@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CheckIcon, ChevronRightIcon, CopyIcon, ListPlusIcon, PauseIcon, PlayIcon, ScaleIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, CircleCheckIcon, CopyIcon, HeartIcon, ListChecksIcon, ListPlusIcon, PauseIcon, PlayIcon, PlusIcon, ScaleIcon, XIcon } from "lucide-react";
 import { STANCES } from "@reflect/core/claims";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { passageAt, type Passage } from "@reflect/core/courses";
@@ -11,10 +11,12 @@ import { clock } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { addItemNoteAction, keepItemClaimAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
+import { addItemNoteAction, favoriteEpisodeAction, keepItemClaimAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
 import { loadYouTube, localDay, type YTPlayer } from "./youtube";
 import { useListen, type Track } from "../player";
 import { SaveEpisode } from "../podcasts/saved";
+import { said } from "../podcasts/episode-buttons";
+import { cn } from "@/lib/utils";
 
 type Note = { id: string; at: number | null; quote: string | null; note: string | null };
 export type UnitProps = {
@@ -27,6 +29,10 @@ export type UnitProps = {
   track?: Track | null;
   /** Shown in place of the transcript when there is none (an episode's "Make a transcript"). */
   noTranscript?: React.ReactNode;
+  /** An episode's favorite mark, or null where it cannot be kept. */
+  favorite?: boolean | null;
+  /** What sits between the episode's acts and its transcript: its chapters and show notes. */
+  between?: React.ReactNode;
 };
 
 /**
@@ -48,6 +54,8 @@ export function UnitPlayer(p: UnitProps) {
   const [copied, setCopied] = useState<number | null>(null);
   const [claiming, setClaiming] = useState<number | null>(null);
   const [claimed, setClaimed] = useState<number | null>(null);
+  const [writing, setWriting] = useState(false);
+  const [fav, setFav] = useState(p.favorite ?? null);
   const [pending, run] = useTransition();
   const router = useRouter();
   const path = usePathname();
@@ -106,8 +114,18 @@ export function UnitPlayer(p: UnitProps) {
   // A passage without its own time takes the time of the chapter it falls under.
   const timeOf = (i: number) => { for (let j = i; j >= 0; j--) if (p.transcript[j]!.at !== null) return p.transcript[j]!.at!; return null; };
   const quoteOf = (x: Passage, i: number) => { const t = timeOf(i); return `“${x.text}” (${p.cite}${t !== null ? `, at ${clock(t)}` : ""})`; };
-  const note = (n: { at: number | null; quote?: string; note?: string }) => run(async () => { if (!p.item) return; await addItemNoteAction(p.item, { ...n, unit: p.unit }); setText(""); router.refresh(); });
-  const finish = (done: boolean) => run(async () => { if (!p.item) return; keep(); await setUnitDoneAction(p.item, p.unit, done, p.of, localDay()); if (done && p.next) router.push(p.next); else router.refresh(); });
+  const note = (n: { at: number | null; quote?: string; note?: string }) => run(async () => { if (!p.item) return; await addItemNoteAction(p.item, { ...n, unit: p.unit }); setText(""); setWriting(false); router.refresh(); });
+  const finish = (done: boolean) => run(async () => { if (!p.item) return; keep(); await setUnitDoneAction(p.item, p.unit, done, p.of, localDay()); if (done && p.next && !shared) router.push(p.next); else router.refresh(); });
+  const playLabel = (() => {
+    if (!shared) return "";
+    if (mine && listen!.playing) return "Pause";
+    const total = shared.seconds ?? 0;
+    const at = mine ? listen!.time : p.place ?? 0;
+    if (p.done && !mine) return "Play again";
+    if (at > 1 && total) return `Continue · ${said(Math.max(0, total - at))} left`;
+    if (at > 1) return `Continue from ${clock(Math.floor(at))}`;
+    return total ? said(total) : "Play";
+  })();
   const shown = hits ?? p.transcript.map((x, i) => ({ x, i }));
 
   const transcriptPanel = p.transcript.length ? (
@@ -177,25 +195,35 @@ export function UnitPlayer(p: UnitProps) {
         ) : p.media?.kind === "video" ? (
           <video ref={(v) => { el.current = v; }} src={p.media.src} controls preload="metadata" className="aspect-video w-full rounded-lg border bg-black" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
         ) : shared ? (
-          <div className="flex items-center gap-3 rounded-lg border p-3">
-            <Button size="icon" className="size-11 rounded-full" aria-label={mine && listen!.playing ? "Pause" : "Play"} onClick={() => (mine ? listen!.toggle() : listen!.playTrack(shared))}>{mine && listen!.playing ? <PauseIcon /> : <PlayIcon />}</Button>
-            <div className="min-w-0 flex-1 text-sm">
-              <p className="font-medium">{mine ? (listen!.playing ? "Playing" : "Paused") : p.place ? `Play from ${clock(p.place)}` : "Play"}</p>
-              <p className="text-muted-foreground text-xs">{mine ? `${clock(Math.floor(listen!.time))} of ${clock(Math.floor(listen!.duration || shared.seconds || 0))}` : shared.seconds ? clock(shared.seconds) : "In Scholē's player, which keeps playing as you move around"}</p>
-            </div>
+          <div className="flex flex-wrap items-center gap-1">
+            <Button className="mr-1 rounded-full" aria-label={mine && listen!.playing ? "Pause" : p.place ? "Continue" : "Play"} onClick={() => (mine ? listen!.toggle() : listen!.playTrack(shared))}>
+              {mine && listen!.playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}<span className="tabular-nums">{playLabel}</span>
+            </Button>
             {!mine ? (
               listen!.queue.some((x) => x.id === shared.id)
-                ? <span className="text-muted-foreground text-xs">Up next</span>
-                : <Button size="icon" variant="ghost" aria-label="Play after what is playing" title="Up next" onClick={() => listen!.enqueue(shared)}><ListPlusIcon /></Button>
+                ? <Button size="icon" variant="ghost" aria-label="Up next; take it off" title="Up next. Tap to take it off." onClick={() => listen!.dequeue(shared.id)}><ListChecksIcon /></Button>
+                : <Button size="icon" variant="ghost" className="text-muted-foreground" aria-label="Play after what is playing" title="Up next" onClick={() => listen!.enqueue(shared)}><ListPlusIcon /></Button>
+            ) : null}
+            {fav !== null && p.item ? (
+              <Button size="icon" variant="ghost" className={fav ? "text-foreground" : "text-muted-foreground"} aria-pressed={fav} aria-label={fav ? "A favorite; take it off" : "Favorite this episode"} title={fav ? "Favorite" : "Favorite this episode"}
+                onClick={() => { const next = !fav; setFav(next); run(async () => { try { await favoriteEpisodeAction(p.item!, p.unit, next); } catch { setFav(!next); } }); }}>
+                <HeartIcon className={cn(fav && "fill-current")} />
+              </Button>
             ) : null}
             <SaveEpisode src={shared.src} />
+            {p.item ? (
+              <Button size="icon" variant="ghost" className={p.done ? "text-foreground" : "text-muted-foreground"} disabled={pending} aria-pressed={p.done} aria-label={p.done ? "Played; mark not played" : "Mark as played"} title={p.done ? "Played. Tap to mark not played." : "Mark as played"} onClick={() => finish(!p.done)}>
+                <CircleCheckIcon className={cn(p.done && "fill-foreground text-background")} />
+              </Button>
+            ) : null}
+            {mine ? <span className="text-muted-foreground ml-1 text-xs tabular-nums">{clock(Math.floor(listen!.time))} of {clock(Math.floor(listen!.duration || shared.seconds || 0))}</span> : p.done ? <span className="text-muted-foreground ml-1 text-xs">Played</span> : null}
           </div>
         ) : p.media ? (
           <audio ref={(a) => { el.current = a; }} src={p.media.src} controls preload="metadata" className="w-full" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
         ) : <p className="text-muted-foreground text-sm">This one has no recording Reflect can play.</p>}
         {p.place && !shared ? <p className="text-muted-foreground text-xs">Picks up at {clock(p.place)}, where you stopped.</p> : null}
 
-        {p.item ? <><div className="flex flex-wrap items-center gap-2">
+        {p.item ? <>{shared ? null : <div className="flex flex-wrap items-center gap-2">
           {p.done ? (
             <>
               <span className="flex items-center gap-1 text-sm"><CheckIcon className="size-4" /> Finished</span>
@@ -203,12 +231,18 @@ export function UnitPlayer(p: UnitProps) {
               {p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next</Link></Button> : null}
             </>
           ) : <Button size="sm" disabled={pending} onClick={() => finish(true)}>{p.next ? "Finished, next" : "Finished"}</Button>}
-        </div>
+        </div>}
+
+        {p.between}
 
         {transcriptPanel}
 
         <div className="space-y-2">
-          <p className="text-sm font-medium">Notes</p>
+          <div className="flex items-center gap-1">
+            <h2 className="text-sm font-medium">Notes</h2>
+            <Button type="button" size="icon" variant="ghost" className="size-7 rounded-full" aria-label={`Add a note at ${clock(Math.floor(now))}`} title={`Add a note at ${clock(Math.floor(now))}`} aria-expanded={writing} onClick={() => setWriting(true)}><PlusIcon /></Button>
+          </div>
+          {!p.notes.length && !writing ? <p className="text-muted-foreground text-sm">None yet. The + adds one at the moment playing.</p> : null}
           {p.notes.length ? (
             <ul className="space-y-2">
               {p.notes.map((n) => (
@@ -223,8 +257,13 @@ export function UnitPlayer(p: UnitProps) {
               ))}
             </ul>
           ) : null}
-          <Textarea aria-label="Note" rows={2} maxLength={4000} value={text} onChange={(e) => setText(e.target.value)} placeholder="A note" />
-          <Button type="button" size="sm" disabled={pending || !text.trim()} onClick={() => note({ at: Math.floor(time()), note: text })}>Note at {clock(Math.floor(now))}</Button>
+          {writing ? <>
+            <Textarea aria-label="Note" rows={2} maxLength={4000} value={text} onChange={(e) => setText(e.target.value)} placeholder="A note" autoFocus />
+            <div className="flex gap-2">
+              <Button type="button" size="sm" disabled={pending || !text.trim()} onClick={() => note({ at: Math.floor(time()), note: text })}>Note at {clock(Math.floor(now))}</Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => { setWriting(false); setText(""); }}>Cancel</Button>
+            </div>
+          </> : null}
         </div></> : <>{transcriptPanel}{p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next lecture</Link></Button> : null}</>}
       </div>
 

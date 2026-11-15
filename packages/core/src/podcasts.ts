@@ -248,3 +248,39 @@ export function episodeDay(iso: string | null, today: string): string | null {
   const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
   return `${MONTHS[m - 1]} ${d}${String(y) === today.slice(0, 4) ? "" : `, ${y}`}`;
 }
+
+const TIME_IN_TEXT = /(?:^|[\s(\[{])((?:\d{1,2}:)?\d{1,2}:\d{2})(?=$|[\s)\]}.,;:–—-])/;
+/** Seconds in a written time, "1:02:03" or "26:54". */
+export const stampSeconds = (t: string) => t.split(":").map(Number).reduce((a, n) => a * 60 + n, 0);
+
+/**
+ * Chapters read from show notes that list times ("0:04 Processing...", "1. 22:07 {Jesus' Temptations}"), for an
+ * episode whose show publishes none: a line that starts with a time (after an optional list number) is a chapter
+ * named by the rest of the line. Fewer than three such lines is not a list of chapters, and none is returned.
+ */
+export function chaptersFromNotes(notes: readonly NoteBlock[]): Chapter[] {
+  const out: Chapter[] = [];
+  for (const b of notes) {
+    const text = b.parts.map((p) => p.text).join(" ").replace(/\s+/g, " ").trim();
+    const m = text.match(/^(?:[~=*_-]{2,}\s*)?(?:\d{1,3}[.)]\s*)?((?:\d{1,2}:)?\d{1,2}:\d{2})\s*[-–—:|]?\s*(.+)$/);
+    if (!m) continue;
+    const title = m[2]!.replace(/[{}]/g, "").replace(/\s+/g, " ").trim().slice(0, 200);
+    if (title) out.push({ at: stampSeconds(m[1]!), title });
+  }
+  if (out.length < 3) return [];
+  return out.sort((a, b) => a.at - b.at).filter((c, i, a) => i === 0 || c.at !== a[i - 1]!.at);
+}
+
+/** A run of text split at the times written in it, so each time can play the episode from there. */
+export function splitStamps(text: string): ({ text: string } | { stamp: string; at: number })[] {
+  const out: ({ text: string } | { stamp: string; at: number })[] = [];
+  let rest = text;
+  for (let m = rest.match(TIME_IN_TEXT); m && m.index !== undefined; m = rest.match(TIME_IN_TEXT)) {
+    const start = m.index + m[0].length - m[1]!.length;
+    if (start) out.push({ text: rest.slice(0, start) });
+    out.push({ stamp: m[1]!, at: stampSeconds(m[1]!) });
+    rest = rest.slice(start + m[1]!.length);
+  }
+  if (rest) out.push({ text: rest });
+  return out;
+}

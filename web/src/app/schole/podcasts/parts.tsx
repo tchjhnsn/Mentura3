@@ -1,24 +1,11 @@
-import type { Episode, NoteBlock, Person, Show } from "@reflect/core/podcasts";
+import type { Episode, Person, Show } from "@reflect/core/podcasts";
 import { Badge } from "@/components/ui/badge";
 import { Face } from "./face";
 
 // What a feed says about a show and its episodes, beyond the audio (Torian, 2026-11-15 "Build all"): show notes with
 // their links, the people on it, its season and number, and whether it is a trailer or a bonus.
 
-/** Show notes as paragraphs and list items, links kept (opening outside Reflect, as the show's own pages). */
-export function Notes({ blocks, className = "" }: { blocks: NoteBlock[]; className?: string }) {
-  if (!blocks.length) return null;
-  const out: React.ReactNode[] = [];
-  let list: React.ReactNode[] = [];
-  const flush = () => { if (list.length) { out.push(<ul key={`l${out.length}`} className="list-disc space-y-1 pl-5">{list}</ul>); list = []; } };
-  blocks.forEach((b, i) => {
-    const body = b.parts.map((p, j) => <span key={j}>{j ? " " : ""}{p.href ? <a href={p.href} target="_blank" rel="noreferrer nofollow" className="underline underline-offset-2">{p.text}</a> : p.text}</span>);
-    if (b.list) list.push(<li key={i}>{body}</li>);
-    else { flush(); out.push(<p key={i}>{body}</p>); }
-  });
-  flush();
-  return <div className={`max-w-prose space-y-2 text-sm leading-relaxed ${className}`}>{out}</div>;
-}
+export { Notes } from "./notes";
 
 const ROLE: Record<string, string> = { host: "Host", guest: "Guest", cohost: "Co-host", "co-host": "Co-host", producer: "Producer", editor: "Editor" };
 

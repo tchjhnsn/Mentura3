@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { clock } from "@reflect/core/media";
-import { booksInNotes } from "@reflect/core/podcasts";
+import { booksInNotes, chaptersFromNotes, episodeDay } from "@reflect/core/podcasts";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { favoritesOf } from "@/server/favorite-store";
 import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
 import { STANCES } from "@reflect/core/claims";
 import { PAGE } from "@/components/page-header";
@@ -13,7 +15,7 @@ import { keepTranscript, keptTranscript } from "@/server/transcript-store";
 import { latestQuiz } from "@/server/quiz-store";
 import { LectureQuiz } from "../../../quiz";
 import { Chapters } from "../../../../podcasts/chapters";
-import { EpisodeMarks, Notes, People } from "../../../../podcasts/parts";
+import { Notes, People } from "../../../../podcasts/parts";
 import { TaskHeader } from "@/components/headers";
 import { listClaims } from "@/server/claims-store";
 import { learnView } from "@/server/learn-store";
@@ -23,6 +25,9 @@ import { UnitPlayer } from "../../../unit-player";
 import { episodeTrack } from "../../../../podcasts/track";
 
 export const metadata: Metadata = { title: "Scholē" };
+
+/** A length as a person says it: "1h 3m", "56m". */
+const said = (s: number) => { const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h}h${m ? ` ${m}m` : ""}` : `${Math.max(1, m)}m`; };
 export const dynamic = "force-dynamic";
 
 /** One episode of a podcast, heard inside Reflect from the show's own feed, with its transcript when it has one. */
@@ -35,13 +40,16 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const at = show?.episodes.findIndex((e) => e.key === key) ?? -1;
   if (!show || at < 0) notFound();
   const e = show.episodes[at]!;
-  const [published, units, chapters, kept, quiz, claims, books, view] = await Promise.all([
+  const [published, units, given, kept, quiz, claims, books, view, favorites] = await Promise.all([
     transcriptOf(e), listUnits(user.id, id), chaptersOf(e), keptTranscript(user.id, id, key), latestQuiz(user.id, id, key),
     listClaims(user.id).catch(() => []),
     // The books the show notes link to, found in Open Library; one that is not found is left out.
     Promise.all(booksInNotes(e.notes).map((q) => searchBooks(q, openLibrary, 1).then((r) => r[0] ?? null).catch(() => null))),
     learnView(user.id),
+    favoritesOf(user.id, id),
   ]);
+  // A show that publishes no chapters often lists times in its notes; those are its chapters then.
+  const chapters = given.length ? given : chaptersFromNotes(e.notes);
   const cite = [item.by, `${item.title}, “${e.title}”`].filter(Boolean).join(", ");
   // Claims kept from this episode's transcript carry its citation.
   const mineHere = claims.filter((c) => item.claimIds.includes(c.id) && c.holders.some((h) => h.citation?.startsWith(cite)));
@@ -55,18 +63,29 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
   const track = at0 !== null ? { ...base, place: at0 } : base;
   const unit = units.find((u) => u.unit === key);
   const older = show.episodes[at + 1];
+  const newer = at > 0 ? show.episodes[at - 1] : undefined;
+  const today = new Date().toISOString().slice(0, 10);
+  const art = e.image ?? item.image ?? show.image;
+  const line = [episodeDay(e.date, today), e.season && e.number ? `S${e.season} E${e.number}` : e.number ? `E${e.number}` : null, e.seconds ? said(e.seconds) : null].filter(Boolean).join(" · ");
+  const shownNotes = e.notes.length
+    ? <section className="space-y-2"><h2 className="text-sm font-medium">Show notes</h2><Notes blocks={e.notes} track={e.kind === "audio" ? track : null} /></section>
+    : e.about ? <p className="max-w-prose text-sm whitespace-pre-line">{e.about}</p> : null;
   return (
     <main className={PAGE}>
-      <TaskHeader back={{ href: `/schole/items/${id}`, label: "Back to the show" }} title={item.title} position={[e.date, e.seconds ? clock(e.seconds) : ""].filter(Boolean).join(" · ") || undefined} />
+      <TaskHeader back={{ href: `/schole/items/${id}`, label: "Back to the show" }} title={item.title} />
       <div className="mt-6 space-y-5">
         <header className="flex gap-4">
-          {e.image ? (
+          {art ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={e.image} alt="" className="size-24 shrink-0 rounded-lg border object-cover" />
+            <img src={art} alt="" className="size-24 shrink-0 rounded-lg border object-cover sm:size-28" />
           ) : null}
           <div className="min-w-0 space-y-1">
-            <EpisodeMarks e={e} />
-            <h1 className="text-2xl font-semibold tracking-tight">{e.title}</h1>
+            <p className="flex flex-wrap items-center gap-1.5 text-xs font-semibold tabular-nums">
+              {line ? <span>{line}</span> : null}
+              {e.type !== "full" ? <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{e.type === "trailer" ? "Trailer" : "Bonus"}</Badge> : null}
+              {e.kind === "video" ? <Badge variant="outline" className="h-4 px-1.5 text-[10px]">Video</Badge> : null}
+            </p>
+            <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{e.title}</h1>
             {item.by ? <p className="text-muted-foreground">{item.by}</p> : null}
           </div>
         </header>
@@ -75,10 +94,11 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
           item={id} unit={key} title={e.title} by={item.by} cite={cite}
           youtube={null} media={{ src: e.audio, kind: e.kind }} place={at0 ?? unit?.place ?? null} done={Boolean(unit?.doneOn)} of={null}
           transcript={transcript} notes={item.notes.filter((x) => x.unit === key)} next={older ? `/schole/items/${id}/episodes/${older.key}` : null}
-          track={track}
+          track={track} favorite={favorites.has(key)}
+          between={<>{e.kind === "audio" ? <Chapters chapters={chapters} track={track} /> : null}{shownNotes}</>}
           noTranscript={<p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>}
         />
-        {transcript.length ? <LectureQuiz item={id} unit={key} transcript={transcript} start={quiz} of="The episode" /> : null}
+        {transcript.length ? <LectureQuiz item={id} unit={key} transcript={transcript} start={quiz} of="The episode" compact /> : null}
         {mineHere.length ? (
           <section className="space-y-2">
             <h2 className="text-sm font-medium">Claims you kept from this episode</h2>
@@ -95,13 +115,27 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
             </ul>
           </section>
         ) : null}
-        <Chapters chapters={chapters} track={e.kind === "audio" ? track : null} />
-        {e.notes.length ? <section className="space-y-2"><h2 className="text-sm font-medium">Show notes</h2><Notes blocks={e.notes} /></section> : e.about ? <p className="max-w-prose text-sm whitespace-pre-line">{e.about}</p> : null}
         {named.length ? (
           <section className="space-y-3">
             <h2 className="text-sm font-medium">Books in the show notes</h2>
             <BookGrid books={named} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
           </section>
+        ) : null}
+        {older || newer ? (
+          <nav aria-label="Other episodes" className="grid gap-2 sm:grid-cols-2">
+            {older ? (
+              <Link href={`/schole/items/${id}/episodes/${older.key}`} className="hover:bg-accent flex items-center gap-2 rounded-lg border p-3 text-sm">
+                <ChevronLeftIcon className="text-muted-foreground size-4 shrink-0" />
+                <span className="min-w-0"><span className="text-muted-foreground block text-xs">Previous episode{older.date ? ` · ${episodeDay(older.date, today)}` : ""}</span><span className="line-clamp-1 font-medium">{older.title}</span></span>
+              </Link>
+            ) : <span className="hidden sm:block" />}
+            {newer ? (
+              <Link href={`/schole/items/${id}/episodes/${newer.key}`} className="hover:bg-accent flex items-center justify-end gap-2 rounded-lg border p-3 text-right text-sm">
+                <span className="min-w-0"><span className="text-muted-foreground block text-xs">Next episode{newer.date ? ` · ${episodeDay(newer.date, today)}` : ""}</span><span className="line-clamp-1 font-medium">{newer.title}</span></span>
+                <ChevronRightIcon className="text-muted-foreground size-4 shrink-0" />
+              </Link>
+            ) : null}
+          </nav>
         ) : null}
         <p className="text-muted-foreground text-xs">Played from the show&apos;s own feed. Reflect keeps no copy.</p>
       </div>

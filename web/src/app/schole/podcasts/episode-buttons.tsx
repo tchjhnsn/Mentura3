@@ -9,7 +9,7 @@ import { useListen, type Track } from "../player";
 import { favoriteEpisodeAction } from "../actions";
 
 /** A length as a person says it: "1h 25m", "56m". */
-const said = (s: number) => { const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h}h${m ? ` ${m}m` : ""}` : `${Math.max(1, m)}m`; };
+export const said = (s: number) => { const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h}h${m ? ` ${m}m` : ""}` : `${Math.max(1, m)}m`; };
 
 /**
  * An episode's acts in a show's list: play it in Scholē's player (the button says how long it is, or how much is
