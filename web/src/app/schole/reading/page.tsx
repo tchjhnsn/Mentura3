@@ -9,6 +9,8 @@ import { listItems } from "@/server/ways-store";
 import { mediumOf } from "@reflect/core/ways";
 import { LearnHeader } from "../header";
 import { FinishedDay, Goal, WantList } from "./parts";
+import { heardIn } from "@reflect/core/podcast-library";
+import { keptShows } from "@/server/podcast-library";
 
 export const metadata: Metadata = { title: "Reading" };
 export const dynamic = "force-dynamic";
@@ -39,6 +41,8 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
   const weeks = calendar(days, today, 26);
   const thisYearDays = days.filter((d) => d.startsWith(`${thisYear}-`)).length;
   const cover = (b: (typeof view.books)[number]) => (b.catalog ? coverUrl(b.catalog, "S") : null);
+  const heard = heardIn(year, await keptShows(user.id).catch(() => []));
+  const hours = (s: number) => (s >= 3600 ? `${Math.round((s / 3600) * 10) / 10} hours` : `${Math.round(s / 60)} minutes`);
   const items = (await listItems(user.id).catch(() => [])).filter((i) => i.status === "done" && i.finishedOn?.startsWith(`${year}-`)).sort((a, b) => a.finishedOn!.localeCompare(b.finishedOn!));
 
   return (
@@ -123,6 +127,21 @@ export default async function ReadingPage({ searchParams }: { searchParams: Prom
             </>
           ) : <p className="text-muted-foreground text-sm">No books finished in {year} yet. When you mark a book Read, the day is kept here, and you can change it.</p>}
         </section>
+
+        {heard.episodes ? (
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold">Episodes heard, {year}</h2>
+            <p className="text-sm">{heard.episodes} {heard.episodes === 1 ? "episode" : "episodes"} heard to the end, {hours(heard.seconds)}.</p>
+            <ul className="space-y-2">
+              {heard.shows.map((s) => (
+                <li key={s.item} className="flex items-center gap-3 text-sm">
+                  <Link href={`/schole/items/${s.item}`} className="min-w-0 flex-1 truncate font-medium hover:underline">{s.title}</Link>
+                  <span className="text-muted-foreground shrink-0 text-xs">{s.episodes} · {hours(s.seconds)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section className="space-y-3">
           <h2 className="text-lg font-semibold">Beyond books, {year}</h2>
