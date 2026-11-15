@@ -24,7 +24,7 @@ const OPENING = new RegExp(`^(${NAME}),? (?:is|was|has been|serves as)\\b (?:a|a
 /** Words that look like a name but are not one: places, groups, words a title starts with. */
 const NOT_NAMES = /^(The|This|Our|My|Your|How|Why|What|When|Where|Who|In|On|At|An|A|Episode|Part|Season|Bonus|Q&A|Live|Special|New|Best|Top|AI|Tips|Tools|Lessons|Stories|Random|Ask|United|North|South|East|West|Saudi|Silicon|Wall|White|Supreme|World|Middle|Holy|Mental|Artificial|Russia|Ukraine|China|America|American|Chinese|Israel|Iran|Europe|European)\b/;
 
-export type Guest = { name: string; /** The guest's Wikipedia page, when the notes link it. */ wiki?: string };
+export type Guest = { name: string; /** The guest's Wikipedia page, when the notes link it. */ wiki?: string; /** Their picture, when the feed's person tag gives one. */ image?: string };
 
 const clean = (s: string) => s.replace(/\s+/g, " ").replace(/^(Dr|Prof|Professor)\.? /, (m) => m.replace(/\.?\s$/, ". ")).trim();
 const plainText = (b: NoteBlock) => b.parts.map((p) => p.text).join("").replace(/\s+/g, " ").trim();
@@ -36,6 +36,11 @@ function isName(n: string, hosts: readonly string[]): boolean {
   if (!nameRe.test(n) || NOT_NAMES.test(n)) return false;
   const words = bareName(n).split(" ");
   if (words.length < 2 || words.some((w) => w.length > 20)) return false;
+  // A segment named for the show or an event, not a person: "All-In Summit", "All-In Liquidity IPO Panel".
+  if (/\b(Panel|Summit|Interview|Roundtable|Debate|Mailbag|Recap|Preview|Special|Edition|Conference|Festival|Awards?)$/i.test(n)) return false;
+  // A name led by the show's own hyphenated name is the show's, not a person's ("All-In DC" on All-In).
+  const first = words[0]!.toLowerCase();
+  if (first.includes("-") && hosts.some((h) => h.trim().toLowerCase().split(/\s+/)[0] === first)) return false;
   return !hosts.some((h) => h && (sameName(h, n) || h.toLowerCase().includes(bareName(n).toLowerCase())));
 }
 
@@ -43,12 +48,12 @@ function isName(n: string, hosts: readonly string[]): boolean {
 export function episodeGuests(e: Pick<Episode, "title" | "notes" | "people">, show: Pick<Show, "title" | "author" | "people">): Guest[] {
   const hosts = [show.author ?? "", show.title, ...show.people.filter((p) => p.role !== "guest").map((p) => p.name), ...e.people.filter((p) => p.role === "host").map((p) => p.name)];
   const out: Guest[] = [];
-  const add = (raw: string, wiki?: string) => {
+  const add = (raw: string, wiki?: string, image?: string | null) => {
     const name = clean(raw);
     if (!isName(name, hosts) || out.some((g) => sameName(g.name, name))) return;
-    out.push({ name, ...(wiki ? { wiki } : {}) });
+    out.push({ name, ...(wiki ? { wiki } : {}), ...(image ? { image } : {}) });
   };
-  for (const p of e.people) if (p.role === "guest") add(p.name, p.href && /wikipedia\.org\/wiki\//.test(p.href) ? p.href : undefined);
+  for (const p of e.people) if (p.role === "guest") add(p.name, p.href && /wikipedia\.org\/wiki\//.test(p.href) ? p.href : undefined, p.image);
   const wikis = e.notes.flatMap((b) => b.parts).filter((p) => p.href && /^https:\/\/en\.wikipedia\.org\/wiki\//.test(p.href)).map((p) => p.href!);
   const wikiFor = (name: string) => wikis.find((w) => decodeURIComponent(w).replace(/_/g, " ").toLowerCase().includes(bareName(name).split(" ").at(-1)!.toLowerCase()));
   // The opening sentences of the notes, where shows introduce the guest.
@@ -68,13 +73,16 @@ export function episodeGuests(e: Pick<Episode, "title" | "notes" | "people">, sh
 }
 
 /** Every guest of a show, the most recent first, with the episodes each appeared in (by key). */
-export function showGuests(show: Pick<Show, "title" | "author" | "people"> & { episodes: readonly Pick<Episode, "key" | "title" | "notes" | "people">[] }, limit = 48): (Guest & { episodes: string[] })[] {
+export function showGuests(show: Pick<Show, "title" | "author" | "people"> & { about?: string | null; episodes: readonly Pick<Episode, "key" | "title" | "notes" | "people">[] }, limit = 48): (Guest & { episodes: string[] })[] {
   const out = new Map<string, Guest & { episodes: string[] }>();
+  // People the show's own description names are its hosts (All-In: "Chamath Palihapitiya, Jason Calacanis, David Sacks..."), not guests.
+  const about = (show.about ?? "").toLowerCase();
   for (const e of show.episodes) {
     for (const g of episodeGuests(e, show)) {
+      if (about.includes(bareName(g.name).toLowerCase())) continue;
       const k = bareName(g.name).toLowerCase();
       const had = out.get(k);
-      if (had) { had.episodes.push(e.key); if (!had.wiki && g.wiki) had.wiki = g.wiki; } else out.set(k, { ...g, episodes: [e.key] });
+      if (had) { had.episodes.push(e.key); if (!had.wiki && g.wiki) had.wiki = g.wiki; if (!had.image && g.image) had.image = g.image; } else out.set(k, { ...g, episodes: [e.key] });
     }
   }
   return [...out.values()].slice(0, limit);

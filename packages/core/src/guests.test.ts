@@ -65,4 +65,19 @@ describe("appearances and bios", () => {
     expect(wikiBio(JSON.stringify(page))).toEqual({ name: "Gary W. Gallagher", about: "Gary William Gallagher is an American historian.", description: "American historian", image: "https://up/g.jpg", href: "https://en.wikipedia.org/wiki/Gary_W._Gallagher" });
     expect(wikiBio(JSON.stringify({ ...page, type: "disambiguation" }))).toBeNull();
   });
+
+  it("leaves out segments named for the show or an event", () => {
+    const show = { title: "All-In with Chamath, Jason, Sacks & Friedberg", author: "All-In Podcast, LLC", people: [] };
+    const ep = (title: string) => ({ title, notes: [], people: [] });
+    expect(episodeGuests(ep("All-In Summit: Tucker Carlson"), show).map((g) => g.name)).not.toContain("All-In Summit");
+    expect(episodeGuests({ title: "Trump's week with Ben Shapiro", notes: [{ parts: [{ text: "We talk with Ben Shapiro about the week." }] }] as never, people: [] }, show).map((g) => g.name)).toEqual(["Ben Shapiro"]);
+    expect(episodeGuests({ title: "x", notes: [], people: [{ name: "All-In DC", role: "guest", href: null, image: null }, { name: "Sam Altman", role: "guest", href: null, image: "https://i.example/s.jpg" }] }, show)).toEqual([{ name: "Sam Altman", image: "https://i.example/s.jpg" }]);
+    expect(episodeGuests({ title: "x", notes: [], people: [{ name: "Liquidity IPO Panel", role: "guest", href: null, image: null }] }, show)).toEqual([]);
+  });
+
+  it("does not count the hosts a show's description names as its guests", () => {
+    const people = (name: string) => [{ name, role: "guest", href: null, image: null }];
+    const show = { title: "All-In", author: null, about: "Besties Chamath Palihapitiya, Jason Calacanis, David Sacks & David Friedberg.", people: [], episodes: [{ key: "a", title: "x", notes: [], people: people("David Sacks") }, { key: "b", title: "y", notes: [], people: people("Sam Altman") }] };
+    expect(showGuests(show).map((g) => g.name)).toEqual(["Sam Altman"]);
+  });
 });

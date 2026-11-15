@@ -6,7 +6,7 @@ import { chaptersFromNotes, episodeDay } from "@reflect/core/podcasts";
 import { episodeGuests } from "@reflect/core/guests";
 import { commentsOn } from "@/server/comment-store";
 import { Comments } from "../../../../podcasts/comments";
-import { EpisodeBooks, GuestChips } from "../../../../podcasts/mentions";
+import { EpisodeBooks, PeopleRow } from "../../../../podcasts/mentions";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { favoritesOf } from "@/server/favorite-store";
@@ -86,7 +86,7 @@ export default async function EpisodePage({ params, searchParams }: { params: Pr
           </div>
         </header>
         <People people={e.people.filter((p) => p.role !== "guest")} />
-        <GuestChips guests={episodeGuests(e, show)} show={{ feed: show.feed, title: item.title }} />
+        <Suspense fallback={null}><PeopleRow people={episodeGuests(e, show)} show={{ feed: show.feed, title: item.title }} /></Suspense>
         <UnitPlayer
           item={id} unit={key} title={e.title} by={item.by} cite={cite}
           youtube={null} media={{ src: e.audio, kind: e.kind }} place={at0 ?? unit?.place ?? null} done={Boolean(unit?.doneOn)} of={null}
