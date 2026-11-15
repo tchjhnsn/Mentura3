@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { addItemNoteAction, keepItemClaimAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
 import { loadYouTube, localDay, type YTPlayer } from "./youtube";
 import { useListen, type Track } from "../player";
+import { SaveEpisode } from "../podcasts/saved";
 
 type Note = { id: string; at: number | null; quote: string | null; note: string | null };
 export type UnitProps = {
@@ -187,6 +188,7 @@ export function UnitPlayer(p: UnitProps) {
                 ? <span className="text-muted-foreground text-xs">Up next</span>
                 : <Button size="icon" variant="ghost" aria-label="Play after what is playing" title="Up next" onClick={() => listen!.enqueue(shared)}><ListPlusIcon /></Button>
             ) : null}
+            <SaveEpisode src={shared.src} />
           </div>
         ) : p.media ? (
           <audio ref={(a) => { el.current = a; }} src={p.media.src} controls preload="metadata" className="w-full" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
