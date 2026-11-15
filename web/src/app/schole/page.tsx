@@ -3,24 +3,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mediumOf } from "@reflect/core/ways";
 import { coverUrl } from "@reflect/core/openlibrary";
-import { daily } from "@reflect/core/work-browse";
 import { BROWSE_MEDIA } from "@reflect/core/browse-media";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { allExcerpts } from "@/server/excerpt-store";
-import { highlightBooks } from "@/server/highlights";
-import { restateAction } from "./actions";
 import { PAGE } from "@/components/page-header";
 import { Suspense } from "react";
-import { ChevronRightIcon, SearchIcon } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Head, SPACE } from "@/app/life/space";
 import { DiscoverRows } from "./browse/media-page";
 import { Upcoming } from "@/app/life/upcoming";
 import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
-import { listExaminations } from "@/server/examination-store";
-import { listItems, mergeInputs } from "@/server/ways-store";
+import { lastActivity, listItems, mergeInputs } from "@/server/ways-store";
 import { LearnHeader } from "./header";
 import { newEpisodeCards } from "@/server/new-episodes";
 import { NewEpisodeCards } from "./podcasts/new-episodes";
@@ -30,25 +24,43 @@ export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 // The shelves' own parameters, from links made before Learn opened to the workspace.
 const SHELF_KEYS = ["tab", "book", "filled", "show", "sort", "removed"];
-const ROW = "-mx-6 flex snap-x scroll-px-6 gap-3 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 [&>li]:w-72 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto";
 
-type Card = { key: string; href: string; kind: string; title: string; by: string | null; image: string | null; share: number | null; go?: string };
+type Card = { key: string; href: string; kind: string; title: string; by: string | null; image: string | null; share: number | null; where: string | null };
 
-function Cards({ cards }: { cards: Card[] }) {
+/** The one thing the person last played: the page's largest card and its one filled button (priority guides, front page P1). */
+function Hero({ c }: { c: Card }) {
   return (
-    <ul className={ROW}>
+    <div className="bg-card flex gap-4 rounded-xl border p-4 shadow-xs">
+      <Link href={c.href} className="shrink-0" aria-label={c.title}>
+        {c.image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={c.image} alt="" className="size-24 rounded-lg border object-cover shadow-sm" />
+        ) : <span className="bg-muted text-muted-foreground flex size-24 items-center justify-center rounded-lg border text-xs">{c.kind}</span>}
+      </Link>
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-muted-foreground text-xs">{c.kind}</span>
+        <Link href={c.href} className="line-clamp-2 text-lg font-semibold leading-snug hover:underline hover:underline-offset-4">{c.title}</Link>
+        <span className="text-muted-foreground truncate text-[13px]">{[c.by, c.where].filter(Boolean).join(" · ")}</span>
+        {c.share !== null ? <span className="bg-muted mt-1 block h-1 max-w-xs overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : null}
+        <div className="mt-auto pt-2"><Button asChild size="lg" className="h-10 w-full sm:w-auto sm:px-8"><Link href={c.href}>Continue</Link></Button></div>
+      </div>
+    </div>
+  );
+}
+
+/** The rest of what is under way: small cards in one row, art, title and progress; a tap opens it. */
+function UnderWay({ cards }: { cards: Card[] }) {
+  return (
+    <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
       {cards.map((c) => (
-        <li key={c.key}>
-          <Link href={c.href} className="bg-card hover:bg-accent flex h-full gap-3 rounded-xl border p-3 shadow-xs transition">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {c.image ? <img src={c.image} alt="" loading="lazy" className="h-20 w-14 shrink-0 rounded-sm border object-cover" /> : null}
-            <span className="flex min-w-0 flex-1 flex-col gap-1">
-              <span className="text-muted-foreground text-xs">{c.kind}</span>
-              <span className="line-clamp-2 text-sm font-medium leading-snug">{c.title}</span>
-              {c.by ? <span className="text-muted-foreground truncate text-xs">{c.by}</span> : null}
-              {c.share !== null ? <span className="bg-muted mt-auto block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : null}
-              {c.go ? <span className="text-xs font-medium">{c.go}</span> : null}
-            </span>
+        <li key={c.key} className="w-28 shrink-0 snap-start">
+          <Link href={c.href} className="group block space-y-1.5">
+            {c.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={c.image} alt="" loading="lazy" className="aspect-square w-full rounded-lg border object-cover transition-opacity group-hover:opacity-90" />
+            ) : <span className="bg-muted text-muted-foreground flex aspect-square w-full items-center justify-center rounded-lg border px-2 text-center text-xs">{c.kind}</span>}
+            <span className="line-clamp-2 text-sm font-medium leading-tight group-hover:underline">{c.title}</span>
+            {c.share !== null ? <span className="bg-muted block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : <span className="text-muted-foreground block text-xs">{c.kind}</span>}
           </Link>
         </li>
       ))}
@@ -59,7 +71,7 @@ function Cards({ cards }: { cards: Card[] }) {
 /** Episodes of the shows the person keeps, out in the last two weeks and not yet begun. Nothing when there are none. */
 async function NewFromShows({ userId, today }: { userId: string; today: string }) {
   const since = new Date(Date.parse(today) - 14 * 86400000).toISOString().slice(0, 10);
-  const fresh = await newEpisodeCards(userId, since, today, { limit: 6 });
+  const fresh = await newEpisodeCards(userId, since, today, { limit: 3 });
   if (!fresh.length) return null;
   return (
     <section className="grid grid-cols-1 gap-3">
@@ -74,11 +86,11 @@ function Loading() {
 }
 
 /**
- * Scholē, Aristotle's leisure (Torian, 2026-11-15 02:17Z: "an app for reading and listening to books, listening to
- * podcasts, watching videos ... listening to music, and maybe even games ... We may even show events here ... The
- * user would still have their personal Library"; 03:27Z "Go"). Its front is where you open something: search, every
- * medium, what you are in the middle of to resume, rows to discover across every medium, the events on Scholē's
- * calendar, and your library, with what you want next and three highlights a day to say in your own words.
+ * Scholē, Aristotle's leisure (Torian, 2026-11-15 02:17Z), laid out by its priority guide (2026-11-15, "The rest of
+ * Scholē"). Primary: search, and the last thing the person played as the page's one large card with its one filled
+ * button, Continue; the rest under way in a row of small cards. Secondary: new episodes from their shows, and Discover
+ * with only audiobooks, podcasts, films and courses, the other media as chips. Tertiary: events (only when there are
+ * some) and one line to the library. Highlights to restate live on Highlights, examinations on their course.
  */
 export default async function SpacePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -92,29 +104,27 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
-  const [view, items, exams, excerpts] = await Promise.all([learnView(user.id), listItems(user.id), listExaminations(user.id).catch(() => []), allExcerpts(user.id).catch(() => [])]);
-  const bookCard = (b: (typeof view.books)[number], resume: boolean): Card => ({
+  const [view, items, recent] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>())]);
+  const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null,
-    href: b.catalog?.work ? (resume && b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
+    href: b.catalog?.work ? (b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
     image: b.catalog ? coverUrl(b.catalog, "M") : null, share: b.place ? Math.min(1, (b.place.chapter - 1 + b.place.at) / b.place.chapters) : null,
-    ...(resume ? { go: b.place ? `Continue at chapter ${b.place.chapter}` : "Open" } : {}),
+    where: b.place ? `Chapter ${b.place.chapter} of ${b.place.chapters}` : null,
   });
-  const itemCard = (i: (typeof items)[number], resume: boolean): Card => ({
-    key: i.id, href: `/schole/items/${i.id}`, kind: mediumOf(i.medium).label, title: i.title, by: i.by, image: i.image,
-    share: i.parts && i.part ? Math.min(1, i.part / i.parts) : null,
-    ...(resume ? { go: i.parts && i.part ? `Continue: ${i.part} of ${i.parts}` : "Continue" } : {}),
-  });
-  const now = [...view.books.filter((b) => b.status === "reading").map((b) => bookCard(b, true)), ...items.filter((i) => i.status === "doing").map((i) => itemCard(i, true))];
-  const next = [
-    ...view.books.filter((b) => b.status === "want").sort((a, b) => (a.wantRank ?? 1e9) - (b.wantRank ?? 1e9)).map((b) => bookCard(b, false)),
-    ...items.filter((i) => i.status === "want").map((i) => itemCard(i, false)),
-  ].filter((c, i, all) => all.findIndex((x) => x.title.toLowerCase() === c.title.toLowerCase() && x.by === c.by) === i);
-  const open = exams.filter((e) => e.status === "open");
-  // Today's highlights to restate: three a day, the same all day, from those not yet put in the person's own words.
-  const unsaid = excerpts.filter((e) => !e.note);
-  const picked = daily(unsaid.length ? unsaid : excerpts, 3, today, user.id);
-  const titles = new Map((await highlightBooks(user.id, picked)).map((b) => [b.work, b.title]));
+  const itemCard = (i: (typeof items)[number]): Card => {
+    const kind = mediumOf(i.medium).label;
+    return {
+      key: i.id, href: `/schole/items/${i.id}`, kind, title: i.title, by: i.by, image: i.image,
+      share: i.parts && i.part ? Math.min(1, i.part / i.parts) : null,
+      where: i.parts && i.part ? `${i.medium === "course" ? "Lecture" : "Part"} ${i.part} of ${i.parts}` : null,
+    };
+  };
+  // Under way, the last played first (priority guides, front page: one large card, the rest in a row).
+  const now = [...view.books.filter((b) => b.status === "reading").map(bookCard), ...items.filter((i) => i.status === "doing").map(itemCard)]
+    .sort((a, b) => (recent.get(b.key) ?? 0) - (recent.get(a.key) ?? 0));
+  const [last, ...rest] = now;
   const kept = view.books.length + items.length;
+  const others = BROWSE_MEDIA.filter((m) => !["audiobooks", "podcast", "film", "course"].includes(m.id));
   return (
     <main className={PAGE}>
       <LearnHeader on="space" />
@@ -132,62 +142,35 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
           </nav>
         </div>
 
-        {now.length ? (
-          <section className="grid grid-cols-1 gap-3">
-            <Head title="Continue" note="What you are in the middle of, where you left it." />
-            <Cards cards={now} />
+        {last ? (
+          <section className="grid grid-cols-1 gap-3" aria-label="Continue">
+            <h2 className="text-base font-semibold">Continue</h2>
+            <Hero c={last} />
+            {rest.length ? <UnderWay cards={rest} /> : null}
           </section>
         ) : null}
 
         <Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense>
 
         <section className="grid grid-cols-1 gap-3">
-          <Head title="Discover" href="/schole/browse" note="To read, hear, watch and look at here." />
-          <Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} /></Suspense>
+          <Head title="Discover" href="/schole/browse" note="To hear, watch and take here." />
+          <Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} focus /></Suspense>
+          <nav aria-label="More to explore" className="pt-2">
+            <h3 className="text-muted-foreground mb-2 text-sm">More to explore</h3>
+            <ul className="flex flex-wrap gap-1.5">
+              {others.map((m) => <li key={m.id}><Link href={`/schole/browse?m=${m.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm">{m.label}</Link></li>)}
+            </ul>
+          </nav>
         </section>
 
-        <Upcoming userId={user.id} tile="learn" today={today} title="Events" note="Lectures, readings and gatherings on your Scholē calendar in the next two weeks." />
+        <Upcoming userId={user.id} tile="learn" today={today} title="Events" note="Lectures, readings and gatherings on your Scholē calendar in the next two weeks." hideEmpty />
 
-        <section id="library" className="grid grid-cols-1 scroll-mt-20 gap-6">
-          <Head title="Your library" href="/schole/shelves" note={kept ? `${kept} kept, on your shelves by the ways of learning.` : "What you keep, on your shelves by the ways of learning."} />
-          <ul className="flex flex-wrap gap-2 text-sm">
-            {[["Reading", "/schole/reading"], ["Highlights", "/schole/highlights"], ["Claims", "/schole/shelves?tab=claims"], ["Lists", "/schole/lists"]].map(([label, href]) => <li key={href}><Link href={href!} className="hover:bg-accent block rounded-lg border px-3 py-2 font-medium">{label}</Link></li>)}
-          </ul>
-          {next.length ? (
-            <div className="grid grid-cols-1 gap-3">
-              <h3 className="font-semibold"><Link href="/schole/shelves?show=want" className="group inline-flex items-center gap-0.5 hover:underline hover:underline-offset-4">Next{next.length > 6 ? <span className="text-muted-foreground ml-1 font-normal">{next.length}</span> : null}<ChevronRightIcon className="text-muted-foreground size-4" /></Link></h3>
-              <Cards cards={next.slice(0, 6)} />
-            </div>
-          ) : null}
-          {picked.length ? (
-            <div className="grid grid-cols-1 gap-3">
-              <div>
-                <h3 className="font-semibold">Today</h3>
-                <p className="text-muted-foreground text-sm">Three of your highlights. Say each in your own words; what you write is kept as its note.</p>
-              </div>
-              <ul className={ROW}>
-                {picked.map((e) => (
-                  <li key={e.id} className="bg-card flex flex-col gap-3 rounded-xl border p-4 shadow-xs">
-                    <blockquote className="line-clamp-6 border-l-2 pl-3 text-sm leading-relaxed">{e.quote}</blockquote>
-                    <Link href={`/schole/works/${e.work}`} className="text-muted-foreground text-xs hover:underline">{titles.get(e.work) ?? "The book"}</Link>
-                    <form action={restateAction.bind(null, e.id, e.work)} className="mt-auto grid gap-2">
-                      <Textarea name="words" defaultValue={e.note ?? ""} rows={3} placeholder="In your own words" aria-label="In your own words" className="text-sm" />
-                      <div><Button type="submit" size="sm" variant="outline">Keep it</Button></div>
-                    </form>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {open.length ? (
-            <div className="grid grid-cols-1 gap-3">
-              <h3 className="font-semibold">Your examinations</h3>
-              <ul className="divide-y rounded-xl border text-sm">
-                {open.slice(0, 5).map((e) => <li key={e.id}><Link href={`/schole/examinations/${e.id}`} className="hover:bg-accent flex items-baseline justify-between gap-3 px-4 py-2"><span className="min-w-0 truncate font-medium">{e.courseTitle}</span><span className="text-muted-foreground shrink-0 text-xs">{e.examiners.length} {e.examiners.length === 1 ? "examiner" : "examiners"}</span></Link></li>)}
-                {open.length > 5 ? <li className="text-muted-foreground px-4 py-2 text-xs">{open.length - 5} more open</li> : null}
-              </ul>
-            </div>
-          ) : null}
+        <section id="library" className="scroll-mt-20 border-t pt-6">
+          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
+            <Link href="/schole/shelves" className="text-base font-semibold hover:underline hover:underline-offset-4">Your library</Link>
+            <span className="text-muted-foreground">{kept} kept</span>
+            {[["Highlights", "/schole/highlights"], ["Lists", "/schole/lists"], ["Reading", "/schole/reading"]].map(([label, href]) => <Link key={href} href={href!} className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">{label}</Link>)}
+          </p>
         </section>
       </div>
     </main>

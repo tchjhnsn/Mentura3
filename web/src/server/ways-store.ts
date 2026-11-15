@@ -397,3 +397,21 @@ export async function learningMinutes(userId: string, since: string): Promise<nu
   const r = await db().query("SELECT coalesce(sum(s.minutes), 0)::int AS m FROM learn_item_session s JOIN learn_item i ON i.id = s.item_id WHERE s.user_id = $1 AND s.day >= $2 AND i.removed_at IS NULL", [userId, since]);
   return Number(r.rows[0]?.m ?? 0);
 }
+
+/**
+ * When the person last did something with each item and book on their shelves (a part played, a place kept, the
+ * item changed), as milliseconds by id, so Scholē's front page can put the last thing they played first.
+ */
+export async function lastActivity(userId: string): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  const put = (id: unknown, at: unknown) => { const t = at ? Date.parse(String(at)) : NaN; if (Number.isFinite(t) && t > (out.get(String(id)) ?? 0)) out.set(String(id), t); };
+  const [items, units, places] = await Promise.all([
+    db().query("SELECT id, updated_at FROM learn_item WHERE user_id = $1 AND removed_at IS NULL", [userId]).catch(() => ({ rows: [] as Row[] })),
+    db().query("SELECT item_id, MAX(updated_at) AS at FROM learn_item_unit WHERE user_id = $1 GROUP BY item_id", [userId]).catch(() => ({ rows: [] as Row[] })),
+    db().query("SELECT book_id, updated_at FROM learn_book_place WHERE user_id = $1", [userId]).catch(() => ({ rows: [] as Row[] })),
+  ]);
+  for (const r of items.rows) put(r.id, r.updated_at);
+  for (const r of units.rows) put(r.item_id, r.at);
+  for (const r of places.rows) put(r.book_id, r.updated_at);
+  return out;
+}

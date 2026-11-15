@@ -65,7 +65,8 @@ export function BrowseNav({ m, way, children }: { m: BrowseMedium | "all"; way: 
 
 
 /** Discover's rows across every medium: courses, books read this week, podcasts on the person's subjects, lectures, debates, plays, films and art to take in here. Shared by Browse and Scholē's front page. */
-export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: string; way?: WayPick | null; n?: number }) {
+export async function DiscoverRows({ userId, way = null, n = 12, focus = false }: { userId: string; way?: WayPick | null; n?: number;
+  /** Only what plays best here, audiobooks, podcasts, films and courses (Scholē's front page, priority guides 2026-11-15). */ focus?: boolean }) {
   const [view, items] = await Promise.all([learnView(userId), listItems(userId)]);
   const mine = new Map(items.map((i) => [keyOf(i), i.id]));
   const subjects = [...new Set([...view.books.flatMap((b) => b.subjects), ...view.known, ...view.shown].map((s) => s.name))].slice(0, 2);
@@ -73,10 +74,10 @@ export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: str
   const here = (fs: Find[]) => fs.map((f) => ({ ...f, here: true }));
   const [courses, books, podcasts, films, art] = await Promise.all([
     show("course") ? finds("course").then((r) => r.found.slice(0, n)) : null,
-    inWay("books", way) ? trendingBooks(openLibrary, n).catch(() => null) : null,
+    inWay("books", way) && !focus ? trendingBooks(openLibrary, n).catch(() => null) : null,
     show("podcast") ? finds("podcast", subjects[0] ?? "philosophy").then((r) => r.found.slice(0, n)) : null,
     show("film") ? filmsToWatch().then((f) => f.slice(0, n)) : null,
-    show("art") ? finds("art").then((r) => r.found.slice(0, n)) : null,
+    show("art") && !focus ? finds("art").then((r) => r.found.slice(0, n)) : null,
   ]);
   return (
     <div className="space-y-8">
@@ -84,6 +85,7 @@ export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: str
       <MediaRow title={subjects[0] ? <>Podcasts on {subjects[0]}</> : "Podcasts on philosophy"} finds={podcasts} mine={mine} href={href("podcast", way)} />
       <MediaRow title="Films to watch here" finds={films} mine={mine} href={href("film", way)} note="Feature films in the public domain, from the Internet Archive." />
       <MediaRow title="Courses to take here" finds={courses} mine={mine} href={href("course", way)} />
+      {focus ? null : <>
       {show("lecture") ? <MediaRow title="Lectures" finds={listFinds("lecture").slice(0, n)} mine={mine} href={href("lecture", way)} /> : null}
       {show("debate") ? <MediaRow title="Debates" finds={listFinds("debate").slice(0, n)} mine={mine} href={href("debate", way)} /> : null}
       {show("theatre") ? <MediaRow title="Plays to read here" finds={here(listFinds("theatre").slice(0, n))} mine={mine} href={href("theatre", way)} /> : null}
@@ -94,6 +96,7 @@ export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: str
           <BookGrid books={books} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
         </section>
       ) : null}
+      </>}
     </div>
   );
 }
