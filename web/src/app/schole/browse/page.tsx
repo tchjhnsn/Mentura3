@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SectionHead } from "@/components/section-head";
 import { Suspense, type ReactNode } from "react";
 import { BROAD_SUBJECT as BROAD, booksLike, browseQuery, workEntry, isSort, searchAuthors, searchBooks, SORTS, trendingBooks, type AuthorHit, type CatalogEntry, type Sort } from "@reflect/core/openlibrary";
 import { THEMA, themaCategory, themaQuery, themaSection } from "@reflect/core/thema";
@@ -199,10 +200,7 @@ async function ForYou({ view, mine, userId }: { view: LearnView; mine: Map<strin
   const row = (title: ReactNode, books: CatalogEntry[] | null, href?: string) =>
     books?.length ? (
       <section key={String(href ?? title)} className="space-y-4">
-        <div className="flex items-baseline justify-between gap-3 pt-2">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          {href ? <Link href={href} className="text-muted-foreground shrink-0 text-sm underline-offset-4 hover:underline">See all</Link> : null}
-        </div>
+        <SectionHead title={title} href={href} className="pt-2" />
         <BookGrid books={books} mine={mine} row />
       </section>
     ) : null;

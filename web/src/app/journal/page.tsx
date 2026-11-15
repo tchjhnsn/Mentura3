@@ -31,7 +31,7 @@ export default async function JournalPage() {
         <Button asChild variant="ghost" size="icon" aria-label="Export"><a href="/api/journal/export" download><DownloadIcon /></a></Button>
         <Button asChild variant="ghost"><Link href="/journal/book"><BookOpenIcon />Book</Link></Button>
         <ImportButton />
-        <Button asChild><Link href="/journal/new"><PlusIcon />Create</Link></Button>
+        <Button asChild size="icon" className="rounded-full" aria-label="Create" title="Create"><Link href="/journal/new"><PlusIcon /></Link></Button>
       </JournalHeader>
       <nav aria-label="Domains" className="mt-6 flex flex-wrap gap-1.5">
         {DOMAINS.map((d) => {

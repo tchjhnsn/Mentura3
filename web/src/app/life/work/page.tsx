@@ -84,7 +84,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             <select name="type" aria-label="Kind of work" className={SELECT} defaultValue="venture">
               <option value="job">Job</option><option value="career">Career</option><option value="venture">Venture</option><option value="other">Other</option>
             </select>
-            <Button type="submit" variant="outline" size="sm"><PlusIcon />Add</Button>
+            <Button type="submit" variant="outline" size="icon" className="size-9 rounded-full" aria-label="Add it" title="Add it"><PlusIcon /></Button>
             <Link href="/life/work?k=imagined" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Imagine work that does not exist yet</Link>
           </form>
         </section>

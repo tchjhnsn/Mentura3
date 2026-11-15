@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { BuildingIcon, ChevronRightIcon, CompassIcon, SparklesIcon } from "lucide-react";
+import { SectionHead } from "@/components/section-head";
+import { BuildingIcon, CompassIcon, SparklesIcon } from "lucide-react";
 import { ORIGINS } from "@reflect/core/origins";
 import { familyOf, parseRef, refHref, type Company, type Filing, type Job, type WikiWork } from "@reflect/core/work-browse";
 import { ThingHeader } from "@/components/headers";
@@ -25,13 +26,7 @@ export function WorkHeader({ on }: { on: WorkTab | null }) {
 export function Row({ title, note, all, children }: { title: string; note?: string; all?: string; children: ReactNode }) {
   return (
     <section className="grid gap-3">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-          {note ? <p className="text-muted-foreground text-sm">{note}</p> : null}
-        </div>
-        {all ? <Link href={all} className="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-0.5 text-sm">See all<ChevronRightIcon className="size-4" /></Link> : null}
-      </div>
+      <SectionHead title={title} note={note} href={all} />
       <ul className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-2 [&>li]:w-60 [&>li]:shrink-0 [&>li]:snap-start">{children}</ul>
     </section>
   );

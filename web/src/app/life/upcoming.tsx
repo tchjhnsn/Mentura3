@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { addDays, isRecordEvent, occurrences, tileLabel, type CalTile } from "@reflect/core/calendar";
 import { calendar } from "@/server/calendar-store";
+import { SectionHead } from "@/components/section-head";
 
 const shortDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 
@@ -10,13 +11,7 @@ export async function Upcoming({ userId, tile, today, title = "Coming up", note 
   const list = occurrences(await calendar(userId, today, to, tile), today, to).slice(0, 8);
   return (
     <section className="grid gap-3">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-          <p className="text-muted-foreground text-sm">{note ?? `The next two weeks on your ${tileLabel(tile)} calendar.`}</p>
-        </div>
-        <Link href={`/calendar?tile=${tile}`} className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Open the calendar</Link>
-      </div>
+      <SectionHead title={title} href={`/calendar?tile=${tile}`} add={{ label: `Add an event tagged ${tileLabel(tile)}`, href: `/calendar?tile=${tile}&day=${today}` }} note={note ?? `The next two weeks on your ${tileLabel(tile)} calendar.`} />
       {list.length ? (
         <ul className="divide-y rounded-xl border text-sm">
           {list.map((o) => (
@@ -28,7 +23,7 @@ export async function Upcoming({ userId, tile, today, title = "Coming up", note 
             </li>
           ))}
         </ul>
-      ) : <p className="text-muted-foreground text-sm">Nothing on it. <Link href={`/calendar?tile=${tile}&day=${today}`} className="underline underline-offset-2">Add an event</Link> tagged {tileLabel(tile)}.</p>}
+      ) : <p className="text-muted-foreground text-sm">Nothing on it yet.</p>}
     </section>
   );
 }

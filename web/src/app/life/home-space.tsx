@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CheckIcon } from "lucide-react";
 import { homeCost, homeNeeds, type NeedView } from "@reflect/core/home";
 import { cn } from "@/lib/utils";
 import type { LifeAct, LifeRecord } from "@/server/life-store";
@@ -25,8 +26,8 @@ function NeedCard({ n, id, today }: { n: NeedView; id: string | null; today: str
       {id ? (
         <form action={actLifeAction.bind(null, id)} className="flex items-center justify-between gap-2 border-t px-4 py-2">
           <input type="hidden" name="kind" value="checked" /><input type="hidden" name="day" value={today} /><input type="hidden" name="$back" value="/life/home" />
-          <span className={cn("text-xs", n.lapsed ? "font-medium" : "text-muted-foreground")}>{check ?? "Say how often to check it again"}</span>
-          <Button type="submit" size="sm" variant={n.lapsed ? "default" : "outline"}>Checked today</Button>
+          <span className={cn("text-xs", n.lapsed ? "font-medium" : "text-muted-foreground")}>{check ?? (n.stated ? "Not checked yet" : "")}</span>
+          <Button type="submit" size="icon" variant={n.lapsed ? "default" : "outline"} className="size-8 rounded-full" aria-label={`Checked ${n.label.toLowerCase()} today`} title="Checked today"><CheckIcon /></Button>
         </form>
       ) : null}
     </li>
@@ -48,7 +49,7 @@ export async function HomeSpace({ userId, records, acts, today }: { userId: stri
   return (
     <div className={SPACE}>
       <section className="grid gap-3">
-        <Head title="Your needs" note="How each is met now and by whom, and what of its standard is not in place yet. Each comes back when it is time to check it again. Open one to change it." />
+        <Head title="Your needs" note="How each is met now and by whom, and what of its standard is not in place yet. Each comes back when it is time to check it again; open one to say how often." />
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{needs.map((n) => <NeedCard key={n.id} n={n} id={idOf(n.id)} today={today} />)}</ul>
       </section>
 
@@ -62,10 +63,7 @@ export async function HomeSpace({ userId, records, acts, today }: { userId: stri
       </section>
 
       <section className="grid gap-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <Head title="Firearms" note="Training and safe storage for each one you keep." />
-          <Link href="/life/home?k=firearm" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Add a firearm</Link>
-        </div>
+        <Head title="Firearms" note="Training and safe storage for each one you keep." add={{ label: "Add a firearm", href: "/life/home?k=firearm" }} />
         {guns.length ? (
           <ul className="divide-y rounded-xl border text-sm">
             {guns.map((g) => (
@@ -76,10 +74,7 @@ export async function HomeSpace({ userId, records, acts, today }: { userId: stri
       </section>
 
       <section className="grid gap-3">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <Head title="Belongings" note="What you own of value, so a loss can be shown and claimed. Keep a copy away from home too (NAIC)." />
-          <Link href="/life/home?k=belonging" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Add a belonging</Link>
-        </div>
+        <Head title="Belongings" note="What you own of value, so a loss can be shown and claimed. Keep a copy away from home too (NAIC)." add={{ label: "Add a belonging", href: "/life/home?k=belonging" }} />
         {things.length ? (
           <>
             <ul className="divide-y rounded-xl border text-sm">

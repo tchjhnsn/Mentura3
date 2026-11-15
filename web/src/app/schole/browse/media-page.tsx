@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SectionHead } from "@/components/section-head";
 import type { ReactNode } from "react";
 import { BROWSE_MEDIA, browseWay, type BrowseMedium } from "@reflect/core/browse-media";
 import { trendingBooks } from "@reflect/core/openlibrary";
@@ -79,7 +80,7 @@ export async function DiscoverRows({ userId, way = null, n = 12 }: { userId: str
       <MediaRow title="Courses to take here" finds={courses} mine={mine} href={href("course", way)} />
       {books?.length ? (
         <section className="space-y-4">
-          <div className="flex items-baseline justify-between gap-3 pt-2"><h2 className="text-lg font-semibold">Books read this week</h2><Link href={href("books", way)} className="text-muted-foreground text-sm underline-offset-4 hover:underline">See all</Link></div>
+          <SectionHead title="Books read this week" href={href("books", way)} className="pt-2" />
           <BookGrid books={books} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
         </section>
       ) : null}

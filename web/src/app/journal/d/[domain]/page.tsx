@@ -33,7 +33,7 @@ export default async function DomainPage({ params }: { params: Promise<{ domain:
   return (
     <main className={PAGE}>
       <PageHeader back="/journal" backLabel="Journal" title={d.title}>
-        <Button asChild><Link href={`/journal/new?domain=${domain}`}><PlusIcon />Create</Link></Button>
+        <Button asChild size="icon" className="rounded-full" aria-label={`Create in ${d.title}`} title="Create"><Link href={`/journal/new?domain=${domain}`}><PlusIcon /></Link></Button>
       </PageHeader>
       <p className="text-muted-foreground mt-2 text-sm">{d.about}</p>
 

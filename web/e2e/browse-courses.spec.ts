@@ -13,9 +13,8 @@ test("browse courses, start one, and take its first lecture in Reflect", async (
   const card = page.locator("li", { hasText: "Death (PHIL 176)" }).first();
   await expect(card).toBeVisible({ timeout: 60_000 });
   await page.waitForLoadState("networkidle");
-  if (await card.getByRole("button", { name: "Start here" }).count()) await card.getByRole("button", { name: "Start here" }).click();
-  else await card.getByRole("link", { name: "Open" }).click();
-  // Started, it opens the kept course with its lectures listed; opened, the course's page lists them in its sidebar.
+  // Tapping the card opens the course: the kept course with its lectures listed, or the course's page with them in its sidebar.
+  await card.getByRole("link", { name: /Death \(PHIL 176\)/ }).first().click();
   await page.waitForURL(/\/schole\/(items|courses)/, { timeout: 60_000 });
   await page.waitForLoadState("networkidle");
   if (/\/schole\/items\//.test(page.url())) await page.locator("#lectures").getByRole("link", { name: "Course Introduction" }).click({ timeout: 60_000 });
