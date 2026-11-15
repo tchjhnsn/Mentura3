@@ -17,7 +17,7 @@ import { episodeTrack } from "../track";
 import { episodeGuests } from "@reflect/core/guests";
 import { commentsOn } from "@/server/comment-store";
 import { Comments } from "../comments";
-import { EpisodeBooks, GuestChips } from "../mentions";
+import { EpisodeBooks, PeopleRow } from "../mentions";
 
 export const metadata: Metadata = { title: "Episode" };
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
           <h1 className="text-2xl font-semibold tracking-tight">{e.title}</h1>
         </header>
         <People people={e.people.filter((p) => p.role !== "guest")} />
-        <GuestChips guests={episodeGuests(e, show)} show={{ feed: show.feed, title }} />
+        <Suspense fallback={null}><PeopleRow people={episodeGuests(e, show)} show={{ feed: show.feed, title }} /></Suspense>
         <form action={browseAddAction} className="bg-muted/50 flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
           <span className="min-w-0 flex-1">Keep the show to keep your place in each episode and take notes.</span>
           <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} /><LocalDay />

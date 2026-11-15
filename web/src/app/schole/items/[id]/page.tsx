@@ -2,7 +2,7 @@ import { hoursOf, usualLength } from "@reflect/core/audiobooks";
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import { showGuests } from "@reflect/core/guests";
-import { GuestChips, ShowBooks, ShowHosts } from "../../podcasts/mentions";
+import { PeopleRow, ShowBooks, ShowHosts } from "../../podcasts/mentions";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { STANCES } from "@reflect/core/claims";
@@ -125,7 +125,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         {show ? <ShowFacts show={show} /> : null}
         {show && item.medium === "podcast" ? <Suspense fallback={null}><ShowHosts show={show} link={item.url} /></Suspense> : null}
-        {show && item.medium === "podcast" ? <GuestChips guests={showGuests(show, 16)} show={{ feed: show.feed, title: item.title }} title="Recent guests" /> : null}
+        {show && item.medium === "podcast" ? <Suspense fallback={null}><PeopleRow people={showGuests(show, 16)} show={{ feed: show.feed, title: item.title }} title="Recent guests" /></Suspense> : null}
         {show && item.medium === "podcast" ? <Suspense fallback={null}><ShowBooks show={show} userId={user.id} /></Suspense> : null}
         {item.medium === "podcast" ? (
           <ShowActions resume={resumeAt >= 0} track={show?.episodes.length ? episodeTrack({ episodes: show.episodes, at: Math.max(0, resumeAt), show: item.title, image: item.image ?? show.image, item: item.id, feed: show.feed, units }) : null} />

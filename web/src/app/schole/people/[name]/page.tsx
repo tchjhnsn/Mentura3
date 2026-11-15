@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MicIcon } from "lucide-react";
-import { bareName, episodeGuests, showGuests } from "@reflect/core/guests";
+import { bareName, episodeGuests } from "@reflect/core/guests";
 import { episodeDay, episodeKey } from "@reflect/core/podcasts";
 import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
@@ -11,7 +11,6 @@ import { listItems } from "@/server/ways-store";
 import { showFor } from "@/server/podcasts";
 import { appearancesOf, bioFor } from "@/server/guests";
 import { browseCrumbs } from "../../crumbs";
-import { GuestChips } from "../../podcasts/mentions";
 import { followed, personFacts } from "@/server/people";
 import { unshout, type Link as Account } from "@reflect/core/people";
 import { GlobeIcon } from "lucide-react";
@@ -59,11 +58,11 @@ const NAMED: Record<Account["kind"], string> = { x: "X", instagram: "Instagram",
 const H2 = "text-base font-semibold";
 
 /**
- * A person's page (Torian, 2026-11-15 16:20Z, widened 16:47Z, laid out 17:07Z): their name with Follow at the top
- * right, as a show's page has it; who they are in two lines from Wikipedia; their accounts as icons (X first); the
- * podcasts they host and the newest episodes of them; their episodes on the show they were found on; their
- * appearances on other shows, each heard here; and the show's other guests. On a wide screen their podcasts stand
- * beside the episodes.
+ * A person's own profile (Torian, 2026-11-15 16:20Z, widened 16:47Z, laid out 17:07Z, 17:22Z): it belongs to no
+ * show. Their name with Follow at the top right, as a show's page has it; who they are in two lines from Wikipedia;
+ * their accounts as icons (X first); the podcasts they host and the newest episodes of them; and their guest
+ * appearances on any show, each heard here. Reached from a show, it also lists their episodes on that show. On a
+ * wide screen their podcasts stand beside the episodes.
  */
 export default async function PersonPage({ params, searchParams }: { params: Promise<{ name: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
@@ -105,12 +104,11 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
     const kept = keptBy.get(a.feed);
     return { key: `${a.feed}|${k}`, title: a.title, show: a.show, date: a.date, seconds: a.seconds, image: a.image, href: kept ? `/schole/items/${kept}/episodes/${k}` : `/schole/podcasts/episode?u=${encodeURIComponent(a.feed)}&k=${k}&t=${encodeURIComponent(a.show)}` };
   });
-  const alsoOn = show ? showGuests(show, 40).filter((g) => bareName(g.name).toLowerCase() !== lower).slice(0, 16) : [];
   const follow = <PersonFollowButton name={name} qid={qid} following={following} />;
   const count = (n: number) => <span className="text-muted-foreground font-normal"> · {n}</span>;
   return (
     <main className={PAGE}>
-      <ThingHeader back={showHref ?? "/schole/browse?m=podcast"} crumbs={[...browseCrumbs("podcast"), ...(showHref ? [{ label: title, href: showHref }] : [])]} title={name} action={follow} />
+      <ThingHeader back={showHref ?? "/schole/browse?m=podcast"} crumbs={browseCrumbs("podcast")} title={name} action={follow} />
       <div className="mt-6 space-y-8">
         <header className="flex items-start gap-4">
           {bio?.image ? (
@@ -166,10 +164,9 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
           ) : null}
           <div className="min-w-0 space-y-8">
             {latest.length ? <section className="space-y-3"><h2 className={H2}>Latest from {facts.shows.length === 1 ? "their podcast" : "their podcasts"}</h2><LatestCards cards={latest} /></section> : null}
-            {onShow.length ? <section className="space-y-3"><h2 className={H2}>On {title}{count(onShow.length)}</h2><Episodes rows={onShow} today={today} /></section> : null}
-            {others.length ? <section className="space-y-3"><h2 className={H2}>On other shows{count(others.length)}</h2><Episodes rows={others} today={today} /><p className="text-muted-foreground text-xs">Episodes that name {name}, from Apple Podcasts&apos; search; each plays here.</p></section> : null}
+            {onShow.length ? <section className="space-y-3"><h2 className={H2}>On {title}{count(onShow.length)}</h2><p className="text-muted-foreground -mt-2 text-xs">The show you came from.</p><Episodes rows={onShow} today={today} /></section> : null}
+            {others.length ? <section className="space-y-3"><h2 className={H2}>Guest appearances{count(others.length)}</h2><Episodes rows={others} today={today} /><p className="text-muted-foreground text-xs">Episodes of other people&apos;s shows that name {name}, from Apple Podcasts&apos; search; each plays here.</p></section> : null}
             {!onShow.length && !others.length && !latest.length ? <p className="text-muted-foreground text-sm">No episodes found that name {name}.</p> : null}
-            {show ? <GuestChips guests={alsoOn} show={{ feed, title }} title={`Other guests on ${title}`} /> : null}
           </div>
         </div>
       </div>

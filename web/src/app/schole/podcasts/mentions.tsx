@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { bareName, episodeBooks, showBooks, type Guest } from "@reflect/core/guests";
 import type { NoteBlock, Show } from "@reflect/core/podcasts";
-import { booksFound } from "@/server/guests";
+import { bioFor, booksFound } from "@/server/guests";
 import { learnView } from "@/server/learn-store";
 import { BookGrid } from "../book-card";
 import { hostsOf } from "@/server/people";
@@ -9,7 +9,7 @@ import { hostsOf } from "@/server/people";
 /** A show's hosts, from Wikidata or its feed, each opening their page. */
 export async function ShowHosts({ show, link }: { show: Show; link: string | null; }) {
   const hosts = await hostsOf(show, link).catch(() => []);
-  return <GuestChips guests={hosts.map((h) => ({ name: h.name, ...(h.wiki ? { wiki: h.wiki } : {}), ...(h.qid ? { qid: h.qid } : {}) }))} show={{ feed: show.feed, title: show.title }} title={hosts.length === 1 ? "Host" : "Hosts"} />;
+  return <PeopleRow people={hosts.map((h) => ({ name: h.name, ...(h.wiki ? { wiki: h.wiki } : {}), ...(h.qid ? { qid: h.qid } : {}) }))} show={{ feed: show.feed, title: show.title }} title={hosts.length === 1 ? "Host" : "Hosts"} />;
 }
 
 /** A guest's page, carrying the show they were found on. */
@@ -22,21 +22,32 @@ export const guestHref = (g: PersonRef, show?: { feed: string; title: string } |
   return `/schole/people/${encodeURIComponent(bareName(g.name))}${q.size ? `?${q}` : ""}`;
 };
 
-/** Guests as chips, each opening the guest's page. */
-export function GuestChips({ guests, show, title = "Guests" }: { guests: PersonRef[]; show: { feed: string; title: string } | null; title?: string }) {
-  if (!guests.length) return null;
+/**
+ * People as faces (Torian, 2026-11-15 17:22Z): each person's picture (the feed's own, else their Wikipedia photo) over
+ * their name, opening their profile. A row that swipes on a phone and wraps on a wider screen.
+ */
+export async function PeopleRow({ people, show, title = "Guests" }: { people: PersonRef[]; show: { feed: string; title: string } | null; title?: string }) {
+  if (!people.length) return null;
+  const some = people.slice(0, 16);
+  const bios = await Promise.all(some.map((p) => (p.image ? Promise.resolve(null) : bioFor(p.name, p.wiki).catch(() => null))));
   return (
-    <section className="space-y-2">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <ul className="flex flex-wrap gap-2">
-        {guests.map((g) => (
-          <li key={g.name}>
-            <Link href={guestHref(g, show)} className="hover:bg-accent flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-sm">
-              <span aria-hidden className="bg-muted text-muted-foreground flex size-6 items-center justify-center rounded-full text-[11px] font-medium">{bareName(g.name).split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>
-              {g.name}
-            </Link>
-          </li>
-        ))}
+    <section className="space-y-3">
+      <h2 className="text-base font-semibold">{title}</h2>
+      <ul className="-mx-6 flex snap-x scroll-px-6 gap-4 overflow-x-auto px-6 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0">
+        {some.map((p, i) => {
+          const image = p.image ?? bios[i]?.image ?? null;
+          return (
+            <li key={p.name} className="w-20 shrink-0 snap-start">
+              <Link href={guestHref(p, show)} className="group flex flex-col items-center gap-1.5 text-center">
+                {image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={image} alt="" loading="lazy" className="size-16 rounded-full border object-cover transition-opacity group-hover:opacity-80" />
+                ) : <span aria-hidden className="bg-muted text-muted-foreground flex size-16 items-center justify-center rounded-full text-lg font-medium group-hover:opacity-80">{bareName(p.name).split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}
+                <span className="line-clamp-2 text-xs font-medium leading-tight group-hover:underline">{p.name}</span>
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
@@ -50,7 +61,7 @@ export async function EpisodeBooks({ notes, userId }: { notes: readonly NoteBloc
   if (!books.length) return null;
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-medium">Books mentioned</h2>
+      <h2 className="text-base font-semibold">Books mentioned</h2>
       <BookGrid books={books} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
     </section>
   );
@@ -64,7 +75,7 @@ export async function ShowBooks({ show, userId }: { show: Pick<Show, "episodes">
   if (!books.length) return null;
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-medium">Books mentioned most</h2>
+      <h2 className="text-base font-semibold">Books mentioned most</h2>
       <BookGrid books={books} mine={new Map(view.books.filter((b) => b.catalog?.work).map((b) => [b.catalog!.work, b.status]))} row />
     </section>
   );
