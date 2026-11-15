@@ -175,6 +175,9 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
             <Button type="submit" variant="outline" className="h-10">Open</Button>
           </form>
         ) : null}
+        {m === "podcast" ? (
+          <p className="text-sm"><Link href="/schole/podcasts/search" className="underline underline-offset-4">Search inside your episodes</Link></p>
+        ) : null}
         {body}
         <p className="text-muted-foreground pt-6 text-center text-xs">Courses from Open Yale Courses and MIT OpenCourseWare (through MIT Learn), podcasts from Apple&apos;s podcast search, films from Wikidata and the Internet Archive, art from the Art Institute of Chicago, music from MusicBrainz, series from TVmaze, games from Steam.</p>
       </div>

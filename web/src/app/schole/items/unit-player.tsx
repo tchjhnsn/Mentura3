@@ -23,6 +23,8 @@ export type UnitProps = {
   transcript: Passage[]; notes: Note[]; next: string | null;
   /** An episode's audio, played by Scholē's one player instead of a player on the page, so it keeps playing. */
   track?: Track | null;
+  /** Shown in place of the transcript when there is none (an episode's "Make a transcript"). */
+  noTranscript?: React.ReactNode;
 };
 
 /**
@@ -142,7 +144,7 @@ export function UnitPlayer(p: UnitProps) {
             </ol>
           </CollapsibleContent>
         </Collapsible>
-      ) : <p className="text-muted-foreground text-sm">The publisher gives no transcript for this one.</p>;
+      ) : p.noTranscript ?? <p className="text-muted-foreground text-sm">The publisher gives no transcript for this one.</p>;
 
   return (
     <div className="min-w-0 space-y-5">

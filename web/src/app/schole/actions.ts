@@ -1,5 +1,7 @@
 "use server";
 
+import { showFor, transcriptOf } from "@/server/podcasts";
+import { keptTranscript } from "@/server/transcript-store";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { BOOK_STATUS, type BookStatus } from "@reflect/core/learning";
@@ -512,6 +514,15 @@ export async function quizAction(itemId: string, unit: string): Promise<Quiz | {
   const user = await requireUser();
   try {
     const item = await getItem(user.id, itemId);
+    if (item?.medium === "podcast") {
+      // An episode: its published transcript, else the one made for the person.
+      const e = (await showFor(item.url))?.episodes.find((x) => x.key === unit);
+      if (!e) return { error: "That episode is not in the show's feed just now." };
+      const published = await transcriptOf(e);
+      const transcript = published.length ? published : (await keptTranscript(user.id, itemId, unit))?.passages ?? [];
+      if (!transcript.length) return { error: "This episode has no transcript to write questions from." };
+      return await newQuiz(user.id, itemId, unit, await makeQuiz(e.title, transcript));
+    }
     const course = item?.medium === "course" ? await lecturesOf(item.url) : null;
     const ref = course?.lectures.find((l) => String(l.n) === unit);
     if (!course || !ref) return { error: "That lecture is not on your shelves." };
