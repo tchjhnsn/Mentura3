@@ -56,7 +56,7 @@ function One({ quizId, seq, q, checked, passage, onChecked, of }: { quizId: stri
  * memory, then set beside the lecture's own answer and passage. You say whether you knew it. Only you see it, and
  * nothing is graded; people, not a model, examine you.
  */
-export function LectureQuiz({ item, unit, transcript, start, of = "The lecture" }: { item: string; unit: string; transcript: Passage[]; start: Quiz | null; /** What the answers come from: "The lecture", "The episode". */ of?: string }) {
+export function LectureQuiz({ item, unit, transcript, start, of = "The lecture", compact = false }: { item: string; unit: string; transcript: Passage[]; start: Quiz | null; /** What the answers come from: "The lecture", "The episode". */ of?: string; /** A small heading and one line, low on a page (an episode's). */ compact?: boolean }) {
   const [quiz, setQuiz] = useState<Quiz | null>(start);
   const [error, setError] = useState<string | null>(null);
   const [pending, run] = useTransition();
@@ -69,11 +69,18 @@ export function LectureQuiz({ item, unit, transcript, start, of = "The lecture" 
   const done = quiz ? quiz.checked.length === quiz.questions.length : false;
   const missing = quiz ? gaps(quiz.questions, quiz.checked) : [];
   return (
-    <section id="quiz" className="scroll-mt-20 space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold tracking-tight">Quiz yourself</h2>
-        <p className="text-muted-foreground text-sm">Questions on what {of.toLowerCase()} said and why, written by a model from its transcript. Answer from memory, then check. Only you see this, and it is not graded.</p>
-      </div>
+    <section id="quiz" className={compact ? "scroll-mt-20 space-y-2" : "scroll-mt-20 space-y-4"}>
+      {compact ? (
+        <div className="space-y-0.5">
+          <h2 className="text-sm font-medium">Quiz yourself</h2>
+          <p className="text-muted-foreground text-xs">Questions from the transcript, answered from memory. Not graded; only you see it.</p>
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold tracking-tight">Quiz yourself</h2>
+          <p className="text-muted-foreground text-sm">Questions on what {of.toLowerCase()} said and why, written by a model from its transcript. Answer from memory, then check. Only you see this, and it is not graded.</p>
+        </div>
+      )}
       {quiz ? (
         <>
           <ol className="space-y-3">
