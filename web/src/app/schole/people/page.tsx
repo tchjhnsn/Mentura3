@@ -36,7 +36,7 @@ export default async function PeoplePage() {
     <main className={PAGE}>
       <ThingHeader back="/schole/browse?m=podcast" crumbs={browseCrumbs("podcast")} title="People you follow" />
       <div className="mt-6 space-y-8">
-        <h1 id="page-title" className="text-2xl font-semibold tracking-tight">People you follow</h1>
+        <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">People you follow</h1>
         {some.length ? (
           <ul className="flex flex-wrap gap-4">
             {some.map((p, i) => (
@@ -54,22 +54,23 @@ export default async function PeoplePage() {
         ) : <p className="text-muted-foreground text-sm">You don&apos;t follow anyone yet. Open a host or guest from a podcast and tap Follow.</p>}
         {fresh.length ? (
           <section className="space-y-2">
-            <h2 className="text-sm font-medium">New from people you follow</h2>
-            <ul className="divide-y rounded-lg border">
+            <h2 className="text-base font-semibold">New from people you follow</h2>
+            <ul className="-mx-2">
               {fresh.map((a) => {
                 const k = episodeKey(a.guid);
                 const kept = keptBy.get(a.feed);
                 const href = kept ? `/schole/items/${kept}/episodes/${k}` : `/schole/podcasts/episode?u=${encodeURIComponent(a.feed)}&k=${k}&t=${encodeURIComponent(a.show)}`;
                 return (
                   <li key={`${a.feed}|${a.guid}`}>
-                    <Link href={href} className="hover:bg-accent flex items-center gap-3 p-3">
+                    <Link href={href} className="group hover:bg-muted/60 flex items-center gap-3 rounded-lg p-2">
                       {a.image ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={a.image} alt="" loading="lazy" className="size-12 shrink-0 rounded-md border object-cover" />
-                      ) : <span className="bg-muted text-muted-foreground flex size-12 shrink-0 items-center justify-center rounded-md border"><MicIcon className="size-4" /></span>}
+                        <img src={a.image} alt="" loading="lazy" className="size-14 shrink-0 rounded-md border object-cover" />
+                      ) : <span className="bg-muted text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-md border"><MicIcon className="size-4" /></span>}
                       <span className="min-w-0 flex-1">
-                        <span className="line-clamp-2 text-sm font-medium">{a.title}</span>
-                        <span className="text-muted-foreground block truncate text-xs">{[a.who, a.show, episodeDay(a.date, today)].filter(Boolean).join(" · ")}</span>
+                        <span className="text-muted-foreground block truncate text-xs">{[episodeDay(a.date, today), a.show].filter(Boolean).join(" · ")}</span>
+                        <span className="line-clamp-2 text-[15px] leading-snug font-medium group-hover:underline group-hover:underline-offset-2">{a.title}</span>
+                        <span className="text-muted-foreground block truncate text-[13px]">With {a.who}</span>
                       </span>
                     </Link>
                   </li>

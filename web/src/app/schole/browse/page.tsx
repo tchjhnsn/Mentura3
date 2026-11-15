@@ -68,7 +68,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
     body = (
       <>
         {authors.length ? <Authors authors={authors} /> : null}
-        {q ? <p className="text-muted-foreground text-sm"><Link href={`/schole/passages?q=${encodeURIComponent(q)}`} className="underline underline-offset-2">Look for “{q}” inside the books on your shelves</Link></p> : null}
+        {q ? <p className="text-muted-foreground text-sm"><Link href={`/schole/highlights?in=books&q=${encodeURIComponent(q)}`} className="underline underline-offset-2">Look for “{q}” inside the books on your shelves</Link></p> : null}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <h2 className="text-lg font-semibold">{title}</h2>
           <div className="flex flex-wrap gap-2">

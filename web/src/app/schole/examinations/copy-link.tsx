@@ -14,7 +14,7 @@ export function CopyLink({ path }: { path: string }) {
   return (
     <div className="flex max-w-xl gap-2">
       <Input readOnly value={url} aria-label="Invitation link" onFocus={(e) => e.currentTarget.select()} className="h-9" />
-      <Button type="button" size="sm" variant="outline" className="h-9" onClick={() => { navigator.clipboard?.writeText(url).then(() => setCopied(true)).catch(() => {}); }}><CopyIcon />{copied ? "Copied" : "Copy"}</Button>
+      <Button type="button" size="sm" className="h-9" onClick={() => { navigator.clipboard?.writeText(url).then(() => setCopied(true)).catch(() => {}); }}><CopyIcon />{copied ? "Copied" : "Copy"}</Button>
     </div>
   );
 }
