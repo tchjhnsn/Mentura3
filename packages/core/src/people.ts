@@ -75,6 +75,7 @@ const LINK: Record<Link["kind"], (v: string) => Link | null> = {
   tiktok: (v) => (/^[\w.]{1,30}$/.test(v) ? { kind: "tiktok", label: "TikTok", href: `https://www.tiktok.com/@${v}` } : null),
   site: (v) => (/^https?:\/\/\S+$/.test(v) ? { kind: "site", label: (() => { try { return new URL(v).hostname.replace(/^www\./, ""); } catch { return "Website"; } })(), href: v } : null),
 };
+const LINK_PAGES = /^(linktr\.ee|feedlink\.io|beacons\.ai|linkin\.bio|lnk\.bio|bio\.link|campsite\.bio|solo\.to|carrd\.co|allmylinks\.com|hoo\.be|komi\.io)$/i;
 const ORDER: Link["kind"][] = ["x", "instagram", "youtube", "tiktok", "site"];
 
 /** A person query's answer read into their accounts (X first) and the podcasts they host. */
@@ -92,8 +93,8 @@ export function readPerson(text: string | null): { links: Link[]; shows: HostedS
       shows.push({ title, ...(apple ? { apple } : {}), ...(feed ? { feed } : {}) });
     } else if (kind && kind in LINK && r.v?.value) {
       const l = LINK[kind as Link["kind"]](r.v.value.trim());
-      // One account of each kind, and at most two sites.
-      if (l && !links.some((x) => x.href === l.href) && (l.kind === "site" ? links.filter((x) => x.kind === "site").length < 2 : !links.some((x) => x.kind === l.kind))) links.push(l);
+      // One account of each kind, the site included; a page that only lists links (Linktree and the like) is not their site.
+      if (l && !links.some((x) => x.kind === l.kind) && !(l.kind === "site" && LINK_PAGES.test(l.label))) links.push(l);
     }
   }
   links.sort((a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind));
@@ -119,4 +120,15 @@ export function namedShows(text: string | null, name: string): (HostedShow & { i
     const feed = typeof r.feedUrl === "string" ? r.feedUrl : undefined;
     return [{ title, apple: String(r.collectionId), ...(feed ? { feed } : {}), ...(image ? { image } : {}), ...(by ? { by } : {}) }];
   }).slice(0, 4);
+}
+
+const SMALL = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "in", "of", "on", "or", "the", "to", "vs", "with"]);
+/** A title written in capitals ("BEN SHAPIRO TALKS ABOUT HIS NEW MOVIE") put in title case; any other title as it is. */
+export function unshout(title: string): string {
+  const letters = title.replace(/[^\p{L}]/gu, "");
+  if (letters.length < 8 || letters.replace(/\p{Lu}/gu, "").length > letters.length * 0.15) return title;
+  return title.toLowerCase().replace(/[\p{L}'’]+/gu, (w, at: number) => {
+    if (at > 0 && SMALL.has(w) && !/[:–—-]\s*$/.test(title.slice(0, at))) return w;
+    return w.charAt(0).toUpperCase() + w.slice(1);
+  }).replace(/\b(Ai|Ceo|Usa|Us|Uk|Nba|Nfl|Fbi|Cia|Doge|Ep)\b/g, (w) => (w === "Ep" ? w : w.toUpperCase()));
 }

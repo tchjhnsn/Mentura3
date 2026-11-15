@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { db } from "@/db/pool";
 import { SPARQL, feedForms, feedHosts, hostsQuery, namedShows, personQuery, readHosts, readPerson, type Host, type HostedShow, type Link } from "@reflect/core/people";
 import type { Show } from "@reflect/core/podcasts";
+import { fyydSearchUrl, readFyyd } from "@reflect/core/podcastindex";
 
 // Good answers are kept a day in memory; a failure (a timeout, Wikidata's rate limit) is asked again next time.
 const kept = new Map<string, { at: number; text: string }>();
@@ -46,7 +47,7 @@ export async function hostsOf(show: Pick<Show, "author" | "people" | "episodes" 
 export type OwnShow = HostedShow & { image?: string; by?: string };
 
 /** What Wikidata says of a person (their accounts, the shows they host), with each show's artwork from Apple; and shows carrying their name. */
-export async function personFacts(qid: string | null | undefined, name: string): Promise<{ links: Link[]; shows: OwnShow[] }> {
+export async function personFacts(qid: string | null | undefined, name: string): Promise<{ links: Link[]; shows: OwnShow[]; /** Wikidata names them a podcast's presenter, so the page found for them is surely theirs. */ known: boolean }> {
   const q = qid ? personQuery(qid) : null;
   const [facts, named] = await Promise.all([
     q ? sparql(q).then(readPerson) : Promise.resolve({ links: [], shows: [] }),
@@ -54,20 +55,30 @@ export async function personFacts(qid: string | null | undefined, name: string):
   ]);
   const shows: OwnShow[] = [...facts.shows];
   for (const n of named) if (!shows.some((s) => (s.apple && s.apple === n.apple) || s.title.toLowerCase() === n.title.toLowerCase())) shows.push(n);
-  const missing = shows.filter((s) => s.apple && !s.image).map((s) => s.apple!);
+  // Apple's record of each show it knows: its artwork, and its feed, which is newer than Wikidata's when they differ.
+  const missing = shows.filter((s) => s.apple).map((s) => s.apple!);
+  const appleFed = new Set<string>();
   if (missing.length) {
     try {
       const j = JSON.parse((await day(`https://itunes.apple.com/lookup?id=${missing.slice(0, 10).join(",")}&entity=podcast`)) ?? "{}") as { results?: { collectionId?: number; artworkUrl600?: string; artistName?: string; feedUrl?: string }[] };
       for (const r of j.results ?? []) {
         const s = shows.find((x) => x.apple === String(r.collectionId));
         if (!s) continue;
-        if (r.artworkUrl600) s.image = r.artworkUrl600;
+        if (r.artworkUrl600 && !s.image) s.image = r.artworkUrl600;
         if (r.artistName && !s.by) s.by = r.artistName;
-        if (r.feedUrl && !s.feed) s.feed = r.feedUrl;
+        if (r.feedUrl) { s.feed = r.feedUrl; appleFed.add(s.apple!); }
       }
-    } catch { /* artwork is a nicety */ }
+    } catch { /* Apple's record is a nicety */ }
   }
-  return { links: facts.links, shows: shows.slice(0, 6) };
+  // A show whose feed Apple keeps back (The Ben Shapiro Show) is looked up by its exact title in fyyd, an open index;
+  // a feed Wikidata alone gives may be years old.
+  await Promise.all(shows.slice(0, 6).filter((s) => !s.feed || !s.apple || !appleFed.has(s.apple)).map(async (s) => {
+    try {
+      const hit = readFyyd(JSON.parse((await day(fyydSearchUrl(s.title, 5))) ?? "{}")).find((f) => f.title.trim().toLowerCase() === s.title.toLowerCase());
+      if (hit?.url) s.feed = hit.url;
+    } catch { /* keep what we had */ }
+  }));
+  return { links: facts.links, shows: shows.slice(0, 6), known: facts.shows.length > 0 };
 }
 
 export type Followed = { name: string; qid: string | null; since: string };
