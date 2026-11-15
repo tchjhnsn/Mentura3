@@ -36,7 +36,7 @@ export default async function QuotePage({ params }: Props) {
         <figcaption className="text-muted-foreground mt-6 text-sm">
           {q.author ? <span className="text-foreground">{q.author}</span> : null}
           {q.author ? ", " : ""}
-          {q.work ? <Link href={`/learn/works/${q.work}`} className="italic underline-offset-4 hover:underline">{q.title}</Link> : <span className="italic">{q.title}</span>}
+          {q.work ? <Link href={`/schole/works/${q.work}`} className="italic underline-offset-4 hover:underline">{q.title}</Link> : <span className="italic">{q.title}</span>}
           {q.place ? `, ${q.place}` : ""}
         </figcaption>
       </figure>

@@ -4,7 +4,7 @@
 // FREQ=DAILY, WEEKLY, MONTHLY, YEARLY) with an optional end day. Pure: no I/O.
 
 export const CAL_TILES = [
-  { id: "learn", label: "Learn" }, { id: "work", label: "Work" }, { id: "home", label: "Home" }, { id: "body", label: "Body" },
+  { id: "learn", label: "Scholē" }, { id: "work", label: "Work" }, { id: "home", label: "Home" }, { id: "body", label: "Body" },
   { id: "friends", label: "Friends" }, { id: "mate", label: "Mate" }, { id: "kin", label: "Kin" }, { id: "polis", label: "Polis" }, { id: "legacy", label: "Legacy" },
 ] as const;
 export type CalTile = (typeof CAL_TILES)[number]["id"];

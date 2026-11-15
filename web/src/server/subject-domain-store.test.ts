@@ -17,7 +17,7 @@ async function newUser(name: string): Promise<string> {
 describe.skipIf(!live)("subjects placed in domains on Neon", () => {
   afterAll(() => db().end());
 
-  it("places a Learn subject once and its claims show in that domain and its chapter of the book", async () => {
+  it("places a Scholē subject once and its claims show in that domain and its chapter of the book", async () => {
     const user = await newUser("Subject Domain Test");
     const c = await keepClaim(user, { text: "Marriage is a covenant.", stance: "belief", subject: "Marriage" });
     await keepClaim(user, { text: "Divorce is never allowed.", stance: "suspension", subject: "Marriage" });
@@ -40,8 +40,8 @@ describe.skipIf(!live)("subjects placed in domains on Neon", () => {
     await expect(db().query("UPDATE subject_domain SET domain = 'work' WHERE user_id = $1", [user])).rejects.toThrow(/append-only/);
   });
 
-  it("sends a passage from a work to Learn as a claim under a subject, which reaches the subject's domain", async () => {
-    const user = await newUser("Send To Learn Test");
+  it("sends a passage from a work to Scholē as a claim under a subject, which reaches the subject's domain", async () => {
+    const user = await newUser("Send To Scholē Test");
     const w = await createWork(user, "blank");
     await saveWork(user, w, "Thursday", "A family eats together.");
     await keepClaim(user, { text: "Kids need a routine.", stance: "belief", subject: "Raising children" });

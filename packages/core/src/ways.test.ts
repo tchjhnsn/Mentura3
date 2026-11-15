@@ -17,7 +17,7 @@ describe("ways of learning", () => {
     expect(placeOf({ medium: "podcast", way: "teaching" })).toBe("teaching");
   });
 
-  it("keeps games, music and art under rest and leisure until a lesson is said", () => {
+  it("keeps games, music and art under play until a lesson is said", () => {
     expect(placeOf({ medium: "game" })).toBe("leisure");
     expect(placeOf({ medium: "game", lesson: "  " })).toBe("leisure");
     expect(placeOf({ medium: "game", lesson: "How to plan three moves ahead" })).toBe("practice");

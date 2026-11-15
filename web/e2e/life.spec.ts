@@ -37,7 +37,7 @@ test("a duty kept in Polis shows on Polis' calendar and in what is coming up", a
   await page.getByRole("button", { name: "Keep this duty" }).click();
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible({ timeout: 30_000 });
   await page.goto("/life/polis");
-  await expect(page.getByRole("link", { name: new RegExp(`${name} due`) })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("link", { name: new RegExp(`${name} due`, "i") })).toBeVisible({ timeout: 60_000 });
   await page.goto(`/calendar?tile=polis&day=${due}`);
   const item = page.locator("details", { hasText: `${name} due` });
   await item.locator("summary").click({ timeout: 60_000 });
@@ -45,9 +45,9 @@ test("a duty kept in Polis shows on Polis' calendar and in what is coming up", a
 });
 
 test("each tile opens to its own workspace", async ({ page }) => {
-  await page.goto("/learn");
+  await page.goto("/schole");
   await expect(page.getByRole("heading", { name: "Learning now" })).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByRole("heading", { name: "What Learn gives Work" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "What Scholē gives Work" })).toBeVisible();
   await page.getByRole("link", { name: "My shelves" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "My shelves" })).toBeVisible({ timeout: 60_000 });
   await page.goto("/life/home");

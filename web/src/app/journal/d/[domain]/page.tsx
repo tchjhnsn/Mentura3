@@ -57,7 +57,7 @@ export default async function DomainPage({ params }: { params: Promise<{ domain:
 
       <section className="mt-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-muted-foreground text-xs tracking-widest uppercase">From Learn</h2>
+          <h2 className="text-muted-foreground text-xs tracking-widest uppercase">From Scholē</h2>
           <AddSubject domain={domain} subjects={learn.unplaced} />
         </div>
         {learn.subjects.length ? (
@@ -81,7 +81,7 @@ export default async function DomainPage({ params }: { params: Promise<{ domain:
                   ) : null}
                   {s.books.length ? (
                     <ul className="text-muted-foreground space-y-0.5">
-                      {s.books.map((b) => <li key={b.id}><Link href={`/learn/shelves?book=${b.id}`} className="hover:text-foreground">{b.title}</Link>{b.authors.length ? `, ${b.authors[0]}` : ""}</li>)}
+                      {s.books.map((b) => <li key={b.id}><Link href={`/schole/shelves?book=${b.id}`} className="hover:text-foreground">{b.title}</Link>{b.authors.length ? `, ${b.authors[0]}` : ""}</li>)}
                     </ul>
                   ) : null}
                   {!s.claims.length && !s.books.length ? <p className="text-muted-foreground">Nothing kept under it yet.</p> : null}
@@ -89,7 +89,7 @@ export default async function DomainPage({ params }: { params: Promise<{ domain:
               </Card>
             ))}
           </div>
-        ) : <p className="text-muted-foreground mt-3 text-sm">{learn.unplaced.length ? "Add a subject from Learn and its claims and books show here." : "No subjects in Learn yet. Add books or claims in Learn and their subjects can be placed here."}</p>}
+        ) : <p className="text-muted-foreground mt-3 text-sm">{learn.unplaced.length ? "Add a subject from Scholē and its claims and books show here." : "No subjects in Scholē yet. Add books or claims in Scholē and their subjects can be placed here."}</p>}
       </section>
 
       <section className="mt-12 max-w-2xl">

@@ -24,7 +24,7 @@ export function SendToLearn({ workId, passage, subjects, onDone, onCancel }: {
   });
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
-      <Input autoFocus list="learn-subjects" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject in Learn" aria-label="Subject" className="h-8 w-56" />
+      <Input autoFocus list="learn-subjects" value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject in Scholē" aria-label="Subject" className="h-8 w-56" />
       <datalist id="learn-subjects">{subjects.map((s) => <option key={s} value={s} />)}</datalist>
       {STANCES.map((s) => <Button key={s.id} type="button" size="sm" variant="outline" className="h-8" disabled={pending || !subject.trim()} onClick={() => send(s.id)}>{s.text}</Button>)}
       <Button type="button" size="sm" variant="ghost" className="h-8" onClick={onCancel}>Cancel</Button>

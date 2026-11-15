@@ -13,7 +13,7 @@ describe("home tiles", () => {
 
   it("opens every tile of mine, at the part it names, and none of ours yet", () => {
     const links = Object.fromEntries([...MINE, ...OURS].map((t) => [t.id, hrefOf(t)]));
-    expect(links).toMatchObject({ learn: "/learn", food: "/life/home?k=food", income: "/life/work?k=income", standing: "/life/polis?k=standing", marriage: null });
+    expect(links).toMatchObject({ learn: "/schole", food: "/life/home?k=food", income: "/life/work?k=income", standing: "/life/polis?k=standing", marriage: null });
     for (const t of MINE) expect(hrefOf(t), t.id).not.toBeNull();
   });
 

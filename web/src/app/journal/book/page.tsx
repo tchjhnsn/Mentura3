@@ -41,7 +41,7 @@ export default async function BookPage() {
       {unplaced.length ? (
         <section className="mt-16 border-t pt-8">
           <h2 className="text-sm font-medium">Not yet in a chapter</h2>
-          <p className="text-muted-foreground text-sm">Beliefs you keep in Learn. Place each in the domain of your life it belongs to.</p>
+          <p className="text-muted-foreground text-sm">Beliefs you keep in Scholē. Place each in the domain of your life it belongs to.</p>
           <ul className="mt-4 space-y-5">
             {unplaced.map((e) => (
               <li key={e.id} className="space-y-2">

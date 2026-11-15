@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 test("a game moves from rest to practice with a lesson, keeps sessions, and a removal is undone", async ({ page }, info) => {
   test.setTimeout(180_000);
   const title = `Go ${info.project.name} ${Date.now()}`;
-  await page.goto("/learn/shelves?filled=1");
+  await page.goto("/schole/shelves?filled=1");
   await page.getByLabel("Medium").first().selectOption("game");
   await page.locator("form input[name=title]").fill(title);
   await page.locator("form").getByRole("button", { name: "Add", exact: true }).click();

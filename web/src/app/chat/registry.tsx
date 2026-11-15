@@ -82,7 +82,7 @@ export const { registry } = defineRegistry(catalog, {
         </div>
         <div className="font-medium">{props.text}</div>
         <p className="text-muted-foreground mt-1 mb-3 text-sm">{[props.subject ? `Under ${props.subject}` : "", props.holders ? `held by ${props.holders}` : ""].filter(Boolean).join(" · ")}</p>
-        <Tap label="Accept" doneText="Kept in Learn" run={() => keepClaimFromChat(props.claim)} />
+        <Tap label="Accept" doneText="Kept in Scholē" run={() => keepClaimFromChat(props.claim)} />
       </div>
     ),
     BrowseLink: ({ props }) => (

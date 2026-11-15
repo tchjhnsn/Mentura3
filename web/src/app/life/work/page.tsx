@@ -112,7 +112,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             </div>
             <div className="rounded-xl border p-4">
               <dt className="text-muted-foreground text-xs">Time</dt>
-              <dd className="mt-1 text-sm">{s.learningHours ? <>Learning <span className="font-semibold">{s.learningHours} hours a week</span>, from your sessions in <Link href="/learn" className="underline underline-offset-2">Learn</Link> over four weeks.</> : <>No learning sessions kept in <Link href="/learn" className="underline underline-offset-2">Learn</Link> these four weeks.</>}{s.careHours ? <> Caring for <Link href="/life/kin" className="underline underline-offset-2">kin</Link>, <span className="font-semibold">{s.careHours} hours a week</span>.</> : null}</dd>
+              <dd className="mt-1 text-sm">{s.learningHours ? <>Learning <span className="font-semibold">{s.learningHours} hours a week</span>, from your sessions in <Link href="/schole" className="underline underline-offset-2">Scholē</Link> over four weeks.</> : <>No learning sessions kept in <Link href="/schole" className="underline underline-offset-2">Scholē</Link> these four weeks.</>}{s.careHours ? <> Caring for <Link href="/life/kin" className="underline underline-offset-2">kin</Link>, <span className="font-semibold">{s.careHours} hours a week</span>.</> : null}</dd>
               <dd className="mt-2">
                 <form action={hoursAction} className="flex flex-wrap items-center gap-2 text-sm">
                   <label className="flex items-center gap-2"><Input name="hours" type="number" min={0} max={100} defaultValue={s.hours ?? ""} className="h-8 w-16" aria-label="Hours a week you can give to work" />hours a week for work</label>
@@ -137,7 +137,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             <h2 className="text-lg font-semibold tracking-tight">Work for later</h2>
             <p className="text-muted-foreground text-sm">Where what you are learning, or want to learn, leads.</p>
           </div>
-          {s.later.length ? <ul className={GRID}>{s.later.map((x) => <SuggestionCard key={x.job.code} s={x} hours={null} />)}</ul> : <p className="text-muted-foreground text-sm">Add what you are learning or want to learn in <Link href="/learn" className="underline underline-offset-2">Learn</Link>, and the work it leads to shows here.</p>}
+          {s.later.length ? <ul className={GRID}>{s.later.map((x) => <SuggestionCard key={x.job.code} s={x} hours={null} />)}</ul> : <p className="text-muted-foreground text-sm">Add what you are learning or want to learn in <Link href="/schole" className="underline underline-offset-2">Scholē</Link>, and the work it leads to shows here.</p>}
         </section>
 
         <section className="grid gap-3">

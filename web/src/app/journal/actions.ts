@@ -65,7 +65,7 @@ export async function beliefFromWorkAction(workId: string, passage: string, doma
 /** Send a selected passage to Learn as a claim under a subject, with the person's stance. */
 export async function sendToLearnAction(workId: string, passage: string, subject: string, stance: string): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => claimFromWork(user.id, workId, passage, subject, stance), ["/learn", "/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => claimFromWork(user.id, workId, passage, subject, stance), ["/schole", "/journal/book", "/journal/d/[domain]"]);
 }
 
 /** Mark a belief already kept an ideal or a practical belief, with its origins. */

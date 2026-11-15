@@ -17,8 +17,8 @@ export function AddSubject({ domain, subjects }: { domain: Domain; subjects: { i
   if (!subjects.length) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <select aria-label="Subject from Learn" className={select} value={pick} onChange={(e) => setPick(e.target.value)}>
-        <option value="">A subject from Learn</option>
+      <select aria-label="Subject from Scholē" className={select} value={pick} onChange={(e) => setPick(e.target.value)}>
+        <option value="">A subject from Scholē</option>
         {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
       </select>
       <Button size="sm" variant="outline" className="h-8" disabled={!pick || pending} onClick={() => run(async () => {

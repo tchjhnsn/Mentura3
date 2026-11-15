@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 // and Open Yale Courses reachable.
 test("browse courses, start one, and take its first lecture in Reflect", async ({ page }) => {
   test.setTimeout(240_000);
-  await page.goto("/learn/browse");
+  await page.goto("/schole/browse");
   await expect(page.getByRole("heading", { name: "Courses to take here" })).toBeVisible({ timeout: 60_000 });
   await page.getByRole("navigation", { name: "What to browse" }).getByRole("link", { name: "Courses" }).click();
   await page.getByLabel("Search courses from Open Yale and MIT").fill("death");
@@ -16,9 +16,9 @@ test("browse courses, start one, and take its first lecture in Reflect", async (
   if (await card.getByRole("button", { name: "Start here" }).count()) await card.getByRole("button", { name: "Start here" }).click();
   else await card.getByRole("link", { name: "Open" }).click();
   // Started, it opens the kept course with its lectures listed; opened, the course's page lists them in its sidebar.
-  await page.waitForURL(/\/learn\/(items|courses)/, { timeout: 60_000 });
+  await page.waitForURL(/\/schole\/(items|courses)/, { timeout: 60_000 });
   await page.waitForLoadState("networkidle");
-  if (/\/learn\/items\//.test(page.url())) await page.locator("#lectures").getByRole("link", { name: "Course Introduction" }).click({ timeout: 60_000 });
+  if (/\/schole\/items\//.test(page.url())) await page.locator("#lectures").getByRole("link", { name: "Course Introduction" }).click({ timeout: 60_000 });
   else {
     if (!(await page.getByRole("navigation", { name: "This course" }).filter({ visible: true }).count())) await page.locator("details summary").first().click();
     await page.getByRole("navigation", { name: "This course" }).filter({ visible: true }).getByRole("link", { name: "Course Introduction" }).click({ timeout: 60_000 });
@@ -39,7 +39,7 @@ test("browse courses, start one, and take its first lecture in Reflect", async (
 // course's sidebar, and a lecture's page with its transcript closed until opened.
 test("explore a course before keeping it", async ({ page }) => {
   test.setTimeout(240_000);
-  await page.goto(`/learn/courses?u=${encodeURIComponent("https://oyc.yale.edu/history/hist-202")}`);
+  await page.goto(`/schole/courses?u=${encodeURIComponent("https://oyc.yale.edu/history/hist-202")}`);
   await expect(page.getByRole("heading", { level: 1, name: /European Civilization/ })).toBeVisible({ timeout: 60_000 });
   await page.getByRole("tab", { name: "Required texts" }).click();
   await expect(page.getByRole("tabpanel").getByRole("link", { name: "Germinal" }).first()).toBeVisible();
@@ -54,7 +54,7 @@ test("explore a course before keeping it", async ({ page }) => {
 // joining and attesting are covered by the store's test, since open mode has one person.
 test("put yourself under examination on a course", async ({ page }) => {
   test.setTimeout(240_000);
-  await page.goto(`/learn/courses?u=${encodeURIComponent("https://oyc.yale.edu/philosophy/phil-176")}&t=Death`);
+  await page.goto(`/schole/courses?u=${encodeURIComponent("https://oyc.yale.edu/philosophy/phil-176")}&t=Death`);
   await page.getByRole("link", { name: "Put yourself under examination" }).click();
   await expect(page.getByRole("heading", { name: "Put yourself under examination" })).toBeVisible({ timeout: 60_000 });
   await page.waitForLoadState("networkidle");
@@ -62,7 +62,7 @@ test("put yourself under examination on a course", async ({ page }) => {
   await page.getByLabel("What you will answer for").fill("Why death is bad for the one who dies.");
   await page.getByRole("button", { name: "Put yourself under examination" }).click();
   await expect(page.getByRole("heading", { name: "Your examination" })).toBeVisible({ timeout: 60_000 });
-  await expect(page.getByLabel("Invitation link")).toHaveValue(/\/learn\/examine\//);
+  await expect(page.getByLabel("Invitation link")).toHaveValue(/\/schole\/examine\//);
   await expect(page.getByText("Why death is bad for the one who dies.")).toBeVisible();
   const link = await page.getByLabel("Invitation link").inputValue();
   await page.goto(link);
@@ -74,7 +74,7 @@ test("put yourself under examination on a course", async ({ page }) => {
 test("write why you are learning a course", async ({ page }) => {
   test.setTimeout(240_000);
   const u = encodeURIComponent("https://oyc.yale.edu/history/hist-210");
-  await page.goto(`/learn/courses/why?u=${u}&t=Early%20Middle%20Ages`);
+  await page.goto(`/schole/courses/why?u=${u}&t=Early%20Middle%20Ages`);
   await expect(page.getByRole("heading", { name: "Why I am learning this" })).toBeVisible({ timeout: 60_000 });
   await page.waitForLoadState("networkidle");
   const cause = `Rome fell and I never knew what came after (${Date.now()}).`;
@@ -86,6 +86,6 @@ test("write why you are learning a course", async ({ page }) => {
   // The desktop and phone runs write the same course at once, so either one's words may be the latest.
   await expect(page.locator("#why").getByText(/Rome fell and I never knew what came after/)).toBeVisible({ timeout: 60_000 });
   await expect(page.locator("#why").getByText(/From .*spirit/)).toBeVisible();
-  await page.goto(`/learn/examinations/new?u=${u}&t=Early%20Middle%20Ages`);
+  await page.goto(`/schole/examinations/new?u=${u}&t=Early%20Middle%20Ages`);
   await expect(page.getByText(/Rome fell and I never knew what came after/)).toBeVisible({ timeout: 60_000 });
 });
