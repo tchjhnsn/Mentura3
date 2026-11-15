@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { booksInNotes, duration, episodeChapters, episodeKey, episodeTranscript, feedOf, readChapters, readFeed, showOf } from "./podcasts";
+import { booksInNotes, duration, episodeDay, episodeSummary, episodeChapters, episodeKey, episodeTranscript, feedOf, readChapters, readFeed, showOf } from "./podcasts";
 
 const FEED = `<?xml version="1.0"?><rss><channel><title>Philosophize This!</title>
 <item><title><![CDATA[Episode #2 ... Plato]]></title><guid>ep-2</guid><pubDate>Tue, 27 Oct 2026 10:00:00 GMT</pubDate><itunes:duration>36:04</itunes:duration>
@@ -90,5 +90,21 @@ describe("books named in show notes", () => {
   });
   it("finds nothing in notes without book links", () => {
     expect(booksInNotes([{ list: false, parts: [{ text: "Hello", href: "https://example.com" }] }])).toEqual([]);
+  });
+});
+
+describe("an episode in a show's list", () => {
+  it("drops a description that is only chapters, and keeps the words before them", () => {
+    expect(episodeSummary("(0:00) Bestie intros! (1:20) Jensen Huang out as CEO (31:22) Market impact")).toBeNull();
+    expect(episodeSummary("Axon's founder on building the TASER and selling to police departments. 0:00 Intro 2:39 History")).toBe("Axon's founder on building the TASER and selling to police departments.");
+    expect(episodeSummary("A plain description of the episode with no chapters in it at all.")).toBe("A plain description of the episode with no chapters in it at all.");
+    expect(episodeSummary(null)).toBeNull();
+    expect(episodeSummary('Podcasting 2.0 October 30th 2026 Episode 277 - "x402" ShowNotes ---------------- 00 - THE WEEK')).toBe('Podcasting 2.0 October 30th 2026 Episode 277 - "x402" ShowNotes');
+    expect(episodeSummary("The future is here! And so is the risk of spinning out. Adam and Dave go deep <b>ShowNotes</b>")).toBe("The future is here! And so is the risk of spinning out. Adam and Dave go deep ShowNotes");
+  });
+  it("writes the day as a person reads it", () => {
+    expect(episodeDay("2026-11-14", "2026-11-15")).toBe("Nov 14");
+    expect(episodeDay("2025-03-02", "2026-11-15")).toBe("Mar 2, 2025");
+    expect(episodeDay(null, "2026-11-15")).toBeNull();
   });
 });

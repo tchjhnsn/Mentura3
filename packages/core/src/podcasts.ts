@@ -222,3 +222,29 @@ export function booksInNotes(blocks: readonly NoteBlock[]): string[] {
   }
   return out;
 }
+
+const STAMP = /\(?\b(?:\d{1,2}:)?\d{1,2}:\d{2}\b\)?/g;
+
+/**
+ * A line or two for a show's list: the episode's description before any run of timestamps, which are its chapters
+ * (shown on the episode's own page). Nothing when the description is only chapters.
+ */
+export function episodeSummary(about: string | null): string | null {
+  if (!about) return null;
+  // Markup, and the rules of dashes or equals signs that start a show's notes, are not a summary.
+  const text = about.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().split(/\s*[-=_*~]{4,}/)[0]!.trim();
+  const stamps = text.match(STAMP) ?? [];
+  const lead = stamps.length >= 2 ? text.slice(0, text.search(STAMP)).trim() : text;
+  const clean = lead.replace(/[\s:,-]+$/, "");
+  if (clean.length < 30) return null;
+  return clean.length > 240 ? `${clean.slice(0, 237).replace(/\s+\S*$/, "")}…` : clean;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** An episode's day as a person reads it: "Nov 14", with the year when it is not this year's. */
+export function episodeDay(iso: string | null, today: string): string | null {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+  const [y, m, d] = iso.split("-").map(Number) as [number, number, number];
+  return `${MONTHS[m - 1]} ${d}${String(y) === today.slice(0, 4) ? "" : `, ${y}`}`;
+}

@@ -28,7 +28,8 @@ import { publishedBy } from "@/server/published-store";
 import { ThingHeader } from "@/components/headers";
 import { EpisodeList } from "../../podcasts/episode-list";
 import { ShowFacts } from "../../podcasts/parts";
-import { episodeRows } from "../../podcasts/track";
+import { episodeRows, episodeTrack } from "../../podcasts/track";
+import { ShowActions } from "../../podcasts/show-actions";
 import { shelfCrumbs } from "../../crumbs";
 import {
   addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, keepItemClaimAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
@@ -95,6 +96,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const recent = item.sessions.filter((s) => s.day >= since);
   const minutes = item.sessions.reduce((n, s) => n + (s.minutes ?? 0), 0);
   const hidden = <input type="hidden" name="item" value={item.id} />;
+  // A show plays from the newest episode under way, else from its latest.
+  const resumeAt = show ? show.episodes.findIndex((e) => { const u = begun.get(e.key); return Boolean(u?.place && !u.doneOn); }) : -1;
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} action={nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: Lecture {nextLecture.n}</Link></Button> : undefined} />
@@ -102,7 +105,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         <header className="flex gap-4">
           {item.image ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={item.image} alt="" className="h-28 w-28 shrink-0 rounded-lg object-cover" />
+            <img src={item.image} alt="" className="size-20 shrink-0 rounded-lg object-cover sm:size-28" />
           ) : null}
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2"><Badge variant="secondary">{m.label}</Badge>{item.tookPart ? <Badge variant="outline">Took part</Badge> : null}</div>
@@ -114,6 +117,10 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           </div>
         </header>
 
+        {show ? <ShowFacts show={show} /> : null}
+        {item.medium === "podcast" ? (
+          <ShowActions item={item.id} following={item.status === "doing"} resume={resumeAt >= 0} track={show?.episodes.length ? episodeTrack({ episodes: show.episodes, at: Math.max(0, resumeAt), show: item.title, image: item.image ?? show.image, item: item.id, feed: show.feed, units }) : null} />
+        ) : <>
         <form action={changeItemAction} className="flex flex-wrap gap-2">
           {hidden}<LocalDay />
           {(["want", "doing", "done"] as const).map((s) => (
@@ -127,6 +134,7 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
           <label className="space-y-1">Finished<Input type="date" name="finished" defaultValue={item.finishedOn ?? ""} className="h-9 w-40" /></label>
           <Button size="sm" variant="outline">Save dates</Button>
         </form>
+        </>}
 
         {item.medium === "art" && item.image ? section("Look at it here", <Artwork src={item.image} title={item.title} />, "artwork") : null}
 
@@ -159,7 +167,6 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         {show?.episodes.length ? section("Episodes", (
           <>
-            <ShowFacts show={show} />
             <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
             <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all.</p>
           </>

@@ -9,7 +9,7 @@ import { EpisodeButtons } from "./episode-buttons";
 
 /** One episode as a show's list gives it, with where the person is with it. */
 export type EpisodeRow = {
-  key: string; title: string; date: string | null; seconds: number | null; about: string | null; audio: string; image: string | null;
+  key: string; title: string; date: string | null; /** The day as a person reads it ("Nov 14"). */ day: string | null; seconds: number | null; about: string | null; audio: string; image: string | null;
   season: number | null; number: number | null; type: "full" | "trailer" | "bonus"; kind: "audio" | "video";
   href: string; status: "heard" | "begun" | "new"; place: number | null;
 };
@@ -43,22 +43,25 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
         {seasons.length > 1 ? seasons.map((s) => <button key={s} type="button" className={chip(season === s)} aria-pressed={season === s} onClick={() => { setSeason(s); setN(STEP); }}>Season {s}</button>) : null}
       </div>
       {list.length ? (
-        <ol className="divide-y rounded-lg border px-4 text-sm">
+        <ol className="divide-y border-y text-sm">
           {list.slice(0, n).map((r, i) => (
-            <li key={r.key} className="space-y-1 py-3">
-              <div className="flex items-center gap-3">
-                <div className="min-w-0 flex-1">
-                  <Link href={r.href} className="font-medium underline-offset-4 hover:underline">{r.title}</Link>
-                  <p className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-1.5 text-xs tabular-nums">
-                    {[r.season && r.number ? `S${r.season} E${r.number}` : r.number ? `E${r.number}` : null, r.date, r.seconds ? clock(r.seconds) : null].filter(Boolean).join(" · ")}
-                    {r.type !== "full" ? <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{r.type === "trailer" ? "Trailer" : "Bonus"}</Badge> : null}
-                    {r.kind === "video" ? <Badge variant="outline" className="h-4 px-1.5 text-[10px]">Video</Badge> : null}
-                    {r.status === "heard" ? <span className="text-foreground">Heard</span> : r.status === "begun" ? <span className="text-foreground">Under way{r.place ? `, at ${clock(r.place)}` : ""}</span> : null}
-                  </p>
+            <li key={r.key} className="py-3">
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <p className="text-xs font-semibold tabular-nums">{[r.day, r.seconds ? clock(r.seconds) : null].filter(Boolean).join(" · ") || "Undated"}</p>
+                  <Link href={r.href} className="block font-medium leading-snug underline-offset-4 hover:underline">{r.title}</Link>
+                  {r.season || r.number || r.type !== "full" || r.kind === "video" || r.status !== "new" ? (
+                    <p className="text-muted-foreground flex flex-wrap items-center gap-1.5 text-xs tabular-nums">
+                      {r.season && r.number ? `S${r.season} E${r.number}` : r.number ? `E${r.number}` : null}
+                      {r.type !== "full" ? <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">{r.type === "trailer" ? "Trailer" : "Bonus"}</Badge> : null}
+                      {r.kind === "video" ? <Badge variant="outline" className="h-4 px-1.5 text-[10px]">Video</Badge> : null}
+                      {r.status === "heard" ? <span className="text-foreground">Heard</span> : r.status === "begun" ? <span className="text-foreground">Under way{r.place ? `, at ${clock(r.place)}` : ""}</span> : null}
+                    </p>
+                  ) : null}
+                  {r.about ? <p className="text-muted-foreground line-clamp-2">{r.about}</p> : null}
                 </div>
                 {r.kind === "audio" ? <EpisodeButtons track={trackOf(i)} /> : null}
               </div>
-              {r.about ? <p className="text-muted-foreground line-clamp-2">{r.about}</p> : null}
             </li>
           ))}
         </ol>
