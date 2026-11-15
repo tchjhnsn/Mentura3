@@ -482,10 +482,17 @@ export async function keepItemClaimAction(form: FormData): Promise<void> {
   const id = field(form, "item");
   const item = await getItem(user.id, id);
   if (!item) throw new Error("no such item");
-  const holders = field(form, "holders").split("\n").map((l) => l.trim()).filter(Boolean).map((name) => ({ name: name.slice(0, 200), citation: item.title.slice(0, 300) }));
+  // Kept from a passage of a transcript, the citation names the episode or lecture and the moment.
+  const citation = (field(form, "cite") || item.title).slice(0, 300);
+  const names = field(form, "holders").split("\n").map((l) => l.trim()).filter(Boolean);
+  // From a transcript with no one named, the show or lecture itself is the holder, so the citation is kept.
+  if (!names.length && field(form, "cite")) names.push(item.by || item.title);
+  const holders = names.map((name) => ({ name: name.slice(0, 200), citation }));
   const claim = await keepClaim(user.id, { text: field(form, "claim"), holders, ...(field(form, "subject") ? { subject: field(form, "subject") } : {}), stance: field(form, "stance") });
   await linkItemClaim(user.id, id, claim);
   revalidatePath(itemPath(id));
+  const back = field(form, "back");
+  if (back.startsWith(`${itemPath(id)}/`)) revalidatePath(back);
 }
 
 export async function setItemStanceAction(form: FormData): Promise<void> {

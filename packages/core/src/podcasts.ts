@@ -195,3 +195,30 @@ export async function episodeChapters(e: Episode, f: Fetch): Promise<Chapter[]> 
   if (e.chapters.length) return e.chapters;
   return e.chaptersUrl ? readChapters(await f(e.chaptersUrl)) : [];
 }
+
+const BOOK_HOSTS = /(^|\.)(amazon\.[a-z.]+|amzn\.to|bookshop\.org|goodreads\.com|openlibrary\.org|books\.google\.[a-z.]+|barnesandnoble\.com|penguinrandomhouse\.com|harpercollins\.com|simonandschuster\.com)$/i;
+const ISBN13 = /(97[89]\d{10})/;
+const ISBN10 = /\/(?:dp|gp\/product|ISBN)\/(\d{9}[\dX])(?:[/?]|$)/i;
+
+/**
+ * The books a show's notes link to, as Open Library searches: an ISBN when the link carries one, else the link's
+ * words. Only links to booksellers and book catalogs count, so a guest's site or a sponsor is never taken for a
+ * book. At most eight, in the order the notes give them.
+ */
+export function booksInNotes(blocks: readonly NoteBlock[]): string[] {
+  const out: string[] = [];
+  for (const b of blocks) {
+    for (const p of b.parts) {
+      if (!p.href) continue;
+      let u: URL;
+      try { u = new URL(p.href); } catch { continue; }
+      if (!BOOK_HOSTS.test(u.hostname)) continue;
+      const isbn = (u.pathname + u.search).match(ISBN13)?.[1] ?? u.pathname.match(ISBN10)?.[1];
+      const words = p.text.replace(/\s+/g, " ").trim();
+      const q = isbn ? `isbn:${isbn}` : words.length >= 3 && !/^(https?:|www\.)/i.test(words) && !/^(here|link|buy|amazon|order|get it|this book)$/i.test(words) ? words.slice(0, 120) : null;
+      if (q && !out.includes(q)) out.push(q);
+      if (out.length >= 8) return out;
+    }
+  }
+  return out;
+}
