@@ -35,6 +35,8 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
     const after = item ? list[i + 1] : undefined;
     return { ...one(r), next: after && after.kind === "audio" ? one(after) : null };
   };
+  // The newest episode not yet played gets a faint highlight, the one to hear next (priority guides, show page).
+  const fresh = list.find((r) => r.status !== "played")?.key;
   const chip = (on: boolean) => `inline-flex h-7 items-center rounded-full border px-3 text-xs whitespace-nowrap ${on ? "bg-foreground text-background border-foreground" : "hover:bg-muted"}`;
   return (
     <section className="space-y-3">
@@ -47,7 +49,7 @@ export function EpisodeList({ rows, show, image, item, feed }: { rows: EpisodeRo
       {list.length ? (
         <ol className="divide-y border-y text-sm">
           {list.slice(0, n).map((r, i) => (
-            <li key={r.key} className="flex gap-3 py-4 sm:gap-4">
+            <li key={r.key} className={`flex gap-3 py-4 sm:gap-4 ${r.key === fresh && i === 0 ? "bg-muted/50 -mx-3 rounded-md px-3" : ""}`}>
               {r.image ?? image ? (
                 <Link href={r.href} tabIndex={-1} aria-hidden className="shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
