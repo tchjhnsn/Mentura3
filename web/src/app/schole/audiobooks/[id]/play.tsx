@@ -9,11 +9,10 @@ import { clock, listenPlace, useListen } from "../../player";
 const left = (book: Audiobook, chapter: number, at: number) => book.chapters.slice(chapter).reduce((s, c) => s + c.seconds, 0) - at;
 const short = (s: number) => { const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h}h${m ? ` ${m}m` : ""}` : `${Math.max(1, m)}m`; };
 
-/**
- * An audiobook's play pill and its chapters (Torian, 2026-11-15 08:26Z, the way an episode plays): Play with its
- * length, or Continue with the time left once started in this browser; each chapter plays from its start.
- */
-export function AudiobookPlay({ book, title, cover, page, by, work = "" }: { book: Audiobook; title: string; cover: string | null; page?: string; by?: string; /** The book page it belongs to, when there is one. */ work?: string }) {
+type Props = { book: Audiobook; title: string; cover: string | null; page?: string; by?: string; /** The book page it belongs to, when there is one. */ work?: string };
+
+/** Where the person is in a book: in the player now, else where this browser last stopped. */
+function useBook({ book, title, cover, page, work = "" }: Props) {
   const listen = useListen();
   const [place, setPlace] = useState<{ chapter: number; at: number } | null>(null);
   useEffect(() => setPlace(listenPlace(book.id)), [book.id]);
@@ -21,35 +20,67 @@ export function AudiobookPlay({ book, title, cover, page, by, work = "" }: { boo
   const playing = { ...book, work, bookTitle: title, cover, ...(page ? { page } : {}) };
   const now = here ? { chapter: listen!.chapter, at: listen!.time } : place;
   const started = Boolean(now && (now.chapter > 0 || now.at > 30));
-  const readers = [...new Set(book.chapters.map((c) => c.reader).filter(Boolean))];
-  const readBy = by ?? (readers.length === 1 ? readers[0]! : readers.length > 1 ? `${readers.length} readers` : "");
-  const total = book.seconds || book.chapters.reduce((s, c) => s + c.seconds, 0);
+  return { listen, here, playing, now, started };
+}
+
+/**
+ * An audiobook's one filled button (Scholē page priority guides, 2026-11-15): Play with its length, or Continue naming
+ * the chapter and the time left once started in this browser. Large, and full width on a phone.
+ */
+export function AudiobookButton(p: Props) {
+  const { listen, here, playing, now, started } = useBook(p);
+  const total = p.book.seconds || p.book.chapters.reduce((s, c) => s + c.seconds, 0);
+  return (
+    <Button size="lg" className="h-11 w-full rounded-full px-6 text-base sm:w-auto" onClick={() => (here ? listen!.toggle() : listen?.play(playing))}>
+      {here && listen!.playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}
+      {here && listen!.playing ? "Pause" : started && now ? `Continue chapter ${now.chapter + 1} · ${short(Math.max(60, left(p.book, now.chapter, now.at)))} left` : `Play · ${short(total)}`}
+    </Button>
+  );
+}
+
+/** An audiobook's chapters, numbered with their lengths; the one under way is marked with how far it has got. */
+export function AudiobookChapters(p: Props & { scroll?: boolean }) {
+  const { listen, here, playing, now, started } = useBook(p);
+  const book = p.book;
+  return (
+    <section className="space-y-2">
+      <h2 className="text-base font-semibold">Chapters <span className="text-muted-foreground font-normal">{book.chapters.length}</span></h2>
+      <ol className={`divide-y rounded-lg border text-sm ${p.scroll ? "max-h-[28rem] overflow-y-auto" : ""}`}>
+        {book.chapters.map((x, i) => {
+          const on = here && listen!.chapter === i;
+          const current = started && now?.chapter === i;
+          const done = Boolean(started && now && i < now.chapter);
+          const share = current && x.seconds ? Math.min(1, (now!.at) / x.seconds) : 0;
+          return (
+            <li key={x.url} className="relative">
+              <button type="button" onClick={() => listen?.play(playing, i)} aria-current={current ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2.5 text-left ${current ? "bg-muted font-semibold" : ""} ${done ? "text-muted-foreground" : ""}`}>
+                <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">{on ? <PlayIcon className="inline size-3" /> : i + 1}</span>
+                <span className="min-w-0 flex-1">{x.title}</span>
+                <span className="text-muted-foreground shrink-0 text-xs font-normal tabular-nums">{x.seconds ? clock(x.seconds) : ""}{x.reader && book.chapters.some((c) => c.reader !== x.reader) ? ` · ${x.reader}` : ""}</span>
+              </button>
+              {current ? <span aria-hidden className="bg-foreground absolute bottom-0 left-0 h-0.5" style={{ width: `${Math.round(share * 100)}%` }} /> : null}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+/**
+ * An audiobook's play pill and its chapters (Torian, 2026-11-15 08:26Z, the way an episode plays), for a page that
+ * shows both together, such as a book's.
+ */
+export function AudiobookPlay(p: Props) {
+  const readers = [...new Set(p.book.chapters.map((c) => c.reader).filter(Boolean))];
+  const readBy = p.by ?? (readers.length === 1 ? readers[0]! : readers.length > 1 ? `${readers.length} readers` : "");
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-2">
-        <Button className="rounded-full" onClick={() => (here ? listen!.toggle() : listen?.play(playing))}>
-          {here && listen!.playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}
-          {here && listen!.playing ? "Pause" : started && now ? `Continue · ${short(Math.max(60, left(book, now.chapter, now.at)))} left` : `Play · ${short(total)}`}
-        </Button>
+        <AudiobookButton {...p} />
         {readBy ? <span className="text-muted-foreground text-sm">Read by {readBy}</span> : null}
       </div>
-      <section className="space-y-2">
-        <h2 className="text-sm font-medium">Chapters</h2>
-        <ol className="max-h-[28rem] divide-y overflow-y-auto rounded-lg border text-sm">
-          {book.chapters.map((x, i) => {
-            const on = here && listen!.chapter === i;
-            return (
-              <li key={x.url}>
-                <button type="button" onClick={() => listen?.play(playing, i)} aria-current={on ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${on ? "bg-muted font-medium" : ""}`}>
-                  <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">{on ? <PlayIcon className="inline size-3" /> : i + 1}</span>
-                  <span className="min-w-0 flex-1">{x.title}</span>
-                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{x.seconds ? clock(x.seconds) : ""}{x.reader && book.chapters.some((c) => c.reader !== x.reader) ? ` · ${x.reader}` : ""}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </section>
+      <AudiobookChapters {...p} scroll />
     </div>
   );
 }
