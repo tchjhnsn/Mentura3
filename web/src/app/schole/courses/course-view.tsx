@@ -71,9 +71,9 @@ export async function CourseView({ userId, u, t, by: byAsked, footer }: { userId
       : <Button asChild size="sm"><Link href={whyHref(true)}>Start the course</Link></Button>;
   const hidden = <><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /></>;
   // The one filled button (priority guides, course page): Start, or Continue naming the next lecture.
-  const big = "h-11 w-full px-6 text-base sm:w-auto";
+  const big = "h-11 w-full max-w-full px-6 text-base sm:w-auto";
   const start = kept
-    ? (next ? <Button asChild size="lg" className={big}><Link href={href(next.n)}>{finished.size ? "Continue" : "Start"}: Lecture {next.n}, {next.title}</Link></Button> : <p className="text-sm">You have finished every lecture.</p>)
+    ? (next ? <Button asChild size="lg" className={big}><Link href={href(next.n)}><span className="truncate">{finished.size ? "Continue" : "Start"}: Lecture {next.n}, {next.title}</span></Link></Button> : <p className="text-sm">You have finished every lecture.</p>)
     : reason
       ? <form action={browseAddAction}>{hidden}<Button size="lg" className={big} name="go" value="start">Start the course</Button></form>
       : <Button asChild size="lg" className={big}><Link href={whyHref(true)}>Start the course</Link></Button>;

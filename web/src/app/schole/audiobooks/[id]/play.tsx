@@ -42,11 +42,17 @@ export function AudiobookButton(p: Props) {
 export function AudiobookChapters(p: Props & { scroll?: boolean }) {
   const { listen, here, playing, now, started } = useBook(p);
   const book = p.book;
+  // A long book shows ten chapters around where you are, and the rest on asking: on a phone, 128 rows bury the page.
+  const [all, setAll] = useState(false);
+  const at = started && now ? now.chapter : 0;
+  const from = Math.max(0, Math.min(at - 2, book.chapters.length - 10));
+  const fold = !p.scroll && !all && book.chapters.length > 12;
+  const shown = fold ? book.chapters.map((x, i) => [x, i] as const).slice(from, from + 10) : book.chapters.map((x, i) => [x, i] as const);
   return (
     <section className="space-y-2">
       <h2 className="text-base font-semibold">Chapters <span className="text-muted-foreground font-normal">{book.chapters.length}</span></h2>
       <ol className={`divide-y rounded-lg border text-sm ${p.scroll ? "max-h-[28rem] overflow-y-auto" : ""}`}>
-        {book.chapters.map((x, i) => {
+        {shown.map(([x, i]) => {
           const on = here && listen!.chapter === i;
           const current = started && now?.chapter === i;
           const done = Boolean(started && now && i < now.chapter);
@@ -55,14 +61,15 @@ export function AudiobookChapters(p: Props & { scroll?: boolean }) {
             <li key={x.url} className="relative">
               <button type="button" onClick={() => listen?.play(playing, i)} aria-current={current ? "true" : undefined} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2.5 text-left ${current ? "bg-muted font-semibold" : ""} ${done ? "text-muted-foreground" : ""}`}>
                 <span className="text-muted-foreground w-6 shrink-0 text-right tabular-nums">{on ? <PlayIcon className="inline size-3" /> : i + 1}</span>
-                <span className="min-w-0 flex-1">{x.title}</span>
-                <span className="text-muted-foreground shrink-0 text-xs font-normal tabular-nums">{x.seconds ? clock(x.seconds) : ""}{x.reader && book.chapters.some((c) => c.reader !== x.reader) ? ` · ${x.reader}` : ""}</span>
+                <span className="min-w-0 flex-1">{x.title}{x.reader && book.chapters.some((c) => c.reader !== x.reader) ? <span className="text-muted-foreground block truncate text-xs font-normal">{x.reader}</span> : null}</span>
+                <span className="text-muted-foreground shrink-0 text-xs font-normal tabular-nums">{x.seconds ? clock(x.seconds) : ""}</span>
               </button>
               {current ? <span aria-hidden className="bg-foreground absolute bottom-0 left-0 h-0.5" style={{ width: `${Math.round(share * 100)}%` }} /> : null}
             </li>
           );
         })}
       </ol>
+      {fold ? <Button type="button" variant="ghost" size="sm" className="-ml-3" onClick={() => setAll(true)}>All {book.chapters.length} chapters</Button> : null}
     </section>
   );
 }

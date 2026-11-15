@@ -1,3 +1,4 @@
+import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { SectionHead } from "@/components/section-head";
 import type { ReactNode } from "react";
@@ -182,7 +183,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
             {way ? <input type="hidden" name="way" value={way} /> : null}
             <label htmlFor="q" className="sr-only">{SEARCH_HINT[m]}</label>
             <Input id="q" name="q" defaultValue={q} placeholder={SEARCH_HINT[m]} className="h-10" />
-            <Button type="submit" className="h-10">Search</Button>
+            <Button type="submit" variant="outline" size="icon" className="size-10 shrink-0" aria-label="Search" title="Search"><SearchIcon /></Button>
           </form>
         </BrowseNav>
         {m === "podcast" ? (

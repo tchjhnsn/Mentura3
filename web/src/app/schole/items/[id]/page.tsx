@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
 import { CourseView } from "../../courses/course-view";
 import Link from "next/link";
+import { ChevronRightIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { STANCES } from "@reflect/core/claims";
 import { embedOf } from "@reflect/core/media";
@@ -319,8 +320,11 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         <div className="space-y-8 border-t pt-8">
         {yoursHead}
-        {taught}
         {status}
+        {taught}
+        <details className="group space-y-8">
+          <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm font-medium [&::-webkit-details-marker]:hidden"><ChevronRightIcon className="size-4 transition group-open:rotate-90" />Way of learning, subjects{embed || item.transcript ? ", transcript" : ""} and editing</summary>
+          <div className="mt-6 space-y-8">
         {shelfFacts}
 
         {embed || item.transcript ? section("Transcript", (
@@ -333,6 +337,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
         )) : null}
 
         {editing}
+          </div>
+        </details>
         </div>
       </div>
     </main>

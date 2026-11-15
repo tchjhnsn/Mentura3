@@ -1,3 +1,4 @@
+import { SearchIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SectionHead } from "@/components/section-head";
@@ -104,7 +105,7 @@ export default async function BrowsePage({ searchParams }: { searchParams: Promi
             <input type="hidden" name="m" value="books" />
             <label htmlFor="q" className="sr-only">Search books by title, author or ISBN</label>
             <Input id="q" name="q" defaultValue={q} placeholder="Search books by title, author or ISBN" className="h-10" />
-            <Button type="submit" className="h-10">Search</Button>
+            <Button type="submit" variant="outline" size="icon" className="size-10 shrink-0" aria-label="Search" title="Search"><SearchIcon /></Button>
           </form>
           <Menu
             label="Browse"
