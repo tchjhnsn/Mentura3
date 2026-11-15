@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { clock } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
@@ -11,8 +10,9 @@ import { ThingHeader } from "@/components/headers";
 import { browseCrumbs } from "../crumbs";
 import { browseAddAction } from "../actions";
 import { LocalDay } from "../items/local-day";
-import { EpisodeButtons } from "./episode-buttons";
-import { episodeTrack } from "./track";
+import { EpisodeList } from "./episode-list";
+import { ShowFacts } from "./parts";
+import { episodeRows } from "./track";
 
 export const metadata: Metadata = { title: "Podcast" };
 export const dynamic = "force-dynamic";
@@ -24,14 +24,13 @@ export default async function ShowPage({ searchParams }: { searchParams: Promise
   const user = await requireUser();
   const sp = await searchParams;
   const url = one(sp.u);
-  if (!/^https:\/\/podcasts\.apple\.com\/.+\/id\d+/.test(url)) notFound();
+  if (!/^https?:\/\/\S+$/.test(url)) notFound();
   const [show, items] = await Promise.all([showFor(url), listItems(user.id)]);
   const kept = items.find((i) => i.medium === "podcast" && i.url === url);
   const units = kept ? await listUnits(user.id, kept.id) : [];
-  const heard = new Set(units.filter((u) => u.doneOn).map((u) => u.unit));
   const title = one(sp.t) || show?.title || "Podcast";
   const by = one(sp.by);
-  const image = one(sp.i);
+  const image = one(sp.i) || show?.image || "";
   const episodeHref = (key: string) => (kept ? `/schole/items/${kept.id}/episodes/${key}` : `/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${key}&t=${encodeURIComponent(title)}`);
   return (
     <main className={PAGE}>
@@ -56,20 +55,8 @@ export default async function ShowPage({ searchParams }: { searchParams: Promise
             )}
           </div>
         </header>
-        {show?.episodes.length ? (
-          <ol className="divide-y rounded-lg border px-4 text-sm">
-            {show.episodes.slice(0, 100).map((e, i) => (
-              <li key={e.key} className="space-y-1 py-3">
-                <div className="flex items-center gap-3">
-                  <Link href={episodeHref(e.key)} className="min-w-0 flex-1 font-medium underline-offset-4 hover:underline">{e.title}</Link>
-                  <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{heard.has(e.key) ? "Heard" : [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ")}</span>
-                  <EpisodeButtons track={episodeTrack({ episodes: show.episodes, at: i, show: title, image: /^https:\/\//.test(image) ? image : null, item: kept?.id ?? null, feed: show.feed, units, previewHref: (k) => episodeHref(k) })} />
-                </div>
-                {e.about ? <p className="text-muted-foreground line-clamp-2">{e.about}</p> : null}
-              </li>
-            ))}
-          </ol>
-        ) : null}
+        {show ? <ShowFacts show={show} /> : null}
+        {show?.episodes.length ? <EpisodeList rows={episodeRows(show.episodes, episodeHref, units)} show={title} image={/^https:\/\//.test(image) ? image : show.image} item={kept?.id ?? null} feed={show.feed} /> : null}
         <p className="text-muted-foreground text-xs">Played from the show&apos;s own feed. Reflect keeps no copy.</p>
       </div>
     </main>

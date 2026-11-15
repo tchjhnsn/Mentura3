@@ -168,6 +168,13 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
             <Button type="submit" className="h-10">Search</Button>
           </form>
         </BrowseNav>
+        {m === "podcast" ? (
+          <form action="/schole/podcasts" className="flex gap-2">
+            <label htmlFor="feed" className="sr-only">A show&apos;s Apple Podcasts link or its feed</label>
+            <Input id="feed" name="u" type="url" required placeholder="Paste a show's Apple Podcasts link or its feed, private ones too" className="h-10" />
+            <Button type="submit" variant="outline" className="h-10">Open</Button>
+          </form>
+        ) : null}
         {body}
         <p className="text-muted-foreground pt-6 text-center text-xs">Courses from Open Yale Courses and MIT OpenCourseWare (through MIT Learn), podcasts from Apple&apos;s podcast search, films from Wikidata and the Internet Archive, art from the Art Institute of Chicago, music from MusicBrainz, series from TVmaze, games from Steam.</p>
       </div>

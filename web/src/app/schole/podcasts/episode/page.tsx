@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { clock } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
 import { listItems } from "@/server/ways-store";
-import { showFor, transcriptOf } from "@/server/podcasts";
+import { chaptersOf, showFor, transcriptOf } from "@/server/podcasts";
+import { Chapters } from "../chapters";
+import { EpisodeMarks, Notes, People } from "../parts";
 import { TaskHeader } from "@/components/headers";
 import { browseAddAction } from "../../actions";
 import { LocalDay } from "../../items/local-day";
@@ -24,29 +25,33 @@ export default async function PreviewEpisodePage({ searchParams }: { searchParam
   const sp = await searchParams;
   const url = one(sp.u);
   const key = one(sp.k);
-  if (!/^https:\/\/podcasts\.apple\.com\/.+\/id\d+/.test(url)) notFound();
+  if (!/^https?:\/\/\S+$/.test(url)) notFound();
   const kept = (await listItems(user.id)).find((i) => i.medium === "podcast" && i.url === url);
   if (kept) redirect(`/schole/items/${kept.id}/episodes/${key}`);
   const show = await showFor(url);
   const e = show?.episodes.find((x) => x.key === key);
   if (!show || !e) notFound();
   const title = one(sp.t) || show.title;
-  const transcript = await transcriptOf(e);
+  const [transcript, chapters] = await Promise.all([transcriptOf(e), chaptersOf(e)]);
+  const track = { ...episodeTrack({ episodes: show.episodes, at: show.episodes.indexOf(e), show: title, image: /^https:\/\//.test(one(sp.i)) ? one(sp.i) : show.image, item: null, feed: show.feed, previewHref: (k) => `/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${k}&t=${encodeURIComponent(title)}` }), chapters };
   return (
     <main className={PAGE}>
       <TaskHeader back={{ href: `/schole/podcasts?u=${encodeURIComponent(url)}&t=${encodeURIComponent(title)}`, label: "Back to the show" }} title={title} position={[e.date, e.seconds ? clock(e.seconds) : ""].filter(Boolean).join(" · ") || undefined} />
       <div className="mt-6 space-y-5">
         <header className="space-y-1">
+          <EpisodeMarks e={e} />
           <h1 className="text-2xl font-semibold tracking-tight">{e.title}</h1>
-          {e.about ? <p className="max-w-prose whitespace-pre-line text-sm">{e.about}</p> : null}
         </header>
+        <People people={e.people} />
         <form action={browseAddAction} className="bg-muted/50 flex flex-wrap items-center gap-2 rounded-lg border p-3 text-sm">
           <span className="min-w-0 flex-1">Keep the show to keep your place in each episode and take notes.</span>
           <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} /><LocalDay />
           <Button size="sm" name="go" value="start">Keep the show</Button>
         </form>
-        <UnitPlayer item={null} unit={key} title={e.title} by={null} cite={`${title}, “${e.title}”`} youtube={null} media={{ src: e.audio, kind: "audio" }} place={null} done={false} of={null} transcript={transcript} notes={[]} next={null}
-          track={episodeTrack({ episodes: show.episodes, at: show.episodes.indexOf(e), show: title, image: /^https:\/\//.test(one(sp.i)) ? one(sp.i) : null, item: null, feed: show.feed, previewHref: (k) => `/schole/podcasts/episode?u=${encodeURIComponent(url)}&k=${k}&t=${encodeURIComponent(title)}` })} />
+        <UnitPlayer item={null} unit={key} title={e.title} by={null} cite={`${title}, “${e.title}”`} youtube={null} media={{ src: e.audio, kind: e.kind }} place={null} done={false} of={null} transcript={transcript} notes={[]} next={null}
+          track={track} />
+        <Chapters chapters={chapters} track={e.kind === "audio" ? track : null} />
+        {e.notes.length ? <section className="space-y-2"><h2 className="text-sm font-medium">Show notes</h2><Notes blocks={e.notes} /></section> : e.about ? <p className="max-w-prose text-sm whitespace-pre-line">{e.about}</p> : null}
       </div>
     </main>
   );

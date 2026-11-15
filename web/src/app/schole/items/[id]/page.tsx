@@ -19,7 +19,6 @@ import { showFor } from "@/server/podcasts";
 import { openLibrary } from "@/server/browse";
 import "@/server/free";
 import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
-import { clock } from "@reflect/core/media";
 import { COURSE_SITES } from "@reflect/core/courses";
 import { listIdeas, type IdeaOut } from "@/server/ideas-store";
 import { ideasNaming } from "@reflect/core/ideas";
@@ -27,8 +26,9 @@ import { learnView } from "@/server/learn-store";
 import { listClaims } from "@/server/claims-store";
 import { publishedBy } from "@/server/published-store";
 import { ThingHeader } from "@/components/headers";
-import { EpisodeButtons } from "../../podcasts/episode-buttons";
-import { episodeTrack } from "../../podcasts/track";
+import { EpisodeList } from "../../podcasts/episode-list";
+import { ShowFacts } from "../../podcasts/parts";
+import { episodeRows } from "../../podcasts/track";
 import { shelfCrumbs } from "../../crumbs";
 import {
   addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, keepItemClaimAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
@@ -159,19 +159,9 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
         {show?.episodes.length ? section("Episodes", (
           <>
-            <ol className="divide-y text-sm">
-              {show.episodes.slice(0, 50).map((e, i) => {
-                const u = begun.get(e.key);
-                return (
-                  <li key={e.key} className="flex items-center gap-3 py-2">
-                    <Link href={`/schole/items/${item.id}/episodes/${e.key}`} className="min-w-0 flex-1 underline-offset-4 hover:underline">{e.title}</Link>
-                    <span className="text-muted-foreground shrink-0 text-xs tabular-nums">{u?.doneOn ? "Heard" : u?.place ? "Under way" : [e.date, e.seconds ? clock(e.seconds) : null].filter(Boolean).join(" · ")}</span>
-                    <EpisodeButtons track={episodeTrack({ episodes: show.episodes, at: i, show: item.title, image: item.image, item: item.id, feed: show.feed, units: [...begun.values()] })} />
-                  </li>
-                );
-              })}
-            </ol>
-            <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed{show.episodes.length > 50 ? `; the latest 50 of ${show.episodes.length}` : ""}.</p>
+            <ShowFacts show={show} />
+            <EpisodeList rows={episodeRows(show.episodes, (k) => `/schole/items/${item.id}/episodes/${k}`, units)} show={item.title} image={item.image ?? show.image} item={item.id} feed={show.feed} />
+            <p className="text-muted-foreground text-xs">Each episode plays here from the show&apos;s own feed, {show.episodes.length} in all.</p>
           </>
         ), "episodes") : item.medium === "podcast" && item.url ? section("Episodes", <Note>The show&apos;s feed could not be read just now.</Note>) : null}
 
