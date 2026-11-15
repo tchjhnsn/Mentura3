@@ -15,7 +15,9 @@ import { SearchButton } from "./search-button";
 
 export type Crumb = { label: string; href?: string };
 
-const BAR = "bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-30 backdrop-blur";
+// Opaque, and its background reaches the screen edges and above it (a box-shadow clipped to the sides and top),
+// so nothing scrolled past shows beside or behind it, without widening the page (Torian, 2026-11-15).
+export const BAR = "bg-background sticky top-0 z-30 shadow-[0_0_0_100vmax_var(--background)] [clip-path:inset(-100vmax_-100vmax_0)]";
 
 function Back({ fallback, label }: { fallback: string; label: string }) {
   return (
