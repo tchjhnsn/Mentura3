@@ -15,7 +15,7 @@ export type ReadLink = { name: string; href: string };
  * person stopped. Without a text, a preview from Google Books opens on the page when there is one, and the places
  * off the page sit beside it.
  */
-export function Reader({ here, work, kept, preview, links }: { /** Reflect's own reader for the book, when it has its text. */ here?: string; work: string; /** The place kept with the person's account, when the book is on their shelves. */ kept?: { chapter: number; chapters: number } | null; preview?: Preview | null; links: ReadLink[] }) {
+export function Reader({ here, work, kept, preview, links, secondary = false }: { /** Outline beside Listen, the page's filled button when the book has a recording (priority guides, decision 3). */ secondary?: boolean; /** Reflect's own reader for the book, when it has its text. */ here?: string; work: string; /** The place kept with the person's account, when the book is on their shelves. */ kept?: { chapter: number; chapters: number } | null; preview?: Preview | null; links: ReadLink[] }) {
   const [open, setOpen] = useState(false);
   const [place, setPlace] = useState<{ chapter: number; chapters: number } | null>(kept ?? null);
   useEffect(() => {
@@ -32,14 +32,13 @@ export function Reader({ here, work, kept, preview, links }: { /** Reflect's own
     <section className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
         {here ? (
-          <Button asChild>
-            <Link href={place ? `${here}?c=${place.chapter}` : here}><BookOpenIcon />{place ? `Continue reading · ${place.chapter} of ${place.chapters}` : "Read it free"}</Link>
+          <Button asChild size="lg" variant={secondary ? "outline" : "default"} className="h-11 rounded-full px-6 text-base">
+            <Link href={place ? `${here}?c=${place.chapter}` : here}><BookOpenIcon />{place ? `Continue reading · chapter ${place.chapter} of ${place.chapters}` : secondary ? "Read" : "Read it free"}</Link>
           </Button>
         ) : null}
         {pages && !open ? <Button variant="outline" onClick={() => setOpen(true)}><BookOpenIcon />{pages.full ? "Pages from Google Books" : "Preview pages from Google Books"}</Button> : null}
         {links.map((l) => <Button key={l.href} asChild variant="ghost" size="sm"><a href={l.href} target="_blank" rel="noreferrer">{l.name}<ExternalLinkIcon /></a></Button>)}
       </div>
-      {here ? <p className="text-muted-foreground text-xs">The book&apos;s text, read in Reflect. Highlight passages and keep excerpts as you read.</p> : null}
       {pages && open ? (
         <>
           <div className="flex items-center justify-between gap-2">

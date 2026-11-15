@@ -10,7 +10,7 @@ import { addFromLibraryAction } from "./actions";
 const LABEL = { want: "Want to read", reading: "Reading", read: "Read" } as const;
 
 /** Put a book from the open library on your shelves: want to read by default, or reading or read. */
-export function AddBook({ entry }: { entry: CatalogEntry }) {
+export function AddBook({ entry, quiet = false }: { entry: CatalogEntry; /** Outline, beside a page's one filled button (priority guides, 2026-11-15). */ quiet?: boolean }) {
   const [added, setAdded] = useState<keyof typeof LABEL | null>(null);
   const [error, setError] = useState(false);
   const [pending, run] = useTransition();
@@ -28,10 +28,10 @@ export function AddBook({ entry }: { entry: CatalogEntry }) {
   if (added) return <span className="text-muted-foreground inline-flex h-8 items-center gap-1 text-xs"><CheckIcon className="size-3.5" />{LABEL[added]}</span>;
   return (
     <div className="flex items-center">
-      <Button size="sm" className="h-8 rounded-r-none" disabled={pending} onClick={() => add("want")}>{pending ? "Adding..." : "Want to read"}</Button>
+      <Button size="sm" variant={quiet ? "outline" : "default"} className="h-8 rounded-r-none" disabled={pending} onClick={() => add("want")}>{pending ? "Adding..." : "Want to read"}</Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" className="h-8 rounded-l-none border-l border-l-white/20 px-2" disabled={pending} aria-label="Add as reading or read"><ChevronDownIcon /></Button>
+          <Button size="sm" variant={quiet ? "outline" : "default"} className={`h-8 rounded-l-none px-2 ${quiet ? "border-l-0" : "border-l border-l-white/20"}`} disabled={pending} aria-label="Add as reading or read"><ChevronDownIcon /></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={() => add("reading")}>Reading</DropdownMenuItem>
