@@ -103,13 +103,13 @@ function One({ c, replies, where }: { c: EpisodeComment; replies: EpisodeComment
  * The newest come first, each with its replies under it oldest first; a comment can carry the place in the episode it
  * is about, and tapping that plays from there.
  */
-export function Comments({ comments, feed, episode, path, track }: { comments: EpisodeComment[] } & Where) {
+export function Comments({ comments, feed, episode, path, track, heading = true }: { comments: EpisodeComment[]; /** False inside a tab already named Comments. */ heading?: boolean } & Where) {
   const where = { feed, episode, path, track };
   const top = comments.filter((c) => !c.parentId).reverse();
   const shown = comments.filter((c) => !c.removed).length;
   return (
     <section className="space-y-4" id="comments">
-      <h2 className="text-sm font-medium">Comments{shown ? ` · ${shown}` : ""}</h2>
+      {heading ? <h2 className="text-base font-semibold">Comments{shown ? <span className="text-muted-foreground font-normal"> {shown}</span> : null}</h2> : null}
       <CommentForm where={where} />
       {top.length ? <ul className="space-y-5">{top.map((c) => <One key={c.id} c={c} replies={comments.filter((r) => r.parentId === c.id)} where={where} />)}</ul> : <p className="text-muted-foreground text-sm">No one has said anything yet.</p>}
     </section>

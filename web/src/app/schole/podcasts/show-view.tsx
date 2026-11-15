@@ -18,7 +18,7 @@ import { episodeRows, episodeTrack } from "./track";
 type Unit = { unit: string; place: number | null; doneOn: string | null };
 
 /** Follow a show not yet on the shelves: it is kept as one you follow, and its own page on your shelves opens. */
-function FollowNew({ title, url, by, image }: { title: string; url: string; by: string; image: string }) {
+export function FollowNew({ title, url, by, image }: { title: string; url: string; by: string; image: string }) {
   return (
     <form action={browseAddAction} className="shrink-0">
       <input type="hidden" name="medium" value="podcast" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={url} />

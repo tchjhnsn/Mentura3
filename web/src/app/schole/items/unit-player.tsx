@@ -33,6 +33,12 @@ export type UnitProps = {
   favorite?: boolean | null;
   /** What sits between the episode's acts and its transcript: its chapters and show notes. */
   between?: React.ReactNode;
+  /**
+   * An episode's page, laid out by the Scholē page priority guides (2026-11-15): the acts sit in the hero under the
+   * title, the chapters under the hero, Transcript, Show notes and Comments as tabs, and your notes in a side column
+   * on a wide screen.
+   */
+  episode?: { art: React.ReactNode; heading: React.ReactNode; follow?: React.ReactNode; showNotes: React.ReactNode | null; comments: React.ReactNode; commentCount: number };
 };
 
 /**
@@ -48,7 +54,7 @@ export function UnitPlayer(p: UnitProps) {
   const list = useRef<HTMLOListElement>(null);
   const [now, setNow] = useState(p.place ?? 0);
   const [follow, setFollow] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(Boolean(p.episode));
   const [q, setQ] = useState("");
   const [text, setText] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
@@ -124,22 +130,15 @@ export function UnitPlayer(p: UnitProps) {
     if (p.done && !mine) return "Play again";
     if (at > 1 && total) return `Continue · ${said(Math.max(0, total - at))} left`;
     if (at > 1) return `Continue from ${clock(Math.floor(at))}`;
-    return total ? said(total) : "Play";
+    return total ? (p.episode ? `Play · ${said(total)}` : said(total)) : "Play";
   })();
   const shown = hits ?? p.transcript.map((x, i) => ({ x, i }));
 
-  const transcriptPanel = p.transcript.length ? (
-        <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border">
-          <div className="flex items-center justify-between gap-2 px-3 py-2">
-            <CollapsibleTrigger className="hover:bg-muted -m-1 flex flex-1 items-center gap-2 rounded-md p-1 text-left text-sm font-medium">
-              <ChevronRightIcon className={`text-muted-foreground size-4 transition ${open ? "rotate-90" : ""}`} /> Transcript
-            </CollapsibleTrigger>
-            {open ? <label className="text-muted-foreground flex items-center gap-1.5 text-xs"><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> Follow along</label> : null}
-          </div>
-          <CollapsibleContent className="space-y-2 border-t p-3">
+  const transcriptList = (
+          <div className="space-y-2">
             <Input aria-label="Search the transcript" placeholder="Search the transcript" value={q} onChange={(e) => setQ(e.target.value)} className="h-9" />
             {hits && !hits.length ? <p className="text-muted-foreground text-sm">Not found.</p> : null}
-            <ol ref={list} className="max-h-[60vh] space-y-2 overflow-y-auto rounded-md border p-3 text-sm leading-relaxed">
+            <ol ref={list} className={cn("space-y-2 overflow-y-auto rounded-md border p-3 leading-relaxed", p.episode ? "max-h-[70vh] text-base" : "max-h-[60vh] text-sm")}>
                 {shown.map(({ x, i }) => {
                   const t = timeOf(i);
                   return (
@@ -183,20 +182,30 @@ export function UnitPlayer(p: UnitProps) {
                   );
                 })}
             </ol>
+          </div>
+  );
+  const transcriptPanel = p.transcript.length ? (
+        <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border">
+          <div className="flex items-center justify-between gap-2 px-3 py-2">
+            <CollapsibleTrigger className="hover:bg-muted -m-1 flex flex-1 items-center gap-2 rounded-md p-1 text-left text-sm font-medium">
+              <ChevronRightIcon className={`text-muted-foreground size-4 transition ${open ? "rotate-90" : ""}`} /> Transcript
+            </CollapsibleTrigger>
+            {open ? <label className="text-muted-foreground flex items-center gap-1.5 text-xs"><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> Follow along</label> : null}
+          </div>
+          <CollapsibleContent className="border-t p-3">
+            {transcriptList}
           </CollapsibleContent>
         </Collapsible>
       ) : p.noTranscript ?? <p className="text-muted-foreground text-sm">The publisher gives no transcript for this one.</p>;
 
-  return (
-    <div className="min-w-0 space-y-5">
-      <div className="min-w-0 space-y-4">
+  const media = <>
         {p.youtube ? (
           <div className="aspect-video w-full overflow-hidden rounded-lg border bg-black"><div ref={holder} className="size-full" /></div>
         ) : p.media?.kind === "video" ? (
           <video ref={(v) => { el.current = v; }} src={p.media.src} controls preload="metadata" className="aspect-video w-full rounded-lg border bg-black" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
         ) : shared ? (
           <div className="flex flex-wrap items-center gap-1">
-            <Button className="mr-1 rounded-full" aria-label={mine && listen!.playing ? "Pause" : p.place ? "Continue" : "Play"} onClick={() => (mine ? listen!.toggle() : listen!.playTrack(shared))}>
+            <Button className={cn("mr-1 rounded-full", p.episode && "h-10 px-5")} aria-label={mine && listen!.playing ? "Pause" : p.place ? "Continue" : "Play"} onClick={() => (mine ? listen!.toggle() : listen!.playTrack(shared))}>
               {mine && listen!.playing ? <PauseIcon /> : <PlayIcon className="fill-current" />}<span className="tabular-nums">{playLabel}</span>
             </Button>
             {!mine ? (
@@ -222,8 +231,9 @@ export function UnitPlayer(p: UnitProps) {
           <audio ref={(a) => { el.current = a; }} src={p.media.src} controls preload="metadata" className="w-full" onLoadedMetadata={(e) => { if (p.place) e.currentTarget.currentTime = p.place; }} onPause={keep} />
         ) : <p className="text-muted-foreground text-sm">This one has no recording Reflect can play.</p>}
         {p.place && !shared ? <p className="text-muted-foreground text-xs">Picks up at {clock(p.place)}, where you stopped.</p> : null}
-
-        {p.item ? <>{shared ? null : <div className="flex flex-wrap items-center gap-2">
+  </>;
+  const finishRow = shared ? null : (
+        <div className="flex flex-wrap items-center gap-2">
           {p.done ? (
             <>
               <span className="flex items-center gap-1 text-sm"><CheckIcon className="size-4" /> Finished</span>
@@ -231,15 +241,12 @@ export function UnitPlayer(p: UnitProps) {
               {p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next</Link></Button> : null}
             </>
           ) : <Button size="sm" disabled={pending} onClick={() => finish(true)}>{p.next ? "Finished, next" : "Finished"}</Button>}
-        </div>}
-
-        {transcriptPanel}
-
-        {p.between}
-
+        </div>
+  );
+  const notesBlock = (
         <div className="space-y-2">
           <div className="flex items-center gap-1">
-            <h2 className="text-sm font-medium">Notes</h2>
+            <h2 className="text-base font-semibold">{p.episode ? "Your notes" : "Notes"}</h2>
             <Button type="button" size="icon" variant="ghost" className="size-7 rounded-full" aria-label={`Add a note at ${clock(Math.floor(now))}`} title={`Add a note at ${clock(Math.floor(now))}`} aria-expanded={writing} onClick={() => setWriting(true)}><PlusIcon /></Button>
           </div>
           {!p.notes.length && !writing ? <p className="text-muted-foreground text-sm">None yet. The + adds one at the moment playing.</p> : null}
@@ -264,9 +271,68 @@ export function UnitPlayer(p: UnitProps) {
               <Button type="button" size="sm" variant="ghost" onClick={() => { setWriting(false); setText(""); }}>Cancel</Button>
             </div>
           </> : null}
-        </div></> : <>{transcriptPanel}{p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next lecture</Link></Button> : null}</>}
+        </div>
+  );
+
+  if (p.episode) return <EpisodeLayout p={p} media={<>{media}{p.item ? finishRow : null}</>} notes={p.item ? notesBlock : null} transcript={p.transcript.length ? transcriptList : p.noTranscript ?? <p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>} hasTranscript={p.transcript.length > 0} />;
+
+  return (
+    <div className="min-w-0 space-y-5">
+      <div className="min-w-0 space-y-4">
+        {media}
+
+        {p.item ? <>{finishRow}
+
+        {transcriptPanel}
+
+        {p.between}
+
+        {notesBlock}</> : <>{transcriptPanel}{p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next lecture</Link></Button> : null}</>}
       </div>
 
+    </div>
+  );
+}
+
+type Tab = "transcript" | "notes" | "comments";
+
+/** An episode's page: hero with its acts, chapters, then the tabs beside your notes (see `UnitProps.episode`). */
+function EpisodeLayout({ p, media, notes, transcript, hasTranscript }: { p: UnitProps; media: React.ReactNode; notes: React.ReactNode | null; transcript: React.ReactNode; hasTranscript: boolean }) {
+  const ep = p.episode!;
+  const [tab, setTab] = useState<Tab>(hasTranscript || !ep.showNotes ? "transcript" : "notes");
+  const video = p.media?.kind === "video" || Boolean(p.youtube);
+    // With no transcript, Show notes come first; Transcript stays, saying the show publishes none.
+  const notesTab: [Tab, string][] = ep.showNotes ? [["notes", "Show notes"]] : [];
+  const tabs: [Tab, string][] = [...(hasTranscript ? [] : notesTab), ["transcript", "Transcript"], ...(hasTranscript ? notesTab : []), ["comments", ep.commentCount ? `Comments ${ep.commentCount}` : "Comments"]];
+  const tabClass = (on: boolean) => cn("-mb-px border-b-2 px-1 pb-2 text-sm font-medium whitespace-nowrap", on ? "border-foreground text-foreground" : "text-muted-foreground hover:text-foreground border-transparent");
+  return (
+    <div className="min-w-0 space-y-8">
+      <header className="sm:flex sm:items-start sm:gap-6">
+        <div className="flex items-start justify-between gap-4">
+          {ep.art}
+          {ep.follow ? <div className="sm:hidden">{ep.follow}</div> : null}
+        </div>
+        <div className="mt-4 min-w-0 flex-1 space-y-3 sm:mt-0">
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 flex-1 space-y-1.5">{ep.heading}</div>
+            {ep.follow ? <div className="hidden sm:block">{ep.follow}</div> : null}
+          </div>
+          {video ? null : media}
+        </div>
+      </header>
+      {video ? media : null}
+      <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-10 lg:space-y-0">
+        {notes ? <aside className="lg:order-2">{notes}</aside> : null}
+        <div className="min-w-0 space-y-4 lg:order-1">
+          {p.between ? <div className="pb-4">{p.between}</div> : null}
+          <div role="tablist" className="flex gap-6 overflow-x-auto border-b">
+            {tabs.map(([id, label]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tabClass(tab === id)} onClick={() => setTab(id)}>{label}</button>)}
+          </div>
+          <div role="tabpanel" className={tab === "transcript" ? "" : "hidden"}>{transcript}</div>
+          {ep.showNotes ? <div role="tabpanel" className={tab === "notes" ? "" : "hidden"}>{ep.showNotes}</div> : null}
+          <div role="tabpanel" className={tab === "comments" ? "" : "hidden"}>{ep.comments}</div>
+        </div>
+      </div>
     </div>
   );
 }

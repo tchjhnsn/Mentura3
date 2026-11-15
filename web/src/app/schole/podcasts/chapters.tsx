@@ -15,11 +15,11 @@ export function Chapters({ chapters, track }: { chapters: Chapter[]; track: Trac
   const current = on ? chapters.reduce((c, x, i) => (x.at <= now ? i : c), -1) : -1;
   return (
     <section className="space-y-2">
-      <h2 className="text-sm font-medium">Chapters</h2>
+      <h2 className="text-base font-semibold">Chapters</h2>
       <ol className="divide-y rounded-lg border text-sm">
         {chapters.map((c, i) => (!all && i >= 8 && i !== current ? null : (
           <li key={`${c.at}-${i}`}>
-            <button type="button" disabled={!track || !listen} onClick={() => track && listen?.playTrack({ ...track, chapters }, c.at)} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${i === current ? "bg-muted font-medium" : ""}`} aria-current={i === current ? "true" : undefined}>
+            <button type="button" disabled={!track || !listen} onClick={() => track && listen?.playTrack({ ...track, chapters }, c.at)} className={`hover:bg-accent flex w-full items-baseline gap-3 px-3 py-2 text-left ${i === current ? "bg-muted border-foreground border-l-2 pl-2.5 font-semibold" : ""}`} aria-current={i === current ? "true" : undefined}>
               <span className="text-muted-foreground w-14 shrink-0 text-xs tabular-nums">{clock(c.at)}</span>
               <span className="min-w-0 flex-1">{c.title}</span>
             </button>
