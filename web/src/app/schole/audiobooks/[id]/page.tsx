@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { HeadphonesIcon } from "lucide-react";
+import { HeadphonesIcon, NotebookPenIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { newNoteAction } from "../../notes/actions";
 import { audiobookTopics, hoursOf, topicOf } from "@reflect/core/audiobooks";
 import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
@@ -58,7 +60,12 @@ export default async function AudiobookPage({ params }: { params: Promise<{ id: 
                 {topics.map((t) => <li key={t.id}><Link href={`/schole/topics/${t.id}`} className="text-muted-foreground hover:bg-muted hover:text-foreground inline-flex h-6 items-center rounded-full border px-2.5 text-xs">{t.label}</Link></li>)}
               </ul>
             ) : null}
-            <AudiobookButton {...props} />
+            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1 sm:flex-none"><AudiobookButton {...props} /></div>
+              <form action={newNoteAction.bind(null, title)}>
+                <Button type="submit" variant="outline" size="icon" className="size-10" aria-label="Write a note about this" title="Write a note about this"><NotebookPenIcon /></Button>
+              </form>
+            </div>
             {rec.about ? (
               <div className="text-muted-foreground">
                 <Clamp text={rec.about}>

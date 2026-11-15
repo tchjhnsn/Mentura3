@@ -1,3 +1,4 @@
+import { ForYouRows } from "./for-you";
 import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { SectionHead } from "@/components/section-head";
@@ -135,7 +136,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
         </div>
       );
     } else {
-      body = <DiscoverRows userId={userId} way={way} />;
+      body = <div className="space-y-8"><ForYouRows userId={userId} /><DiscoverRows userId={userId} way={way} /></div>;
     }
   } else {
     const lists = listFinds(m);

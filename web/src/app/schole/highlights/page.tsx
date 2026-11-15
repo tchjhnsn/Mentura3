@@ -11,7 +11,7 @@ import { requireUser } from "@/server/session";
 import { allExcerpts } from "@/server/excerpt-store";
 import { highlightBooks } from "@/server/highlights";
 import { publishedBy } from "@/server/published-store";
-import { LearnHeader } from "../header";
+import { LearnHeader, LibraryTabs } from "../header";
 import { TodayHighlights } from "./today";
 import { ExcerptItem } from "../excerpt-item";
 import { COLOR } from "../colors";
@@ -48,6 +48,7 @@ export default async function HighlightsPage({ searchParams }: { searchParams: P
     <>
       <main className="mx-auto w-full max-w-3xl px-4 pb-24 sm:px-6">
         <LearnHeader on="highlights" />
+        <LibraryTabs on="highlights" className="mt-4" />
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <form className="flex min-w-0 flex-1 gap-2" role="search">
             {books ? <input type="hidden" name="in" value="books" /> : isHighlightColor(color) ? <input type="hidden" name="color" value={color} /> : null}
