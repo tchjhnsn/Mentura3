@@ -6,8 +6,7 @@ import { coverUrl, searchBooks } from "@reflect/core/openlibrary";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
 import { openLibrary } from "@/server/browse";
-import { ThingHeader } from "@/components/headers";
-import { browseCrumbs } from "../crumbs";
+import { LearnHeader, LibraryTabs } from "../header";
 import { ICON } from "../browse/media";
 
 export const metadata: Metadata = { title: "Lists" };
@@ -41,12 +40,10 @@ export default async function ListsPage() {
   const covers = await Promise.all(LISTS.map((l) => firstCovers(l.books)));
   return (
     <main className={PAGE}>
-      <ThingHeader back="/schole/browse" crumbs={browseCrumbs()} title="Lists" />
-      <section className="mt-8 space-y-8">
-        <div className="space-y-1">
-          <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">Lists</h1>
-          <p className="text-muted-foreground text-[13px]">Chosen by others, each credited to its source.</p>
-        </div>
+      <LearnHeader on="lists" />
+      <LibraryTabs on="lists" className="mt-4" />
+      <section className="mt-6 space-y-8">
+        <p className="text-muted-foreground text-[13px]">Lists chosen by others, each credited to its source.</p>
         <ul className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {LISTS.map((l, n) => (
             <li key={l.id}>

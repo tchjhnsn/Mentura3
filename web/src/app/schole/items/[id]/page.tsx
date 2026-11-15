@@ -1,9 +1,10 @@
+import { newNoteAction } from "../../notes/actions";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
 import { CourseView } from "../../courses/course-view";
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, NotebookPenIcon } from "lucide-react";
 import { notFound } from "next/navigation";
 import { STANCES } from "@reflect/core/claims";
 import { embedOf } from "@reflect/core/media";
@@ -195,7 +196,14 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       </form>
     </>
   ));
-  const yoursHead = <h2 className="text-lg font-semibold tracking-tight">Yours</h2>;
+  const yoursHead = (
+    <div className="flex items-center gap-1">
+      <h2 className="text-lg font-semibold tracking-tight">Yours</h2>
+      <form action={newNoteAction.bind(null, item.title)}>
+        <Button type="submit" variant="ghost" size="icon" className="size-8 rounded-full" aria-label="Write a note about this" title="Write a note about this"><NotebookPenIcon /></Button>
+      </form>
+    </div>
+  );
   if (item.medium === "course" && courseSite(item.url)) {
     return <CourseView userId={user.id} u={item.url!} t={item.title} by={item.by ?? ""} footer={<div className="space-y-8">{yoursHead}{taught}{status}{shelfFacts}{editing}</div>} />;
   }

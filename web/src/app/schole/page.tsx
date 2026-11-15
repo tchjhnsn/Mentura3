@@ -3,16 +3,18 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mediumOf } from "@reflect/core/ways";
 import { coverUrl } from "@reflect/core/openlibrary";
-import { BROWSE_MEDIA } from "@reflect/core/browse-media";
+import { COLLECTIONS, itemHref, itemKey, nextInCollection, suggestCollections, type Collection, type CollectionItem } from "@reflect/core/collections";
+import { addDays, isRecordEvent, occurrences } from "@reflect/core/calendar";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { Suspense } from "react";
-import { ChevronRightIcon, SearchIcon } from "lucide-react";
-import { CoverImg } from "./cover-img";
-import { Input } from "@/components/ui/input";
+import { ChevronRightIcon, PlusIcon } from "lucide-react";
 import { Head, SPACE } from "@/app/life/space";
-import { DiscoverRows } from "./browse/media-page";
-import { Upcoming } from "@/app/life/upcoming";
+import { calendar } from "@/server/calendar-store";
+import { aimsOf, artOf, haveKeys } from "@/server/collections";
+import { Art } from "./art";
+import { CollectionCard } from "./collections/card";
+import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
 import { lastActivity, listItems, mergeInputs } from "@/server/ways-store";
@@ -33,7 +35,7 @@ function Hero({ c }: { c: Card }) {
   return (
     <div className="bg-card flex gap-4 rounded-xl border p-4 shadow-xs">
       <Link href={c.href} className="shrink-0" aria-label={c.title}>
-        <span className="bg-muted text-muted-foreground relative flex size-24 items-center justify-center overflow-hidden rounded-lg border text-xs shadow-sm">{c.kind}{c.image ? <CoverImg src={c.image} className="absolute inset-0 size-full object-cover" /> : null}</span>
+        <Art image={c.image} kind={c.kind} title={c.title} small className="size-24 shadow-sm" />
       </Link>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-muted-foreground text-xs">{c.kind}</span>
@@ -53,7 +55,7 @@ function UnderWay({ cards }: { cards: Card[] }) {
       {cards.map((c) => (
         <li key={c.key} className="w-28 shrink-0 snap-start">
           <Link href={c.href} className="group block space-y-1.5">
-            <span className="bg-muted text-muted-foreground relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg border px-2 text-center text-xs transition-opacity group-hover:opacity-90">{c.kind}{c.image ? <CoverImg src={c.image} className="absolute inset-0 size-full object-cover" /> : null}</span>
+            <Art image={c.image} kind={c.kind} title={c.title} className="aspect-square w-full transition-opacity group-hover:opacity-90" />
             <span className="line-clamp-2 text-sm font-medium leading-tight group-hover:underline">{c.title}</span>
             {c.share !== null ? <span className="bg-muted block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : <span className="text-muted-foreground block text-xs">{c.kind}</span>}
           </Link>
@@ -76,8 +78,91 @@ async function NewFromShows({ userId, today }: { userId: string; today: string }
   );
 }
 
-function Loading() {
-  return <p className="text-muted-foreground text-sm">Finding what to read, hear and watch…</p>;
+const dayParts = (d: string) => {
+  const t = new Date(`${d}T12:00:00Z`);
+  return { weekday: t.toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" }).toUpperCase(), day: t.getUTCDate() };
+};
+
+/** The next week on the Scholē calendar, three at most, each with a date block. Nothing when the week is empty. */
+async function UpNext({ userId, today }: { userId: string; today: string }) {
+  const to = addDays(today, 6);
+  const list = occurrences(await calendar(userId, today, to, "learn").catch(() => []), today, to).slice(0, 3);
+  if (!list.length) return null;
+  return (
+    <section className="grid grid-cols-1 gap-3">
+      <Head title="Up next" href="/schole/schedule" note="" />
+      <ul className="grid grid-cols-1 gap-1">
+        {list.map((o) => {
+          const p = dayParts(o.day);
+          return (
+            <li key={`${o.event.id}-${o.day}`}>
+              <Link href={isRecordEvent(o.event) ? `/life/learn/${o.event.recordId}` : `/calendar?tile=learn&day=${o.day}`} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg p-2">
+                <span className="bg-muted flex size-11 shrink-0 flex-col items-center justify-center rounded-lg leading-none">
+                  <span className="text-muted-foreground text-[9px] font-medium tracking-wide">{o.day === today ? "TODAY" : p.weekday}</span>
+                  <span className="text-sm font-semibold">{o.day === today ? "" : p.day}</span>
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{o.event.title}</span>
+                  {o.event.starts ? <span className="text-muted-foreground block text-[13px]">{o.event.starts}</span> : null}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * The way in (guide "Home, browse and library", point 1): one question, what the person is working toward, answered
+ * by what they want in Work; a chip picks which aim the collections below serve. With nothing in Work, a link there.
+ */
+function WorkingToward({ aims, aim }: { aims: string[]; aim: string | null }) {
+  return (
+    <section aria-labelledby="toward" className="border-primary/40 rounded-xl border-2 p-4 sm:p-5">
+      <h2 id="toward" className="text-xl font-semibold tracking-tight">What are you working toward?</h2>
+      {aims.length ? (
+        <>
+          <p className="text-muted-foreground mt-1 text-[13px]">From your Work. Pick one and the collections below follow it.</p>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {aims.slice(0, 6).map((a) => (
+              <li key={a}><Link href={a === aim ? "/schole" : `/schole?aim=${encodeURIComponent(a)}`} aria-current={a === aim ? "true" : undefined} className={cn("inline-flex h-8 max-w-[16rem] items-center rounded-full border px-3 text-sm", a === aim ? "bg-foreground text-background border-foreground" : "hover:bg-muted")}><span className="truncate">{a}</span></Link></li>
+            ))}
+            <li><Link href="/life/work/browse" aria-label="Add work you want" title="Add work you want" className="hover:bg-muted inline-flex size-8 items-center justify-center rounded-full border border-dashed"><PlusIcon className="size-4" /></Link></li>
+          </ul>
+        </>
+      ) : (
+        <p className="text-muted-foreground mt-1 text-sm">Scholē suggests what to hear and watch from the work you want. <Link href="/life/work/browse" className="text-foreground font-medium underline underline-offset-4">Tell Reflect what you&apos;re working toward</Link>, or start with a collection below.</p>
+      )}
+    </section>
+  );
+}
+
+/** The next thing in a collection the person began, when nothing of it is under way: the one suggestion Home makes once it is in use. */
+function NextUp({ picks }: { picks: { c: Collection; next: CollectionItem }[] }) {
+  if (!picks.length) return null;
+  return (
+    <section className="grid grid-cols-1 gap-3">
+      <Head title="Next in your collections" note="" />
+      <ul className="grid grid-cols-1 gap-1">
+        {picks.map(({ c, next }) => {
+          const a = artOf(next);
+          return (
+            <li key={c.id}>
+              <Link href={itemHref(next)} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg p-2">
+                <Art image={a.image} kind={a.kind} title={next.title} tiny className="size-12 shrink-0" />
+                <span className="min-w-0">
+                  <span className="block truncate font-medium">{next.title}</span>
+                  <span className="text-muted-foreground block truncate text-[13px]">Next in {c.name}</span>
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
 }
 
 /**
@@ -86,6 +171,13 @@ function Loading() {
  * button, Continue; the rest under way in a row of small cards. Secondary: new episodes from their shows, and Discover
  * with only audiobooks, podcasts, films and courses, the other media as chips. Tertiary: events (only when there are
  * some) and one line to the library. Highlights to restate live on Highlights, examinations on their course.
+ */
+/**
+ * Scholē's Home (guide "Home, browse and library", Torian agreed 2026-11-15 23:07Z): what the person does next, never
+ * a shelf to browse. In use, it shows Continue as the one large card with the one filled button, the rest under way,
+ * the next in a collection they began, the next week on the Scholē calendar and new episodes from their shows, and
+ * one line to Browse. New, or with nothing under way, it is the way in: what are you working toward, and
+ * collections chosen by people that serve it.
  */
 export default async function SpacePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -99,7 +191,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
-  const [view, items, recent] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>())]);
+  const [view, items, recent, aims] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), aimsOf(user.id)]);
   const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null,
     href: b.catalog?.work ? (b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
@@ -114,60 +206,66 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
       where: i.parts && i.part ? `${i.medium === "course" ? "Lecture" : "Part"} ${i.part} of ${i.parts}` : null,
     };
   };
-  // Under way, the last played first (priority guides, front page: one large card, the rest in a row).
-  const now = [...view.books.filter((b) => b.status === "reading").map(bookCard), ...items.filter((i) => i.status === "doing").map(itemCard)]
+  const doing = items.filter((i) => i.status === "doing");
+  const now = [...view.books.filter((b) => b.status === "reading").map(bookCard), ...doing.map(itemCard)]
     .sort((a, b) => (recent.get(b.key) ?? 0) - (recent.get(a.key) ?? 0));
   const [last, ...rest] = now;
-  const kept = view.books.length + items.length;
-  const others = BROWSE_MEDIA.filter((m) => !["audiobooks", "podcast", "film", "course"].includes(m.id));
+  const aim = aims.includes(one(sp.aim)) ? one(sp.aim) : null;
+  const suggested = suggestCollections(aim ? [aim] : aims);
+
+  if (!last) {
+    return (
+      <main className={PAGE}>
+        <LearnHeader on="space" />
+        <div className={`mt-4 ${SPACE}`}>
+          <WorkingToward aims={aims} aim={aim} />
+          <section className="grid grid-cols-1 gap-4">
+            <Head title="Chosen by people" href="/schole/collections" note="" />
+            <ul className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {suggested.slice(0, 3).map(({ collection, reason }) => <li key={collection.id}><CollectionCard c={collection} reason={reason} /></li>)}
+            </ul>
+          </section>
+          <Suspense fallback={null}><UpNext userId={user.id} today={today} /></Suspense>
+          <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
+          <p><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Browse everything<ChevronRightIcon className="size-4" /></Link></p>
+        </div>
+      </main>
+    );
+  }
+
+  // The one suggestion Home makes once in use: the next thing in a collection the person began and has nothing of under way.
+  const have = haveKeys(items);
+  const doingKeys = haveKeys(doing);
+  const picks = COLLECTIONS.flatMap((c) => {
+    if (!c.items.some((i) => have.has(itemKey(i))) || c.items.some((i) => doingKeys.has(itemKey(i)))) return [];
+    const next = nextInCollection(c, have);
+    return next ? [{ c, next }] : [];
+  }).slice(0, 2);
+  const firstPick = suggested.find((s) => !s.collection.items.some((i) => have.has(itemKey(i))));
   return (
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
-        <div className="grid grid-cols-1 gap-3">
-          <form action="/schole/browse" role="search" className="relative">
-            <input type="hidden" name="m" value="all" />
-            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-            <Input name="q" placeholder="Search books, courses, podcasts, films, music and art" aria-label="Search Scholē" className="h-11 pl-9" />
-          </form>
-          <nav aria-label="Every medium" className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:px-0">
-            <ul className="flex gap-1.5 pb-1">
-              {BROWSE_MEDIA.map((m) => <li key={m.id}><Link href={`/schole/browse?m=${m.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm whitespace-nowrap">{m.label}</Link></li>)}
-            </ul>
-          </nav>
-        </div>
-
-        {last ? (
-          <section className="grid grid-cols-1 gap-3" aria-label="Continue">
-            <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
-            <Hero c={last} />
-            {rest.length ? <UnderWay cards={rest} /> : null}
+        <section className="grid grid-cols-1 gap-3" aria-label="Continue">
+          <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
+          <Hero c={last} />
+        </section>
+        {rest.length ? (
+          <section className="grid grid-cols-1 gap-3">
+            <Head title="Under way" href="/schole/shelves" note="" />
+            <UnderWay cards={rest} />
           </section>
         ) : null}
-
-        <div className="[&_h2]:text-xl"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
-
-        <section className="grid grid-cols-1 gap-3">
-          {/* Discover is a section and its rows are parts of it, so its heading is larger and theirs smaller. */}
-          <h2 className="text-xl font-semibold tracking-tight"><Link href="/schole/browse" className="group inline-flex items-center gap-0.5 hover:underline hover:underline-offset-4">Discover<ChevronRightIcon className="text-muted-foreground size-5 transition group-hover:translate-x-0.5" /></Link></h2>
-          <div className="space-y-6 [&_h2]:text-base"><Suspense fallback={<Loading />}><DiscoverRows userId={user.id} n={6} focus /></Suspense></div>
-          <nav aria-label="More to explore" className="pt-2">
-            <h3 className="text-muted-foreground mb-2 text-sm">More to explore</h3>
-            <ul className="flex flex-wrap gap-1.5">
-              {others.map((m) => <li key={m.id}><Link href={`/schole/browse?m=${m.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm">{m.label}</Link></li>)}
-            </ul>
-          </nav>
-        </section>
-
-        <Upcoming userId={user.id} tile="learn" today={today} title="Events" note="Lectures, readings and gatherings on your Scholē calendar in the next two weeks." hideEmpty />
-
-        <section id="library" className="scroll-mt-20 border-t pt-6">
-          <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm">
-            <Link href="/schole/shelves" className="text-base font-semibold hover:underline hover:underline-offset-4">Your library</Link>
-            <span className="text-muted-foreground">{kept} kept</span>
-            {[["Highlights", "/schole/highlights"], ["Lists", "/schole/lists"], ["Reading", "/schole/reading"]].map(([label, href]) => <Link key={href} href={href!} className="text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">{label}</Link>)}
-          </p>
-        </section>
+        <NextUp picks={picks} />
+        <Suspense fallback={null}><UpNext userId={user.id} today={today} /></Suspense>
+        <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
+        {!rest.length && firstPick ? (
+          <section className="grid grid-cols-1 gap-3">
+            <Head title="Chosen by people" href="/schole/collections" note="" />
+            <CollectionCard c={firstPick.collection} reason={firstPick.reason} className="max-w-sm" />
+          </section>
+        ) : null}
+        <p className="border-t pt-6"><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Find something new<ChevronRightIcon className="size-4" /></Link></p>
       </div>
     </main>
   );

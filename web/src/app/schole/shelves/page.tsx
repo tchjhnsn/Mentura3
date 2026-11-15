@@ -14,7 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PAGE } from "@/components/page-header";
-import { LearnHeader } from "../header";
+import { LearnHeader, LibraryTabs } from "../header";
+import { Art } from "../art";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { learnView, type LearnView } from "@/server/learn-store";
@@ -51,6 +52,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   return (
     <main className={PAGE}>
       <LearnHeader on={tab} />
+      {tab === "shelves" ? <LibraryTabs on="shelves" className="mt-4" /> : null}
       <div className="mt-6">
         {tab === "shelves" ? <ShelvesTab userId={user.id} view={view} sp={sp} /> : null}
         {tab === "claims" ? <Claims claims={await listClaims(user.id).catch((): ClaimOut[] | null => null)} works={await claimWorks(user.id).catch(() => new Map<string, { workId: string; title: string }>())} /> : null}
@@ -200,7 +202,7 @@ function Shelves({ view, items, all, open, removed, show: asked, sort, starters,
       ) : null}
       <p className="text-muted-foreground -mt-2 flex flex-wrap gap-x-3 text-[13px]">
         <span>{keptCount} kept</span>
-        {[["Highlights", "/schole/highlights"], ["Lists", "/schole/lists"], ["Claims", "/schole/shelves?tab=claims"], ["Reading", "/schole/reading"]].map(([label, href]) => <Link key={href} href={href!} className="hover:text-foreground underline-offset-4 hover:underline">{label}</Link>)}
+        {[["Claims", "/schole/shelves?tab=claims"], ["Reading", "/schole/reading"]].map(([label, href]) => <Link key={href} href={href!} className="hover:text-foreground underline-offset-4 hover:underline">{label}</Link>)}
       </p>
       <div className="space-y-3">
         <nav role="tablist" aria-label="Ways of learning" className="-mx-4 flex gap-6 overflow-x-auto border-b px-4 sm:mx-0 sm:px-0">
@@ -231,10 +233,7 @@ function Shelves({ view, items, all, open, removed, show: asked, sort, starters,
           {tiles.map((t) => (
             <li key={t.key} className="min-w-0">
               <Link href={t.href} className="group block space-y-1.5">
-                {t.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={t.image} alt="" loading="lazy" className={cn("w-full rounded-md border object-cover shadow-xs transition-opacity group-hover:opacity-90", t.square ? "aspect-square" : "aspect-[2/3]")} />
-                ) : <span className={cn("bg-muted text-muted-foreground flex w-full items-center justify-center rounded-md border p-2 text-center text-xs", t.square ? "aspect-square" : "aspect-[2/3]")}>{t.kind}</span>}
+                <Art image={t.image} kind={t.kind} title={t.title} className={cn("w-full rounded-md shadow-xs transition-opacity group-hover:opacity-90", t.square ? "aspect-square" : "aspect-[2/3]")} />
                 <span className="line-clamp-2 text-sm font-medium leading-tight group-hover:underline">{t.title}</span>
                 <span className="text-muted-foreground line-clamp-1 block text-xs">{t.line}</span>
                 {t.share !== null ? <span className="bg-muted block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, t.share * 100)}%` }} /></span> : null}
