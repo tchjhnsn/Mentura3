@@ -55,7 +55,7 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
         {tab === "shelves" ? <ShelvesTab userId={user.id} view={view} sp={sp} /> : null}
         {tab === "claims" ? <Claims claims={await listClaims(user.id).catch((): ClaimOut[] | null => null)} works={await claimWorks(user.id).catch(() => new Map<string, { workId: string; title: string }>())} /> : null}
       </div>
-      {tab === "shelves" ? (
+      {tab === "shelves" && one(sp.by) === "subject" ? (
         <footer className="text-muted-foreground mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs">
           <span>■ Book</span>
           <span>● Subject</span>
@@ -75,7 +75,7 @@ async function ShelvesTab({ userId, view, sp }: { userId: string; view: LearnVie
   const kept = view.books.filter((b) => b.catalog?.work).map((b) => ({ work: b.catalog!.work, title: b.title }));
   const subjects = [...new Set(view.books.flatMap((b) => b.subjects.map((s) => s.name)).concat(view.known.map((s) => s.name)))];
   const have = new Set((items ?? []).map((i) => i.title.toLowerCase()));
-  return <Shelves view={view} items={items} all={one(sp.filled) !== "1"} open={one(sp.book)} removed={removed} show={["want", "doing", "done"].includes(one(sp.show)) ? one(sp.show) : ""} sort={["oldest", "title"].includes(one(sp.sort)) ? one(sp.sort) : ""} starters={starters(subjects, have)} kept={kept} />;
+  return <Shelves view={view} items={items} all={one(sp.filled) !== "1"} open={one(sp.book)} removed={removed} way={one(sp.way)} bySubject={one(sp.by) === "subject"} show={["want", "doing", "done", "all"].includes(one(sp.show)) ? one(sp.show) : ""} sort={["oldest", "title"].includes(one(sp.sort)) ? one(sp.sort) : ""} starters={starters(subjects, have)} kept={kept} />;
 }
 
 /** How far through a book the person is, by chapter and how far down it, read in Reflect. */
@@ -92,7 +92,8 @@ function Glyph({ d, tone, className }: { d: string; tone: ShelfTone; className: 
   return <svg className={className} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d={d} className={TONE[tone]} /></svg>;
 }
 
-const SHOW = [["", "All"], ["want", "Want to"], ["doing", "Under way"], ["done", "Done"]] as const;
+const SHOW = [["doing", "Under way"], ["want", "Want to"], ["done", "Done"], ["", "All"]] as const;
+type Tile = { key: string; kind: string; title: string; by: string | null; at: string; square: boolean; image: string | null; href: string; line: string; share: number | null };
 const BOOK_SHOW: Record<string, string> = { want: "want", doing: "reading", done: "read" };
 const statusLabel = (i: LearnItem) => (i.status === "want" ? "Want to" : i.status === "doing" ? mediumOf(i.medium).doing : mediumOf(i.medium).done);
 type Starter = { title: string; by?: string; medium: Medium; list: string };
@@ -104,14 +105,16 @@ type Starter = { title: string; by?: string; medium: Medium; list: string };
  * with their medium shown, each opening its own page; a game, music or art without a lesson is kept under Rest
  * and leisure. Shelves can be narrowed by status and sorted, and each way folds away.
  */
-function Shelves({ view, items, all, open, removed, show, sort, starters, kept }: { view: LearnView; items: LearnItem[] | null; all: boolean; open: string; removed: LearnItem | null; show: string; sort: string; starters: Record<string, Starter[]>; kept: { work: string; title: string }[] }) {
+function Shelves({ view, items, all, open, removed, show: asked, sort, starters, kept, way, bySubject }: { view: LearnView; items: LearnItem[] | null; all: boolean; open: string; removed: LearnItem | null; show: string; sort: string; starters: Record<string, Starter[]>; kept: { work: string; title: string }[]; way: string; bySubject: boolean }) {
+  // Under way is the default view of a shelf; "all" asks for everything.
+  const show = asked === "all" ? "" : asked || "doing";
   const byId = new Map(view.books.map((b) => [b.id, b]));
   const subjectBooks = new Map<string, LearnView["books"]>();
   for (const b of view.books) for (const s of b.subjects) subjectBooks.set(s.id, [...(subjectBooks.get(s.id) ?? []), b]);
   const grasp = new Map(view.books.flatMap((b) => b.subjects).concat(view.known).map((s) => [s.id, s.grasp?.grasp ?? null]));
   const book = open ? byId.get(open) : undefined;
   const q = (extra: Record<string, string>) => {
-    const p = new URLSearchParams({ ...(all ? {} : { filled: "1" }), ...(show ? { show } : {}), ...(sort ? { sort } : {}), ...extra });
+    const p = new URLSearchParams({ ...(all ? {} : { filled: "1" }), ...(asked ? { show: asked } : {}), ...(sort ? { sort } : {}), ...extra });
     for (const [k, v] of [...p.entries()]) if (!v) p.delete(k);
     const s = p.toString();
     return `/schole/shelves${s ? `?${s}` : ""}`;
@@ -163,11 +166,31 @@ function Shelves({ view, items, all, open, removed, show, sort, starters, kept }
     const teaching = w.id === "teaching";
     const sh = shelvesOf({ ...view, books }, teaching && all && !show, teaching);
     const here = shownItems.filter((i) => placeOf(i) === w.id);
-    return { w, books, sh, here, count: books.length + here.length };
+    const total = (w.id === "leisure" ? 0 : view.books.filter((b) => wayOf(b) === w.id).length) + (items ?? []).filter((i) => placeOf(i) === w.id).length;
+    return { w, books, sh, here, count: total };
   });
   const visible = sections.filter((s) => s.w.id !== "leisure" || s.count);
+  // One shelf at a time (priority guides, library, 2026-11-15): the one asked for, else the first with something
+  // under way, else the first with anything on it.
+  const underWay = (x: (typeof sections)[number]) => x.books.some((b) => b.status === "reading") || x.here.some((i) => i.status === "doing");
+  const current = visible.find((x) => x.w.id === way) ?? visible.find(underWay) ?? visible.find((x) => x.count) ?? visible[0]!;
+  const tiles: Tile[] = [
+    ...current.books.map((b): Tile => ({
+      key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null, at: b.startedOn ?? "", square: false,
+      image: b.catalog ? coverUrl(b.catalog, "M") : null,
+      href: b.catalog?.work ? `/schole/works/${b.catalog.work}` : q({ way: current.w.id, book: b.id }),
+      line: b.status === "reading" ? (b.place ? `Chapter ${b.place.chapter} of ${b.place.chapters}` : "Reading") : b.status === "want" ? "Want to" : "Read",
+      share: b.place && b.status !== "read" ? Math.min(1, (b.place.chapter - 1 + b.place.at) / b.place.chapters) : null,
+    })),
+    ...current.here.map((i): Tile => ({
+      key: i.id, kind: mediumOf(i.medium).label, title: i.title, by: i.by, at: i.at, square: ["podcast", "music", "art"].includes(i.medium), image: i.image, href: `/schole/items/${i.id}`,
+      line: [mediumOf(i.medium).label, i.parts && i.part ? `${i.medium === "course" ? "Lecture" : "Part"} ${i.part} of ${i.parts}` : statusLabel(i)].join(" · "),
+      share: i.status === "doing" && i.parts && i.part ? Math.min(1, i.part / i.parts) : null,
+    })),
+  ].sort((x, y) => (sort === "title" ? x.title.localeCompare(y.title) : sort === "oldest" ? x.at.localeCompare(y.at) : y.at.localeCompare(x.at)));
+  const keptCount = view.books.length + (items ?? []).length;
   return (
-    <section className="space-y-8">
+    <section className="space-y-6">
       {removed ? (
         <form action={restoreItemAction} className="bg-muted flex flex-wrap items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm" role="status">
           <input type="hidden" name="item" value={removed.id} />
@@ -175,74 +198,69 @@ function Shelves({ view, items, all, open, removed, show, sort, starters, kept }
           <Button size="sm" variant="outline">Undo</Button>
         </form>
       ) : null}
+      <p className="text-muted-foreground -mt-2 flex flex-wrap gap-x-3 text-[13px]">
+        <span>{keptCount} kept</span>
+        {[["Highlights", "/schole/highlights"], ["Lists", "/schole/lists"], ["Claims", "/schole/shelves?tab=claims"], ["Reading", "/schole/reading"]].map(([label, href]) => <Link key={href} href={href!} className="hover:text-foreground underline-offset-4 hover:underline">{label}</Link>)}
+      </p>
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <Note>Arranged by the ways of learning Aristotle names: teaching, dialectic, imitation and practice. Each item shows its medium.</Note>
-          <Button asChild variant="ghost" size="sm"><Link href={all ? "/schole/shelves?filled=1" : "/schole/shelves"}>{all ? "Only filled shelves" : "All 20 shelves"}</Link></Button>
-        </div>
-        <nav className="bg-background/95 sticky top-[6.5rem] z-[5] md:top-14 -mx-1 flex flex-wrap items-center gap-2 px-1 py-2 backdrop-blur" aria-label="Ways of learning">
-          {visible.map((s) => (
-            <a key={s.w.id} href={`#${s.w.id}`} className="hover:bg-accent rounded-full border px-3 py-1 text-xs transition">{s.w.label} <span className="text-muted-foreground">{s.count}</span></a>
+        <nav role="tablist" aria-label="Ways of learning" className="-mx-4 flex gap-6 overflow-x-auto border-b px-4 sm:mx-0 sm:px-0">
+          {visible.map((x) => (
+            <Link key={x.w.id} role="tab" aria-selected={x === current} href={q({ way: x.w.id, show: "" })} className={cn("-mb-px shrink-0 border-b-2 px-1 pb-2 text-sm font-medium whitespace-nowrap", x === current ? "border-foreground text-foreground" : "text-muted-foreground hover:text-foreground border-transparent")}>
+              {x.w.label} <span className="text-muted-foreground font-normal">{x.count}</span>
+            </Link>
           ))}
-          <span className="text-muted-foreground ml-auto flex flex-wrap items-center gap-1 text-xs" aria-label="Show">
-            {SHOW.map(([id, label]) => <Link key={id || "all"} href={q({ show: id })} aria-current={show === id ? "true" : undefined} className={cn("rounded px-2 py-1", show === id ? "bg-accent text-foreground" : "hover:text-foreground")}>{label}</Link>)}
-            <span aria-hidden="true">·</span>
-            {[["", "Newest"], ["oldest", "Oldest"], ["title", "Title"]].map(([id, label]) => <Link key={id || "newest"} href={q({ sort: id! })} aria-current={sort === id ? "true" : undefined} className={cn("rounded px-2 py-1", sort === id ? "bg-accent text-foreground" : "hover:text-foreground")}>{label}</Link>)}
-          </span>
         </nav>
+        <Note>{current.w.about}</Note>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-muted/60 inline-flex rounded-lg p-0.5 text-sm" role="group" aria-label="Show">
+            {SHOW.map(([id, label]) => <Link key={id || "all"} href={q({ way: current.w.id, show: id || "all" })} aria-current={(show || "all") === (id || "all") ? "true" : undefined} className={cn("rounded-md px-3 py-1", (show || "all") === (id || "all") ? "bg-background shadow-xs font-medium" : "text-muted-foreground hover:text-foreground")}>{label}</Link>)}
+          </div>
+          <span className="text-muted-foreground flex items-center gap-1 text-xs" aria-label="Sort">
+            {[["", "Newest"], ["oldest", "Oldest"], ["title", "Title"]].map(([id, label]) => <Link key={id || "newest"} href={q({ way: current.w.id, sort: id! })} aria-current={sort === id ? "true" : undefined} className={cn("rounded px-2 py-1", sort === id ? "bg-accent text-foreground" : "hover:text-foreground")}>{label}</Link>)}
+            {current.w.id === "teaching" && current.books.length ? <><span aria-hidden="true">·</span><Link href={q({ way: current.w.id, by: bySubject ? "" : "subject" })} aria-current={bySubject ? "true" : undefined} className={cn("rounded px-2 py-1", bySubject ? "bg-accent text-foreground" : "hover:text-foreground")}>By subject</Link></> : null}
+          </span>
+        </div>
       </div>
-      {visible.map(({ w, books, sh, here }) => (
-        <details key={w.id} id={w.id} open className="group scroll-mt-40 space-y-4 md:scroll-mt-28">
-          <summary className="cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-            <span className="flex items-baseline gap-2"><h2 className="text-base font-semibold">{w.label}</h2><span className="text-muted-foreground text-xs group-open:hidden">Show</span></span>
-            <Note>{w.about}</Note>
-          </summary>
+      {bySubject && current.w.id === "teaching" ? (
+        <div className="space-y-6">
+          {current.sh.shelves.filter((x) => x.books.length || x.subjects.length).map((x) => <div key={x.id} className="space-y-2"><h3 className="text-sm font-semibold">{x.name}</h3>{row(x.books, x.subjects)}</div>)}
+          {current.sh.unshelved.books.length ? <div className="space-y-2"><h3 className="text-sm font-semibold">Not yet placed</h3>{row(current.sh.unshelved.books, current.sh.unshelved.subjects)}</div> : null}
+        </div>
+      ) : tiles.length ? (
+        <ul className="grid grid-cols-3 gap-x-4 gap-y-6 sm:grid-cols-4 lg:grid-cols-6">
+          {tiles.map((t) => (
+            <li key={t.key} className="min-w-0">
+              <Link href={t.href} className="group block space-y-1.5">
+                {t.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={t.image} alt="" loading="lazy" className={cn("w-full rounded-md border object-cover shadow-xs transition-opacity group-hover:opacity-90", t.square ? "aspect-square" : "aspect-[2/3]")} />
+                ) : <span className={cn("bg-muted text-muted-foreground flex w-full items-center justify-center rounded-md border p-2 text-center text-xs", t.square ? "aspect-square" : "aspect-[2/3]")}>{t.kind}</span>}
+                <span className="line-clamp-2 text-sm font-medium leading-tight group-hover:underline">{t.title}</span>
+                <span className="text-muted-foreground line-clamp-1 block text-xs">{t.line}</span>
+                {t.share !== null ? <span className="bg-muted block h-1 overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, t.share * 100)}%` }} /></span> : null}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div className="space-y-2">
+          <Note>Nothing on this shelf{show ? " with that status" : ""} yet.{starters[current.w.id]?.length ? " To start with, from the lists:" : ""}</Note>
+          {starters[current.w.id]?.length ? (
+            <ul className="text-sm">
+              {starters[current.w.id]!.slice(0, 4).map((x) => <li key={x.title}>{x.title}{x.by ? <span className="text-muted-foreground"> · {x.by}</span> : null} <span className="text-muted-foreground text-xs">({x.list})</span></li>)}
+            </ul>
+          ) : null}
+          <Link href={current.w.id === "teaching" && !view.books.length ? "/schole/browse" : "/schole/lists"} className="text-sm underline underline-offset-4">{current.w.id === "teaching" && !view.books.length ? "Browse" : "See the lists"}</Link>
+        </div>
+      )}
+      {items ? (
+        <details className="group border-t pt-4">
+          <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm">Add something not in Browse, or import from another service</summary>
           <div className="mt-4 space-y-4">
-            {here.length ? (
-              <ul className="grid gap-3 sm:grid-cols-2">
-                {here.map((i) => (
-                  <li key={i.id}>
-                    <Link href={`/schole/items/${i.id}`} className="hover:bg-accent flex gap-3 rounded-lg border p-3 transition">
-                      {i.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={i.image} alt="" loading="lazy" className="h-16 w-16 shrink-0 rounded object-cover" />
-                      ) : null}
-                      <span className="min-w-0 flex-1 space-y-1">
-                        <span className="flex flex-wrap items-center gap-2">
-                          <Badge variant="secondary">{mediumOf(i.medium).label}</Badge>
-                          <span className="text-muted-foreground text-xs">{statusLabel(i)}{i.parts ? ` · ${i.part ?? 0} of ${i.parts}` : ""}{i.tookPart ? " · took part" : ""}</span>
-                        </span>
-                        <span className="line-clamp-2 block text-sm font-medium">{i.title}</span>
-                        {i.by ? <span className="text-muted-foreground block text-xs">{i.by}</span> : null}
-                        {i.lesson ? <span className="line-clamp-2 block text-xs">{i.lesson}</span> : null}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
-            {sh.shelves.map((s) => shelf(`${w.id}-${s.id}`, s.id, s.name, Boolean(s.books.length || s.subjects.length), row(s.books, s.subjects)))}
-            {sh.unshelved.books.length || sh.unshelved.subjects.length ? shelf(`${w.id}-?`, "?", "Not yet placed (the catalog gives no category)", true, row(sh.unshelved.books, sh.unshelved.subjects)) : null}
-            {w.id === "teaching" && !view.books.length ? <Note>No books yet. <Link className="underline underline-offset-4" href="/schole/browse">Browse books</Link> and each one you add goes on its shelf.</Note> : null}
-            {w.id !== "teaching" && w.id !== "leisure" && !books.length && !here.length ? (
-              <div className="space-y-2">
-                <Note>Nothing here yet{show ? " with that status" : ""}.{starters[w.id]?.length ? " To start with, from the lists:" : ""}</Note>
-                {starters[w.id]?.length ? (
-                  <ul className="text-sm">
-                    {starters[w.id]!.slice(0, 4).map((s) => <li key={s.title}>{s.title}{s.by ? <span className="text-muted-foreground"> · {s.by}</span> : null} <span className="text-muted-foreground text-xs">({s.list})</span></li>)}
-                  </ul>
-                ) : null}
-                {starters[w.id]?.length ? <Link href="/schole/lists" className="text-sm underline underline-offset-4">See the lists</Link> : null}
-              </div>
-            ) : null}
+            <AddItem books={kept} />
+            <ImportItems kept={items.map((i) => ({ medium: i.medium, title: i.title }))} />
           </div>
         </details>
-      ))}
-      {items ? (
-        <>
-          <AddItem books={kept} />
-          <ImportItems kept={items.map((i) => ({ medium: i.medium, title: i.title }))} />
-        </>
       ) : <Note>Lectures, debates, films, music and games are not set up on this database yet.</Note>}
       {book ? (
         <>
