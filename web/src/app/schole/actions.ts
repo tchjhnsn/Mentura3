@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { BOOK_STATUS, type BookStatus } from "@reflect/core/learning";
 import { cleanEntry, workEntry } from "@reflect/core/openlibrary";
 import { importGoodreads, type ImportReport } from "@/server/goodreads-import";
+import { setFavorite } from "@/server/favorite-store";
 import { requireUser } from "@/server/session";
 import { addBook, keepPlace, rankWant, setBookStatus, setFinishedOn, setGoal, type BookPlace } from "@/server/learn-store";
 import { keepClaim, setStance } from "@/server/claims-store";
@@ -545,4 +546,11 @@ export async function quizAction(itemId: string, unit: string): Promise<Quiz | {
 export async function checkAnswerAction(quizId: string, seq: number, answer: string, knew: boolean): Promise<boolean> {
   const user = await requireUser();
   return checkAnswer(user.id, quizId, seq, answer, knew);
+}
+
+/** Marks an episode as a favorite, or takes the mark off (Torian, 2026-11-15 06:46Z). */
+export async function favoriteEpisodeAction(itemId: string, unit: string, favorite: boolean): Promise<void> {
+  const user = await requireUser();
+  await setFavorite(user.id, itemId, unit, favorite);
+  revalidatePath(itemPath(itemId));
 }
