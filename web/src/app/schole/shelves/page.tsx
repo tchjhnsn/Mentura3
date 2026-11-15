@@ -27,7 +27,7 @@ import { AddItem } from "../items/add-item";
 import { ImportItems } from "../items/import-items";
 import { bookTone, subjectTone, type ShelfTone } from "../tones";
 
-export const metadata: Metadata = { title: "My shelves" };
+export const metadata: Metadata = { title: "Your library" };
 export const dynamic = "force-dynamic";
 
 type Tab = "shelves" | "claims";

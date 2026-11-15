@@ -2,7 +2,7 @@ import { CompassIcon, LibraryIcon } from "lucide-react";
 import { TileHeader, TileIcon } from "@/app/life/tile-header";
 
 export type LearnPart = "space" | "shelves" | "reading" | "claims" | "highlights" | "browse";
-const PART: Record<LearnPart, string | null> = { space: null, shelves: "My shelves", reading: "Reading", claims: "Claims", highlights: "Highlights", browse: "Browse" };
+const PART: Record<LearnPart, string | null> = { space: null, shelves: "Your library", reading: "Reading", claims: "Claims", highlights: "Highlights", browse: "Browse" };
 
 /**
  * Learn's header, a tile's like the rest (Torian, 2026-11-14 18:21Z: "The only thing needed is the workspace and the
@@ -14,7 +14,7 @@ export function LearnHeader({ on }: { on: LearnPart }) {
   return (
     <TileHeader tile="learn" label="Scholē" part={PART[on]} workspace="/schole" icons={<>
       <TileIcon label="Browse" href="/schole/browse" here={on === "browse"}><CompassIcon /></TileIcon>
-      <TileIcon label="My shelves" href="/schole/shelves" here={on === "shelves"}><LibraryIcon /></TileIcon>
+      <TileIcon label="Your library" href="/schole/shelves" here={on === "shelves"}><LibraryIcon /></TileIcon>
     </>} />
   );
 }

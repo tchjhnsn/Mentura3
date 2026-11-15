@@ -13,5 +13,5 @@ export function browseCrumbs(medium?: string | null): Crumb[] {
 
 export function shelfCrumbs(place?: Way | "leisure" | null): Crumb[] {
   const p = place === "leisure" ? LEISURE : WAYS.find((w) => w.id === place);
-  return [LEARN, { label: "My shelves", href: "/schole/shelves" }, ...(p ? [{ label: p.label, href: `/schole/shelves#${p.id}` }] : [])];
+  return [LEARN, { label: "Your library", href: "/schole/shelves" }, ...(p ? [{ label: p.label, href: `/schole/shelves#${p.id}` }] : [])];
 }
