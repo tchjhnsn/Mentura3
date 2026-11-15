@@ -4,6 +4,7 @@ import { HeadphonesIcon } from "lucide-react";
 import { hoursOf, type Audiobook } from "@reflect/core/audiobooks";
 import { SectionHead } from "@/components/section-head";
 import { coverOf } from "@/server/audiobooks";
+import { ROW_LINE } from "../row-line";
 
 /** Who reads a recording, as a listener chooses: one reader, many readers, or a cast. */
 export const readBy = (a: Audiobook) => (a.dramatic ? "Dramatic reading" : a.readers > 1 ? `${a.readers} readers` : a.readers === 1 ? "One reader" : null);
@@ -30,7 +31,7 @@ function AudiobookCard({ a }: { a: Audiobook }) {
 
 export function AudiobookGrid({ books, row = false }: { books: Audiobook[]; row?: boolean }) {
   return (
-    <ul className={row ? "-mx-6 flex snap-x scroll-px-6 gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-4 sm:overflow-visible sm:px-0 lg:grid-cols-6 [&>li]:w-36 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-auto" : "grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6"}>
+    <ul className={row ? ROW_LINE : "grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6"}>
       {books.map((a) => <AudiobookCard key={a.id} a={a} />)}
     </ul>
   );

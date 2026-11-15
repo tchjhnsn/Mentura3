@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ROW_LINE } from "./row-line";
 import { BookIcon, BookOpenIcon, HeadphonesIcon, StarIcon } from "lucide-react";
 import type { CatalogEntry } from "@reflect/core/openlibrary";
 import { categoryOf } from "@reflect/core/thema";
@@ -62,8 +63,8 @@ export function AuthorName({ name, id, className }: { name: string | undefined; 
 export function BookGrid({ books, mine, cols = "md:grid-cols-4 lg:grid-cols-6", row = false }: { books: CatalogEntry[]; mine: Map<string, string>; /** Column classes from md up, for a grid in a narrower column. */ cols?: string; /** On a phone, one row to swipe through instead of a grid. */ row?: boolean }) {
   if (row) {
     return (
-      <ul className={`-mx-6 flex snap-x snap-mandatory scroll-px-6 gap-4 overflow-x-auto px-6 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-x-5 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${cols}`}>
-        {books.map((b) => <BookCard key={b.work} b={b} have={mine.get(b.work)} className="w-36 shrink-0 snap-start sm:w-auto" />)}
+      <ul className={ROW_LINE}>
+        {books.map((b) => <BookCard key={b.work} b={b} have={mine.get(b.work)} />)}
       </ul>
     );
   }
