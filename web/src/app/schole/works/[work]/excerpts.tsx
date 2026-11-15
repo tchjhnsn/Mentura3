@@ -35,7 +35,7 @@ export function Excerpts({ work, rows, reader }: { work: string; rows: ExcerptRo
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">Your excerpts{rows.length ? ` · ${rows.length}` : ""}</h3>
+        <h2 className="text-base font-semibold">Your excerpts{rows.length ? <span className="text-muted-foreground font-normal"> {rows.length}</span> : null}</h2>
         {adding ? null : <Button variant="ghost" size="sm" onClick={() => setAdding(true)}><PlusIcon />Add an excerpt</Button>}
       </div>
       {!rows.length && !adding ? <p className="text-muted-foreground text-sm">{reader ? "Highlight a passage while you read and it is kept here. You can also add one by hand." : "Add a passage from your copy, with its page, and it is kept here."}</p> : null}
