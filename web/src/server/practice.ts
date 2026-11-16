@@ -11,7 +11,7 @@ import {
   type Answer, type Confidence, type Kind, type Settled, type Turn, type Unit,
 } from "@reflect/core/argument-practice";
 import { DIALOGUES, ISSUES, confirmedDrafts, type DialogueId } from "@reflect/core/practice-settled";
-import { HIGHLIGHTERS, LINKS, drawPassages, knownOf, passagesOf, pointsOf, scorePassage, type Known, type Mark } from "@reflect/core/annotation-game";
+import { HIGHLIGHTERS, LINKS, agreementPoints, drawPassages, knownOf, passagesOf, pointsOf, readersOf, scorePassage, type Known, type Mark } from "@reflect/core/annotation-game";
 
 const cache = new Map<string, { turns: Turn[]; units: Unit[] }>();
 
@@ -143,7 +143,7 @@ export async function gameOf(work: DialogueId, userId: string, seed: number, cou
  * agrees with themselves. A sentence marked without a link says nothing about links, so no relation is kept for it.
  */
 export async function playRound(userId: string, work: DialogueId, start: number, marks: readonly Mark[]) {
-  const { t, known } = await knowledgeOf(work);
+  const { t, answers, known } = await knowledgeOf(work);
   const p = passagesOf(t.units).find((x) => x.start === start);
   if (!p) throw new Error("not a round");
   const keys = t.units.slice(p.start, p.end).map((x) => unitKey(work, x));
@@ -155,6 +155,10 @@ export async function playRound(userId: string, work: DialogueId, start: number,
     if (m.link && (!rels.has(m.link.rel) || !all.has(m.link.to) || m.link.to === m.key)) throw new Error("not a link");
   }
   const score = scorePassage(marks, keys, known);
+  // Where nothing is known, the player is matched against the readers who marked it before (output agreement).
+  const byKey = new Map(marks.map((m) => [m.key, m.act]));
+  const readers = Object.fromEntries(keys.map((k) => [k, readersOf(k, byKey.get(k) ?? null, answers, userId)]));
+  const agreed = agreementPoints(score.units.filter((u) => u.act === "new").map((u) => readers[u.key]!));
   for (const m of marks) {
     await recordAnswer(userId, work, m.key, "act", m.act, null);
     if (m.link) {
@@ -165,5 +169,5 @@ export async function playRound(userId: string, work: DialogueId, start: number,
   // The words of sentences a known link points at, so a missed link can be shown even when it leaves the passage.
   const text = new Map(t.units.map((x) => [unitKey(work, x), x.text]));
   const targets = Object.fromEntries(score.units.flatMap((u) => (u.link?.knownTarget?.answers ?? []).map((k) => [k, text.get(k) ?? ""])));
-  return { ...score, points: pointsOf(score), targets };
+  return { ...score, points: pointsOf(score) + agreed, agreed, readers, targets };
 }

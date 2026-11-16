@@ -31,3 +31,17 @@ describe("annotation game", () => {
     expect(got).not.toContainEqual(ps[0]);
   });
 });
+
+describe("other readers", () => {
+  test("each reader counts once, by their latest mark, and never the player", async () => {
+    const { readersOf, agreementPoints } = await import("./annotation-game.ts");
+    const a: Answer[] = [
+      { user: "x", key: "k", kind: "act", answer: "asserting" }, { user: "x", key: "k", kind: "act", answer: "agreeing" },
+      { user: "y", key: "k", kind: "act", answer: "agreeing" }, { user: "me", key: "k", kind: "act", answer: "agreeing" },
+      { user: "z", key: "k", kind: "relation", answer: "supports" },
+    ];
+    expect(readersOf("k", "agreeing", a, "me")).toEqual({ n: 2, same: 2 });
+    expect(readersOf("k", "asserting", a, "me")).toEqual({ n: 2, same: 0 });
+    expect(agreementPoints([{ n: 2, same: 1 }, { n: 3, same: 1 }, { n: 0, same: 0 }])).toBe(5);
+  });
+});
