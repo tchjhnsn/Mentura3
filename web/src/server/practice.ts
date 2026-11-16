@@ -11,6 +11,7 @@ import {
   type Answer, type Confidence, type Kind, type Settled, type Turn, type Unit,
 } from "@reflect/core/argument-practice";
 import { DIALOGUES, ISSUES, confirmedDrafts, type DialogueId } from "@reflect/core/practice-settled";
+import { HIGHLIGHTERS, LINKS, drawPassages, knownOf, passagesOf, pointsOf, scorePassage, type Known, type Mark } from "@reflect/core/annotation-game";
 
 const cache = new Map<string, { turns: Turn[]; units: Unit[] }>();
 
@@ -112,4 +113,57 @@ export async function standing(work: DialogueId, key: string, kind: Kind) {
   const s = settled.find((x) => x.key === key && x.kind === kind);
   const c = combine({ key, kind }, answers, accuracy(answers, settled), choices);
   return { counts: c?.counts ?? {}, n: c?.n ?? 0, split: isSplit(c), settled: s ? { answers: accepted(s), note: s.note ?? null } : null };
+}
+
+/** What is known of each item on a dialogue, from settled answers and readers' agreement, before any new answer. */
+export async function knowledgeOf(work: DialogueId) {
+  const t = textOf(work)!;
+  const answers = await answersOn(work);
+  const settled = settledOf(work);
+  const acc = accuracy(answers, settled);
+  const byKey = new Map<string, Answer[]>();
+  for (const a of answers) byKey.set(a.key, [...(byKey.get(a.key) ?? []), a]);
+  const fixed: Record<string, string[]> = { act: choicesFor("act").map((c) => c.id), relation: choicesFor("relation").map((c) => c.id) };
+  const known = (key: string, kind: Kind): Known | null =>
+    knownOf(key, kind, settled, byKey.get(key) ?? [], acc, fixed[kind] ?? (kind === "target" ? [...t.units.map((x) => unitKey(work, x)), "none"] : []));
+  return { t, answers, known };
+}
+
+/** A game on a dialogue: rounds the person has not played, those with known sentences first. */
+export async function gameOf(work: DialogueId, userId: string, seed: number) {
+  const { t, answers, known } = await knowledgeOf(work);
+  const mine = new Set(answers.filter((a) => a.user === userId && a.kind === "act").map((a) => a.key));
+  const passages = passagesOf(t.units);
+  const rounds = drawPassages({ work, units: t.units, passages, isKnown: (key) => !!known(key, "act"), mine, seed });
+  return rounds.map((p) => ({ start: p.start, units: t.units.slice(p.start, p.end).map((x) => ({ key: unitKey(work, x), n: x.n, speaker: x.speaker, text: x.text, known: !!known(unitKey(work, x), "act") })) }));
+}
+
+/**
+ * Keep one round's marks and say how they went. What is known is read before the marks are kept, so a person never
+ * agrees with themselves. A sentence marked without a link says nothing about links, so no relation is kept for it.
+ */
+export async function playRound(userId: string, work: DialogueId, start: number, marks: readonly Mark[]) {
+  const { t, known } = await knowledgeOf(work);
+  const p = passagesOf(t.units).find((x) => x.start === start);
+  if (!p) throw new Error("not a round");
+  const keys = t.units.slice(p.start, p.end).map((x) => unitKey(work, x));
+  const all = new Set(t.units.map((x) => unitKey(work, x)));
+  const acts = new Set<string>(HIGHLIGHTERS.map((h) => h.id));
+  const rels = new Set<string>(LINKS.map((l) => l.id));
+  for (const m of marks) {
+    if (!keys.includes(m.key) || !acts.has(m.act)) throw new Error("not a mark");
+    if (m.link && (!rels.has(m.link.rel) || !all.has(m.link.to) || m.link.to === m.key)) throw new Error("not a link");
+  }
+  const score = scorePassage(marks, keys, known);
+  for (const m of marks) {
+    await recordAnswer(userId, work, m.key, "act", m.act, null);
+    if (m.link) {
+      await recordAnswer(userId, work, m.key, "relation", m.link.rel, null);
+      await recordAnswer(userId, work, m.key, "target", m.link.to, null);
+    }
+  }
+  // The words of sentences a known link points at, so a missed link can be shown even when it leaves the passage.
+  const text = new Map(t.units.map((x) => [unitKey(work, x), x.text]));
+  const targets = Object.fromEntries(score.units.flatMap((u) => (u.link?.knownTarget?.answers ?? []).map((k) => [k, text.get(k) ?? ""])));
+  return { ...score, points: pointsOf(score), targets };
 }
