@@ -259,7 +259,7 @@ function PeopleTab({ x, faces, others }: { x: Person; faces: ReadonlyMap<string,
       {around.length ? <section className="space-y-3"><SectionHead title="Musicians and poets of their time" /><People people={around} faces={faces} /></section> : null}
       {others.length ? (
         <section className="space-y-3">
-          <SectionHead title={`Others in ${eraOf(x).label}`} />
+          <SectionHead title={`Others in ${eraOf(x).label.replace(/^The /, "the ")}`} />
           <Faces faces={others} />
         </section>
       ) : null}
