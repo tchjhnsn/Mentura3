@@ -32,19 +32,16 @@ function Back({ fallback, label }: { fallback: string; label: string }) {
  * that gives its own icons (Work: browse, journal, calendar) shows them instead of search.
  */
 export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: string; backLabel: string; title: string; tabs?: ReactNode; icons?: ReactNode }) {
-  // A tile's header (one with its own icons) puts its title where back was, as the way home to the tile's workspace
-  // (or the home screen from the workspace), and back below it, where the title was, as a true back (Torian,
-  // 2026-11-16 08:37Z: "swap the title with the back button").
+  // A tile's header (one with its own icons): the tile's name, always, as the way to the tile's workspace (or the home
+  // screen from the workspace), and the icons, which show where in the tile you are. No back button (Torian,
+  // 2026-11-16 08:53Z: "the title should remain the name of the app/tile that you're in").
   if (icons) return (
-    <>
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
-        <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight"><Link href={back} className="hover:opacity-80">{title}</Link></h1>
+        <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight"><Link href={back} title={backLabel} className="hover:opacity-80">{title}</Link></h1>
         <div className="ml-auto flex shrink-0 items-center gap-2">{icons}</div>
       </div>
     </header>
-    <div className="-ml-2 pt-1"><Back fallback={back} label={`Back (${backLabel})`} /></div>
-    </>
   );
   return (
     <>
