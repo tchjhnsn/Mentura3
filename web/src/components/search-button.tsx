@@ -51,7 +51,9 @@ export function SearchButton({ keys = true }: { keys?: boolean }) {
   const everything = () => {
     if (!q.trim()) return;
     setOpen(false);
-    router.push(`/schole/browse?m=all&q=${encodeURIComponent(q.trim())}`);
+    // Search the tab you are on in Browse (Torian, 2026-11-16 08:37Z: search lives in the header), else everything.
+    const here = typeof window !== "undefined" && window.location.pathname === "/schole/browse" ? new URLSearchParams(window.location.search).get("m") : null;
+    router.push(`/schole/browse?m=${encodeURIComponent(here || "all")}&q=${encodeURIComponent(q.trim())}`);
   };
 
   return (

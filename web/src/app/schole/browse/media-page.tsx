@@ -1,13 +1,10 @@
 import { ForYouRows } from "./for-you";
-import { SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { SectionHead } from "@/components/section-head";
 import type { ReactNode } from "react";
 import { BROWSE_MEDIA, browseWay, type BrowseMedium } from "@reflect/core/browse-media";
 import { trendingBooks } from "@reflect/core/openlibrary";
 import { WAYS, type Medium, type Way } from "@reflect/core/ways";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { PAGE } from "@/components/page-header";
 import { learnView } from "@/server/learn-store";
 import { listItems } from "@/server/ways-store";
@@ -48,11 +45,12 @@ export function BrowseNav({ m, way, children }: { m: BrowseMedium | "all"; way: 
   const media = BROWSE_MEDIA.filter((x) => inWay(x.id, way));
   return (
     <div className="space-y-3">
-      <nav aria-label="What to browse" className="-mx-6 overflow-x-auto px-6 sm:mx-0 sm:px-0">
-        <ul className="flex gap-1.5 pb-1">
+      {/* Tabs, not pills (Torian, 2026-11-16 08:37Z): one row that swipes on a phone. */}
+      <nav aria-label="What to browse" className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+        <ul className="flex gap-5 border-b">
           {[{ id: "all" as const, label: "All" }, ...media].map((x) => (
-            <li key={x.id}>
-              <Link href={href(x.id, way)} aria-current={x.id === m ? "page" : undefined} className={`inline-flex h-8 items-center rounded-full border px-3 text-sm whitespace-nowrap transition ${x.id === m ? "bg-foreground text-background border-foreground" : "hover:bg-muted"}`}>{x.label}</Link>
+            <li key={x.id} className="shrink-0">
+              <Link href={href(x.id, way)} aria-current={x.id === m ? "page" : undefined} className={`-mb-px inline-block border-b-2 py-2 text-sm whitespace-nowrap ${x.id === m ? "border-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent"}`}>{x.label}</Link>
             </li>
           ))}
         </ul>
@@ -107,10 +105,6 @@ export async function DiscoverRows({ userId, way = null, n = 12, focus = false }
   );
 }
 
-const SEARCH_HINT: Record<string, string> = {
-  all: "Search audiobooks, podcasts, films, courses, art and books", course: "Search courses from Open Yale and MIT", lecture: "Search lectures", debate: "Search debates",
-  podcast: "Search podcasts", theatre: "Search plays", film: "Search films", series: "Search series", music: "Search music", art: "Search the Art Institute of Chicago", game: "Search games",
-};
 const NOT_HERE: Partial<Record<Medium, string>> = {
   series: "Series cannot be watched in Reflect yet; keep them here and say what they taught you.",
   music: "Music cannot be heard in Reflect yet, apart from recordings in the public domain.",
@@ -149,15 +143,6 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
     const extra: ReactNode[] = [];
     if (!q && m === "film") extra.push(<MediaRow key="free" title="Free to watch here" finds={await filmsToWatch()} mine={mine} note="Feature films in the public domain, from the Internet Archive." />);
     if (!q && m === "podcast") {
-      // One set of topics for podcasts and audiobooks (Torian, 2026-11-15 08:26Z); each topic's page shows both.
-      extra.push(
-        <nav key="topics" aria-label="Topics" className="space-y-2">
-          <h2 className="pt-2 text-lg font-semibold">Topics</h2>
-          <ul className="flex flex-wrap gap-1.5">
-            {TOPICS.map((t) => <li key={t.id}><Link href={`/schole/topics/${t.id}`} className="hover:bg-muted inline-flex h-8 items-center rounded-full border px-3 text-sm whitespace-nowrap">{t.label}</Link></li>)}
-          </ul>
-        </nav>,
-      );
       // Subjects with Reflect's editors' picks first, then what a search finds (Torian, 2026-11-16 08:24Z: "Editors'
       // canon, then listens"); then a row for each subject on the person's own shelves.
       const rows = await Promise.all(SUBJECTS.map((x) => finds("podcast", x.search).then((r) => subjectRow(x, r.found)).catch(() => subjectRow(x, []))));
@@ -187,22 +172,8 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
     <main className={PAGE}>
       <LearnHeader on="browse" />
       <div className="mt-6 space-y-5">
-        <BrowseNav m={m} way={way}>
-          <form action="/schole/browse" className="flex min-w-0 flex-1 basis-72 gap-2">
-            {m !== "all" ? <input type="hidden" name="m" value={m} /> : <input type="hidden" name="m" value="all" />}
-            {way ? <input type="hidden" name="way" value={way} /> : null}
-            <label htmlFor="q" className="sr-only">{SEARCH_HINT[m]}</label>
-            <Input id="q" name="q" defaultValue={q} placeholder={SEARCH_HINT[m]} className="h-10" />
-            <Button type="submit" variant="outline" size="icon" className="size-10 shrink-0" aria-label="Search" title="Search"><SearchIcon /></Button>
-          </form>
-        </BrowseNav>
-        {m === "podcast" ? (
-          <form action="/schole/podcasts" className="flex gap-2">
-            <label htmlFor="feed" className="sr-only">A show&apos;s Apple Podcasts link or its feed</label>
-            <Input id="feed" name="u" type="url" required placeholder="Paste a show's Apple Podcasts link or its feed, private ones too" className="h-10" />
-            <Button type="submit" variant="outline" className="h-10">Open</Button>
-          </form>
-        ) : null}
+        <BrowseNav m={m} way={way} />
+        {q && m === "all" ? <h2 className="text-lg font-semibold">Results for “{q}”</h2> : null}
         {m === "podcast" ? (
           <p className="flex flex-wrap gap-x-4 text-sm"><Link href="/schole/podcasts/search" className="underline underline-offset-4">Search inside your episodes</Link><Link href="/schole/people" className="underline underline-offset-4">People you follow</Link></p>
         ) : null}
