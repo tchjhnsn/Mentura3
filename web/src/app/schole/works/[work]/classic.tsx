@@ -12,6 +12,7 @@ import { Art } from "../../art";
 import { CollectionCard, PlaylistRows } from "../../playlists/card";
 import { adaptationsOf, MODE_LABEL, MODE_MEANS } from "@reflect/core/adaptations";
 import { cite, namedIn, personHref, personNamed } from "@reflect/core/historical-people";
+import { ideasIn } from "@reflect/core/great-ideas";
 
 /** A recording as a row: its title and who read it, in how many voices. */
 function recording(id: string): CollectionItem | null {
@@ -37,6 +38,7 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
   const author = personNamed(w.by);
   const adaptations = adaptationsOf(w.id);
   const named = namedIn(w.id);
+  const ideas = ideasIn(w.id);
   return (
     <main className={PAGE}>
       <ThingHeader back={formHref} crumbs={[LEARN, { label: "Browse", href: "/schole/browse" }, { label: t.name, href: `/schole/topics/${t.id}` }, ...(form ? [{ label: form.label, href: formHref }] : [])]} title={w.title} />
@@ -84,6 +86,18 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
                 <li key={`${by.id}${n.at.at}`} className="py-3">
                   <p><Link href={personHref(by)} className="font-medium hover:underline">{by.name}</Link> <span className="text-muted-foreground text-[13px]">· {cite(n.at)}</span></p>
                   <p className="text-foreground/80 text-sm">{n.names}. {n.why}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {ideas.length ? (
+          <section className="space-y-2">
+            <SectionHead title="Ideas in this work" note="Great Ideas it discusses, with the passage." />
+            <ul className="max-w-3xl divide-y">
+              {ideas.map((i) => (
+                <li key={i.id} className="py-3">
+                  <p><Link href={`/schole/ideas/${i.id}`} className="font-medium hover:underline">{i.name}</Link> <span className="text-muted-foreground text-[13px]">· {i.passages.filter((x) => x.at.work === w.id).map((x) => cite(x.at)).join("; ")}</span></p>
                 </li>
               ))}
             </ul>
