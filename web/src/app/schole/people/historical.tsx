@@ -33,7 +33,7 @@ function Cite({ a }: { a: Passage }) {
 function Words({ words }: { words: readonly Passage[] }) {
   return (
     <div className="max-w-prose space-y-4">
-      {words.map((a) => (
+      {words.filter((a) => a.words).map((a) => (
         <figure key={`${a.work}${a.at}`} className="space-y-1 border-l-2 pl-4">
           <blockquote className="text-[17px] leading-relaxed">&ldquo;{a.words}&rdquo;</blockquote>
           <figcaption><Cite a={a} /></figcaption>
@@ -173,7 +173,7 @@ function MusicTab({ x, have, faces }: { x: Person; have: ReadonlySet<string>; fa
           <p className="text-muted-foreground max-w-prose text-sm">{m.note}</p>
         </section>
       ) : null}
-      {m.words.length ? (
+      {m.words.some((a) => a.words) ? (
         <section className="space-y-3">
           <SectionHead title={m.stance === "own" ? `In ${x.name}'s words` : "What little was said"} />
           <Words words={m.words} />
@@ -223,7 +223,7 @@ function TheatreTab({ x, faces }: { x: Person; faces: ReadonlyMap<string, Face> 
   return (
     <>
       {t.stance === "rebuilt" ? <section className="space-y-1"><SectionHead title="Rebuilt from the time" /><p className="text-muted-foreground max-w-prose text-sm">{t.note}</p></section> : null}
-      {t.words.length ? (
+      {t.words.some((a) => a.words) ? (
         <section className="space-y-3">
           <SectionHead title={`In ${x.name}'s words`} />
           <Words words={t.words} />
@@ -387,7 +387,7 @@ export async function HistoricalPerson({ x, userId, asked }: { x: Person; userId
           </div>
           <p className="max-w-prose">{x.about}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            {startHref ? <Button asChild size="lg" className="h-10 sm:px-8"><Link href={startHref}>Start with {start.title.startsWith("The ") ? start.title : `the ${start.title}`}</Link></Button> : null}
+            {startHref ? <Button asChild size="lg" className="h-auto min-h-10 max-w-full py-2 text-left whitespace-normal sm:px-8"><Link href={startHref}>Start with {start.work && !start.title.startsWith("The ") ? `the ${start.title}` : start.title}</Link></Button> : null}
             {x.ol ? <Link href={`/schole/authors/${x.ol}`} className="text-muted-foreground text-sm underline-offset-4 hover:underline">Books by {x.name}</Link> : null}
           </div>
         </header>
