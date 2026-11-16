@@ -13,6 +13,9 @@ import { browseCrumbs } from "../../crumbs";
 import { AudiobookRow, readBy } from "../cards";
 import { AudiobookButton, AudiobookChapters } from "./play";
 import { Clamp } from "../../people/clamp";
+import { DIALOGUES } from "@reflect/core/practice-settled";
+import { gameOf } from "@/server/practice";
+import { Game } from "../../dialectic/practice/[work]/game";
 
 export const metadata: Metadata = { title: "Audiobook" };
 export const dynamic = "force-dynamic";
@@ -21,10 +24,11 @@ export const dynamic = "force-dynamic";
  * An audiobook from LibriVox, heard here the way an episode is (Torian, 2026-11-15 08:26Z), laid out by the Scholē
  * page priority guides: cover, title and author with Play (or Continue, naming the chapter) as the page's largest
  * control; one metadata line, topics and two lines about the recording; the chapters as a list under the hero; more
- * by the same author and on its first topic at the foot.
+ * by the same author and on its first topic at the foot. A dialogue the annotation game plays has three passages to
+ * annotate under the chapters.
  */
 export default async function AudiobookPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireUser();
+  const user = await requireUser();
   const { id } = await params;
   if (!/^\d{1,7}$/.test(id)) notFound();
   const entry = audiobookById(id);
@@ -37,6 +41,9 @@ export default async function AudiobookPage({ params }: { params: Promise<{ id: 
   const same = author ? listAudiobooks({ q: author, language: "all" }, 13).filter((a) => a.id !== id).slice(0, 12) : [];
   const like = topics[0] ? listAudiobooks({ topic: topics[0].id, language: entry?.language ?? "English" }, 13).filter((a) => a.id !== id).slice(0, 12) : [];
   const props = { book: rec, title, cover, page: `/schole/audiobooks/${id}` };
+  // A dialogue Reflect's game can play has a round on its page (Torian, 2026-11-16 23:18Z: rounds woven into Scholē).
+  const dialogue = DIALOGUES.find((d) => d.audiobook === id) ?? null;
+  const rounds = dialogue ? await gameOf(dialogue.id, user.id, Math.floor(Math.random() * 1e9) + 1, 3).catch(() => []) : [];
   const meta = [hoursOf(rec.seconds || entry?.seconds || 0), `${rec.chapters.length} chapters`, entry ? readBy(entry) : null, entry && entry.language !== "English" ? entry.language : null].filter(Boolean).join(" · ");
   return (
     <main className={PAGE}>
@@ -76,6 +83,15 @@ export default async function AudiobookPage({ params }: { params: Promise<{ id: 
           </div>
         </header>
         <div className="max-w-3xl"><AudiobookChapters {...props} /></div>
+        {dialogue && rounds.length ? (
+          <section className="max-w-xl space-y-3" aria-labelledby="annotate">
+            <div className="space-y-1">
+              <h2 id="annotate" className="text-lg font-semibold tracking-tight">Annotate a passage</h2>
+              <p className="text-muted-foreground text-sm">Mark what each sentence does and link a reason to its claim. Some sentences are known, and Done shows how you did.</p>
+            </div>
+            <Game work={dialogue.id} title={dialogue.title} audiobook={dialogue.audiobook} rounds={rounds} inline />
+          </section>
+        ) : null}
         <div className="space-y-8">
           <AudiobookRow title={<>More by {author}</>} books={same} href={`/schole/browse?m=audiobooks&q=${encodeURIComponent(author)}&language=all`} />
           {topics[0] ? <AudiobookRow title={<>More on {topics[0].label}</>} books={like} href={`/schole/topics/${topics[0].id}`} /> : null}

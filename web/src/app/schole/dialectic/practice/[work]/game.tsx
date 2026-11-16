@@ -49,7 +49,7 @@ const RING: Record<Verdict, string> = {
  * red a miss with the known answer, dashed what was missed; grey marks are new and count toward the map. Next is the
  * one filled button after Done. Five rounds, then the score.
  */
-export function Game({ work, title, audiobook, rounds }: { work: string; title: string; audiobook: string; rounds: Round[] }) {
+export function Game({ work, title, audiobook, rounds, inline = false }: { work: string; title: string; audiobook: string; rounds: Round[]; /** A round set into another page: tools under the passage, no filled buttons, a short end. */ inline?: boolean }) {
   const [at, setAt] = useState(0);
   const [pen, setPen] = useState<string>("asserting");
   const [linking, setLinking] = useState(false);
@@ -60,8 +60,16 @@ export function Game({ work, title, audiobook, rounds }: { work: string; title: 
   const [total, setTotal] = useState({ points: 0, right: 0, checked: 0, added: 0, streak: 0, best: 0 });
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
+  if (!rounds.length && inline) return <p className="text-muted-foreground text-sm">You have annotated all of {title}.</p>;
   if (!rounds.length) return <p className="text-muted-foreground mt-8">You have annotated all of {title}. <Link href="/schole/dialectic/practice" className="underline underline-offset-4">Choose another dialogue</Link>.</p>;
 
+  if (at >= rounds.length && inline) {
+    return (
+      <p className="text-[15px]">
+        {total.points} points{total.checked ? `, ${total.right} of ${total.checked} known answers matched` : ""}. <Link href={`/schole/dialectic/practice/${work}`} className="underline underline-offset-4">Keep playing {title}</Link>
+      </p>
+    );
+  }
   if (at >= rounds.length) {
     return (
       <section className="mt-8 space-y-6" aria-labelledby="done">
@@ -122,16 +130,16 @@ export function Game({ work, title, audiobook, rounds }: { work: string; title: 
   const marked = Object.keys(marks).length;
 
   return (
-    <section className="mt-4 space-y-5" aria-label={`Round ${at + 1} of ${rounds.length}`}>
+    <section className={cn("space-y-5", !inline && "mt-4")} aria-label={`Round ${at + 1} of ${rounds.length}`}>
       <div className="space-y-2">
         <p className="text-muted-foreground flex items-center justify-between text-sm">
-          <span>Round {at + 1} of {rounds.length}</span>
+          <span>{inline ? (rounds.length > 1 ? `Passage ${at + 1} of ${rounds.length}` : "") : `Round ${at + 1} of ${rounds.length}`}</span>
           <span className="flex items-center gap-3 tabular-nums">
             {total.streak > 1 ? <span className="flex items-center gap-1 text-orange-600"><FlameIcon className="size-4" />{total.streak}</span> : null}
             <span className="text-foreground font-medium">{total.points} points</span>
           </span>
         </p>
-        <div className="bg-muted h-1 overflow-hidden rounded-full"><div className="bg-primary h-full rounded-full transition-all" style={{ width: `${((at + (done ? 1 : 0)) / rounds.length) * 100}%` }} /></div>
+        <div className={cn("bg-muted h-1 overflow-hidden rounded-full", inline && "hidden")}><div className="bg-primary h-full rounded-full transition-all" style={{ width: `${((at + (done ? 1 : 0)) / rounds.length) * 100}%` }} /></div>
       </div>
 
       <div className="space-y-4 text-[16px] leading-[1.9]">
@@ -186,10 +194,10 @@ export function Game({ work, title, audiobook, rounds }: { work: string; title: 
       {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
 
       {/* The tools sit at the foot of the screen, under the thumb. */}
-      <div className="bg-background/95 fixed inset-x-0 bottom-0 z-20 border-t backdrop-blur">
-        <div className="mx-auto w-full max-w-xl space-y-2 px-4 py-3">
+      <div className={inline ? "rounded-xl border" : "bg-background/95 fixed inset-x-0 bottom-0 z-20 border-t backdrop-blur"}>
+        <div className={cn("space-y-2 py-3", inline ? "px-3" : "mx-auto w-full max-w-xl px-4")}>
           {done ? (
-            <Button size="lg" className="w-full rounded-full" onClick={next}>{at + 1 === rounds.length ? "Finish" : "Next round"}</Button>
+            <Button size="lg" variant={inline ? "outline" : "default"} className="w-full rounded-full" onClick={next}>{at + 1 === rounds.length ? "Finish" : inline ? "Another passage" : "Next round"}</Button>
           ) : linking ? (
             <div className="space-y-2">
               <p className="text-sm">{!from ? "Tap a marked sentence to link from." : !rel ? "How does it bear on another?" : "Now tap the sentence it bears on."}</p>
@@ -212,7 +220,7 @@ export function Game({ work, title, audiobook, rounds }: { work: string; title: 
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="lg" className="rounded-full" disabled={!marked} onClick={() => setLinking(true)}><Link2Icon className="size-4" />Link</Button>
-                <Button size="lg" className="flex-1 rounded-full" disabled={pending} onClick={submit}>{pending ? "Checking..." : "Done"}</Button>
+                <Button size="lg" variant={inline ? "secondary" : "default"} className="flex-1 rounded-full" disabled={pending} onClick={submit}>{pending ? "Checking..." : "Done"}</Button>
               </div>
               <p className="text-muted-foreground flex justify-between text-xs">
                 <span>Mark what the words do; link a reason to its claim.</span>

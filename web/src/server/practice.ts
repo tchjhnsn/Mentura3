@@ -130,11 +130,11 @@ export async function knowledgeOf(work: DialogueId) {
 }
 
 /** A game on a dialogue: rounds the person has not played, those with known sentences first. */
-export async function gameOf(work: DialogueId, userId: string, seed: number) {
+export async function gameOf(work: DialogueId, userId: string, seed: number, count = 5) {
   const { t, answers, known } = await knowledgeOf(work);
   const mine = new Set(answers.filter((a) => a.user === userId && a.kind === "act").map((a) => a.key));
   const passages = passagesOf(t.units);
-  const rounds = drawPassages({ work, units: t.units, passages, isKnown: (key) => !!known(key, "act"), mine, seed });
+  const rounds = drawPassages({ work, units: t.units, passages, isKnown: (key) => !!known(key, "act"), mine, seed, count });
   return rounds.map((p) => ({ start: p.start, units: t.units.slice(p.start, p.end).map((x) => ({ key: unitKey(work, x), n: x.n, speaker: x.speaker, text: x.text, known: !!known(unitKey(work, x), "act") })) }));
 }
 
