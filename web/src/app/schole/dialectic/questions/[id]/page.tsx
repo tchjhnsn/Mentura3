@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { itemHref } from "@reflect/core/collections";
-import { QUESTION_MEDIA } from "@reflect/core/dialectic-media";
+import { QUESTION_MEDIA, formatOf, mixOldNew, weekOf } from "@reflect/core/dialectic-media";
+import { holds } from "../../questions-grid";
 import { dialecticById } from "@reflect/core/dialectics";
 import { workById } from "@reflect/core/topic-pages";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
   const user = await requireUser();
   const d = dialecticById((await params).id);
   if (!d) notFound();
-  const media = QUESTION_MEDIA[d.id] ?? [];
+  // New and old in turn, as on the Dialectic page (one old for every new, 2026-11-16).
+  const media = mixOldNew(QUESTION_MEDIA[d.id] ?? [], weekOf(new Date()));
   const have = haveKeys(await listItems(user.id).catch(() => []));
   const sides = [...new Set(d.positions.map((x) => x.side))];
   const first = media[0];
@@ -38,12 +40,12 @@ export default async function QuestionPage({ params }: { params: Promise<{ id: s
           <p className="text-muted-foreground text-sm">Question · {d.subject}</p>
           <h1 id="page-title" className="text-4xl leading-tight font-semibold tracking-tight">{d.question}</h1>
           <p className="text-muted-foreground text-[17px]">{d.about}</p>
-          {first ? <Button asChild className="mt-2 h-auto min-h-10 rounded-full whitespace-normal"><Link href={itemHref(first)}>{first.kind === "find" ? "Watch" : "Listen to"}: {first.title}</Link></Button> : null}
+          {first ? <Button asChild className="mt-2 h-auto min-h-10 rounded-full whitespace-normal"><Link href={itemHref(first)}>{formatOf(first) === "Video" ? "Watch" : "Listen to"}: {first.title}</Link></Button> : null}
         </header>
 
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <section className="min-w-0 space-y-2">
-            <SectionHead title="Watch and listen" note="Debates, conversations and readings that argue it." />
+            <SectionHead title="Watch and listen" note={`${holds(media)}, a new one and an old one in turn.`} />
             <PlaylistRows items={media} have={have} numbered={false} />
           </section>
           <aside className="space-y-3" aria-labelledby="positions">
