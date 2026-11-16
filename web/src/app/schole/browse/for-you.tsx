@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ideasByCount, worksDiscussing } from "@reflect/core/great-ideas";
 import { COLLECTIONS, itemHref, itemKey, nextInCollection, suggestCollections, type CollectionItem } from "@reflect/core/collections";
 import { SectionHead } from "@/components/section-head";
 import { aimsOf, artOf, haveKeys } from "@/server/collections";
@@ -55,6 +56,19 @@ export async function ForYouRows({ userId }: { userId: string }) {
                 <Fan items={t.forms.flatMap(formItems).filter((i) => i.kind !== "course").slice(0, 4)} />
                 <span className="block leading-snug font-semibold group-hover:underline group-hover:underline-offset-2">{t.name}</span>
                 <span className="text-muted-foreground line-clamp-2 block text-[13px]">{t.forms.map((f) => f.label).join(", ")}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="space-y-4">
+        <SectionHead title="Great Ideas" href="/schole/ideas" note="Ideas the great works return to, with the passages that discuss them and the terms that grew from them." className="pt-2" />
+        <ul className="divide-y sm:max-w-xl">
+          {ideasByCount().map((i) => (
+            <li key={i.id} className="py-2.5">
+              <Link href={`/schole/ideas/${i.id}`} className="group block">
+                <span className="font-semibold group-hover:underline group-hover:underline-offset-2">{i.name}</span>
+                <span className="text-muted-foreground block text-[13px]">{worksDiscussing(i)} works · {i.about}</span>
               </Link>
             </li>
           ))}

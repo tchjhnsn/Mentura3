@@ -67,6 +67,16 @@ export const TEMPLATES: Template[] = [
     source: "Aristotle, Rhetoric I.10 (the seven causes of action) and Physics II.3 (the moving cause and the end)",
     body: "## What is causing me to learn this\n\n\n\n## For the sake of what\n\n",
   },
+  {
+    id: "own-case", name: "A term in my own life", kind: "examination",
+    about: "Before you spot a term in stories: when you were the one in a position to do it, and when it was done to you.",
+    body: "## When I was the one in a position to do it\n\n\n\n## When it was done to me\n\n\n\n## What I see now\n\n",
+  },
+  {
+    id: "spot-it", name: "Spot it", kind: "examination",
+    about: "Find a term in a story or a real case, and say why it is that term and not something near it.",
+    body: "## Where I see it\n\n\n\n## Who acts, and who bears what follows\n\n\n\n## Why it is this and not something near it\n\n",
+  },
   { id: "letter", name: "Letter", kind: "letter", about: "Write to someone, sent or not.", body: "Dear ,\n\n\n\n" },
   {
     id: "legacy", name: "What I want the world to know", kind: "memoir",

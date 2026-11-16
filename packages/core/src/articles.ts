@@ -1,10 +1,11 @@
 /**
  * Articles read inside Scholē (Torian, 2026-11-16 03:09Z: "articles about the times, similar to how we include books";
  * "go" at 03:19Z on the guide "Philosophers and music"). The first source is Wikipedia, whose text may be shown with
- * credit under CC BY-SA 4.0. Only articles a person page names are read, as plain text (no HTML from outside),
+ * credit under CC BY-SA 4.0. Only articles a person page, an idea or a term names are read, as plain text (no HTML from outside),
  * and no model summarizes them. Pure: the text is read here; the fetch is the server's.
  */
 import { PEOPLE } from "./historical-people";
+import { ideaArticles } from "./great-ideas";
 
 export type Block = { kind: "h"; level: 2 | 3; text: string } | { kind: "p"; text: string };
 export type Article = { title: string; url: string; blocks: Block[] };
@@ -12,9 +13,9 @@ export type Article = { title: string; url: string; blocks: Block[] };
 /** Sections of reference apparatus, left out. */
 const SKIP = /^(see also|references|notes|footnotes|citations|sources|bibliography|further reading|external links|works cited|literature)$/i;
 
-/** The articles Scholē reads, by title: every one a person page names. */
+/** The articles Scholē reads, by title: every one a person page, an idea or a term names. */
 export function articleTitles(): string[] {
-  return [...new Set(PEOPLE.flatMap((x) => x.articles.map((a) => a.title)))];
+  return [...new Set([...PEOPLE.flatMap((x) => x.articles.map((a) => a.title)), ...ideaArticles()])];
 }
 
 /** Whether a title is one Scholē reads. */
