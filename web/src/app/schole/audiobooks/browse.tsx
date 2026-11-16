@@ -38,7 +38,7 @@ export function AudiobookBrowse({ p, way }: { p: AudiobookParams; way: WayPick |
   if (!chosen) {
     body = (
       <div className="space-y-8">
-        <AudiobookRow title="Most listened" books={listAudiobooks({}, 12)} href={href({ all: true })} />
+        <AudiobookRow title="Audiobooks" books={listAudiobooks({}, 12)} href={href({ all: true })} note="Reflect's editors' picks first, then the most listened." />
         <AudiobookRow title="Under two hours" books={listAudiobooks({ length: "short" }, 12)} href={href({ length: "short" })} />
         {FRONT.map((t) => <AudiobookRow key={t} title={topicOf(t)!.label} books={listAudiobooks({ topic: t }, 12)} href={href({ topic: t })} />)}
         <AudiobookRow title="Dramatic readings" books={listAudiobooks({ readers: "cast" }, 12)} href={href({ readers: "cast" })} />
@@ -49,7 +49,7 @@ export function AudiobookBrowse({ p, way }: { p: AudiobookParams; way: WayPick |
     body = (
       <section className="space-y-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2 pt-2">
-          <h2 className="text-lg font-semibold">{p.q ? `Results for “${p.q}”` : [topic?.label, LENGTHS.find((l) => l.id === p.length)?.label.toLowerCase(), READERS.find((r) => r.id === p.readers)?.label.toLowerCase(), p.language && p.language !== "English" ? `in ${p.language === "all" ? "every language" : p.language}` : null].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase()) || "Most listened"}</h2>
+          <h2 className="text-lg font-semibold">{p.q ? `Results for “${p.q}”` : [topic?.label, LENGTHS.find((l) => l.id === p.length)?.label.toLowerCase(), READERS.find((r) => r.id === p.readers)?.label.toLowerCase(), p.language && p.language !== "English" ? `in ${p.language === "all" ? "every language" : p.language}` : null].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase()) || "Every recording"}</h2>
           {topic ? <Link href={`/schole/topics/${topic.id}`} className="text-sm underline underline-offset-4">Podcasts and audiobooks on {topic.label}</Link> : null}
         </div>
         {books.length ? <AudiobookGrid books={books.slice(0, PER)} /> : <p className="text-muted-foreground text-sm">No recording matches. Try fewer choices.</p>}
@@ -81,7 +81,7 @@ export function AudiobookBrowse({ p, way }: { p: AudiobookParams; way: WayPick |
         </div>
         <p className="text-muted-foreground text-sm">Every one plays here: books in the public domain, read aloud by LibriVox&apos;s volunteers.</p>
         {body}
-        <p className="text-muted-foreground pt-6 text-center text-xs">Recordings from LibriVox, kept by the Internet Archive; most listened by the Archive&apos;s download counts.</p>
+        <p className="text-muted-foreground pt-6 text-center text-xs">Recordings from LibriVox, kept by the Internet Archive. Reflect&apos;s editors&apos; picks come first, then the most listened by the Archive&apos;s download counts.</p>
       </div>
     </main>
   );
