@@ -16,6 +16,7 @@
  */
 import { MEDIEVAL_PLAYLISTS } from "./start-medieval";
 import { DIALECTIC_PLAYLISTS } from "./start-dialectic";
+import { ARGUMENT_PLAYLISTS } from "./start-argument";
 import { ART_DEBATE_PLAYLISTS, MACHINE_DEBATE_PLAYLISTS } from "./start-debates";
 import { RENAISSANCE_PLAYLISTS } from "./start-renaissance";
 import { ENLIGHTENMENT_PLAYLISTS } from "./start-enlightenment";
@@ -201,7 +202,7 @@ const BASE: readonly Collection[] = [
   },
 ];
 
-export const COLLECTIONS: readonly Collection[] = [...BASE, ...MEDIEVAL_PLAYLISTS, ...RENAISSANCE_PLAYLISTS, ...ENLIGHTENMENT_PLAYLISTS, ...FOUNDING_PLAYLISTS, ...DIALECTIC_PLAYLISTS, ...ART_DEBATE_PLAYLISTS, ...MACHINE_DEBATE_PLAYLISTS];
+export const COLLECTIONS: readonly Collection[] = [...BASE, ...MEDIEVAL_PLAYLISTS, ...RENAISSANCE_PLAYLISTS, ...ENLIGHTENMENT_PLAYLISTS, ...FOUNDING_PLAYLISTS, ...DIALECTIC_PLAYLISTS, ...ARGUMENT_PLAYLISTS, ...ART_DEBATE_PLAYLISTS, ...MACHINE_DEBATE_PLAYLISTS];
 
 export const collectionById = (id: string): Collection | undefined => COLLECTIONS.find((c) => c.id === id);
 
