@@ -10,6 +10,7 @@ export type Person = { id: string; name: string; image: string | null };
 export type Debate = {
   id: string; host: Person; motion: string; workId: string | null; source: string | null; format: string; startsAt: string;
   seats: Partial<Record<Side, Person>>; roomId: string | null; state: DebateState;
+  /** Turns written so far, in a written debate. */ turns: number;
 };
 export type Room = {
   id: string; host: Person; title: string; question: string | null; workId: string | null; debateId: string | null; createdAt: string; closed: boolean;
@@ -33,12 +34,19 @@ const who = (m: Map<string, Person>, id: string) => m.get(id) ?? person(id, null
 
 /* ---------- debates ---------- */
 
-type DRow = { id: string; host_id: string; motion: string; work_id: string | null; source: string | null; format: string; starts_at: Date; room_id: string | null; closed: boolean };
+/** A written debate's progress, for its state: every step has a turn for each side. */
+function written(format: string, turns: number): { written?: { turns: number; total: number } } {
+  const f = formatById(format);
+  return f?.written ? { written: { turns, total: f.steps.length * 2 } } : {};
+}
+
+type DRow = { id: string; host_id: string; motion: string; work_id: string | null; source: string | null; format: string; starts_at: Date; room_id: string | null; closed: boolean; turns: string | number | null };
 
 async function loadDebates(where: string, args: unknown[], limit = 50): Promise<Debate[]> {
   try {
     const rows = (await db().query<DRow>(
-      `SELECT d.id, d.host_id, d.motion, d.work_id, d.source, d.format, d.starts_at, r.id AS room_id, (c.room_id IS NOT NULL) AS closed
+      `SELECT d.id, d.host_id, d.motion, d.work_id, d.source, d.format, d.starts_at, r.id AS room_id, (c.room_id IS NOT NULL) AS closed,
+              (SELECT count(*) FROM debate_turn t WHERE t.debate_id = d.id) AS turns
          FROM debate d LEFT JOIN dialectic_room r ON r.debate_id = d.id LEFT JOIN dialectic_room_closed c ON c.room_id = r.id
         WHERE ${where} ORDER BY d.starts_at LIMIT ${limit}`, args)).rows;
     if (!rows.length) return [];
@@ -49,7 +57,8 @@ async function loadDebates(where: string, args: unknown[], limit = 50): Promise<
       return {
         id: r.id, host: who(m, r.host_id), motion: r.motion, workId: r.work_id, source: r.source, format: r.format, startsAt: r.starts_at.toISOString(),
         seats: { ...(s.for ? { for: who(m, s.for) } : {}), ...(s.against ? { against: who(m, s.against) } : {}) },
-        roomId: r.room_id, state: debateState({ startsAt: r.starts_at.toISOString(), roomOpen: Boolean(r.room_id && !r.closed), roomClosed: r.closed }),
+        roomId: r.room_id, turns: Number(r.turns ?? 0),
+        state: debateState({ startsAt: r.starts_at.toISOString(), roomOpen: Boolean(r.room_id && !r.closed), roomClosed: r.closed, ...written(r.format, Number(r.turns ?? 0)) }),
       };
     });
   } catch {

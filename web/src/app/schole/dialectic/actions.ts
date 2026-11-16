@@ -7,6 +7,7 @@ import { addEvent } from "@/server/calendar-store";
 import {
   addPost, closeRoom, createDebate, createRoom, createThread, getDebate, letSpeak, removePost, roomEvent, sayInRoom, startDebate, takeSeat,
 } from "@/server/dialectic-store";
+import { addPost as addTopicPost, correctStance, formDebate, regrade, removePost as removeTopicPost, writeTurn } from "@/server/discussion-store";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "");
 
@@ -83,4 +84,45 @@ export async function removePostAction(form: FormData): Promise<void> {
   const user = await requireUser();
   await removePost(user.id, str(form, "post"));
   revalidatePath(`/schole/dialectic/threads/${str(form, "thread")}`);
+}
+
+/* ---------- discussions on topics and written debates (migration 0037) ---------- */
+
+const back = (f: FormData) => { const p = str(f, "path"); return p.startsWith("/schole/") ? p : "/schole/dialectic"; };
+
+export async function topicPostAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  await addTopicPost(user.id, str(form, "topic"), form.get("body"), str(form, "parent") || null);
+  revalidatePath(back(form));
+}
+
+export async function correctStanceAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  await correctStance(user.id, str(form, "post"), str(form, "stance"));
+  revalidatePath(back(form));
+}
+
+export async function regradeAction(form: FormData): Promise<void> {
+  await requireUser();
+  await regrade(str(form, "post"));
+  revalidatePath(back(form));
+}
+
+export async function removeTopicPostAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  await removeTopicPost(user.id, str(form, "post"));
+  revalidatePath(back(form));
+}
+
+export async function formDebateAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const id = await formDebate(user.id, str(form, "post"), { motion: form.get("motion"), side: form.get("side") });
+  redirect(`/schole/dialectic/debates/${id}`);
+}
+
+export async function writeTurnAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const id = str(form, "id");
+  await writeTurn(user.id, id, form.get("body"));
+  revalidatePath(`/schole/dialectic/debates/${id}`);
 }

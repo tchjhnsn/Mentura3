@@ -8,8 +8,9 @@
 export type Side = "for" | "against";
 export const SIDES: readonly { id: Side; label: string }[] = [{ id: "for", label: "For" }, { id: "against", label: "Against" }];
 
-export type FormatStep = { label: string; minutes: number };
-export type Format = { id: string; label: string; about: string; steps: readonly FormatStep[] };
+/** A step of a format: spoken steps have minutes; written steps have a character count for each side's turn. */
+export type FormatStep = { label: string; minutes?: number; chars?: number };
+export type Format = { id: string; label: string; about: string; written?: boolean; steps: readonly FormatStep[] };
 
 /**
  * Debate formats. "Two sides" is the plain shape of a parliamentary or Oxford-style debate; the disputation follows
@@ -24,11 +25,23 @@ export const FORMATS: readonly Format[] = [
     id: "disputation", label: "Disputation", about: "The medieval form: objections first, then the contrary, the answer and the replies.",
     steps: [{ label: "The question is put", minutes: 2 }, { label: "Objections", minutes: 8 }, { label: "On the contrary", minutes: 3 }, { label: "I answer that", minutes: 8 }, { label: "Replies to the objections", minutes: 8 }],
   },
+  {
+    // Torian, 2026-11-16 09:43Z: a debate "could take place simply through text. And rather than minutes, you may get a
+    // character count."
+    id: "written", label: "Written", written: true, about: "In text, in turns: each side writes within a character count, For first in each round.",
+    steps: [{ label: "Opening", chars: 1500 }, { label: "Rebuttal", chars: 1000 }, { label: "Questions to the other side", chars: 300 }, { label: "Answers", chars: 600 }, { label: "Closing", chars: 800 }],
+  },
 ];
 export const formatById = (id: string): Format | undefined => FORMATS.find((f) => f.id === id);
-export const formatMinutes = (f: Format): number => f.steps.reduce((n, s) => n + s.minutes, 0);
+export const formatMinutes = (f: Format): number => f.steps.reduce((n, s) => n + (s.minutes ?? 0), 0);
 
-export const LIMITS = { motion: [8, 200], title: [3, 120], question: [8, 300], source: 200, body: 4000, chat: 1000, speakers: 8 } as const;
+/** Whose turn it is in a written debate, given the turns written so far: each step For then Against; null once done. */
+export function nextTurn(f: Format, turns: number): { step: number; side: Side } | null {
+  if (!f.written || turns >= f.steps.length * 2) return null;
+  return { step: Math.floor(turns / 2), side: turns % 2 === 0 ? "for" : "against" };
+}
+
+export const LIMITS = { motion: [8, 200], title: [3, 120], question: [8, 300], source: 200, body: 4000, post: 2000, chat: 1000, speakers: 8 } as const;
 
 /** Text as typed, trimmed and without control characters, or null when outside its bounds. */
 export function clean(v: unknown, max: number, min = 1): string | null {
@@ -42,9 +55,10 @@ export type DebateState = "upcoming" | "live" | "ended";
 
 /**
  * Where a debate stands: live while its room is open; ended once its room has closed, or three hours past its start
- * with no room opened; upcoming otherwise.
+ * with no room opened; upcoming otherwise. A written debate has no room: live from its start until every turn is in.
  */
-export function debateState(d: { startsAt: string; roomOpen: boolean; roomClosed: boolean }, now: Date = new Date()): DebateState {
+export function debateState(d: { startsAt: string; roomOpen: boolean; roomClosed: boolean; written?: { turns: number; total: number } }, now: Date = new Date()): DebateState {
+  if (d.written) return d.written.turns >= d.written.total ? "ended" : now.getTime() >= Date.parse(d.startsAt) ? "live" : "upcoming";
   if (d.roomOpen) return "live";
   if (d.roomClosed) return "ended";
   return now.getTime() > Date.parse(d.startsAt) + 3 * 3600_000 ? "ended" : "upcoming";
