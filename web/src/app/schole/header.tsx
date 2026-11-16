@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SearchButton } from "@/components/search-button";
 import { CompassIcon, LibraryIcon } from "lucide-react";
 import { TileHeader, TileIcon } from "@/app/life/tile-header";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ const PART: Record<LearnPart, string | null> = { space: null, shelves: "Your lib
 export function LearnHeader({ on }: { on: LearnPart }) {
   return (
     <TileHeader tile="learn" label="Scholē" part={PART[on]} workspace="/schole" tools={false} icons={<>
+      <SearchButton />
       <TileIcon label="Browse" href="/schole/browse" here={on === "browse"}><CompassIcon /></TileIcon>
       <TileIcon label="Your library" href="/schole/shelves" here={LIBRARY.includes(on)}><LibraryIcon /></TileIcon>
     </>} />
