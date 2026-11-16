@@ -163,7 +163,7 @@ export function Game({ work, title, audiobook, rounds, inline = false }: { work:
                       {v?.act === "match" || v?.act === "split" ? <CheckIcon className="size-3.5 text-green-700 dark:text-green-400" /> : null}
                       {v?.act === "miss" ? <><XIcon className="text-destructive size-3.5" /><span className="text-green-700 dark:text-green-400">{v.known!.answers.map(actLabel).join(" or ")}</span></> : null}
                       {v?.act === "missed" ? <span className="text-muted-foreground">Known: {v.known!.answers.map(actLabel).join(" or ")}</span> : null}
-                      {v?.act === "new" ? <span className="text-muted-foreground">added</span> : null}
+                      {v?.act === "new" ? <span className="text-muted-foreground">{(() => { const r = result!.readers[u.key]; return r && r.n ? `${r.same} of ${r.n} ${r.n === 1 ? "reader" : "readers"} agree` : "first to mark it"; })()}</span> : null}
                     </span>
                   ) : null}
                   {m?.link || v?.link ? (
@@ -186,7 +186,7 @@ export function Game({ work, title, audiobook, rounds, inline = false }: { work:
         <div className="space-y-3" aria-live="polite">
           <p className="text-[15px] font-medium">
             {result!.checked ? `${result!.right} of ${result!.checked} matched` : "Nothing here was known yet"}
-            {result!.added ? ` · ${result!.added} added to the map` : ""} · +{result!.points} points
+            {result!.added ? ` · ${result!.added} added to the map` : ""}{result!.agreed ? ` · ${result!.agreed / 5} agreed with other readers` : ""} · +{result!.points} points
           </p>
           {result!.units.some((u) => u.act === "split") ? <p className="text-muted-foreground text-sm">Amber: readers split here, and your reading is one that stands.</p> : null}
         </div>

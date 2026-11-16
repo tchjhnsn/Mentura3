@@ -105,3 +105,16 @@ export function drawPassages(o: { work: string; units: readonly Unit[]; passages
   fresh.sort((a, b) => Number(b.known > 0) - Number(a.known > 0) || a.r - b.r);
   return fresh.slice(0, o.count ?? 5).map((x) => x.p);
 }
+
+/**
+ * Other readers against a mark (output agreement, after von Ahn's ESP Game, played turn by turn): of the people who
+ * marked this sentence before, each counted once by their latest mark, how many chose the same highlighter.
+ */
+export function readersOf(key: string, mine: string | null, answers: readonly Answer[], user: string): { n: number; same: number } {
+  const latest = new Map<string, string>();
+  for (const a of answers) if (a.key === key && a.kind === "act" && a.user !== user && a.answer !== "unsure") latest.set(a.user, a.answer);
+  return { n: latest.size, same: mine ? [...latest.values()].filter((x) => x === mine).length : 0 };
+}
+
+/** Points for agreeing with other readers where nothing is known: 5 when at least half of them chose the same. */
+export const agreementPoints = (r: readonly { n: number; same: number }[]) => r.filter((x) => x.n > 0 && x.same * 2 >= x.n).length * 5;
