@@ -57,7 +57,7 @@ export function ItemMedia({ id, title, by, embed, place, notes, transcript }: { 
       {embed?.kind === "youtube" ? (
         <div className="aspect-video w-full overflow-hidden rounded-lg border bg-black"><div ref={holder} className="size-full" /></div>
       ) : embed ? (
-        <iframe src={embed.src} title={`${title} on ${embed.site}`} className={embed.tall ? "aspect-video w-full rounded-lg border" : "h-40 w-full rounded-lg border"} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />
+        <iframe src={embed.src} title={`${title} on ${embed.site}`} className={embed.tall ? "aspect-video w-full rounded-lg border" : embed.list ? "h-[450px] w-full rounded-lg border" : "h-40 w-full rounded-lg border"} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />
       ) : null}
       {embed?.kind === "youtube" && place ? <p className="text-muted-foreground text-xs">Picks up at {clock(place)}, where you stopped.</p> : null}
 

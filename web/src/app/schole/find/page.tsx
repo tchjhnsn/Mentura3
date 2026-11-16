@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { playsHere } from "@reflect/core/browse-media";
+import { embedOf } from "@reflect/core/media";
 import { mediumOf, type Medium } from "@reflect/core/ways";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
@@ -38,6 +39,8 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
   const here = one(sp.h) === "1" || playsHere({ medium: medium as Medium, url, image });
   const m = mediumOf(medium as Medium);
   const square = medium === "music" || medium === "podcast" || medium === "art";
+  // An album plays right here, before it is kept: Apple Music's player gives previews, and whole tracks to its subscribers.
+  const album = embedOf(url);
   return (
     <main className={PAGE}>
       <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />
@@ -59,6 +62,9 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
           </form>
         </div>
       </div>
+      {album?.kind === "frame" && album.list ? (
+        <iframe src={album.src} title={`${title} on ${album.site}`} className="mt-8 h-[450px] w-full max-w-3xl rounded-lg border" allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" />
+      ) : null}
     </main>
   );
 }

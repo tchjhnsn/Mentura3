@@ -8,6 +8,8 @@ import { requireUser } from "@/server/session";
 import { openLibrary } from "@/server/browse";
 import { LearnHeader, LibraryTabs } from "../header";
 import { ICON } from "../browse/media";
+import { madeList } from "@/server/topics";
+import { MadeCard } from "../playlists/card";
 
 export const metadata: Metadata = { title: "Lists" };
 
@@ -36,13 +38,21 @@ function Fan({ covers }: { covers: (string | null)[] }) {
 
 /** Lists chosen by others, each with who chose it: books first, then courses, debates, plays and films. */
 export default async function ListsPage() {
-  await requireUser();
-  const covers = await Promise.all(LISTS.map((l) => firstCovers(l.books)));
+  const user = await requireUser();
+  const [covers, saved] = await Promise.all([Promise.all(LISTS.map((l) => firstCovers(l.books))), madeList(user.id, { saved: true })]);
   return (
     <main className={PAGE}>
       <LearnHeader on="lists" />
       <LibraryTabs on="lists" className="mt-4" />
       <section className="mt-6 space-y-8">
+        {saved.length ? (
+          <div className="space-y-4">
+            <h2 className="text-base font-semibold">Your playlists</h2>
+            <ul className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {saved.map((m) => <li key={m.id}><MadeCard id={m.id} name={m.name} items={m.items} /></li>)}
+            </ul>
+          </div>
+        ) : null}
         <p className="text-muted-foreground text-[13px]">Lists chosen by others, each credited to its source.</p>
         <ul className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {LISTS.map((l, n) => (

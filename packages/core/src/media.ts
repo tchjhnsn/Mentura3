@@ -3,7 +3,7 @@
  * (YouTube's "Show transcript" copy, WebVTT or SRT) into timed parts that can be searched and quoted with their
  * moment. YouTube does not let other sites fetch a video's captions, so a transcript is pasted, never fetched.
  */
-export type Embed = { kind: "youtube"; id: string; start: number } | { kind: "frame"; src: string; site: string; tall: boolean };
+export type Embed = { kind: "youtube"; id: string; start: number } | { kind: "frame"; src: string; site: string; tall: boolean; /** A list of tracks (an album), drawn taller than one track. */ list?: boolean };
 export type Part = { at: number; text: string };
 
 /** "1:02:03", "12:34", "75" or "1m15s" in seconds, or null. */
@@ -44,6 +44,9 @@ export function embedOf(raw: string | null | undefined): Embed | null {
   if (ia) return { kind: "frame", src: `https://archive.org/embed/${ia[1]}`, site: "Internet Archive", tall: true };
   const sp = h === "open.spotify.com" ? /^\/(episode|show|track|album|playlist)\/(\w+)/.exec(u.pathname) : null;
   if (sp) return { kind: "frame", src: `https://open.spotify.com/embed/${sp[1]}/${sp[2]}`, site: "Spotify", tall: false };
+  // Apple Music's player plays 30-second previews, and whole tracks for someone signed in to Apple Music.
+  const am = h === "music.apple.com" ? /^\/([a-z]{2})\/(album|playlist)\/([^/]+)\/([\w.-]+)/.exec(u.pathname) : null;
+  if (am) return { kind: "frame", src: `https://embed.music.apple.com/${am[1]}/${am[2]}/${am[3]}/${am[4]}`, site: "Apple Music", tall: false, list: true };
   if (h === "soundcloud.com") return { kind: "frame", src: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u.toString())}`, site: "SoundCloud", tall: false };
   return null;
 }

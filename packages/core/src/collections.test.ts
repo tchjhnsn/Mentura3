@@ -9,7 +9,7 @@ describe("collections", () => {
       expect(c.by).toBeTruthy();
       expect(c.items.length).toBeGreaterThan(1);
     }
-    expect(collectionById("greeks")?.name).toBe("Start with the Greeks");
+    expect(collectionById("greeks")?.name).toBe("Homer to Socrates");
   });
 
   it("points every recording at a line of the audiobook catalog", () => {

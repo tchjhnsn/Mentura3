@@ -21,6 +21,8 @@ export function haveKeys(items: readonly LearnItem[]): Set<string> {
   for (const i of items) {
     keys.add(`${i.medium}|${i.title.toLowerCase()}`);
     if (!i.url) continue;
+    const ab = /\/audiobooks\/(\d+)/.exec(i.url);
+    if (ab) keys.add(`audiobook:${ab[1]}`);
     for (const c of COLLECTIONS) for (const x of c.items) {
       if (x.kind === "course" && i.url.replace(/\/$/, "") === x.url.replace(/\/$/, "")) keys.add(itemKey(x));
       if (x.kind === "audiobook" && (i.url.includes(`/audiobooks/${x.id}`) || new RegExp(`[?&/=]${x.id}(\\D|$)`).test(i.url) && /librivox/.test(i.url))) keys.add(itemKey(x));

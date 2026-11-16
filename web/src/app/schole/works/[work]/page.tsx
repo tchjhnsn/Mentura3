@@ -28,6 +28,10 @@ import { Excerpts } from "./excerpts";
 import { AudiobookButton, AudiobookChapters } from "../../audiobooks/[id]/play";
 import { Clamp } from "../../people/clamp";
 import { SyllabusTabs } from "../../courses/syllabus-tabs";
+import { workById } from "@reflect/core/topic-pages";
+import { haveKeys } from "@/server/collections";
+import { listItems } from "@/server/ways-store";
+import { ClassicWork } from "./classic";
 import { AuthorName, BookGrid } from "../../book-card";
 import { setBookStatusAction } from "../../actions";
 
@@ -49,6 +53,8 @@ const Label = ({ children }: { children: ReactNode }) => <h3 className="text-mut
 export default async function WorkPage({ params }: { params: Promise<{ work: string }> }) {
   const user = await requireUser();
   const { work } = await params;
+  const classic = workById(work);
+  if (classic) return <ClassicWork w={classic} have={haveKeys(await listItems(user.id).catch(() => []))} />;
   if (!/^OL\d+W$/.test(work)) notFound();
   const [entry, details, access, view, claims, excerpts, published, ideas] = await Promise.all([
     workEntry(work, cached).catch(() => null),
