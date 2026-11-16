@@ -92,7 +92,8 @@ export const WORKS: readonly Work[] = [
   W("electra", "Electra", "Sophocles", "about 410 BC", "greeks", "tragedy", "Orestes' revenge, told from the sister who waited.", ["4810"]),
   W("medea", "Medea", "Euripides", "431 BC", "greeks", "tragedy", "A wife abandoned for a princess takes the worst revenge there is.", ["6404"]),
   W("bacchae", "The Bacchae", "Euripides", "405 BC", "greeks", "tragedy", "The god Dionysus comes home to Thebes, and the king who refuses him.", ["4724", "18671"]),
-  W("iphigenia", "Iphigenia in Aulis", "Euripides", "405 BC", "greeks", "tragedy", "Agamemnon must give his daughter to the gods for a wind to Troy.", ["7985"]),
+  W("iphigenia", "Iphigenia in Aulis", "Euripides", "405 BC", "greeks", "tragedy", "Agamemnon must give his daughter to the gods for a wind to Troy.", ["7985", "10019"]),
+  W("tauris", "Iphigenia among the Taurians", "Euripides", "about 414 BC", "greeks", "tragedy", "Iphigenia, saved from the altar, is a priestess at the end of the world when her brother arrives to be sacrificed. Aristotle's favourite recognition.", ["9997", "10035"]),
   W("clouds", "The Clouds", "Aristophanes", "423 BC", "greeks", "comedy", "Socrates mocked as a sophist hanging in a basket, twenty-four years before his trial.", ["9998"]),
   W("frogs", "The Frogs", "Aristophanes", "405 BC", "greeks", "comedy", "Dionysus goes down to Hades to bring back a good poet, and holds a contest between Aeschylus and Euripides.", ["8000"]),
   W("lysistrata", "Lysistrata", "Aristophanes", "411 BC", "greeks", "comedy", "The women of Greece end a war by refusing their husbands.", ["5001", "10933"]),
@@ -106,6 +107,8 @@ export const WORKS: readonly Work[] = [
   W("symposium", "Symposium", "Plato", "about 385 BC", "greeks", "dialogues", "A drinking party where each guest praises love, until Alcibiades arrives.", ["3485"]),
   W("meno", "Meno", "Plato", "4th century BC", "greeks", "dialogues", "Can virtue be taught? A slave boy is led to a proof he did not know he knew.", ["5566"]),
   W("gorgias", "Gorgias", "Plato", "4th century BC", "greeks", "dialogues", "Rhetoric against philosophy: is it better to suffer wrong than to do it?", ["6991"]),
+  W("laws", "Laws", "Plato", "about 348 BC", "greeks", "dialogues", "His last and longest work: three old men walk to a temple and write the laws of a new city, its music included.", ["6423", "10549"]),
+  W("timaeus", "Timaeus", "Plato", "about 360 BC", "greeks", "dialogues", "How the world was made, its soul tuned in the ratios of a musical scale.", ["842"]),
   W("phaedrus", "Phaedrus", "Plato", "4th century BC", "greeks", "dialogues", "A walk outside the walls on love, the soul and writing.", ["2429"]),
   W("ethics", "Nicomachean Ethics", "Aristotle", "4th century BC", "greeks", "treatises", "Happiness as living well, and the virtues that make it.", ["3733"], [
     v("understand", iot("1ft00r2ap8dq9", "Aristotle's Nicomachean Ethics", "Four scholars on what the Ethics asks of you.")),
@@ -118,6 +121,11 @@ export const WORKS: readonly Work[] = [
   W("thucydides", "History of the Peloponnesian War", "Thucydides", "about 400 BC", "greeks", "histories", "Athens against Sparta, by an Athenian general who lost a battle and wrote it all down.", ["422", "22108"], [v("understand", KAGAN)]),
   W("anabasis", "Anabasis", "Xenophon", "about 370 BC", "greeks", "histories", "Ten thousand Greek soldiers march home through Persia.", ["2727"]),
   W("memorabilia", "Memorable Thoughts of Socrates", "Xenophon", "about 371 BC", "greeks", "histories", "Another pupil remembers Socrates.", ["14766"]),
+  W("meditations", "Meditations", "Marcus Aurelius", "AD 170s", "romans", "philosophy", "Notes an emperor wrote to himself on campaign, never meant to be read.", ["1095", "12252"], [
+    v("understand", iot("1tyinop5kt3m0", "Marcus Aurelius", "Scholars on the man behind the notebook.")),
+    v("understand", yt("lecture", "Auuk1y4DRgk", "Marcus Aurelius' Meditations: The Stoic Ideal", "Michael Sugrue", "A lecture on what the Meditations teach.")),
+    v("see", aic(5644, "9b312820-971d-04ba-361d-4b008eaaaccc", "Aureus (Coin) Portraying Marcus Aurelius", "Ancient Roman, 153-154", "His face as Romans carried it.")),
+  ]),
   W("plutarch", "Parallel Lives", "Plutarch", "about AD 100", "greeks", "histories", "Greek and Roman lives side by side, to see what character does.", ["3119"]),
 ];
 
@@ -132,9 +140,9 @@ export const TOPIC_PAGES: readonly TopicPage[] = [
     about: "Homer to Plutarch: the epics, the tragedies and comedies of Athens, Plato's dialogues, Aristotle, the historians, and the music, vases and coins that survive.",
     forms: [
       { id: "epic", label: "Epic", where: "Ionia and mainland Greece, 8th and 7th centuries BC", works: ["iliad", "odyssey", "theogony", "hymns"] },
-      { id: "tragedy", label: "Tragedy", where: "Athens, 5th century BC", works: ["oresteia", "persians", "oedipus", "antigone", "colonus", "electra", "medea", "bacchae", "iphigenia"] },
+      { id: "tragedy", label: "Tragedy", where: "Athens, 5th century BC", works: ["oresteia", "persians", "oedipus", "antigone", "colonus", "electra", "medea", "bacchae", "iphigenia", "tauris"] },
       { id: "comedy", label: "Comedy", where: "Athens, 5th century BC", works: ["clouds", "frogs", "lysistrata", "acharnians"] },
-      { id: "dialogues", label: "Dialogues", where: "Athens, 4th century BC", works: ["euthyphro", "apology", "phaedo", "republic", "symposium", "meno", "gorgias", "phaedrus"] },
+      { id: "dialogues", label: "Dialogues", where: "Athens, 4th century BC", works: ["euthyphro", "apology", "phaedo", "republic", "symposium", "meno", "gorgias", "phaedrus", "timaeus", "laws"] },
       { id: "treatises", label: "Treatises", where: "Athens, 4th century BC", works: ["ethics", "politics", "poetics", "rhetoric", "metaphysics"] },
       { id: "histories", label: "Histories and lives", where: "5th century BC to the 2nd century AD", works: ["herodotus", "thucydides", "anabasis", "memorabilia", "plutarch"] },
       { id: "music", label: "Music", items: [PANIAGUA, SEIKILOS] },
@@ -189,8 +197,7 @@ export const TOPIC_PAGES: readonly TopicPage[] = [
         ab("9450", "On Duties", "Cicero", "A statesman's last book, written to his son."),
         ab("7035", "On the Nature of the Gods", "Cicero", "Three schools argue about the gods."),
         ab("4947", "Of the Shortness of Life", "Seneca", "Life is long enough, if you know how to use it."),
-        ab("1095", "Meditations", "Marcus Aurelius", "An emperor's notebook."),
-      ] },
+      ], works: ["meditations"] },
       { id: "comedy", label: "Comedy and satire", where: "Rome, 2nd century BC to 2nd century AD", items: [
         ab("15450", "Trinummus", "Plautus", "A comedy about a friend's buried treasure."),
         ab("16331", "Bacchides", "Plautus", "Twin sisters, two lovers, one clever slave."),
