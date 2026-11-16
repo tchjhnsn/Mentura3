@@ -25,7 +25,7 @@ export default async function PracticePage() {
       <div className="mt-6 space-y-8">
         <header className="space-y-3">
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">Practice</h1>
-          <p className="text-muted-foreground">Ten questions on a dialogue, one passage at a time. Tap an answer to each. Some have a settled answer and teach; the rest add your answer to Reflect&apos;s map of the argument.</p>
+          <p className="text-muted-foreground">Ten questions on a dialogue, one passage at a time: what the words do, what they support or attack, and how good the argument is. Some have a settled answer and teach; the rest add your answer to Reflect&apos;s map of the argument.</p>
           <Button asChild size="lg" className="w-full rounded-full"><Link href={`/schole/dialectic/practice/${least.id}`}>Start: {least.title}</Link></Button>
         </header>
         <section aria-labelledby="dialogues" className="space-y-2">
@@ -49,6 +49,9 @@ export default async function PracticePage() {
             <h2 id="record" className="font-semibold">Your record</h2>
             {record.settled ? <p className="text-muted-foreground">{record.right} of {record.settled} settled answers right</p> : null}
             <p className="text-muted-foreground">{record.labels} {record.labels === 1 ? "label" : "labels"} added</p>
+            {record.calibration.some((c) => c.n) ? (
+              <p className="text-muted-foreground">When you said {record.calibration.filter((c) => c.n).map((c) => `${["a guess", "think so", "sure"][c.confidence - 1]}, you were right ${c.right} of ${c.n}`).join("; ")}.</p>
+            ) : null}
           </section>
         ) : null}
         <p><Link href="/schole/dialectic/practice/guide" className="text-muted-foreground text-sm underline underline-offset-4">Guidelines</Link></p>
