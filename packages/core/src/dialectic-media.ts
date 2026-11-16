@@ -238,3 +238,64 @@ export const DEBATE_RECORDS: Readonly<Record<string, DebateRecord>> = {
 
 /** The record of a debate by its recording's link, when one was checked. */
 export const debateRecord = (url: string | null | undefined): DebateRecord | null => (url ? DEBATE_RECORDS[url] ?? null : null);
+
+/*
+ * Subjects (Torian, 2026-11-16 20:27Z: a rail at the top "so that you could choose between subjects... theology debates
+ * or economic debates or debates about morality or types of government"). Standard names for the branches the recordings
+ * argue in; a recording can sit in more than one. A new debate from a channel's feed gets its subject from its title's
+ * words, or none (it shows under All).
+ */
+export const SUBJECTS = [
+  { id: "theology", label: "Theology" },
+  { id: "ethics", label: "Ethics" },
+  { id: "politics", label: "Politics" },
+  { id: "economics", label: "Economics" },
+  { id: "human-nature", label: "Human nature" },
+  { id: "knowledge", label: "Knowledge" },
+  { id: "education", label: "Education" },
+  { id: "love", label: "Love and friendship" },
+  { id: "science", label: "Science and technology" },
+  { id: "society", label: "Society" },
+] as const;
+export type Subject = (typeof SUBJECTS)[number]["id"];
+
+const SUBJECT_OF = new Map<string, readonly Subject[]>();
+const about = (subjects: readonly Subject[], ...items: CollectionItem[]) => { for (const i of items) SUBJECT_OF.set(itemKey(i), [...(SUBJECT_OF.get(itemKey(i)) ?? []), ...subjects]); };
+about(["theology"], RUSSELL_COPLESTON, CRAIG_CARROLL, OCONNOR_CRAIG, BATTLE_REALITY, OCONNOR_SURROUNDED, PETERSON_SURROUNDED, CRAIG_HITCHENS, IQ2_CHURCH, IQ2_RELIGION, DEATH_FINAL, MAGEE_MEDIEVAL, IOT_AQUINAS, EUTHYPHRO, PHAEDO, CONSOLATION, CUR_DEUS_HOMO, HUME_DIALOGUES, ANTIGONE, MAJOR_BARBARA, DON_JUAN, COMMON_SENSE);
+about(["science"], CRAIG_CARROLL, BATTLE_REALITY, DEATH_FINAL, BIG_TECH);
+about(["ethics"], KIRK_CAMBRIDGE, KIRK_SURROUNDED, MAGEE_ARISTOTLE, MAGEE_KANT, IOT_ETHICS, IOT_PRISON, IOT_CICERO, IOT_HUME, EUTHYPHRO, APOLOGY, MENO, PROTAGORAS, GORGIAS, REPUBLIC, CICERO_FRIENDSHIP, CONSOLATION, ANTIGONE, ENEMY, MAJOR_BARBARA);
+about(["politics"], KIRK_CAMBRIDGE, KIRK_SURROUNDED, NO_CONFIDENCE, MEDIA_ENEMY, MONARCHY, LINCOLN_DOUGLAS, FIRING_LINE, BALDWIN_BUCKLEY, MAGEE_POLITICS, MAGEE_FRANKFURT, IOT_POLITICS, IOT_MACHIAVELLI, IOT_CICERO, IOT_CONTRACT, IOT_FEDERALIST, REPUBLIC, UTOPIA, FEDERALIST, ANTI_FEDERALIST, COMMON_SENSE, RIGHTS_OF_MAN, AREOPAGITICA, JULIUS_CAESAR, ENEMY, TACITUS_ORATORY);
+about(["economics"], PETERSON_ZIZEK, BIG_TECH, MAGEE_FRANKFURT, UTOPIA, MAJOR_BARBARA);
+about(["human-nature"], CHOMSKY_FOUCAULT, PETERSON_ZIZEK, MAGEE_HUME, MAGEE_KANT, IOT_CONTRACT, IOT_HUME, PHAEDO, IOT_EMILE);
+about(["knowledge"], MAGEE_PLATO, MAGEE_HUME, MAGEE_KANT, MAGEE_MEDIEVAL, IOT_SOCRATES, MENO, BERKELEY, HUME_DIALOGUES, CLOUDS);
+about(["education"], MENO, PROTAGORAS, IOT_EMILE, CLOUDS, TACITUS_ORATORY, MAGEE_PLATO);
+about(["love"], IOT_SYMPOSIUM, SYMPOSIUM, PHAEDRUS, CICERO_FRIENDSHIP, DON_JUAN);
+about(["society"], BALDWIN_BUCKLEY, MEDIA_ENEMY, KIRK_SURROUNDED, IQ2_CHURCH, MAGEE_FRANKFURT, ENEMY);
+
+const WORDS: readonly [RegExp, Subject][] = [
+  [/\b(god|gods|religion|religious|christian|christians|atheist|atheists|church|faith|bible|islam|muslim|jew|jewish|soul)\b/i, "theology"],
+  [/\b(capitalism|socialism|money|wealth|economy|economic|jobs?|workers?|boss|millionaire|billionaire|wage|tax|taxes|market)\b/i, "economics"],
+  [/\b(government|election|president|parliament|congress|monarchy|democracy|vote|voters|party|conservative|liberal|progressive|trump|state|law|laws)\b/i, "politics"],
+  [/\b(moral|morality|ethics|ethical|right|wrong|abortion|death penalty|justice)\b/i, "ethics"],
+  [/\b(ai|artificial intelligence|tech|technology|science|scientists?|internet|social media)\b/i, "science"],
+  [/\b(education|college|school|students?|teachers?|university)\b/i, "education"],
+  [/\b(love|marriage|dating|friendship|men|women)\b/i, "love"],
+];
+
+/** The subjects a recording argues in: its curated ones, else those its title's words name. */
+export const subjectsOf = (i: CollectionItem): readonly Subject[] =>
+  SUBJECT_OF.get(itemKey(i)) ?? WORDS.filter(([re]) => re.test(i.title)).map(([, s]) => s);
+
+/** The subject of each standing question, for the rail. */
+export const QUESTION_SUBJECTS: Readonly<Record<string, readonly Subject[]>> = {
+  "virtue-taught": ["ethics", "education"],
+  "suffer-injustice": ["ethics"],
+  "feared-or-loved": ["politics"],
+  "education-for": ["education"],
+  "who-should-rule": ["politics"],
+  "reason-or-feeling": ["ethics", "knowledge"],
+  "god-exists": ["theology"],
+  "human-nature": ["human-nature"],
+};
+
+export const isSubject = (s: string | undefined | null): s is Subject => SUBJECTS.some((x) => x.id === s);

@@ -62,3 +62,19 @@ describe("old and new", () => {
     expect(weekOf(new Date("2026-01-12T00:00:00Z"))).toBe(1);
   });
 });
+
+describe("subjects", () => {
+  it("gives every recording on the shelves at least one subject, and every question one", async () => {
+    const { subjectsOf, QUESTION_SUBJECTS, OLD_ARGUMENTS } = await import("./dialectic-media");
+    const { DIALECTICS } = await import("./dialectics");
+    for (const i of [...DIALECTIC_SHELVES.flatMap((s) => s.items), ...OLD_ARGUMENTS]) expect(subjectsOf(i).length, i.title).toBeGreaterThan(0);
+    for (const d of DIALECTICS) expect(QUESTION_SUBJECTS[d.id]?.length ?? 0, d.id).toBeGreaterThan(0);
+  });
+  it("reads a new debate's subject from its title", async () => {
+    const { subjectsOf } = await import("./dialectic-media");
+    const { yt } = await import("./collections");
+    expect(subjectsOf(yt("debate", "abcdefghijk", "1 Atheist vs 25 Christians in a new room", "Jubilee"))).toContain("theology");
+    expect(subjectsOf(yt("debate", "abcdefghijk", "1 Millionaire Boss vs 20 Gen Z Workers", "Jubilee"))).toContain("economics");
+    expect(subjectsOf(yt("debate", "abcdefghijk", "Something else entirely", "Jubilee"))).toEqual([]);
+  });
+});
