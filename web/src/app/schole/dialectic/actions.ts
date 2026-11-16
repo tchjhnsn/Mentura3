@@ -7,7 +7,7 @@ import { addEvent } from "@/server/calendar-store";
 import {
   addPost, closeRoom, createDebate, createRoom, createThread, getDebate, letSpeak, removePost, roomEvent, sayInRoom, startDebate, takeSeat,
 } from "@/server/dialectic-store";
-import { addPost as addTopicPost, correctStance, formDebate, regrade, removePost as removeTopicPost, writeTurn } from "@/server/discussion-store";
+import { addPost as addTopicPost, correctStance, follow, formDebate, regrade, removePost as removeTopicPost, repost, writeTurn } from "@/server/discussion-store";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "");
 
@@ -92,7 +92,7 @@ const back = (f: FormData) => { const p = str(f, "path"); return p.startsWith("/
 
 export async function topicPostAction(form: FormData): Promise<void> {
   const user = await requireUser();
-  await addTopicPost(user.id, str(form, "topic"), form.get("body"), str(form, "parent") || null);
+  await addTopicPost(user.id, str(form, "topic") || null, form.get("body"), str(form, "parent") || null);
   revalidatePath(back(form));
 }
 
@@ -125,4 +125,17 @@ export async function writeTurnAction(form: FormData): Promise<void> {
   const id = str(form, "id");
   await writeTurn(user.id, id, form.get("body"));
   revalidatePath(`/schole/dialectic/debates/${id}`);
+}
+
+export async function repostAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  await repost(user.id, str(form, "post"), str(form, "on") === "1");
+  revalidatePath(back(form));
+}
+
+export async function followAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const id = str(form, "user");
+  await follow(user.id, id, str(form, "on") === "1");
+  revalidatePath(`/schole/dialectic/u/${id}`);
 }

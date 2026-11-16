@@ -17,6 +17,7 @@ describe("argument levels", () => {
     expect(parseGrade('{"stance":"supports","level":6}')).toBeNull();
     expect(parseGrade("no json")).toBeNull();
     expect(gradePrompt("x", { kind: "post", text: "y" })).toContain("Tested");
+    expect(gradePrompt("x", null)).toContain("\"stance\": \"neither\"");
   });
 
   it("keys topics", () => {
