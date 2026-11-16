@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FORMATS, clean, debateState, formatById, formatMinutes, roomPeople, seated } from "./dialectic";
+import { FORMATS, clean, debateState, formatById, formatMinutes, nextTurn, roomPeople, seated } from "./dialectic";
 
 describe("dialectic", () => {
   it("has formats with steps", () => {
@@ -38,5 +38,24 @@ describe("dialectic", () => {
     expect(p.speakers).toEqual(["h", "a"]);
     expect(p.listeners).toEqual(["b"]);
     expect(p.hands).toEqual(["b"]);
+  });
+});
+
+describe("written debates", () => {
+  it("takes turns For then Against through every step", () => {
+    const f = formatById("written")!;
+    expect(nextTurn(f, 0)).toEqual({ step: 0, side: "for" });
+    expect(nextTurn(f, 1)).toEqual({ step: 0, side: "against" });
+    expect(nextTurn(f, 2)).toEqual({ step: 1, side: "for" });
+    expect(nextTurn(f, f.steps.length * 2)).toBeNull();
+    expect(nextTurn(formatById("two-sides")!, 0)).toBeNull();
+  });
+
+  it("keeps a written debate live until every turn is in", () => {
+    const now = new Date("2026-11-20T01:00:00Z");
+    const d = { startsAt: "2026-11-19T01:00:00Z", roomOpen: false, roomClosed: false };
+    expect(debateState({ ...d, written: { turns: 3, total: 10 } }, now)).toBe("live");
+    expect(debateState({ ...d, written: { turns: 10, total: 10 } }, now)).toBe("ended");
+    expect(debateState({ ...d, startsAt: "2026-11-21T01:00:00Z", written: { turns: 0, total: 10 } }, now)).toBe("upcoming");
   });
 });

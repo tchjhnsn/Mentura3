@@ -13,6 +13,7 @@ import { CollectionCard, PlaylistRows } from "../../playlists/card";
 import { adaptationsOf, MODE_LABEL, MODE_MEANS } from "@reflect/core/adaptations";
 import { cite, namedIn, personHref, personNamed } from "@reflect/core/historical-people";
 import { ideasIn } from "@reflect/core/great-ideas";
+import { DiscussTopic } from "../../dialectic/discussion";
 
 /** A recording as a row: its title and who read it, in how many voices. */
 function recording(id: string): CollectionItem | null {
@@ -91,6 +92,7 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
             </ul>
           </section>
         ) : null}
+        <section className="max-w-3xl"><DiscussTopic kind="work" id={w.id} /></section>
         {ideas.length ? (
           <section className="space-y-2">
             <SectionHead title="Ideas in this work" note="Great Ideas it discusses, with the passage." />

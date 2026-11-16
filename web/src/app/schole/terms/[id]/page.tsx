@@ -8,6 +8,7 @@ import { SectionHead } from "@/components/section-head";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
+import { DiscussTopic } from "../../dialectic/discussion";
 import { LEARN } from "../../crumbs";
 import { Articles, Cite, JournalPrompt, Passages } from "../../ideas/parts";
 
@@ -76,6 +77,7 @@ export default async function TermPage({ params }: { params: Promise<{ id: strin
           </section>
         </div>
         <aside className="space-y-8">
+          <DiscussTopic kind="term" id={t.id} />
           <section className="space-y-2">
             <SectionHead title="Where the word came from" />
             <ol className="space-y-2">
