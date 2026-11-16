@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PlayIcon } from "lucide-react";
 import { itemHref } from "@reflect/core/collections";
 import { DIALECTIC_SHELVES } from "@reflect/core/dialectic-media";
 import { rankDialectics } from "@reflect/core/dialectics";
@@ -40,12 +41,13 @@ export default async function DialecticPage() {
           <p className="text-muted-foreground">Watch and listen to people argue a question out.</p>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-[minmax(0,22rem)_1fr] sm:items-center" aria-label="Start here">
-          <Link href={itemHref(first)} className="block overflow-hidden rounded-xl border">
-            <Art image={art.image} kind={art.kind} title={first.title} className="aspect-video w-full" />
+        <section className="grid gap-4 sm:grid-cols-[minmax(0,22rem)_1fr] sm:items-center" aria-label="Featured">
+          <Link href={itemHref(first)} className="group relative block overflow-hidden rounded-xl border" aria-label={`Listen to ${first.title}`}>
+            <Art image={art.image} kind={art.kind} title={first.title} className="aspect-video w-full rounded-none border-0" />
+            <span className="absolute inset-0 flex items-center justify-center"><span className="flex size-14 items-center justify-center rounded-full bg-black/70 text-white transition group-hover:bg-black/85"><PlayIcon className="ml-0.5 size-6 fill-current" /></span></span>
           </Link>
           <div className="space-y-2">
-            <p className="text-muted-foreground text-sm">Start here · debate</p>
+            <p className="text-muted-foreground text-sm">Debate</p>
             <h2 className="text-2xl leading-tight font-semibold tracking-tight">{first.title}</h2>
             <p className="text-sm">{first.by}</p>
             {first.why ? <p className="text-muted-foreground">{first.why}</p> : null}

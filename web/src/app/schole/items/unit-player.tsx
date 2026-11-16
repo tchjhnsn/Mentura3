@@ -2,16 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { CheckIcon, ChevronRightIcon, CircleCheckIcon, CopyIcon, HeartIcon, ListChecksIcon, ListPlusIcon, PauseIcon, PlayIcon, PlusIcon, ScaleIcon, XIcon } from "lucide-react";
-import { STANCES } from "@reflect/core/claims";
+import { useRouter } from "next/navigation";
+import { CheckIcon, ChevronRightIcon, CircleCheckIcon, CopyIcon, HeartIcon, ListChecksIcon, ListPlusIcon, PauseIcon, PlayIcon, } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { passageAt, type Passage } from "@reflect/core/courses";
 import { clock } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { addItemNoteAction, favoriteEpisodeAction, keepItemClaimAction, keepUnitPlaceAction, removeItemNoteAction, setUnitDoneAction } from "../actions";
+import { favoriteEpisodeAction, keepUnitPlaceAction, setUnitDoneAction } from "../actions";
 import { loadYouTube, localDay, type YTPlayer } from "./youtube";
 import { useListen, type Track } from "../player";
 import { SaveEpisode } from "../podcasts/saved";
@@ -56,15 +54,10 @@ export function UnitPlayer(p: UnitProps) {
   const [follow, setFollow] = useState(true);
   const [open, setOpen] = useState(Boolean(p.episode));
   const [q, setQ] = useState("");
-  const [text, setText] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
-  const [claiming, setClaiming] = useState<number | null>(null);
-  const [claimed, setClaimed] = useState<number | null>(null);
-  const [writing, setWriting] = useState(false);
   const [fav, setFav] = useState(p.favorite ?? null);
   const [pending, run] = useTransition();
   const router = useRouter();
-  const path = usePathname();
 
   const listen = useListen();
   const shared = p.track && p.media?.kind === "audio" && listen ? p.track : null;
@@ -120,7 +113,6 @@ export function UnitPlayer(p: UnitProps) {
   // A passage without its own time takes the time of the chapter it falls under.
   const timeOf = (i: number) => { for (let j = i; j >= 0; j--) if (p.transcript[j]!.at !== null) return p.transcript[j]!.at!; return null; };
   const quoteOf = (x: Passage, i: number) => { const t = timeOf(i); return `“${x.text}” (${p.cite}${t !== null ? `, at ${clock(t)}` : ""})`; };
-  const note = (n: { at: number | null; quote?: string; note?: string }) => run(async () => { if (!p.item) return; await addItemNoteAction(p.item, { ...n, unit: p.unit }); setText(""); setWriting(false); router.refresh(); });
   const finish = (done: boolean) => run(async () => { if (!p.item) return; keep(); await setUnitDoneAction(p.item, p.unit, done, p.of, localDay()); if (done && p.next && !shared) router.push(p.next); else router.refresh(); });
   const playLabel = (() => {
     if (!shared) return "";
@@ -140,7 +132,6 @@ export function UnitPlayer(p: UnitProps) {
             {hits && !hits.length ? <p className="text-muted-foreground text-sm">Not found.</p> : null}
             <ol ref={list} className={cn("space-y-2 overflow-y-auto rounded-md border p-3 leading-relaxed", p.episode ? "max-h-[70vh] text-base" : "max-h-[60vh] text-sm")}>
                 {shown.map(({ x, i }) => {
-                  const t = timeOf(i);
                   return (
                     <li key={i} data-i={i} className={`group rounded-md px-2 py-1 ${i === current ? "bg-muted" : ""}`}>
                       {x.heading ? (
@@ -155,28 +146,9 @@ export function UnitPlayer(p: UnitProps) {
                       )}
                       {!x.heading && p.item ? (
                         <span className="mt-1 hidden gap-1 group-hover:flex group-focus-within:flex pointer-coarse:flex">
-                            <Button type="button" size="sm" variant="outline" className="h-7" disabled={pending} onClick={() => note({ at: t, quote: x.text })}>Quote in a note</Button>
                             <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Copy as a cited quote" onClick={() => { navigator.clipboard?.writeText(quoteOf(x, i)).catch(() => {}); setCopied(i); }}><CopyIcon /></Button>
-                            <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Keep as a claim" title="Keep as a claim" aria-expanded={claiming === i} onClick={() => setClaiming(claiming === i ? null : i)}><ScaleIcon /></Button>
                             {copied === i ? <span role="status" className="text-muted-foreground self-center text-xs">Copied</span> : null}
                         </span>
-                      ) : null}
-                      {claimed === i ? <p role="status" className="text-muted-foreground mt-1 text-xs">Kept as a claim</p> : null}
-                      {claiming === i && p.item ? (
-                        <form
-                          className="mt-2 space-y-2 rounded-md border p-2"
-                          action={(fd) => run(async () => { await keepItemClaimAction(fd); setClaiming(null); setClaimed(i); router.refresh(); })}
-                        >
-                          <input type="hidden" name="item" value={p.item} />
-                          <input type="hidden" name="cite" value={`${p.cite}${t !== null ? `, at ${clock(t)}` : ""}`} />
-                          <input type="hidden" name="back" value={path} />
-                          <label className="block space-y-1 text-xs font-medium">The claim, in your words or theirs<Textarea name="claim" required maxLength={500} rows={2} defaultValue={x.text.slice(0, 500)} /></label>
-                          <label className="block space-y-1 text-xs font-medium">Who holds it, one per line<Textarea name="holders" rows={1} defaultValue={x.who ?? (p.by && !/ and |, /.test(p.by) ? p.by : "")} /></label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {STANCES.map((s) => <Button key={s.id} size="sm" variant="outline" className="h-7" name="stance" value={s.id} disabled={pending}>{s.text}</Button>)}
-                            <Button type="button" size="icon" variant="ghost" className="size-7" aria-label="Close" onClick={() => setClaiming(null)}><XIcon /></Button>
-                          </div>
-                        </form>
                       ) : null}
                     </li>
                   );
@@ -243,38 +215,7 @@ export function UnitPlayer(p: UnitProps) {
           ) : <Button size="sm" disabled={pending} onClick={() => finish(true)}>{p.next ? "Finished, next" : "Finished"}</Button>}
         </div>
   );
-  const notesBlock = (
-        <div className="space-y-2">
-          <div className="flex items-center gap-1">
-            <h2 className="text-base font-semibold">{p.episode ? "Your notes" : "Notes"}</h2>
-            <Button type="button" size="icon" variant="ghost" className="size-7 rounded-full" aria-label={`Add a note at ${clock(Math.floor(now))}`} title={`Add a note at ${clock(Math.floor(now))}`} aria-expanded={writing} onClick={() => setWriting(true)}><PlusIcon /></Button>
-          </div>
-          {!p.notes.length && !writing ? <p className="text-muted-foreground text-sm">None yet. The + adds one at the moment playing.</p> : null}
-          {p.notes.length ? (
-            <ul className="space-y-2">
-              {p.notes.map((n) => (
-                <li key={n.id} className="flex items-start gap-2 rounded-md border p-2 text-sm">
-                  {n.at !== null ? <button type="button" onClick={() => seek(n.at!)} className="text-muted-foreground shrink-0 tabular-nums underline-offset-4 hover:underline">{clock(n.at)}</button> : null}
-                  <span className="min-w-0 flex-1 space-y-1">
-                    {n.quote ? <span className="block italic">“{n.quote}”</span> : null}
-                    {n.note ? <span className="block">{n.note}</span> : null}
-                  </span>
-                  <Button type="button" size="icon" variant="ghost" aria-label="Remove note" disabled={pending} onClick={() => run(async () => { if (p.item) await removeItemNoteAction(p.item, n.id); router.refresh(); })}><XIcon /></Button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {writing ? <>
-            <Textarea aria-label="Note" rows={2} maxLength={4000} value={text} onChange={(e) => setText(e.target.value)} placeholder="A note" autoFocus />
-            <div className="flex gap-2">
-              <Button type="button" size="sm" disabled={pending || !text.trim()} onClick={() => note({ at: Math.floor(time()), note: text })}>Note at {clock(Math.floor(now))}</Button>
-              <Button type="button" size="sm" variant="ghost" onClick={() => { setWriting(false); setText(""); }}>Cancel</Button>
-            </div>
-          </> : null}
-        </div>
-  );
-
-  if (p.episode) return <EpisodeLayout p={p} media={<>{media}{p.item ? finishRow : null}</>} notes={p.item ? notesBlock : null} transcript={p.transcript.length ? transcriptList : p.noTranscript ?? <p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>} hasTranscript={p.transcript.length > 0} />;
+  if (p.episode) return <EpisodeLayout p={p} media={<>{media}{p.item ? finishRow : null}</>} notes={null} transcript={p.transcript.length ? transcriptList : p.noTranscript ?? <p className="text-muted-foreground text-sm">The show publishes no transcript for this episode.</p>} hasTranscript={p.transcript.length > 0} />;
 
   return (
     <div className="min-w-0 space-y-5">
@@ -285,9 +226,7 @@ export function UnitPlayer(p: UnitProps) {
 
         {transcriptPanel}
 
-        {p.between}
-
-        {notesBlock}</> : <>{transcriptPanel}{p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next lecture</Link></Button> : null}</>}
+        {p.between}</> : <>{transcriptPanel}{p.next ? <Button size="sm" variant="outline" asChild><Link href={p.next}>Next lecture</Link></Button> : null}</>}
       </div>
 
     </div>

@@ -24,7 +24,7 @@ export const keyOf = (f: { medium: string; title: string }) => `${f.medium}|${f.
 /**
  * One find as a card (Torian, 2026-11-15: tapping a thing opens it, words only for a page's own act): its picture,
  * title and maker, its medium and way of learning, and Here when it can be done in Reflect. Tapping it opens its page
- * (a course's or a show's, the person's own item once kept, else the find's page, which holds Start here and Keep for
+ * (a course's or a show's, the person's own item once kept, else the find's page, which holds its verb (Watch, Listen, Play) and Save for
  * later); the bookmark on its picture keeps it for later without leaving, and shows filled once kept.
  */
 function MediaCard({ f, mine, showMedium }: { f: Find; mine: Map<string, string>; showMedium: boolean }) {

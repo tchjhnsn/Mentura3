@@ -50,7 +50,6 @@ export async function CourseView({ userId, u, t, by: byAsked, footer }: { userId
   const prereqs = outline.sections.prerequisites.flatMap((p) => p.lines);
   const textCount = books.length + unfound.length;
   const facts = [course.lectures.length ? `${course.lectures.length} lectures` : "No lecture videos", textCount ? `${textCount} required ${textCount === 1 ? "text" : "texts"}` : null, prereqs.length ? `${prereqs.length} ${prereqs.length === 1 ? "prerequisite" : "prerequisites"}` : null, kept ? `${finished.size} finished` : null].filter(Boolean);
-  const whyHref = (start: boolean) => `/schole/courses/why?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}${by ? `&by=${encodeURIComponent(by)}` : ""}${course.image ? `&img=${encodeURIComponent(course.image)}` : ""}${start ? "&go=start" : ""}`;
   const allDone = Boolean(kept && course.lectures.length && course.lectures.every((l) => finished.has(String(l.n))));
   const none = (what: string) => <p className="text-muted-foreground text-sm">{credit.name} lists no {what} for this course.</p>;
   const parts = (list: { heading: string; lines: string[] }[], titled: boolean) => (
@@ -66,17 +65,13 @@ export async function CourseView({ userId, u, t, by: byAsked, footer }: { userId
 
   const primary = kept
     ? (next ? <Button asChild size="sm"><Link href={href(next.n)}>{finished.size ? "Continue" : "Start"}: Lecture {next.n}</Link></Button> : null)
-    : reason
-      ? <form action={browseAddAction}><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /><Button size="sm" name="go" value="start">Start the course</Button></form>
-      : <Button asChild size="sm"><Link href={whyHref(true)}>Start the course</Link></Button>;
+    : <form action={browseAddAction}><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /><Button size="sm" name="go" value="start">Start the course</Button></form>;
   const hidden = <><input type="hidden" name="medium" value="course" /><input type="hidden" name="title" value={title} /><input type="hidden" name="url" value={site.url} />{by ? <input type="hidden" name="by" value={by} /> : null}{course.image ? <input type="hidden" name="image" value={course.image} /> : null}<LocalDay /></>;
   // The one filled button (priority guides, course page): Start, or Continue naming the next lecture.
   const big = "h-11 w-full max-w-full px-6 text-base sm:w-auto";
   const start = kept
     ? (next ? <Button asChild size="lg" className={big}><Link href={href(next.n)}><span className="truncate">{finished.size ? "Continue" : "Start"}: Lecture {next.n}, {next.title}</span></Link></Button> : <p className="text-sm">You have finished every lecture.</p>)
-    : reason
-      ? <form action={browseAddAction}>{hidden}<Button size="lg" className={big} name="go" value="start">Start the course</Button></form>
-      : <Button asChild size="lg" className={big}><Link href={whyHref(true)}>Start the course</Link></Button>;
+    : <form action={browseAddAction}>{hidden}<Button size="lg" className={big} name="go" value="start">Start the course</Button></form>;
   // Want to is the bookmark cards already use, beside the title; filled once the course is on your shelves.
   const keep = kept
     ? <Button asChild size="icon" variant="ghost" aria-label="On your shelves" title="On your shelves"><Link href={`/schole/items/${kept.id}`}><BookmarkIcon className="fill-current" /></Link></Button>
@@ -104,11 +99,8 @@ export async function CourseView({ userId, u, t, by: byAsked, footer }: { userId
             {reason ? (
               <p id="why" className="scroll-mt-20 max-w-prose font-serif text-[15px] leading-relaxed italic">
                 <span className="text-muted-foreground not-italic font-sans text-xs font-medium">{allDone ? "Why you began" : "Why I am learning this"} </span>
-                “{reason.cause.length > 200 ? `${reason.cause.slice(0, 197)}...` : reason.cause}”{" "}
-                <Link href={whyHref(false)} className="text-muted-foreground font-sans text-xs not-italic underline underline-offset-4">Edit</Link>
+                “{reason.cause.length > 200 ? `${reason.cause.slice(0, 197)}...` : reason.cause}”
               </p>
-            ) : kept ? (
-              <p id="why" className="scroll-mt-20 text-muted-foreground text-sm"><Link href={whyHref(false)} className="underline underline-offset-4">Write why you are learning this</Link></p>
             ) : null}
           </div>
         </div>

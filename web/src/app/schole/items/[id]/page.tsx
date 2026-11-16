@@ -1,14 +1,16 @@
-import { newNoteAction } from "../../notes/actions";
 import { debateRecord } from "@reflect/core/dialectic-media";
-import { DebateFacts, Verdict } from "../../dialectic/debate-record";
+import { curated, upNext } from "@reflect/core/up-next";
+import { clock } from "@reflect/core/media";
+import { cn } from "@/lib/utils";
+import { DebateFacts, whenWhere } from "../../dialectic/debate-record";
+import { ROUND_ACTION, WatchDetails, WatchView } from "../../watch";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
 import { CourseView } from "../../courses/course-view";
 import Link from "next/link";
-import { ChevronRightIcon, NotebookPenIcon } from "lucide-react";
+import { BookmarkIcon, CheckIcon, ChevronRightIcon } from "lucide-react";
 import { notFound } from "next/navigation";
-import { STANCES } from "@reflect/core/claims";
 import { embedOf } from "@reflect/core/media";
 import { WAYS, mediumOf, placeOf } from "@reflect/core/ways";
 import { Badge } from "@/components/ui/badge";
@@ -28,25 +30,21 @@ import { COURSE_SITES, courseSite } from "@reflect/core/courses";
 import { listIdeas, type IdeaOut } from "@/server/ideas-store";
 import { ideasNaming } from "@reflect/core/ideas";
 import { learnView } from "@/server/learn-store";
-import { listClaims } from "@/server/claims-store";
-import { publishedBy } from "@/server/published-store";
 import { ThingHeader } from "@/components/headers";
 import { favoritesOf } from "@/server/favorite-store";
 import { shelfCrumbs } from "../../crumbs";
 import {
-  addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, keepItemClaimAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
-  setItemDatesAction, setItemFactsAction, setItemStanceAction, setTranscriptAction, unpublishQuoteFormAction,
+  addItemSubjectsAction, addSessionAction, changeItemAction, editItemAction, removeItemAction, removeItemSubjectAction, removeSessionAction,
+  setItemDatesAction, setItemFactsAction, setTranscriptAction,
 } from "../../actions";
 import { LocalDay } from "../local-day";
 import { ItemMedia } from "./media";
-import { PublishLesson } from "./publish-lesson";
 import { Artwork } from "./artwork";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
 
 const SELECT = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm";
-const STANCE_LABEL: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
 const Note = ({ children }: { children: ReactNode }) => <p className="text-muted-foreground text-sm">{children}</p>;
 // Plain sections, not cards (priority guides, 2026-11-15).
 const plainSection = (title: string, body: ReactNode, id?: string) => (
@@ -60,12 +58,11 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
  * sessions of a practice. A video or recording plays here with your place kept and notes at a moment; a pasted
  * transcript is searched and quoted. Subjects, the book it adapts, editing and removing are here too.
  */
-export default async function ItemPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const item = await getItem(user.id, (await params).id);
-  const keptVerdict = (await searchParams).verdict;
   if (!item) notFound();
-  const [view, claims, published, ideas] = await Promise.all([learnView(user.id), listClaims(user.id).catch(() => []), publishedBy(user.id).catch(() => []), listIdeas(user.id).catch((): IdeaOut[] => [])]);
+  const [view, ideas] = await Promise.all([learnView(user.id), listIdeas(user.id).catch((): IdeaOut[] => [])]);
   // An item merged from an older input keeps its id, so an idea may name it either way.
   const bearing = [...new Map([...ideasNaming(ideas, `item:${item.id}`, item.title), ...ideasNaming(ideas, `input:${item.id}`, item.title)].map((b) => [b.idea.id, b])).values()];
   const [course, show, units, reason] = await Promise.all([
@@ -87,12 +84,10 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
   const place = placeOf(item);
   const way = item.way ?? m.way;
   const embed = embedOf(item.url);
-  const argued = claims.filter((c) => item.claimIds.includes(c.id));
   const books = view.books.filter((b) => b.catalog?.work);
   const adapts = item.work ? books.find((b) => b.catalog!.work === item.work) : undefined;
   const subjectIds = new Set(item.subjects.map((s) => s.id));
   const related = view.books.filter((b) => b.subjects.some((s) => subjectIds.has(s.id)));
-  const lessonsOut = published.filter((p) => p.kind === "lesson" && p.title === item.title);
   const practice = way === "practice" || item.medium === "game";
   const since = new Date(Date.now() - 30 * 86400 * 1000).toISOString().slice(0, 10);
   const recent = item.sessions.filter((s) => s.day >= since);
@@ -101,29 +96,6 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
   // Every kept item's own sections are plain sections in one "Yours" block at the foot (priority guides, kept items).
   const section = plainSection;
   const taught = <>
-        {section("What it taught you", (
-          <>
-            {item.lessons.length ? (
-              <ol className="space-y-2">
-                {item.lessons.map((l) => <li key={l.id} className="rounded-md border p-3 text-sm"><p className="whitespace-pre-wrap">{l.text}</p><p className="text-muted-foreground mt-1 text-xs">{fmt(l.at.slice(0, 10))}</p></li>)}
-              </ol>
-            ) : <Note>{m.lesson ? "Until you say what it taught you, it is kept under Play." : "Nothing written yet."}</Note>}
-            <form action={changeItemAction} className="space-y-2">
-              {hidden}
-              <Textarea name="lesson" rows={3} maxLength={4000} aria-label={item.lessons.length ? "Add a later lesson" : "What it taught you"} placeholder={item.lessons.length ? "Something it taught you since" : "What it taught you"} required />
-              <Button size="sm" variant="outline">Keep</Button>
-            </form>
-            {item.lesson ? <PublishLesson id={item.id} /> : null}
-            {lessonsOut.map((p) => (
-              <form key={p.id} action={unpublishQuoteFormAction} className="flex flex-wrap items-center gap-2 text-sm">
-                <input type="hidden" name="id" value={p.id} />{hidden}
-                <span>Published at <a href={`/q/${p.id}`} className="underline underline-offset-4">/q/{p.id}</a></span>
-                <Button size="sm" variant="ghost">Take down</Button>
-              </form>
-            ))}
-          </>
-        ))}
-
         {bearing.length ? section("Your ideas", (
           <div className="space-y-3">
             {bearing.map(({ idea, how }) => (
@@ -199,14 +171,7 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
       </form>
     </>
   ));
-  const yoursHead = (
-    <div className="flex items-center gap-1">
-      <h2 className="text-lg font-semibold tracking-tight">Yours</h2>
-      <form action={newNoteAction.bind(null, item.title)}>
-        <Button type="submit" variant="ghost" size="icon" className="size-8 rounded-full" aria-label="Write a note about this" title="Write a note about this"><NotebookPenIcon /></Button>
-      </form>
-    </div>
-  );
+  const yoursHead = <h2 className="text-lg font-semibold tracking-tight">Yours</h2>;
   if (item.medium === "course" && courseSite(item.url)) {
     return <CourseView userId={user.id} u={item.url!} t={item.title} by={item.by ?? ""} footer={<div className="space-y-8">{yoursHead}{taught}{status}{shelfFacts}{editing}</div>} />;
   }
@@ -219,6 +184,55 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
     );
   }
   const metaLine = [m.label, item.by, statusLabel(item.status as "want" | "doing" | "done"), item.tookPart ? "took part" : null, item.parts ? `${item.part ?? 0} of ${item.parts}` : null].filter(Boolean).join(" · ");
+  // A video or recording that plays here is a watch page (Torian, 2026-11-16 18:45Z): the player first, the title,
+  // the channel line with Watched and Saved, the description, Up next, and the rest folded under Details.
+  if (embed && (embed.kind === "youtube" || embed.tall) && !lectures.length) {
+    const record = item.medium === "debate" ? debateRecord(item.url) : null;
+    const why = curated(item.url)?.why;
+    const done = item.status === "done";
+    const transcriptForm = section("Transcript", (
+      <form action={setTranscriptAction} className="space-y-2">
+        {hidden}
+        <Note>Paste the transcript (on YouTube: More, then Show transcript, then copy it) to search it and quote it with its moment. YouTube does not let other sites fetch it.</Note>
+        <Textarea name="transcript" rows={4} defaultValue={item.transcriptText ?? ""} />
+        <Button size="sm" variant="outline">Save transcript</Button>
+      </form>
+    ));
+    return (
+      <main className={PAGE}>
+        <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} />
+        <WatchView
+          upNext={upNext({ url: item.url, title: item.title })}
+          main={
+            <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} transcript={item.transcriptText}>
+              <WatchDetails
+                title={item.title} channel={item.by}
+                detail={[m.label, WAYS.find((w) => w.id === way)?.label].filter(Boolean).join(" · ")}
+                actions={<>
+                  <form action={changeItemAction}>
+                    {hidden}<LocalDay />
+                    <button name="status" value={done ? "doing" : "done"} aria-pressed={done} className={cn(ROUND_ACTION, done && "bg-foreground text-background hover:bg-foreground/90")}><CheckIcon />{m.done}</button>
+                  </form>
+                  <span className={ROUND_ACTION} title="Saved to your library"><BookmarkIcon className="fill-current" />Saved</span>
+                </>}
+                meta={[record ? whenWhere(record) : null, item.place && embed.kind === "youtube" ? `picks up at ${clock(item.place)}` : null, item.finishedOn ? `finished ${fmt(item.finishedOn)}` : null].filter(Boolean).join(" · ") || null}
+                description={<>
+                  {record ? <DebateFacts r={record} /> : why ? <p>{why}</p> : null}
+                  {adapts ? <p>Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
+                </>}
+                after={
+                  <details className="group border-t pt-4">
+                    <summary className="text-muted-foreground hover:text-foreground flex cursor-pointer list-none items-center gap-1 text-sm font-medium [&::-webkit-details-marker]:hidden"><ChevronRightIcon className="size-4 transition group-open:rotate-90" />Details</summary>
+                    <div className="mt-6 space-y-8">{status}{taught}{shelfFacts}{transcriptForm}{editing}</div>
+                  </details>
+                }
+              />
+            </ItemMedia>
+          }
+        />
+      </main>
+    );
+  }
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} action={nextLecture ? <Button size="sm" asChild><Link href={`/schole/items/${item.id}/lectures/${nextLecture.n}`}>{finished.size || begun.size ? "Continue" : "Start"}: Lecture {nextLecture.n}</Link></Button> : undefined} />
@@ -266,11 +280,9 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
         ), "lectures") : null}
 
 
-        {embed || item.notes.some((n) => !n.unit) || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Notes", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} notes={item.notes.filter((n) => !n.unit)} transcript={item.transcriptText} />) : null}
+        {embed || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Transcript", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} transcript={item.transcriptText} />) : null}
 
-        {item.medium === "debate" && debateRecord(item.url) ? section("The debate", <DebateFacts r={debateRecord(item.url)!} />, "debate") : null}
-
-        {item.medium === "debate" ? section("Your verdict", <Verdict title={item.title} url={item.url ?? ""} record={debateRecord(item.url)} back={`/schole/items/${item.id}`} kept={typeof keptVerdict === "string" ? keptVerdict : undefined} />, "verdict-section") : null}
+        {item.medium === "debate" && debateRecord(item.url) ? section("The debate", <div className="space-y-1.5 text-sm"><p className="font-semibold">{whenWhere(debateRecord(item.url)!)}</p><DebateFacts r={debateRecord(item.url)!} /></div>, "debate") : null}
 
         {!lectures.length && (item.medium === "course" || item.parts) ? section("Parts", (
           <form action={setItemFactsAction} className="flex flex-wrap items-center gap-2 text-sm">
@@ -281,33 +293,6 @@ export default async function ItemPage({ params, searchParams }: { params: Promi
             <label className="ml-4 flex items-center gap-2">Parts in all<Input type="number" name="parts" min={1} max={10000} defaultValue={item.parts ?? ""} className="h-8 w-24" /></label>
             <Button size="sm" variant="ghost">Save</Button>
           </form>
-        )) : null}
-
-        {way === "dialectic" ? section("The claims argued", (
-          <>
-            <form action={setItemFactsAction} className="flex flex-wrap items-center gap-2 text-sm">
-              {hidden}
-              <span>You</span>
-              <Button size="sm" name="took_part" value="yes" variant={item.tookPart ? "default" : "outline"} aria-pressed={item.tookPart}>took part</Button>
-              <Button size="sm" name="took_part" value="no" variant={!item.tookPart ? "default" : "outline"} aria-pressed={!item.tookPart}>only heard it</Button>
-            </form>
-            {argued.length ? argued.map((c) => (
-              <div key={c.id} className="space-y-2 rounded-md border p-3">
-                <p className="text-sm font-medium">{c.text}</p>
-                <p className="text-muted-foreground text-xs">Argued by {c.holders.map((h) => h.name).join("; ") || "no one named"}{c.stance ? ` · your stance: ${STANCE_LABEL[c.stance.stance]?.toLowerCase()}` : ""}</p>
-                <form action={setItemStanceAction} className="flex flex-wrap gap-2">
-                  {hidden}<input type="hidden" name="claim" value={c.id} />
-                  {STANCES.map((s) => <Button key={s.id} size="sm" name="stance" value={s.id} variant={c.stance?.stance === s.id ? "default" : "outline"}>{STANCE_LABEL[s.id]}</Button>)}
-                </form>
-              </div>
-            )) : <Note>Keep each claim argued, who argued it, and where you stand. Your stance can change; earlier ones are kept.</Note>}
-            <form action={keepItemClaimAction} className="space-y-3">
-              {hidden}
-              <label className="block space-y-1.5 text-sm font-medium">Claim<Input name="claim" required maxLength={500} /></label>
-              <label className="block space-y-1.5 text-sm font-medium">Who argued it, one per line<Textarea name="holders" rows={2} defaultValue={item.by?.split(/ and |, /).length === 1 ? item.by ?? "" : ""} /></label>
-              <div className="flex flex-wrap gap-2">{STANCES.map((s) => <Button key={s.id} size="sm" variant="outline" name="stance" value={s.id}>Keep as {STANCE_LABEL[s.id]!.toLowerCase()}</Button>)}</div>
-            </form>
-          </>
         )) : null}
 
         {practice ? section("Practice", (
