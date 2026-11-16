@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appleChart, audiobookTopics, findAudiobooks, podcastTopic, readAudiobook, usualLength } from "./audiobooks";
+import { appleChart, audiobookTopics, findAudiobooks, podcastTopic, readAudiobook, searchScore, usualLength } from "./audiobooks";
 
 const a = (line: string) => readAudiobook(line)!;
 const all = [
@@ -46,5 +46,16 @@ describe("appleChart", () => {
     ] } });
     expect(appleChart(text)).toEqual([{ medium: "podcast", title: "Philosophize This!", by: "Stephen West", url: "https://podcasts.apple.com/us/podcast/philosophize-this/id659155419", image: "https://x/a.jpg/600x600bb.jpg", source: "Apple Podcasts" }]);
     expect(appleChart("not json")).toEqual([]);
+  });
+});
+
+describe("searching audiobooks", () => {
+  const mk = (id: string, title: string, by: string, downloads: number) => ({ id, title, by, downloads, seconds: 3600, readers: 1, dramatic: false, genres: [], language: "English" }) as unknown as Parameters<typeof findAudiobooks>[0][number];
+  const all = [mk("1", "Little Princess", "Frances Hodgson Burnett", 9e6), mk("2", "Prince", "Niccolò Machiavelli", 2e6), mk("3", "Prince and the Pauper", "Mark Twain", 5e6), mk("4", "Discourses on Livy", "Niccolò Machiavelli", 1e5)];
+  it("finds The Prince first, without Princess, with or without accents and the article", () => {
+    expect(findAudiobooks(all, { q: "The Prince" }).map((x) => x.id)).toEqual(["2", "3"]);
+    expect(findAudiobooks(all, { q: "prince machiavelli" }).map((x) => x.id)).toEqual(["2"]);
+    expect(findAudiobooks(all, { q: "niccolo" }).map((x) => x.id)).toEqual(["2", "4"]);
+    expect(searchScore({ title: "Prince", by: "Niccolò Machiavelli" }, "the prince")).toBe(4);
   });
 });

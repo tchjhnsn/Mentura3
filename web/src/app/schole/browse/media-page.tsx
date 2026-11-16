@@ -19,7 +19,10 @@ import { Menu } from "./category-menu";
 import { MediaGrid, MediaRow, keyOf, type Find } from "./media";
 import { AudiobookRow } from "../audiobooks/cards";
 import { listAudiobooks } from "@/server/audiobooks";
-import { TOPICS } from "@reflect/core/audiobooks";
+import { TOPICS, searchScore } from "@reflect/core/audiobooks";
+import { WORKS } from "@reflect/core/topic-pages";
+import { PEOPLE, personHref } from "@reflect/core/historical-people";
+import { IDEAS, TERMS } from "@reflect/core/great-ideas";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
@@ -129,6 +132,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
       const results = await Promise.all(media.map((x) => finds(x, q).then((r) => r.found.slice(0, 6)).catch(() => [])));
       body = (
         <div className="space-y-8">
+          <InScholeRow q={q} />
           {inWay("audiobooks", way) ? <AudiobookRow title="Audiobooks" books={listAudiobooks({ q }, 6)} href={href("audiobooks", way, q)} /> : null}
           {inWay("books", way) ? <p className="text-sm"><Link href={`/schole/browse?q=${encodeURIComponent(q)}`} className="underline underline-offset-4">Books matching “{q}”</Link></p> : null}
           {media.map((x, i) => <MediaRow key={x} title={BROWSE_MEDIA.find((b) => b.id === x)!.label} finds={results[i]!} mine={mine} href={href(x, way, q)} />)}
@@ -201,5 +205,34 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
         <p className="text-muted-foreground pt-6 text-center text-xs">Courses from Open Yale Courses and MIT OpenCourseWare (through MIT Learn), podcasts from Apple&apos;s podcast search, films from Wikidata and the Internet Archive, art from the Art Institute of Chicago, music from MusicBrainz, series from TVmaze, games from Steam.</p>
       </div>
     </main>
+  );
+}
+
+/**
+ * Scholē's own pages that answer a search, before anything from outside (Torian, 2026-11-16 07:33Z: The Prince should
+ * not be hard to find): work pages, people and Great Ideas, the best match first.
+ */
+function InScholeRow({ q }: { q: string }) {
+  const hits = [
+    ...WORKS.map((w) => ({ s: searchScore({ title: w.title, by: w.by }, q), title: w.title, note: `Work · ${w.by}`, href: `/schole/works/${w.id}` })),
+    ...PEOPLE.map((x) => ({ s: searchScore({ title: x.name, by: "" }, q), title: x.name, note: "Person", href: personHref(x) })),
+    ...IDEAS.map((i) => ({ s: searchScore({ title: i.name, by: "" }, q), title: i.name, note: "Great Idea", href: `/schole/ideas/${i.id}` })),
+    ...TERMS.map((t) => ({ s: searchScore({ title: t.name, by: "" }, q), title: t.name, note: "Term", href: `/schole/terms/${t.id}` })),
+  ].filter((h) => h.s > 0).sort((a, b) => b.s - a.s).slice(0, 6);
+  if (!hits.length) return null;
+  return (
+    <section className="space-y-2">
+      <SectionHead title="In Scholē" note="Pages here, with every version of a work in one place." />
+      <ul className="divide-y sm:max-w-xl">
+        {hits.map((h) => (
+          <li key={h.href} className="py-2.5">
+            <Link href={h.href} className="group block">
+              <span className="font-semibold group-hover:underline group-hover:underline-offset-2">{h.title}</span>
+              <span className="text-muted-foreground block text-[13px]">{h.note}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

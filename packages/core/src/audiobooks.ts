@@ -85,17 +85,40 @@ export const READERS = [
 
 export type AudiobookQuery = { topic?: string; length?: string; readers?: string; language?: string; q?: string };
 
-/** Recordings that match, most downloaded first: in a topic, of a length, read by one, many or a cast, in a language. */
+/** Words as a search compares them: lower case, accents dropped ("Niccolò" is "niccolo"), punctuation as spaces. */
+export const searchWords = (s: string): string[] => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean);
+/** Articles left out of a search: LibriVox titles drop a leading "The" ("Prince", not "The Prince"). */
+const ARTICLES = new Set(["the", "a", "an"]);
+
+/**
+ * How well a recording answers a search, or 0 when it does not (Torian, 2026-11-16 07:33Z: The Prince should not be hard
+ * to find). Every word must be a whole word of the title or author (so "prince" does not find "Princess"); then an exact
+ * title ranks first, a title that starts with the words next, then the words in the title, then only in the author.
+ */
+export function searchScore(a: Pick<Audiobook, "title" | "by">, q: string): number {
+  const words = searchWords(q).filter((w) => !ARTICLES.has(w));
+  if (!words.length) return 1;
+  const title = searchWords(a.title).filter((w) => !ARTICLES.has(w));
+  const both = new Set([...title, ...searchWords(a.by)]);
+  if (!words.every((w) => both.has(w))) return 0;
+  if (title.join(" ") === words.join(" ")) return 4;
+  if (title.slice(0, words.length).join(" ") === words.join(" ")) return 3;
+  return words.every((w) => title.includes(w)) ? 2 : 1;
+}
+
+/** Recordings that match, in a topic, of a length, read by one, many or a cast, in a language: the best match to a search first, then the most downloaded. */
 export function findAudiobooks(all: readonly Audiobook[], o: AudiobookQuery, limit = 48, offset = 0): Audiobook[] {
   const t = topicOf(o.topic);
   const len = LENGTHS.find((x) => x.id === o.length);
   const who = READERS.find((x) => x.id === o.readers);
-  const words = (o.q ?? "").toLowerCase().split(/\s+/).filter(Boolean);
+  const q = o.q ?? "";
   const lang = o.language || "English";
   return all
-    .filter((a) => (lang === "all" || a.language === lang) && (!len || len.fits(a.seconds)) && (!who || who.fits(a)) && (!t || audiobookTopics(a.genres).includes(t.id))
-      && words.every((w) => `${a.title} ${a.by}`.toLowerCase().includes(w)))
-    .sort((a, b) => b.downloads - a.downloads)
+    .filter((a) => (lang === "all" || a.language === lang) && (!len || len.fits(a.seconds)) && (!who || who.fits(a)) && (!t || audiobookTopics(a.genres).includes(t.id)))
+    .map((a) => ({ a, s: searchScore(a, q) }))
+    .filter((x) => x.s > 0)
+    .sort((x, y) => y.s - x.s || y.a.downloads - x.a.downloads)
+    .map((x) => x.a)
     .slice(offset, offset + limit);
 }
 
