@@ -31,8 +31,8 @@ export const eraOf = (i: CollectionItem): { era: Era; year?: string } | null => 
 export const eraLine = (i: CollectionItem): string | null => { const e = eraOf(i); return e ? [ERA_LABEL[e.era], e.year].filter(Boolean).join(" · ") : null; };
 
 /** What a thing is to watch or hear, for the chip on its picture. */
-export const formatOf = (i: CollectionItem): "Video" | "Podcast" | "Audiobook" | "Course" =>
-  i.kind === "audiobook" ? "Audiobook" : i.kind === "episode" ? "Podcast" : i.kind === "course" ? "Course" : i.kind === "find" && (i.medium === "podcast" || i.medium === "music") ? "Podcast" : "Video";
+export const formatOf = (i: CollectionItem): "Video" | "Podcast" | "Audiobook" | "Course" | "Music" =>
+  i.kind === "audiobook" ? "Audiobook" : i.kind === "episode" ? "Podcast" : i.kind === "course" ? "Course" : i.kind === "find" && i.medium === "music" ? "Music" : "Video";
 
 /** The week number since 2026-01-05 (a Monday), so picks change each Monday and are the same for everyone that week. */
 export const weekOf = (d: Date): number => Math.floor((Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - Date.UTC(2026, 0, 5)) / (7 * 864e5));

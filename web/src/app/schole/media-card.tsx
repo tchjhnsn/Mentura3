@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChevronDownIcon, HeadphonesIcon, MicIcon, PlayIcon, type LucideIcon } from "lucide-react";
+import { ChevronDownIcon, HeadphonesIcon, MicIcon, MusicIcon, PlayIcon, type LucideIcon } from "lucide-react";
 import { itemHref, itemKey, type CollectionItem } from "@reflect/core/collections";
 import { hoursOf } from "@reflect/core/audiobooks";
 import { eraLine, formatOf } from "@reflect/core/dialectic-media";
@@ -7,7 +7,7 @@ import { artOf } from "@/server/collections";
 import { cn } from "@/lib/utils";
 import { Art } from "./art";
 
-const ICON: Record<string, LucideIcon> = { Video: PlayIcon, Podcast: MicIcon, Audiobook: HeadphonesIcon, Course: PlayIcon };
+const ICON: Record<string, LucideIcon> = { Video: PlayIcon, Podcast: MicIcon, Audiobook: HeadphonesIcon, Course: PlayIcon, Music: MusicIcon };
 
 /** What a thing is, on its picture's corner: an icon and Video, Podcast or Audiobook, with its length when known. */
 export function FormatChip({ i, className }: { i: CollectionItem; className?: string }) {
