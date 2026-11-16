@@ -8,11 +8,9 @@ import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
 import { requireUser } from "@/server/session";
 import { getDebate } from "@/server/dialectic-store";
-import { debateOrigin, postsOn, turnsOf } from "@/server/discussion-store";
-import { parseTopic } from "@reflect/core/argument";
+import { debateOrigin, postThread, turnsOf } from "@/server/discussion-store";
 import { LEARN } from "../../../crumbs";
 import { remindAction, startDebateAction, takeSeatAction } from "../../actions";
-import { topicHref } from "../../discussion";
 import { TurnForm } from "./turn-form";
 import { LocalTime, LocalWhen } from "../../client";
 import { Face, WorkLine } from "../../parts";
@@ -38,8 +36,7 @@ export default async function DebatePage({ params, searchParams }: { params: Pro
   const [turns, origin] = written ? await Promise.all([turnsOf(d.id), debateOrigin(d.id)]) : [[], null];
   const next = format && written ? nextTurn(format, turns.length) : null;
   const mine = next && d.state === "live" && d.seats[next.side]?.id === user.id;
-  const from = origin ? parseTopic(origin.topic) : null;
-  const post = origin ? (await postsOn(user.id, origin.topic)).find((p) => p.id === origin.postId) : undefined;
+  const post = origin ? (await postThread(user.id, origin.postId))?.post : undefined;
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole/dialectic" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }]} title={d.motion} />
@@ -72,8 +69,8 @@ export default async function DebatePage({ params, searchParams }: { params: Pro
 
         {written ? (
           <section className="space-y-4" aria-label="Turns">
-            {from && post ? (
-              <p className="text-muted-foreground text-sm">Formed from {post.who.name}&apos;s post in <Link href={topicHref(from.kind, from.id)} className="underline underline-offset-4">its discussion</Link>.</p>
+            {post ? (
+              <p className="text-muted-foreground text-sm">Formed from <Link href={`/schole/dialectic/p/${post.id}`} className="underline underline-offset-4">{post.who.name}&apos;s post</Link>.</p>
             ) : null}
             {turns.length ? (
               <ol className="space-y-4">

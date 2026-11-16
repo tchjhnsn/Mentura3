@@ -8,9 +8,9 @@ import { workById } from "@reflect/core/topic-pages";
 import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
 import { requireUser } from "@/server/session";
-import { postsOn } from "@/server/discussion-store";
+import { feed } from "@/server/discussion-store";
 import { LEARN } from "../../../../crumbs";
-import { Discussion, topicHref } from "../../../discussion";
+import { Feed, WriteBox, topicHref } from "../../../discussion";
 
 export const metadata: Metadata = { title: "Discussion" };
 export const dynamic = "force-dynamic";
@@ -38,13 +38,13 @@ export default async function TopicPage({ params }: { params: Promise<{ kind: st
   const a = about(kind, id);
   if (!a) notFound();
   const topic = topicKey(kind, id);
-  const posts = await postsOn(user.id, topic);
+  const items = await feed(user.id, { topic });
   const d = kind === "dialectic" ? dialecticById(id) : undefined;
   const sides = d ? [...new Set(d.positions.map((x) => x.side))] : [];
   return (
     <main className={PAGE}>
-      <ThingHeader back="/schole/dialectic" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }]} title={a.name} />
-      <div className="mt-6 max-w-2xl space-y-8">
+      <ThingHeader back={d ? "/schole/dialectic/questions" : "/schole/dialectic"} crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, ...(d ? [{ label: "Questions", href: "/schole/dialectic/questions" }] : [])]} title={a.name} />
+      <div className="mx-auto mt-6 max-w-xl space-y-8">
         <header className="space-y-2">
           <p className="text-muted-foreground text-sm">{d ? `Dialectic · ${d.subject}` : kind === "work" ? "Discussion · work" : kind === "term" ? "Discussion · term" : "Discussion · idea"}</p>
           <h1 id="page-title" className="text-3xl leading-tight font-semibold tracking-tight">{a.name}</h1>
@@ -77,7 +77,11 @@ export default async function TopicPage({ params }: { params: Promise<{ kind: st
           </section>
         ) : null}
 
-        <Discussion topic={topic} posts={posts} path={topicHref(kind, id)} prompt={d ? `Where do you stand: ${d.question}` : `What do you make of ${a.name}?`} />
+        <section aria-labelledby="posts" className="space-y-2">
+          <h2 id="posts" className="text-lg font-semibold tracking-tight">Posts{items.length ? <span className="text-muted-foreground font-normal"> · {items.length}</span> : null}</h2>
+          <div className="border-b pb-3"><WriteBox path={topicHref(kind, id)} topic={topic} placeholder={d ? `Where do you stand: ${d.question}` : `What do you make of ${a.name}?`} /></div>
+          <Feed items={items} path={topicHref(kind, id)} empty="No posts yet. Say where you stand and why." />
+        </section>
       </div>
     </main>
   );

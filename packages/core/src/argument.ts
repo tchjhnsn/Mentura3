@@ -26,8 +26,23 @@ export type Grade = { stance: Stance; level: Level; why: string };
 /** The points a post earns: its level, at most 5. Only for posts that answer something or say something. */
 export const pointsFor = (level: number | null | undefined): number => (level && level >= 1 ? Math.min(5, Math.floor(level)) : 0);
 
-/** The prompt that asks a model to read one post. `to` is what the post answers: the post it replies to, or the topic. */
-export function gradePrompt(post: string, to: { kind: "post" | "question" | "topic"; text: string }): string {
+/**
+ * The prompt that asks a model to read one post. `to` is what the post answers: the post it replies to, or the topic;
+ * null for a post on its own, whose stance is always "neither".
+ */
+export function gradePrompt(post: string, to: { kind: "post" | "question" | "topic"; text: string } | null): string {
+  if (!to) {
+    return [
+      "You read one post in a discussion and say how developed its argument is. Answer with JSON only:",
+      '{"stance": "neither", "level": 1-5, "why": "one short sentence"}',
+      "",
+      "level, the most developed rung the post fully reaches:",
+      ...LEVELS.map((l) => `${l.level} ${l.name}: ${l.hint}`),
+      "Judge the argument's form, not whether you agree. Length alone earns nothing; a short post can reach 5.",
+      "",
+      `The post: """${post.slice(0, 4000)}"""`,
+    ].join("\n");
+  }
   return [
     "You read one post in a discussion and say two things about it. Answer with JSON only:",
     '{"stance": "supports" | "opposes" | "neither", "level": 1-5, "why": "one short sentence"}',

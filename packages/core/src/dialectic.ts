@@ -41,7 +41,7 @@ export function nextTurn(f: Format, turns: number): { step: number; side: Side }
   return { step: Math.floor(turns / 2), side: turns % 2 === 0 ? "for" : "against" };
 }
 
-export const LIMITS = { motion: [8, 200], title: [3, 120], question: [8, 300], source: 200, body: 4000, post: 2000, chat: 1000, speakers: 8 } as const;
+export const LIMITS = { motion: [8, 200], title: [3, 120], question: [8, 300], source: 200, body: 4000, post: 500, chat: 1000, speakers: 8 } as const;
 
 /** Text as typed, trimmed and without control characters, or null when outside its bounds. */
 export function clean(v: unknown, max: number, min = 1): string | null {
