@@ -8,7 +8,6 @@ import { SectionHead } from "@/components/section-head";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
-import { DiscussTopic } from "../../dialectic/discussion";
 import { LEARN } from "../../crumbs";
 import { Articles, Passages } from "../parts";
 
@@ -44,7 +43,6 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
           <Passages passages={idea.passages} />
         </section>
         <aside className="space-y-8">
-          <DiscussTopic kind="idea" id={idea.id} />
           {terms.length ? (
             <section className="space-y-2">
               <SectionHead title="Terms that grew from it" />
