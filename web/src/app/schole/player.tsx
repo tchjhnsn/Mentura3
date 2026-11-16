@@ -9,7 +9,10 @@ import {
   DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup,
   DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { backgroundFor, INTERLUDE, LEVELS } from "@reflect/core/background-music";
+import type { CollectionItem } from "@reflect/core/collections";
 import { keepUnitPlaceAction, setUnitDoneAction } from "./actions";
+import { BackgroundMusicLayer, BG_DEFAULT, BG_KEY, type BgSettings } from "./background-music";
 import { localDay } from "./items/youtube";
 
 /** An audiobook playing in Scholē: the recording and which book's page it belongs to. */
@@ -116,7 +119,17 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   const [fxBlocked, setFxBlocked] = useState(false);
   const fxOn = fx.even || fx.silence;
 
-  useEffect(() => { setQueue(readJson<Track[]>(QUEUE, [])); setFx(readJson(FX, { even: false, silence: false })); }, []);
+  // Background music under a book (Torian, 2026-11-16 06:36Z): off until turned on; interludes between chapters.
+  const [bg, setBgState] = useState<BgSettings>(BG_DEFAULT);
+  const setBg = (next: Partial<BgSettings>) => setBgState((b) => { const n = { ...b, ...next }; writeJson(BG_KEY, n); return n; });
+  const [interlude, setInterlude] = useState(false);
+  const interludeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [bgNow, setBgNow] = useState<CollectionItem | null>(null);
+  const bgList = useMemo(() => (book ? backgroundFor(book.id) : null), [book]);
+  useEffect(() => () => { if (interludeTimer.current) clearTimeout(interludeTimer.current); }, []);
+  useEffect(() => { if (interludeTimer.current) { clearTimeout(interludeTimer.current); interludeTimer.current = null; } setInterlude(false); }, [book?.id, track?.id]);
+
+  useEffect(() => { setQueue(readJson<Track[]>(QUEUE, [])); setFx(readJson(FX, { even: false, silence: false })); setBgState({ ...BG_DEFAULT, ...readJson<Partial<BgSettings>>(BG_KEY, {}) }); }, []);
   const saveQueue = (q: Track[]) => { setQueue(q); writeJson(QUEUE, q); };
 
   const save = useCallback(() => {
@@ -167,7 +180,13 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   // What follows when a recording ends: the next part of a book, else the queue, else the show's next episode.
   const ended = useCallback(() => {
     if (book) {
-      if (chapter + 1 < book.chapters.length && !(sleep && "end" in sleep)) setChapter(chapter + 1);
+      if (chapter + 1 < book.chapters.length && !(sleep && "end" in sleep)) {
+        // An interlude, as in a radio drama: the music comes forward for a few seconds, then the next chapter starts.
+        if (bg.on && bg.interludes && bgList) {
+          setInterlude(true);
+          interludeTimer.current = setTimeout(() => { interludeTimer.current = null; setInterlude(false); setChapter(chapter + 1); setPlaying(true); }, INTERLUDE.seconds * 1000);
+        } else setChapter(chapter + 1);
+      }
       else { setPlaying(false); if (sleep && "end" in sleep) setSleep(null); }
       return;
     }
@@ -178,7 +197,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
     const next = queue[0] ?? (track.next ? { ...track.next } : null);
     if (next) playTrack(next, next.place ?? 0);
     else setPlaying(false);
-  }, [book, chapter, track, queue, sleep, playTrack]);
+  }, [book, chapter, track, queue, sleep, playTrack, bg.on, bg.interludes, bgList]);
 
   // The sleep timer: a time to stop, checked each second, or the end of what is playing (in ended).
   useEffect(() => {
@@ -352,6 +371,23 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
         <DropdownMenuCheckboxItem checked={fx.even} onCheckedChange={(v) => setEffects({ ...fx, even: Boolean(v) })}>Even out voices</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem checked={fx.silence} onCheckedChange={(v) => setEffects({ ...fx, silence: Boolean(v) })}>Skip silences</DropdownMenuCheckboxItem>
         {fxOn && fxBlocked ? <p className="text-muted-foreground px-2 py-1.5 text-xs">This recording&apos;s host doesn&apos;t let the browser change its sound, so it plays as published.</p> : null}
+        {bgList ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem checked={bg.on} onCheckedChange={(v) => setBg({ on: Boolean(v), hinted: true })}>Background music</DropdownMenuCheckboxItem>
+            {bg.on ? (
+              <>
+                <DropdownMenuRadioGroup value={bg.level} onValueChange={(v) => setBg({ level: v as BgSettings["level"] })}>
+                  {LEVELS.map((l) => <DropdownMenuRadioItem key={l.id} value={l.id} className="pl-8">{l.label}</DropdownMenuRadioItem>)}
+                </DropdownMenuRadioGroup>
+                <DropdownMenuCheckboxItem checked={bg.interludes} onCheckedChange={(v) => setBg({ interludes: Boolean(v) })}>Interludes between chapters</DropdownMenuCheckboxItem>
+                {bgNow && bgNow.kind === "find" ? (
+                  <p className="text-muted-foreground px-2 py-1.5 text-xs">Playing {bgNow.title}, {bgNow.by}.{bgNow.credit ? ` ${bgNow.credit}.` : ""} Chosen by Reflect&apos;s editors from Wikimedia Commons.</p>
+                ) : null}
+              </>
+            ) : <p className="text-muted-foreground px-2 py-1.5 text-xs">Quiet instrumental music from the book&apos;s time, under the voice.</p>}
+          </>
+        ) : null}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -408,6 +444,14 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
             }}
             onEnded={ended}
           />
+          {book && bg.on && bgList ? <BackgroundMusicLayer key={bgList.topic} items={bgList.items} sounding={playing} interlude={interlude} level={bg.level} onNow={setBgNow} /> : null}
+          {book && bgList && !bg.on && !bg.hinted ? (
+            <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-2 text-sm sm:px-6">
+              <span className="min-w-0 flex-1">This book has background music from its time.</span>
+              <Button size="sm" variant="secondary" className="h-7" onClick={() => setBg({ on: true, hinted: true })}>Turn on</Button>
+              <Button size="sm" variant="ghost" className="text-muted-foreground h-7" onClick={() => setBg({ hinted: true })}>No thanks</Button>
+            </div>
+          ) : null}
           <div className="mx-auto max-w-3xl px-4 pt-1.5 pb-2 sm:px-6">
             {scrubber}
             <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:flex-nowrap">
@@ -417,7 +461,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
                 <div className="min-w-0 flex-1">
                 <Link href={href} className="block truncate text-sm font-medium">{track ? track.title : book!.bookTitle}</Link>
                 <p className="text-muted-foreground truncate text-xs tabular-nums">
-                  {[track ? track.show : c?.title, chap?.title, `${stamp(time)} / ${stamp(total)}`, left !== null ? `stops in ${left} min` : sleep ? "stops at the end" : null, follow ? "the text follows" : null].filter(Boolean).join(" · ")}
+                  {[interlude ? "Interlude" : null, track ? track.show : c?.title, chap?.title, `${stamp(time)} / ${stamp(total)}`, left !== null ? `stops in ${left} min` : sleep ? "stops at the end" : null, follow ? "the text follows" : null].filter(Boolean).join(" · ")}
                 </p>
                 </div>
               </div>
