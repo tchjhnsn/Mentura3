@@ -97,7 +97,7 @@ export async function POST(req: Request) {
                 return `Shown: the course ${DIALECTIC_COURSE.name}, four units, each a playlist and then practice. Courses made for one person are not built; do not offer one.`;
               }
               const d = DIALOGUES.find((x) => x.id === work)!;
-              show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the speaker is doing, what they answer, what is in question.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
+              show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the words do, what they support or attack, and how good the argument is.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
               return `Shown: a practice session on ${d.title}. Do not write quiz questions about it yourself; the session asks them.`;
             },
           }),
