@@ -1,52 +1,59 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
+import { itemHref } from "@reflect/core/collections";
+import { DIALECTIC_SHELVES } from "@reflect/core/dialectic-media";
+import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
+import { SectionHead } from "@/components/section-head";
 import { requireUser } from "@/server/session";
-import { listDebates } from "@/server/dialectic-store";
-import { feed, pointsOf } from "@/server/discussion-store";
+import { artOf, haveKeys } from "@/server/collections";
+import { listItems } from "@/server/ways-store";
+import { Art } from "../art";
 import { LearnHeader } from "../header";
-import { Feed, PointsLadder, WriteBox } from "./discussion";
+import { PlaylistRows } from "../playlists/card";
 
 export const metadata: Metadata = { title: "Dialectic" };
 export const dynamic = "force-dynamic";
 
 /**
- * Dialectic as a feed (Torian, 2026-11-16 17:56Z "essentially be a Twitter style feed", 17:59Z "build"): a write box,
- * then posts newest first, from everyone or from the people you follow; no ranking by popularity. Each post can carry a
- * topic as its tag; the curated questions and debates are one link away.
+ * Dialectic to watch and listen to (Torian, 2026-11-16 18:18Z: "We can not do interactive dialectics. Instead, we can
+ * allow you to watch dialectics... videos and audios of dialectic conversations"). One debate first, with the page's
+ * one filled button; then shelves: famous debates, conversations with philosophers, discussions, and Plato's dialogues
+ * read aloud. The feed, rooms and threads built earlier stay in the code, off the page, to come back to later.
  */
-export default async function DialecticPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+export default async function DialecticPage() {
   const user = await requireUser();
-  const following = (await searchParams).tab === "following";
-  const [items, points, debates] = await Promise.all([feed(user.id, { following }), pointsOf(user.id), listDebates()]);
-  const live = debates.live.length;
-  const tab = (on: boolean) => `relative flex-1 py-3 text-center text-sm ${on ? "font-semibold" : "text-muted-foreground hover:text-foreground"}`;
+  const have = haveKeys(await listItems(user.id).catch(() => []));
+  const first = DIALECTIC_SHELVES[0]!.items[0]!;
+  const art = artOf(first);
   return (
     <main className={PAGE}>
       <LearnHeader on="browse" />
-      <div className="mx-auto mt-6 max-w-xl">
-        <header className="flex items-end justify-between gap-3">
+      <div className="mt-6 space-y-10">
+        <header className="space-y-1">
           <h1 className="text-3xl font-semibold tracking-tight">Dialectic</h1>
-          <p className="text-right text-sm"><span className="text-lg font-semibold tabular-nums">{points.points}</span> <span className="text-muted-foreground">{points.points === 1 ? "point" : "points"}</span></p>
+          <p className="text-muted-foreground">Watch and listen to people argue a question out.</p>
         </header>
 
-        <nav className="mt-3 flex border-b" aria-label="Feeds">
-          <Link href="/schole/dialectic" className={tab(!following)} aria-current={!following ? "page" : undefined}>Everyone{!following ? <span className="bg-foreground absolute inset-x-1/3 bottom-0 h-0.5 rounded-full" /> : null}</Link>
-          <Link href="/schole/dialectic?tab=following" className={tab(following)} aria-current={following ? "page" : undefined}>Following{following ? <span className="bg-foreground absolute inset-x-1/3 bottom-0 h-0.5 rounded-full" /> : null}</Link>
-        </nav>
+        <section className="grid gap-4 sm:grid-cols-[minmax(0,22rem)_1fr] sm:items-center" aria-label="Start here">
+          <Link href={itemHref(first)} className="block overflow-hidden rounded-xl border">
+            <Art image={art.image} kind={art.kind} title={first.title} className="aspect-video w-full" />
+          </Link>
+          <div className="space-y-2">
+            <p className="text-muted-foreground text-sm">Start here · debate</p>
+            <h2 className="text-2xl leading-tight font-semibold tracking-tight">{first.title}</h2>
+            <p className="text-sm">{first.by}</p>
+            {first.why ? <p className="text-muted-foreground">{first.why}</p> : null}
+            <Button asChild className="mt-1 rounded-full"><Link href={itemHref(first)}>Listen</Link></Button>
+          </div>
+        </section>
 
-        <div className="border-b py-3">
-          <WriteBox path="/schole/dialectic" />
-        </div>
-
-        <Link href="/schole/dialectic/questions" className="hover:bg-muted/50 flex items-center gap-2 border-b py-3 text-sm">
-          <span className="min-w-0 flex-1"><span className="font-medium">Questions and debates</span><span className="text-muted-foreground block text-xs">Standing questions argued across the ages{live ? ` · ${live} debate${live === 1 ? "" : "s"} live` : ""}</span></span>
-          <ChevronRightIcon className="text-muted-foreground size-4" />
-        </Link>
-
-        <Feed items={items} path="/schole/dialectic" empty={following ? "No posts from people you follow yet. Open someone's name to follow them." : "No posts yet. Write the first."} />
-        <div className="border-t py-4"><PointsLadder /></div>
+        {DIALECTIC_SHELVES.map((s) => (
+          <section key={s.id} className="space-y-2" aria-labelledby={`shelf-${s.id}`}>
+            <SectionHead title={<span id={`shelf-${s.id}`}>{s.title}</span>} note={s.note} />
+            <PlaylistRows items={s.id === "debates" ? s.items.slice(1) : s.items} have={have} numbered={false} />
+          </section>
+        ))}
       </div>
     </main>
   );

@@ -21,7 +21,6 @@ import { PEOPLE, personHref } from "@reflect/core/historical-people";
 import { IDEAS, TERMS } from "@reflect/core/great-ideas";
 import { SUBJECTS, subjectRow } from "@reflect/core/subjects";
 import { redirect } from "next/navigation";
-import { listDebates } from "@/server/dialectic-store";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
@@ -110,7 +109,7 @@ const NOT_HERE: Partial<Record<Medium, string>> = {
 /** One line on each way, under its heading in Browse. */
 const WAY_LINE: Record<WayPick, string> = {
   teaching: "Someone who knows shows you the causes.",
-  dialectic: "Question and answer with other people.",
+  dialectic: "People arguing a question out, to watch and hear.",
   imitation: "Learn from a model: plays, films, lives.",
   practice: "Do it yourself: essays, exercises, examinations.",
   leisure: "Games, music and art for their own sake.",
@@ -118,14 +117,13 @@ const WAY_LINE: Record<WayPick, string> = {
 
 /**
  * Browse's All tab as the guide drew it (tab "Ways and dialectic"): a section for each way, in Aristotle's order, its
- * heading the way to all of it, with a row of things to take in. Dialectic leads with a debate live now or the next one.
+ * heading the way to all of it, with a row of things to take in. Dialectic opens its own page of debates and discussions.
  */
 async function WayRows({ userId }: { userId: string }) {
-  const [items, courses, films, art, debates] = await Promise.all([
-    listItems(userId), finds("course").then((r) => r.found).catch(() => []), filmsToWatch(), finds("art").then((r) => r.found).catch(() => []), listDebates(),
+  const [items, courses, films, art] = await Promise.all([
+    listItems(userId), finds("course").then((r) => r.found).catch(() => []), filmsToWatch(), finds("art").then((r) => r.found).catch(() => []),
   ]);
   const mine = new Map(items.map((i) => [keyOf(i), i.id]));
-  const lead = debates.live[0] ?? debates.upcoming[0];
   const here = (fs: Find[]) => fs.map((f) => ({ ...f, here: true }));
   const head = (id: WayPick) => <SectionHead title={WAY_PICKS.find((w) => w.id === id)!.label} href={id === "dialectic" ? "/schole/dialectic" : href("all", id)} note={WAY_LINE[id]} />;
   return (
@@ -133,12 +131,6 @@ async function WayRows({ userId }: { userId: string }) {
       <section className="space-y-4">{head("teaching")}<MediaGrid row finds={[...courses.slice(0, 8), ...listFinds("lecture").slice(0, 6)]} mine={mine} showMedium /></section>
       <section className="space-y-4">
         {head("dialectic")}
-        {lead ? (
-          <Link href={lead.state === "live" && lead.roomId ? `/schole/dialectic/rooms/${lead.roomId}` : `/schole/dialectic/debates/${lead.id}`} className={`block rounded-xl p-4 ${lead.state === "live" ? "border-primary bg-primary/5 border-2" : "border hover:bg-muted/50"}`}>
-            <span className="text-sm font-semibold">{lead.state === "live" ? "Live now · debate" : "Next debate"}</span>
-            <span className="block leading-snug">{lead.motion}</span>
-          </Link>
-        ) : null}
         <MediaGrid row finds={[...listFinds("debate").slice(0, 8), ...listFinds("discussion").slice(0, 4)]} mine={mine} showMedium />
       </section>
       <section className="space-y-4">{head("imitation")}<MediaGrid row finds={[...films.slice(0, 8), ...here(listFinds("theatre").slice(0, 6))]} mine={mine} showMedium /></section>
