@@ -4,6 +4,11 @@ import { clock } from "@reflect/core/media";
 import { cn } from "@/lib/utils";
 import { DebateFacts, whenWhere } from "../../dialectic/debate-record";
 import { ROUND_ACTION, WatchDetails, WatchView } from "../../watch";
+import { Reactions } from "../../reactions";
+import { ShareButton } from "../../share-button";
+import { Suspense } from "react";
+import { AiDescription, debateArticle } from "../../ai-description";
+import { dislikedKeys, reactionKey, reactionOf } from "@/server/reaction-store";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
@@ -190,6 +195,10 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
     const record = item.medium === "debate" ? debateRecord(item.url) : null;
     const why = curated(item.url)?.why;
     const done = item.status === "done";
+    const key = reactionKey({ url: item.url, medium: item.medium, title: item.title });
+    const [reaction, disliked] = await Promise.all([reactionOf(user.id, key), dislikedKeys(user.id)]);
+    const next = upNext({ url: item.url, title: item.title }, 20).filter((i) => !disliked.has(i.kind === "find" && i.url ? i.url : `${i.kind === "find" ? i.medium : i.kind}|${i.title.toLowerCase()}`)).slice(0, 10);
+    const shareHref = item.url && embed.kind === "youtube" ? `/schole/find?m=${item.medium}&t=${encodeURIComponent(item.title)}${item.by ? `&by=${encodeURIComponent(item.by)}` : ""}&u=${encodeURIComponent(item.url)}${item.image ? `&i=${encodeURIComponent(item.image)}` : ""}&h=1` : undefined;
     const transcriptForm = section("Transcript", (
       <form action={setTranscriptAction} className="space-y-2">
         {hidden}
@@ -202,13 +211,15 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
       <main className={PAGE}>
         <ThingHeader back="/schole" crumbs={shelfCrumbs(place)} title={item.title} />
         <WatchView
-          upNext={upNext({ url: item.url, title: item.title })}
+          upNext={next}
           main={
             <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} transcript={item.transcriptText}>
               <WatchDetails
                 title={item.title} channel={item.by}
                 detail={[m.label, WAYS.find((w) => w.id === way)?.label].filter(Boolean).join(" · ")}
                 actions={<>
+                  <Reactions reactionKey={key} current={reaction} back={`/schole/items/${item.id}`} />
+                  <ShareButton title={item.title} path={shareHref} />
                   <form action={changeItemAction}>
                     {hidden}<LocalDay />
                     <button name="status" value={done ? "doing" : "done"} aria-pressed={done} className={cn(ROUND_ACTION, done && "bg-foreground text-background hover:bg-foreground/90")}><CheckIcon />{m.done}</button>
@@ -217,7 +228,10 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
                 </>}
                 meta={[record ? whenWhere(record) : null, item.place && embed.kind === "youtube" ? `picks up at ${clock(item.place)}` : null, item.finishedOn ? `finished ${fmt(item.finishedOn)}` : null].filter(Boolean).join(" · ") || null}
                 description={<>
-                  {record ? <DebateFacts r={record} /> : why ? <p>{why}</p> : null}
+                  <Suspense fallback={why ? <p>{why}</p> : <p className="text-muted-foreground">Writing a description…</p>}>
+                    <AiDescription thing={{ key, title: item.title, by: item.by, kind: m.label.toLowerCase(), article: debateArticle(record?.source.url) }} fallback={why ? <p>{why}</p> : null} />
+                  </Suspense>
+                  {record ? <DebateFacts r={record} /> : null}
                   {adapts ? <p>Adapts <Link href={`/schole/works/${item.work}`} className="underline underline-offset-4">{adapts.title}</Link></p> : null}
                 </>}
                 after={

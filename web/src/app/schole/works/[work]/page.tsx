@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
-import { BookIcon, ExternalLinkIcon, StarIcon } from "lucide-react";
+import { BookIcon, ExternalLinkIcon, FileTextIcon, StarIcon } from "lucide-react";
 import { googleVolume, readerUrl } from "@reflect/core/googlebooks";
 import { authorWorks, booksLike, coverUrl, workAccess, workDetails, workEntry, type CatalogEntry } from "@reflect/core/openlibrary";
 import { categoryOf, showCall, themaCategory } from "@reflect/core/thema";
@@ -32,6 +32,7 @@ import { workById } from "@reflect/core/topic-pages";
 import { haveKeys } from "@/server/collections";
 import { listItems } from "@/server/ways-store";
 import { ClassicWork } from "./classic";
+import { summaryHref } from "../../summary/href";
 import { AuthorName, BookGrid } from "../../book-card";
 import { setBookStatusAction } from "../../actions";
 
@@ -231,6 +232,7 @@ export default async function WorkPage({ params }: { params: Promise<{ work: str
             {/* Listening first (Torian, 2026-11-15 08:24Z; decision 3): Listen is the filled button whenever a recording exists, Read beside it in outline. */}
             <div className="flex flex-wrap items-start gap-2">
               {audio ? <AudiobookButton book={audio} work={work} title={title} cover={cover} /> : null}
+              <Button asChild variant={audio ? "outline" : "default"}><Link href={summaryHref(title, authors[0])}><FileTextIcon />Summary</Link></Button>
               {text || preview || links.length ? <Reader links={links} work={work} kept={mine?.place ?? null} preview={preview} secondary={Boolean(audio)} {...(text ? { here: `/schole/works/${work}/read` } : {})} /> : null}
             </div>
             {!audio && !text && !preview ? <p className="text-muted-foreground text-sm">There is no free recording or text of this book, so it can&apos;t be heard or read in Reflect yet.</p> : null}

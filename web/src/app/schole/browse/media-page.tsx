@@ -1,5 +1,7 @@
 import { ForYouRows } from "./for-you";
 import Link from "next/link";
+import { wayLesson } from "@reflect/core/way-lessons";
+import { WayLessonCard } from "../way-lesson";
 import { SectionHead } from "@/components/section-head";
 import type { ReactNode } from "react";
 import { BROWSE_MEDIA, browseWay, type BrowseMedium } from "@reflect/core/browse-media";
@@ -175,6 +177,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
       body = way ? (
         <div className="space-y-8">
           <header className="space-y-1"><h2 className="text-2xl font-semibold tracking-tight">{WAY_PICKS.find((w) => w.id === way)!.label}</h2><p className="text-muted-foreground">{WAY_LINE[way]}</p></header>
+          {wayLesson(way) ? <WayLessonCard l={wayLesson(way)!} /> : null}
           <DiscoverRows userId={userId} way={way} />
         </div>
       ) : <div className="space-y-10"><WayRows userId={userId} /><ForYouRows userId={userId} /></div>;

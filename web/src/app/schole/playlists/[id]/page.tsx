@@ -8,7 +8,8 @@ import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
 import { requireUser } from "@/server/session";
 import { listItems } from "@/server/ways-store";
-import { haveKeys, sizeLine } from "@/server/collections";
+import { artOf, haveKeys, sizeLine } from "@/server/collections";
+import { TimeToFinish } from "../../time-to-finish";
 import { browseCrumbs } from "../../crumbs";
 import { Fan, PlaylistRows } from "../card";
 
@@ -27,9 +28,12 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
   const next = nextInCollection(c, have) ?? c.items[0]!;
   const begun = c.items.some((i) => have.has(itemKey(i)));
   const topic = c.topics?.[0] ? topicPageById(c.topics[0]) : undefined;
+  const lengths = c.items.map((i) => artOf(i).seconds);
+  const seconds = lengths.reduce<number>((n, s) => n + (s ?? 0), 0);
+  const unknown = lengths.filter((s) => !s).length;
   return (
     <main className={PAGE}>
-      <ThingHeader back={topic ? `/schole/topics/${topic.id}` : "/schole/playlists"} crumbs={[...browseCrumbs(), topic ? { label: topic.name, href: `/schole/topics/${topic.id}` } : { label: "Playlists", href: "/schole/playlists" }]} title={c.name} action={<Button asChild size="sm"><Link href={itemHref(next)}>{begun ? "Continue" : "Start"}</Link></Button>} />
+      <ThingHeader back={topic ? `/schole/topics/${topic.id}` : "/schole/playlists"} crumbs={[...browseCrumbs(), topic ? { label: topic.name, href: `/schole/topics/${topic.id}` } : { label: "Playlists", href: "/schole/playlists" }]} title={c.name} action={<Button asChild size="sm"><Link href={itemHref(next)}>{begun ? "Continue" : "Play"}</Link></Button>} />
       <div className="mt-8 space-y-8">
         <header className="grid gap-6 sm:grid-cols-[16rem_1fr] sm:gap-8">
           <Fan items={c.items} className="h-40" />
@@ -39,9 +43,10 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
               <p className="text-muted-foreground text-[13px]">Chosen by {c.by} · {sizeLine(c.items)}{topic ? <> · in <Link href={`/schole/topics/${topic.id}`} className="text-foreground underline-offset-4 hover:underline">{topic.name}</Link></> : null}</p>
             </div>
             <p className="text-muted-foreground max-w-prose">{c.about}</p>
-            <Button asChild size="lg" className="h-10 w-full sm:w-auto sm:px-8"><Link href={itemHref(next)} className="min-w-0"><span className="truncate">{begun ? `Continue with ${next.title}` : `Start with ${next.title}`}</span></Link></Button>
+            <Button asChild size="lg" className="h-10 w-full sm:w-auto sm:px-8"><Link href={itemHref(next)} className="min-w-0"><span className="truncate">{begun ? `Continue with ${next.title}` : `Play ${next.title}`}</span></Link></Button>
           </div>
         </header>
+        <TimeToFinish seconds={seconds} unknown={unknown} />
         <PlaylistRows items={c.items} have={have} />
       </div>
     </main>

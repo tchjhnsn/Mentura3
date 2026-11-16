@@ -18,6 +18,11 @@ import { curated, upNext } from "@reflect/core/up-next";
 import { BookmarkIcon } from "lucide-react";
 import { DebateFacts, whenWhere } from "../dialectic/debate-record";
 import { ROUND_ACTION, VideoFrame, WatchDetails, WatchView } from "../watch";
+import { Reactions } from "../reactions";
+import { ShareButton } from "../share-button";
+import { Suspense } from "react";
+import { AiDescription, debateArticle } from "../ai-description";
+import { dislikedKeys, reactionKey, reactionOf } from "@/server/reaction-store";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -69,6 +74,9 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
     ? <VideoFrame src={`https://www.youtube-nocookie.com/embed/${album.id}?rel=0${album.start ? `&start=${album.start}` : ""}`} title={title} />
     : album?.kind === "frame" && album.tall ? <VideoFrame src={album.src} title={`${title} on ${album.site}`} /> : null;
   if (video) {
+    const key = reactionKey({ url, medium, title });
+    const [reaction, disliked] = await Promise.all([reactionOf(user.id, key), dislikedKeys(user.id)]);
+    const next = upNext({ url, title }, 20).filter((i) => !disliked.has(i.kind === "find" && i.url ? i.url : `${i.kind === "find" ? i.medium : i.kind}|${i.title.toLowerCase()}`)).slice(0, 10);
     return (
       <main className={PAGE}>
         <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />
@@ -77,12 +85,21 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
             {video}
             <WatchDetails
               title={title} channel={by} detail={[m.label, wayLabel(medium as Medium)].join(" · ")}
-              actions={<form action={browseAddAction}>{hidden}<button type="submit" className={ROUND_ACTION} aria-label={`Save ${title}`}><BookmarkIcon />Save</button></form>}
+              actions={<>
+                <Reactions reactionKey={key} current={reaction} back="/schole/find" />
+                <ShareButton title={title} />
+                <form action={browseAddAction}>{hidden}<button type="submit" className={ROUND_ACTION} aria-label={`Save ${title}`}><BookmarkIcon />Save</button></form>
+              </>}
               meta={record ? whenWhere(record) : year || null}
-              description={record ? <DebateFacts r={record} /> : curated(url)?.why ? <p>{curated(url)!.why}</p> : null}
+              description={<>
+                <Suspense fallback={curated(url)?.why ? <p>{curated(url)!.why}</p> : <p className="text-muted-foreground">Writing a description…</p>}>
+                  <AiDescription thing={{ key, title, by, kind: m.label.toLowerCase(), article: debateArticle(record?.source.url) }} fallback={curated(url)?.why ? <p>{curated(url)!.why}</p> : null} />
+                </Suspense>
+                {record ? <DebateFacts r={record} /> : null}
+              </>}
             />
           </>}
-          upNext={upNext({ url, title })}
+          upNext={next}
         />
       </main>
     );
