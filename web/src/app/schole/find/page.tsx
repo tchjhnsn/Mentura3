@@ -62,8 +62,8 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
           </form>
         </div>
       </div>
-      {album?.kind === "frame" && album.list ? (
-        <iframe src={album.src} title={`${title} on ${album.site}`} className="mt-8 h-[450px] w-full max-w-3xl rounded-lg border" allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" />
+      {album?.kind === "frame" && album.site === "Apple Music" ? (
+        <iframe src={album.src} title={`${title} on ${album.site}`} className={`mt-8 ${album.list ? "h-[450px]" : "h-[175px]"} w-full max-w-3xl rounded-lg border`} allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" />
       ) : null}
     </main>
   );

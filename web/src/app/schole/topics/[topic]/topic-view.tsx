@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { itemHref, itemKey, nextInCollection } from "@reflect/core/collections";
-import { formItems, formSize, playlistsOf, versionLine, workById, workItem, workOf, type TopicPage } from "@reflect/core/topic-pages";
+import { formItems, formSize, playlistsOf, versionLine, workById, workItem, workOf, type TopicPage, type Work } from "@reflect/core/topic-pages";
 import { hoursOf } from "@reflect/core/audiobooks";
 import { Button } from "@/components/ui/button";
 import { SectionHead } from "@/components/section-head";
@@ -26,7 +26,7 @@ function FormChips({ t, on }: { t: TopicPage; on: string | null }) {
   );
 }
 
-function Faces({ faces }: { faces: readonly Face[] }) {
+export function Faces({ faces }: { faces: readonly Face[] }) {
   return (
     <ul className="flex flex-wrap gap-x-4 gap-y-3">
       {faces.map((f) => {
@@ -40,6 +40,29 @@ function Faces({ faces }: { faces: readonly Face[] }) {
           </>
         );
         return <li key={f.name} className="flex flex-col items-center">{f.href ? <Link href={f.href} className="flex flex-col items-center hover:underline">{face}</Link> : face}</li>;
+      })}
+    </ul>
+  );
+}
+
+/** Works as rows: art, title, who and when, and which versions each has; each opens its work page. */
+export function WorkRows({ works }: { works: readonly Work[] }) {
+  return (
+    <ul className="max-w-3xl divide-y">
+      {works.map((w) => {
+        const a = artOf(workItem(w));
+        return (
+          <li key={w.id}>
+            <Link href={`/schole/works/${w.id}`} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg px-2 py-3">
+              <Art image={a.image} kind="Work" title={w.title} tiny className="size-14 shrink-0" />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{w.title}</span>
+                <span className="text-muted-foreground block truncate text-[13px]">{w.by} · {w.when}{a.seconds ? ` · ${hoursOf(a.seconds)}` : ""}</span>
+                <span className="text-muted-foreground block truncate text-xs">{versionLine(w)}</span>
+              </span>
+            </Link>
+          </li>
+        );
       })}
     </ul>
   );
@@ -143,23 +166,7 @@ function FormView({ t, f, have, faces }: { t: TopicPage; f: TopicPage["forms"][n
       {works.length ? (
         <section className="space-y-2">
           <SectionHead title="Works" />
-          <ul className="max-w-3xl divide-y">
-            {works.map((w) => {
-              const a = artOf(workItem(w));
-              return (
-                <li key={w.id}>
-                  <Link href={`/schole/works/${w.id}`} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg px-2 py-3">
-                    <Art image={a.image} kind="Work" title={w.title} tiny className="size-14 shrink-0" />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium">{w.title}</span>
-                      <span className="text-muted-foreground block truncate text-[13px]">{w.by} · {w.when}{a.seconds ? ` · ${hoursOf(a.seconds)}` : ""}</span>
-                      <span className="text-muted-foreground block truncate text-xs">{versionLine(w)}</span>
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+          <WorkRows works={works} />
         </section>
       ) : null}
       {f.items?.length ? (

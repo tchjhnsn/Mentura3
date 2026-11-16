@@ -46,6 +46,9 @@ export function embedOf(raw: string | null | undefined): Embed | null {
   if (sp) return { kind: "frame", src: `https://open.spotify.com/embed/${sp[1]}/${sp[2]}`, site: "Spotify", tall: false };
   // Apple Music's player plays 30-second previews, and whole tracks for someone signed in to Apple Music.
   const am = h === "music.apple.com" ? /^\/([a-z]{2})\/(album|playlist)\/([^/]+)\/([\w.-]+)/.exec(u.pathname) : null;
+  // One track of an album (?i=) plays alone, in a shorter player.
+  const song = am && am[2] === "album" ? u.searchParams.get("i") : null;
+  if (am && song && /^\d+$/.test(song)) return { kind: "frame", src: `https://embed.music.apple.com/${am[1]}/album/${am[3]}/${am[4]}?i=${song}`, site: "Apple Music", tall: false };
   if (am) return { kind: "frame", src: `https://embed.music.apple.com/${am[1]}/${am[2]}/${am[3]}/${am[4]}`, site: "Apple Music", tall: false, list: true };
   if (h === "soundcloud.com") return { kind: "frame", src: `https://w.soundcloud.com/player/?url=${encodeURIComponent(u.toString())}`, site: "SoundCloud", tall: false };
   return null;
