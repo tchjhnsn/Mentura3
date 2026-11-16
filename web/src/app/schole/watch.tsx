@@ -44,7 +44,7 @@ export function WatchDetails({ title, channel, detail, actions, meta, descriptio
           {channel ? <p className="truncate text-[15px] font-medium">{channel}</p> : null}
           {detail ? <p className="text-muted-foreground text-xs">{detail}</p> : null}
         </div>
-        {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+        {actions ? <div className="flex min-w-0 flex-wrap items-center gap-2">{actions}</div> : null}
       </div>
       {meta || description ? (
         <div className="bg-muted/70 space-y-2 rounded-xl p-3 text-sm leading-relaxed">
@@ -82,8 +82,7 @@ function UpNext({ items }: { items: readonly CollectionItem[] }) {
   );
 }
 
-/** A round action button's classes, the way a video site draws Save and Share beside the channel. */
-export const ROUND_ACTION = "bg-muted hover:bg-muted/70 text-foreground inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-medium transition [&_svg]:size-4";
+export { ROUND_ACTION } from "./watch-classes";
 
 /** A video in its own player, for a recording not yet saved (no place to keep): edge to edge on a phone. */
 export function VideoFrame({ src, title }: { src: string; title: string }) {

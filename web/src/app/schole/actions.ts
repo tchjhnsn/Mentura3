@@ -554,3 +554,13 @@ export async function favoriteEpisodeAction(itemId: string, unit: string, favori
   await setFavorite(user.id, itemId, unit, favorite);
   revalidatePath(itemPath(itemId));
 }
+
+/** Like or Dislike a thing, privately, or take the reaction off (the same button again). */
+export async function reactAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const { setReaction } = await import("@/server/reaction-store");
+  const r = field(form, "reaction");
+  await setReaction(user.id, field(form, "key"), r === "like" || r === "dislike" ? r : "none");
+  const back = field(form, "back");
+  if (back.startsWith("/schole/")) revalidatePath(back.split("?")[0]!);
+}

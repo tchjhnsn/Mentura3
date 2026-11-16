@@ -59,7 +59,7 @@ function Answer({ message }: { message: UIMessage }) {
   );
 }
 
-export function Chat() {
+export function Chat({ ask }: { ask?: string } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
   const [id] = useState(() => crypto.randomUUID());
   const { messages, sendMessage, status } = useChat({ id, transport });
@@ -86,7 +86,7 @@ export function Chat() {
       </Conversation>
       {messages.length === 0 ? (
         <Suggestions className="mb-3">
-          {STARTERS.map((s) => <Suggestion key={s} suggestion={s} onClick={(t) => void sendMessage({ text: t })} />)}
+          {(ask ? [ask, ...STARTERS] : STARTERS).map((s) => <Suggestion key={s} suggestion={s} onClick={(t) => void sendMessage({ text: t })} />)}
         </Suggestions>
       ) : null}
       <PromptInput onSubmit={(m) => { if (m.text?.trim()) void sendMessage({ text: m.text }); }}>

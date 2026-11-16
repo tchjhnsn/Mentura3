@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ab, COLLECTIONS, type CollectionItem } from "@reflect/core/collections";
 import { GROUP_LABEL, topicPageById, workOf, type VersionGroup, type Work } from "@reflect/core/topic-pages";
 import { Button } from "@/components/ui/button";
+import { FileTextIcon } from "lucide-react";
+import { summaryHref } from "../../summary/href";
 import { SectionHead } from "@/components/section-head";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -51,7 +53,10 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
             <p className="text-muted-foreground text-[13px]">{author ? <Link href={personHref(author)} className="text-foreground underline-offset-4 hover:underline">{w.by}</Link> : w.by} · {w.when}</p>
             <p className="text-muted-foreground text-[13px]">{form ? <Link href={formHref} className="text-foreground underline-offset-4 hover:underline">{form.label}</Link> : null} · <Link href={`/schole/topics/${t.id}`} className="text-foreground underline-offset-4 hover:underline">{t.name}</Link></p>
             <p className="hidden max-w-prose sm:block">{w.about}</p>
-            {recordings[0] ? <Button asChild size="lg" className="mt-1 h-10 sm:px-8"><Link href={`/schole/audiobooks/${w.audiobooks[0]}`}>Play the audiobook</Link></Button> : null}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {recordings[0] ? <Button asChild size="lg" className="h-10 sm:px-8"><Link href={`/schole/audiobooks/${w.audiobooks[0]}`}>Play the audiobook</Link></Button> : null}
+              <Button asChild size="lg" variant={recordings[0] ? "outline" : "default"} className="h-10"><Link href={summaryHref(w.title, w.by)}><FileTextIcon />Summary</Link></Button>
+            </div>
           </div>
         </header>
         <p className="max-w-prose sm:hidden">{w.about}</p>

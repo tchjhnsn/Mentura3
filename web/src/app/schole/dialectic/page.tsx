@@ -12,6 +12,8 @@ import { artOf, haveKeys } from "@/server/collections";
 import { keptWorks } from "@/server/kept-works";
 import { listItems } from "@/server/ways-store";
 import { Art } from "../art";
+import { wayLesson } from "@reflect/core/way-lessons";
+import { WayLessonCard } from "../way-lesson";
 import { LearnHeader } from "../header";
 import { PlaylistRows } from "../playlists/card";
 import { QuestionsGrid } from "./questions-grid";
@@ -40,6 +42,8 @@ export default async function DialecticPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Dialectic</h1>
           <p className="text-muted-foreground">Watch and listen to people argue a question out.</p>
         </header>
+
+        <WayLessonCard l={wayLesson("dialectic")!} />
 
         <section className="grid gap-4 sm:grid-cols-[minmax(0,22rem)_1fr] sm:items-center" aria-label="Featured">
           <Link href={itemHref(first)} className="group relative block overflow-hidden rounded-xl border" aria-label={`Listen to ${first.title}`}>

@@ -7,8 +7,6 @@ import { requireUser } from "@/server/session";
 import { getItem, listUnits } from "@/server/ways-store";
 import { lectureOf, lecturesOf } from "@/server/courses";
 import { UnitPlayer } from "../../../unit-player";
-import { LectureQuiz } from "../../../quiz";
-import { latestQuiz } from "@/server/quiz-store";
 import { CourseShell, courseHref, lectureHeader } from "../../../../courses/shell";
 
 export const metadata: Metadata = { title: "Scholē" };
@@ -28,7 +26,7 @@ export default async function LecturePage({ params }: { params: Promise<{ id: st
   const at = course?.lectures.findIndex((l) => String(l.n) === n) ?? -1;
   if (!course || at < 0) notFound();
   const ref = course.lectures[at]!;
-  const [lecture, units, quiz] = await Promise.all([lectureOf(course.site, ref), listUnits(user.id, id), latestQuiz(user.id, id, n)]);
+  const [lecture, units] = await Promise.all([lectureOf(course.site, ref), listUnits(user.id, id)]);
   const unit = units.find((u) => u.unit === n);
   const done = new Set(units.filter((u) => u.doneOn).map((u) => u.unit));
   const nav = course.lectures.map((l) => ({ n: l.n, title: l.title, href: `/schole/items/${id}/lectures/${l.n}`, done: done.has(String(l.n)) }));
@@ -50,7 +48,8 @@ export default async function LecturePage({ params }: { params: Promise<{ id: st
             transcript={lecture.transcript} notes={item.notes.filter((x) => x.unit === n)} next={next?.href ?? null}
           />
         ) : <p className="text-muted-foreground text-sm">{site.name} did not answer just now. Try again in a moment.</p>}
-        {lecture?.transcript.length ? <LectureQuiz item={id} unit={n} transcript={lecture.transcript} start={quiz} /> : null}
+        {/* Quizzes are asked of the AI, not built into the page (Torian, 2026-11-16 19:20Z). */}
+        <p className="text-muted-foreground text-sm">Want to test yourself? <Link href={`/chat?q=${encodeURIComponent(`Quiz me on "${ref.title}", a lecture in ${item.title}${item.by ? ` (${item.by})` : ""}.`)}`} className="text-foreground underline underline-offset-4">Ask to be quizzed</Link>.</p>
         {!next ? (
           <section className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm">This is the last lecture of the course.</p>
