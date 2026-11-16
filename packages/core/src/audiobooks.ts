@@ -83,7 +83,7 @@ export const READERS = [
   { id: "cast", label: "Dramatic reading", fits: (a: Audiobook) => a.dramatic },
 ] as const;
 
-export type AudiobookQuery = { topic?: string; length?: string; readers?: string; language?: string; q?: string };
+export type AudiobookQuery = { topic?: string; length?: string; readers?: string; language?: string; q?: string; /** Recordings Reflect's editors name (canon.ts), ranked before the rest. */ canon?: ReadonlySet<string> };
 
 /** Words as a search compares them: lower case, accents dropped ("Niccolò" is "niccolo"), punctuation as spaces. */
 export const searchWords = (s: string): string[] => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean);
@@ -106,7 +106,7 @@ export function searchScore(a: Pick<Audiobook, "title" | "by">, q: string): numb
   return words.every((w) => title.includes(w)) ? 2 : 1;
 }
 
-/** Recordings that match, in a topic, of a length, read by one, many or a cast, in a language: the best match to a search first, then the most downloaded. */
+/** Recordings that match, in a topic, of a length, read by one, many or a cast, in a language: the best match to a search first, then the editors' canon, then the most downloaded. */
 export function findAudiobooks(all: readonly Audiobook[], o: AudiobookQuery, limit = 48, offset = 0): Audiobook[] {
   const t = topicOf(o.topic);
   const len = LENGTHS.find((x) => x.id === o.length);
@@ -117,7 +117,7 @@ export function findAudiobooks(all: readonly Audiobook[], o: AudiobookQuery, lim
     .filter((a) => (lang === "all" || a.language === lang) && (!len || len.fits(a.seconds)) && (!who || who.fits(a)) && (!t || audiobookTopics(a.genres).includes(t.id)))
     .map((a) => ({ a, s: searchScore(a, q) }))
     .filter((x) => x.s > 0)
-    .sort((x, y) => y.s - x.s || y.a.downloads - x.a.downloads)
+    .sort((x, y) => y.s - x.s || Number(Boolean(o.canon?.has(y.a.id))) - Number(Boolean(o.canon?.has(x.a.id))) || y.a.downloads - x.a.downloads)
     .map((x) => x.a)
     .slice(offset, offset + limit);
 }

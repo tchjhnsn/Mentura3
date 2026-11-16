@@ -60,7 +60,7 @@ export default async function TopicPage({ params, searchParams }: { params: Prom
           </ul>
         </nav>
         <MediaRow title="Top podcasts" finds={podcasts.slice(0, 12)} mine={mine} note="Apple Podcasts' chart in this topic, today." />
-        <AudiobookRow title="Audiobooks" books={books.slice(0, 12)} href={`/schole/browse?m=audiobooks&topic=${t.id}`} note="Most listened on LibriVox." />
+        <AudiobookRow title="Audiobooks" books={books.slice(0, 12)} href={`/schole/browse?m=audiobooks&topic=${t.id}`} note="Reflect's editors' picks first, then the most listened on LibriVox." />
         <AudiobookRow title="Audiobooks under two hours" books={short} href={`/schole/browse?m=audiobooks&topic=${t.id}&length=short`} />
         {podcasts.length > 12 ? <MediaRow title="More podcasts" finds={podcasts.slice(12)} mine={mine} /> : null}
         {!podcasts.length && !books.length ? <p className="text-muted-foreground text-sm">Nothing found in this topic right now.</p> : null}

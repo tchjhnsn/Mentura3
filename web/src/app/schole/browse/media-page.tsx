@@ -23,6 +23,7 @@ import { TOPICS, searchScore } from "@reflect/core/audiobooks";
 import { WORKS } from "@reflect/core/topic-pages";
 import { PEOPLE, personHref } from "@reflect/core/historical-people";
 import { IDEAS, TERMS } from "@reflect/core/great-ideas";
+import { SUBJECTS, subjectRow } from "@reflect/core/subjects";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
@@ -157,9 +158,13 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
           </ul>
         </nav>,
       );
-      const topics = [...subjects, "philosophy", "history", "theology"].filter((t, i, a) => a.indexOf(t) === i).slice(0, 4);
-      const rows = await Promise.all(topics.map((t) => finds("podcast", t).then((x) => x.found.slice(0, 12)).catch(() => [])));
-      topics.forEach((t, i) => extra.push(<MediaRow key={t} title={<>On {t}</>} finds={rows[i]!} mine={mine} href={href("podcast", way, t)} />));
+      // Subjects with Reflect's editors' picks first, then what a search finds (Torian, 2026-11-16 08:24Z: "Editors'
+      // canon, then listens"); then a row for each subject on the person's own shelves.
+      const rows = await Promise.all(SUBJECTS.map((x) => finds("podcast", x.search).then((r) => subjectRow(x, r.found)).catch(() => subjectRow(x, []))));
+      SUBJECTS.forEach((x, i) => extra.push(<MediaRow key={x.id} title={x.label} finds={rows[i]!} mine={mine} href={href("podcast", way, x.search)} note={x.picks.length ? "Reflect's editors' picks first, then the shows a search finds." : "The shows a search finds; editors' picks to come."} />));
+      const own = subjects.filter((t) => !SUBJECTS.some((x) => x.search === t.toLowerCase())).slice(0, 2);
+      const mineRows = await Promise.all(own.map((t) => finds("podcast", t).then((x) => x.found.slice(0, 12)).catch(() => [])));
+      own.forEach((t, i) => extra.push(<MediaRow key={t} title={<>On {t}</>} finds={mineRows[i]!} mine={mine} href={href("podcast", way, t)} note="From the subjects on your shelves." />));
     }
     body = (
       <div className="space-y-8">

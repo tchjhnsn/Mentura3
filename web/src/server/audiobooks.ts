@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { appleChart, audiobookLanguages, findAudiobooks, readAudiobook, type Audiobook, type AudiobookQuery } from "@reflect/core/audiobooks";
 import { librivoxBook } from "@reflect/core/librivox";
+import { canonAudiobooks } from "@reflect/core/canon";
 
 let all: Audiobook[] | null = null;
 let byId: Map<string, Audiobook> | null = null;
@@ -20,7 +21,8 @@ export function audiobooks(): Audiobook[] {
 
 /** One recording from the catalog by its LibriVox id, or undefined. */
 export const audiobookById = (id: string): Audiobook | undefined => (audiobooks(), byId!.get(id));
-export const listAudiobooks = (o: AudiobookQuery, limit?: number, offset?: number) => findAudiobooks(audiobooks(), o, limit, offset);
+/** Recordings that match, the editors' canon first, then the most listened (Torian, 2026-11-16 08:24Z). */
+export const listAudiobooks = (o: AudiobookQuery, limit?: number, offset?: number) => findAudiobooks(audiobooks(), { canon: canonAudiobooks(), ...o }, limit, offset);
 export const languages = () => audiobookLanguages(audiobooks());
 /** The recording's cover, from the Internet Archive item that keeps it. */
 export const coverOf = (a: { item: string }): string | null => (a.item ? `https://archive.org/services/img/${a.item}` : null);
