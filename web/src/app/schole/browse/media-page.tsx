@@ -12,7 +12,6 @@ import { filmsToWatch, finds, listFinds } from "@/server/browse-media";
 import { openLibrary } from "@/server/browse";
 import { LearnHeader } from "../header";
 import { BookGrid } from "../book-card";
-import { Menu } from "./category-menu";
 import { MediaGrid, MediaRow, keyOf, type Find } from "./media";
 import { AudiobookRow } from "../audiobooks/cards";
 import { listAudiobooks } from "@/server/audiobooks";
@@ -39,7 +38,7 @@ const href = (m: BrowseMedium | "all", way: WayPick | null, q?: string) => {
 
 /**
  * Browse's top: every medium as a tab (books, courses, lectures, debates, podcasts, plays, films, series, music, art,
- * games, or all of them), and a way of learning to narrow any list to (Torian, 2026-11-14: "Both").
+ * games, or all of them). The way-of-learning menu is gone: the media tabs cover it (Torian, 2026-11-16 08:53Z).
  */
 export function BrowseNav({ m, way, children }: { m: BrowseMedium | "all"; way: WayPick | null; children?: ReactNode }) {
   const media = BROWSE_MEDIA.filter((x) => inWay(x.id, way));
@@ -55,14 +54,7 @@ export function BrowseNav({ m, way, children }: { m: BrowseMedium | "all"; way: 
           ))}
         </ul>
       </nav>
-      <div className="flex flex-wrap items-center gap-2">
-        {children}
-        <Menu
-          label={way ? WAY_PICKS.find((w) => w.id === way)!.label : "Every way of learning"}
-          lead={1}
-          items={[{ href: href(m, null), label: "Every way of learning", on: !way }, ...WAY_PICKS.map((w) => ({ href: href(inWay(m === "all" ? "books" : m, w.id) || m === "all" ? m : "all", w.id), label: w.label, on: way === w.id }))]}
-        />
-      </div>
+      {children}
     </div>
   );
 }
