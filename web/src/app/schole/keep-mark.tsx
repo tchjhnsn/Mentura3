@@ -16,7 +16,7 @@ const ROUND = "bg-background/90 text-foreground flex size-8 items-center justify
 export function KeepButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" aria-label={label} title="Keep for later" disabled={pending} className={cn(ROUND, "hover:bg-background transition")}>
+    <button type="submit" aria-label={label} title="Save" disabled={pending} className={cn(ROUND, "hover:bg-background transition")}>
       <BookmarkIcon className={pending ? "fill-current" : ""} />
     </button>
   );

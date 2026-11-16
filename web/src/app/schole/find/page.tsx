@@ -14,7 +14,10 @@ import { LocalDay } from "../items/local-day";
 import { wayLabel } from "../browse/media";
 import { PlayButton } from "../play-button";
 import { debateRecord } from "@reflect/core/dialectic-media";
-import { DebateFacts, Verdict } from "../dialectic/debate-record";
+import { curated, upNext } from "@reflect/core/up-next";
+import { BookmarkIcon } from "lucide-react";
+import { DebateFacts, whenWhere } from "../dialectic/debate-record";
+import { ROUND_ACTION, VideoFrame, WatchDetails, WatchView } from "../watch";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -22,10 +25,16 @@ export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const https = (v: string) => (/^https:\/\//.test(v) ? v : "");
 
+/** The verb for doing a thing in Reflect, by its medium: Watch, Listen, Play, View, Read or Start. */
+export const verbOf = (medium: string): string =>
+  ({ Watched: "Watch", Heard: "Listen", Played: "Play", Read: "Read", Finished: "Start" } as Record<string, string>)[mediumOf(medium as Medium).done] ?? (medium === "art" ? "View" : "Watch");
+
 /**
- * A find from Browse that has no page of its own yet (a film, an album, a work of art): what it is, and the page's
- * acts, Start here when it can be done in Reflect and Keep for later. Tapping a card opens this (Torian, 2026-11-15:
- * tapping a thing opens it); once kept, the person's own item page is its page.
+ * A find from Browse that has no page of its own yet (a film, an album, a work of art). A video plays at the top of a
+ * watch page (Torian, 2026-11-16 18:45Z: "It should look like you're on YouTube preparing to watch a video"), with Save
+ * beside the channel and Up next beside or below it. Anything else shows what it is, with the medium's verb (Watch,
+ * Listen, Play, View) as the one filled button when it can be done in Reflect, and Save. Once saved, the person's own
+ * item page is its page.
  */
 export default async function FindPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
@@ -48,8 +57,36 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
   // An album plays right here, before it is kept: Apple Music's player gives previews, and whole tracks to its subscribers.
   const album = embedOf(url);
   const record = medium === "debate" ? debateRecord(url) : null;
-  const back = `/schole/find?${new URLSearchParams(Object.entries(sp).filter(([k, v]) => k !== "verdict" && typeof v === "string") as [string, string][]).toString()}`;
-  const verdict = one(sp.verdict);
+  const hidden = (
+    <>
+      <input type="hidden" name="medium" value={medium} /><input type="hidden" name="title" value={title} />
+      {by ? <input type="hidden" name="by" value={by} /> : null}{url ? <input type="hidden" name="url" value={url} /> : null}{image ? <input type="hidden" name="image" value={image} /> : null}
+      <LocalDay />
+    </>
+  );
+  // A video plays right here, at the top, the way a video site opens one.
+  const video = album?.kind === "youtube"
+    ? <VideoFrame src={`https://www.youtube-nocookie.com/embed/${album.id}?rel=0${album.start ? `&start=${album.start}` : ""}`} title={title} />
+    : album?.kind === "frame" && album.tall ? <VideoFrame src={album.src} title={`${title} on ${album.site}`} /> : null;
+  if (video) {
+    return (
+      <main className={PAGE}>
+        <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />
+        <WatchView
+          main={<>
+            {video}
+            <WatchDetails
+              title={title} channel={by} detail={[m.label, wayLabel(medium as Medium)].join(" · ")}
+              actions={<form action={browseAddAction}>{hidden}<button type="submit" className={ROUND_ACTION} aria-label={`Save ${title}`}><BookmarkIcon />Save</button></form>}
+              meta={record ? whenWhere(record) : year || null}
+              description={record ? <DebateFacts r={record} /> : curated(url)?.why ? <p>{curated(url)!.why}</p> : null}
+            />
+          </>}
+          upNext={upNext({ url, title })}
+        />
+      </main>
+    );
+  }
   return (
     <main className={PAGE}>
       <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />
@@ -63,11 +100,9 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
           {by ? <p className="text-muted-foreground">{by}</p> : null}
           <p className="text-muted-foreground text-sm">{[m.label, wayLabel(medium as Medium), year].filter(Boolean).join(" · ")}</p>
           <form action={browseAddAction} className="flex flex-wrap gap-2">
-            <input type="hidden" name="medium" value={medium} /><input type="hidden" name="title" value={title} />
-            {by ? <input type="hidden" name="by" value={by} /> : null}{url ? <input type="hidden" name="url" value={url} /> : null}{image ? <input type="hidden" name="image" value={image} /> : null}
-            <LocalDay />
-            {free ? <PlayButton src={free.src} title={title} by={by} href={`/schole/find?m=music&t=${encodeURIComponent(title)}&u=${encodeURIComponent(url)}`} label="Play" /> : here ? <Button name="go" value="start">Start here</Button> : null}
-            <Button variant={here || free ? "outline" : "default"}>Keep for later</Button>
+            {hidden}
+            {free ? <PlayButton src={free.src} title={title} by={by} href={`/schole/find?m=music&t=${encodeURIComponent(title)}&u=${encodeURIComponent(url)}`} label="Play" /> : here ? <Button name="go" value="start">{verbOf(medium)}</Button> : null}
+            <Button variant={here || free ? "outline" : "default"}><BookmarkIcon />Save</Button>
           </form>
           {free ? (
             <p className="text-muted-foreground text-xs">
@@ -78,12 +113,6 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
       </div>
       {album?.kind === "frame" && album.site === "Apple Music" ? (
         <iframe src={album.src} title={`${title} on ${album.site}`} className={`mt-8 ${album.list ? "h-[450px]" : "h-[175px]"} w-full max-w-3xl rounded-lg border`} allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" />
-      ) : null}
-      {medium === "debate" ? (
-        <div className="mt-10 grid max-w-3xl gap-10">
-          {record ? <section className="space-y-3" aria-labelledby="debate"><h2 id="debate" className="text-base font-semibold">The debate</h2><DebateFacts r={record} /></section> : null}
-          <section className="space-y-3" aria-labelledby="verdict-h"><h2 id="verdict-h" className="text-base font-semibold">Your verdict</h2><Verdict title={title} url={url} record={record} back={back} kept={verdict || undefined} /></section>
-        </div>
       ) : null}
     </main>
   );

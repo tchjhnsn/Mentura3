@@ -1,31 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { CopyIcon, XIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { CopyIcon } from "lucide-react";
 import { clock, readTranscript, searchTranscript, type Embed } from "@reflect/core/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { addItemNoteAction, keepItemPlaceAction, removeItemNoteAction } from "../../actions";
+import { keepItemPlaceAction } from "../../actions";
 import { loadYouTube, localDay, type YTPlayer } from "../youtube";
 
-type Note = { id: string; at: number | null; quote: string | null; note: string | null };
 /**
  * Watching or listening inside Reflect. A YouTube video plays through YouTube's player API: the place is kept as
- * it plays (every 15 seconds and on pause), notes are taken at the current moment, and a note's time seeks there.
- * Other sites play in their own embed, where notes take a time typed by hand. A pasted transcript is searched here
- * and any part quoted into a note with its moment, or copied as a cited quote.
+ * it plays (every 15 seconds and on pause). Other sites play in their own embed. A pasted transcript is searched here,
+ * a moment seeks there, and any part is copied as a cited quote. No notes are written here: writing is in the journal
+ * (Torian, 2026-11-16 18:45Z).
  */
-export function ItemMedia({ id, title, by, embed, place, notes, transcript }: { id: string; title: string; by: string | null; embed: Embed | null; place: number | null; notes: Note[]; transcript: string | null }) {
+export function ItemMedia({ id, title, by, embed, place, transcript, children }: { id: string; title: string; by: string | null; embed: Embed | null; place: number | null; transcript: string | null; /** What sits between the player and the transcript search: the title, channel line and description. */ children?: ReactNode }) {
   const holder = useRef<HTMLDivElement>(null);
   const player = useRef<YTPlayer | null>(null);
-  const [text, setText] = useState("");
-  const [at, setAt] = useState("");
   const [q, setQ] = useState("");
   const [copied, setCopied] = useState<number | null>(null);
-  const [pending, run] = useTransition();
-  const router = useRouter();
   const parts = useMemo(() => (transcript ? readTranscript(transcript) : []), [transcript]);
   const hits = useMemo(() => searchTranscript(parts, q), [parts, q]);
 
@@ -46,57 +39,21 @@ export function ItemMedia({ id, title, by, embed, place, notes, transcript }: { 
     return () => { live = false; if (timer) clearInterval(timer); keep(); player.current?.destroy(); player.current = null; };
   }, [embed, id, place]);
 
-  const now = () => (player.current ? Math.floor(player.current.getCurrentTime()) : null);
   const seek = (s: number) => { player.current?.seekTo(s, true); player.current?.playVideo(); holder.current?.scrollIntoView?.({ block: "nearest" }); };
-  const typed = () => { const m = /^(?:(\d+):)?(\d{1,2}):(\d{2})$/.exec(at.trim()); return m ? Number(m[1] ?? 0) * 3600 + Number(m[2]) * 60 + Number(m[3]) : null; };
-  const save = (n: { at: number | null; quote?: string; note?: string }) => run(async () => { await addItemNoteAction(id, n); setText(""); setAt(""); router.refresh(); });
   const cite = (p: { at: number; text: string }) => `“${p.text}” (${[by, title].filter(Boolean).join(", ")}, at ${clock(p.at)})`;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {embed?.kind === "youtube" ? (
-        <div className="aspect-video w-full overflow-hidden rounded-lg border bg-black"><div ref={holder} className="size-full" /></div>
+        <div className="-mx-6 aspect-video overflow-hidden bg-black sm:mx-0 sm:rounded-xl"><div ref={holder} className="size-full" /></div>
       ) : embed ? (
-        <iframe src={embed.src} title={`${title} on ${embed.site}`} className={embed.tall ? "aspect-video w-full rounded-lg border" : embed.list ? "h-[450px] w-full rounded-lg border" : "h-40 w-full rounded-lg border"} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />
+        <iframe src={embed.src} title={`${title} on ${embed.site}`} className={embed.tall ? "-mx-6 aspect-video w-[calc(100%+3rem)] bg-black sm:mx-0 sm:w-full sm:rounded-xl" : embed.list ? "h-[450px] w-full rounded-lg border" : "h-40 w-full rounded-lg border"} allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowFullScreen loading="lazy" />
       ) : null}
-      {embed?.kind === "youtube" && place ? <p className="text-muted-foreground text-xs">Picks up at {clock(place)}, where you stopped.</p> : null}
-
-      <div className="space-y-2">
-        <p className="text-sm font-medium">Notes</p>
-        {notes.length ? (
-          <ul className="space-y-2">
-            {notes.map((n) => (
-              <li key={n.id} className="flex items-start gap-2 rounded-md border p-2 text-sm">
-                {n.at !== null ? (
-                  embed?.kind === "youtube" ? <button type="button" onClick={() => seek(n.at!)} className="text-muted-foreground shrink-0 tabular-nums underline-offset-4 hover:underline">{clock(n.at)}</button> : <span className="text-muted-foreground shrink-0 tabular-nums">{clock(n.at)}</span>
-                ) : null}
-                <span className="min-w-0 flex-1 space-y-1">
-                  {n.quote ? <span className="block italic">“{n.quote}”</span> : null}
-                  {n.note ? <span className="block">{n.note}</span> : null}
-                </span>
-                <Button type="button" size="icon" variant="ghost" aria-label="Remove note" disabled={pending} onClick={() => run(async () => { await removeItemNoteAction(id, n.id); router.refresh(); })}><XIcon /></Button>
-              </li>
-            ))}
-          </ul>
-        ) : <p className="text-muted-foreground text-sm">No notes yet.</p>}
-        <div className="space-y-2">
-          <Textarea aria-label="Note" rows={2} maxLength={4000} value={text} onChange={(e) => setText(e.target.value)} placeholder="A note" />
-          <div className="flex flex-wrap items-center gap-2">
-            {embed?.kind === "youtube" ? (
-              <Button type="button" size="sm" disabled={pending || !text.trim()} onClick={() => save({ at: now(), note: text })}>Note at this moment</Button>
-            ) : (
-              <>
-                <Input aria-label="At (m:ss)" placeholder="m:ss" value={at} onChange={(e) => setAt(e.target.value)} className="h-8 w-24" />
-                <Button type="button" size="sm" disabled={pending || !text.trim()} onClick={() => save({ at: typed(), note: text })}>Keep note</Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      {children}
 
       {parts.length ? (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Search the transcript</p>
+        <div className="space-y-2 pt-3">
+          <h2 className="text-base font-semibold">Search the transcript</h2>
           <Input aria-label="Search the transcript" placeholder="A word or phrase" value={q} onChange={(e) => setQ(e.target.value)} />
           {q && !hits.length ? <p className="text-muted-foreground text-sm">Not found.</p> : null}
           <ul className="space-y-2">
@@ -105,7 +62,6 @@ export function ItemMedia({ id, title, by, embed, place, notes, transcript }: { 
                 {embed?.kind === "youtube" ? <button type="button" onClick={() => seek(p.at)} className="text-muted-foreground shrink-0 tabular-nums underline-offset-4 hover:underline">{clock(p.at)}</button> : <span className="text-muted-foreground shrink-0 tabular-nums">{clock(p.at)}</span>}
                 <span className="min-w-0 flex-1">{p.text}</span>
                 <span className="flex shrink-0 gap-1">
-                  <Button type="button" size="sm" variant="outline" disabled={pending} onClick={() => save({ at: p.at, quote: p.text })}>Quote in a note</Button>
                   <Button type="button" size="icon" variant="ghost" aria-label="Copy as a cited quote" onClick={() => { navigator.clipboard?.writeText(cite(p)).catch(() => {}); setCopied(i); }}><CopyIcon /></Button>
                 </span>
                 {copied === i ? <span className="sr-only" role="status">Copied</span> : null}

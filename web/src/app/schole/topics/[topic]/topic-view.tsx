@@ -70,7 +70,7 @@ export function WorkRows({ works }: { works: readonly Work[] }) {
 
 /**
  * A topic (guide "Topics and playlists"): its title with Follow at the top right, what it holds, and its forms as
- * chips. With All chosen: Start here, a playlist chosen by a person, holds the page's one filled button; then other
+ * chips. With All chosen: the featured playlist, chosen by a person, holds the page's one filled button; then other
  * people's playlists, the person's own made ones and a quiet Make one for me, the forms as tiles, and the people.
  * With a form chosen: where and when, its works (each saying which versions it has), its other things, the playlists
  * that use it and its people.
@@ -98,11 +98,11 @@ export function TopicView({ t, form, following, have, made, faces }: { t: TopicP
             <section aria-labelledby="start-here" className="grid gap-5 rounded-xl border p-4 sm:grid-cols-[15rem_1fr] sm:p-5">
               <Link href={`/schole/playlists/${start.id}`} aria-hidden tabIndex={-1}><Fan items={start.items} className="h-36" /></Link>
               <div className="min-w-0 space-y-2">
-                <p id="start-here" className="text-muted-foreground text-xs">Start here</p>
+                <p id="start-here" className="text-muted-foreground text-xs">Featured playlist</p>
                 <h2 className="text-xl leading-tight font-semibold tracking-tight"><Link href={`/schole/playlists/${start.id}`} className="hover:underline hover:underline-offset-4">{start.name}</Link></h2>
                 <p className="text-muted-foreground text-[13px]">Chosen by {start.by} · {sizeLine(start.items)}</p>
                 <p className="text-muted-foreground line-clamp-2 max-w-prose text-sm">{start.about}</p>
-                <Button asChild size="lg" className="mt-1 h-10 w-full sm:w-auto sm:px-8"><Link href={itemHref(next)} className="min-w-0"><span className="truncate">{begun ? `Continue with ${next.title}` : "Start here"}</span></Link></Button>
+                <Button asChild size="lg" className="mt-1 h-10 w-full sm:w-auto sm:px-8"><Link href={itemHref(next)} className="min-w-0"><span className="truncate">{begun ? `Continue with ${next.title}` : "Play"}</span></Link></Button>
               </div>
             </section>
           ) : null}

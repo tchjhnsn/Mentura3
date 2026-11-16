@@ -8,7 +8,6 @@ import { SEARCHABLE } from "@reflect/core/lookup";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { addItemAction, lookLinkAction, searchItemsAction } from "../actions";
 import { LocalDay } from "./local-day";
 
@@ -117,8 +116,6 @@ export function AddItem({ books, medium: start = "lecture" }: { books: { work: s
               </select>
             </label>
           ) : null}
-          <label className="block space-y-1.5 text-sm font-medium sm:col-span-2">What it taught you (optional)<Textarea name="lesson" rows={3} maxLength={4000} /></label>
-          <p className="text-muted-foreground text-xs sm:col-span-2">A game, music or art is kept under Play until you say what it taught you.</p>
           <div className="sm:col-span-2"><Button size="sm">Add</Button></div>
         </form>
       </CardContent>

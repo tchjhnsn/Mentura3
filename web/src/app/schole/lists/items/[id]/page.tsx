@@ -18,7 +18,7 @@ import { KeepButton } from "../../../keep-mark";
 export const metadata: Metadata = { title: "List" };
 export const dynamic = "force-dynamic";
 
-/** Where a row opens: the person's own item once kept, a course's page, else the find's page (Start here, Keep for later). */
+/** Where a row opens: the person's own item once kept, a course's page, else the find's page (its verb and Save). */
 function pageOf(i: ListItem, mine: string | undefined) {
   const q = (k: string, v: string | undefined) => (v ? `&${k}=${encodeURIComponent(v)}` : "");
   if (mine) return `/schole/items/${mine}`;

@@ -99,7 +99,7 @@ export async function DiscoverRows({ userId, way = null, n = 12, focus = false }
 }
 
 const NOT_HERE: Partial<Record<Medium, string>> = {
-  series: "Series cannot be watched in Reflect yet; keep them here and say what they taught you.",
+  series: "Series cannot be watched in Reflect yet; save them here for later.",
   music: "Music cannot be heard in Reflect yet, apart from recordings in the public domain.",
   game: "Games cannot be played in Reflect yet.",
   film: "Films marked Here play in Reflect from the Internet Archive's public domain; other films cannot be watched here yet.",
