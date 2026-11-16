@@ -1,16 +1,26 @@
 /**
- * Collections chosen by people (Torian, 2026-11-15 23:07Z, agreeing to the guide "Home, browse and library"): a few
- * things to hear or watch, put together by a named person with a line on why. Reflect chose the first ones; later
- * ambassadors and people who hold standing publish theirs. Each item is something that plays in Scholē: a LibriVox
- * recording by its id, or an Open Yale or MIT OpenCourseWare course by its page.
+ * Collections chosen by people (Torian, 2026-11-15 23:07Z, agreeing to the guide "Home, browse and library"): things
+ * to hear, watch and look at, put together by a named person, each with a line on why it is there. Reflect chose the
+ * first ones; later ambassadors and people who hold standing publish theirs. A collection mixes media (Torian,
+ * 2026-11-16 00:43Z: "podcasts, adaptations, courses/lectures and debates, music to accompany, art, and games where
+ * applicable"), and every item plays in Scholē: a LibriVox recording by its id, an Open Yale or MIT OpenCourseWare
+ * course by its page, a podcast episode by its feed and episode key, or a film, lecture, discussion, play, music or
+ * work of art that Scholē's find page plays or shows (YouTube, the Internet Archive, the Art Institute of Chicago).
  *
  * A collection may name the work it serves (`for`: word stems matched against what the person is working toward in
  * Work), so a new Home and Browse's For you can say why they suggest it. Pure: no I/O.
  */
 
-export type CollectionItem =
+/** The media a find in a collection may be: the ones Scholē's find page plays, shows or reads. */
+export type FindMedium = "film" | "lecture" | "debate" | "discussion" | "music" | "art" | "theatre" | "game";
+
+/** One thing in a collection, with why it is there when the chooser says. */
+export type CollectionItem = { why?: string } & (
   | { kind: "audiobook"; id: string; title: string; by: string }
-  | { kind: "course"; url: string; title: string; by: string };
+  | { kind: "course"; url: string; title: string; by: string }
+  | { kind: "episode"; feed: string; key: string; show: string; image: string; title: string; by: string }
+  | { kind: "find"; medium: FindMedium; title: string; by: string; url?: string; image?: string; year?: string }
+);
 
 export type Collection = {
   id: string;
@@ -23,21 +33,34 @@ export type Collection = {
   items: readonly CollectionItem[];
 };
 
-const ab = (id: string, title: string, by: string): CollectionItem => ({ kind: "audiobook", id, title, by });
-const course = (url: string, title: string, by: string): CollectionItem => ({ kind: "course", url, title, by });
+const ab = (id: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "audiobook", id, title, by, ...(why ? { why } : {}) });
+const course = (url: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "course", url, title, by, ...(why ? { why } : {}) });
+// BBC Radio 4's In Our Time, whose whole archive is in one feed.
+const IOT = { feed: "https://podcasts.files.bbci.co.uk/b006qykl.rss", show: "In Our Time", image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/f3/12/e7/f312e703-b626-0091-5bdf-73d79cce25c5/mza_16900938594910783199.jpg/600x600bb.jpg" };
+const iot = (key: string, title: string, why?: string): CollectionItem => ({ kind: "episode", ...IOT, key, title, by: "Melvyn Bragg and guests", ...(why ? { why } : {}) });
+const yt = (medium: FindMedium, id: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "find", medium, title, by, url: `https://www.youtube.com/watch?v=${id}`, image: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, ...(why ? { why } : {}) });
+const aic = (id: number, image: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "find", medium: "art", title, by, url: `https://www.artic.edu/artworks/${id}`, image: `https://www.artic.edu/iiif/2/${image}/full/400,/0/default.jpg`, ...(why ? { why } : {}) });
 
 export const COLLECTIONS: readonly Collection[] = [
   {
     id: "greeks", name: "Start with the Greeks", by: "Reflect", for: [],
-    about: "Where the questions began: Socrates on trial, Plato's city, Aristotle on the good life and the polis, and the two poems the Greeks learned first.",
+    about: "Where the questions began: Socrates on trial, Plato's city, Aristotle on the good life, and the poems and plays the Greeks learned from, heard, watched and looked at.",
     items: [
-      ab("1268", "Apology of Socrates", "Plato"),
-      ab("2707", "Republic", "Plato"),
-      ab("3733", "Nicomachean Ethics", "Aristotle"),
-      ab("1360", "Politics", "Aristotle"),
-      ab("690", "Iliad", "Homer"),
-      ab("65", "Odyssey", "Homer"),
-      course("https://oyc.yale.edu/classics/clcv-205", "Introduction to Ancient Greek History", "Donald Kagan"),
+      ab("1268", "Apology of Socrates", "Plato", "Start here: Socrates defends the examined life to the jury that will condemn him."),
+      iot("14qr1rch1j87v", "Socrates in Prison", "His last days, from the Crito and the Phaedo."),
+      ab("2707", "Republic", "Plato", "What justice is, asked by building a city in words."),
+      yt("lecture", "8rf3uqDj00A", "Plato's Republic I: Justice, Power, and Knowledge", "Michael Sugrue", "A lecture to listen to beside the first books."),
+      ab("3733", "Nicomachean Ethics", "Aristotle", "Happiness as living well, and the virtues that make it."),
+      iot("1ft00r2ap8dq9", "Aristotle's Nicomachean Ethics", "Four scholars on what the Ethics asks of you."),
+      ab("1360", "Politics", "Aristotle", "Man as a political animal, and the kinds of city."),
+      ab("690", "Iliad", "Homer", "The poem every Greek learned first: the wrath of Achilles."),
+      iot("1pk8p2aa043pl", "The Iliad", "What the poem is about, and why it lasted."),
+      aic(166, "7605118c-b634-cd1f-2c92-b1406ffb1071", "Amphora (Storage Jar)", "Achilles Painter, 460-450 BCE", "Painted in Athens while Socrates was a boy, by the painter named for his Achilles."),
+      ab("65", "Odyssey", "Homer", "The long way home."),
+      { kind: "find", medium: "theatre", title: "Oedipus the King", by: "Sophocles", why: "The tragedy Aristotle's Poetics holds up as the model." },
+      iot("p0cx3rfdbmsy", "Oedipus Rex", "Then hear it discussed."),
+      yt("music", "mGfOHoun0OQ", "Seikilos Epitaph", "Ancient Greek song, about 200 BCE", "The oldest complete song with its tune: \"While you live, shine.\""),
+      course("https://oyc.yale.edu/classics/clcv-205", "Introduction to Ancient Greek History", "Donald Kagan", "The whole story, a lecture at a time."),
     ],
   },
   {
@@ -60,13 +83,20 @@ export const COLLECTIONS: readonly Collection[] = [
   },
   {
     id: "founding", name: "The American founding", by: "Reflect", for: ["law", "lawyer", "attorney", "judge", "politic", "government", "civic", "public", "policy", "legislat"],
-    about: "The arguments that made the United States, in the founders' words, with Yale's course on the Revolution.",
+    about: "The arguments that made the United States, in the founders' words, with what scholars say of them, the songs they sang, the faces they knew, and a film of the war.",
     items: [
-      ab("1126", "Common Sense", "Thomas Paine"),
-      ab("670", "Federalist Papers", "Alexander Hamilton, John Jay, James Madison"),
-      ab("1085", "Anti-Federalist Papers", "Patrick Henry"),
-      ab("1143", "Autobiography of Benjamin Franklin", "Benjamin Franklin"),
-      course("https://oyc.yale.edu/history/hist-116", "The American Revolution", "Joanne Freeman"),
+      ab("1126", "Common Sense", "Thomas Paine", "The pamphlet that turned a quarrel into a cause, January 1776."),
+      iot("1n7msw51v8zus", "Thomas Paine's Common Sense", "Why it sold so many copies, and what it argued."),
+      yt("music", "t7S_07E-9CA", "Chester", "William Billings, 1770", "The war's marching hymn: \"Let tyrants shake their iron rod.\""),
+      ab("670", "Federalist Papers", "Alexander Hamilton, John Jay, James Madison", "The case for the Constitution, written to New York's voters."),
+      iot("129acml1xnj748", "The Federalist Papers", "Who wrote which, and what they feared."),
+      ab("1085", "Anti-Federalist Papers", "Patrick Henry", "The case against it, which gave the country its Bill of Rights."),
+      yt("discussion", "xG7jMnkMd7Q", "Ratification Debates", "National Constitution Center", "Scholars take both sides of the ratification fight."),
+      ab("1143", "Autobiography of Benjamin Franklin", "Benjamin Franklin", "A printer's apprentice who signed the Declaration and the Constitution."),
+      iot("xe1hst1n9n0qg", "Benjamin Franklin", "His science, his diplomacy and his doubts."),
+      aic(80460, "65070e6a-e55b-01dc-1e99-a649fd7fd8b1", "George Washington", "Edward Savage, 1793", "Painted from life in Washington's first term."),
+      { kind: "find", medium: "film", title: "America", by: "D. W. Griffith", url: "https://archive.org/details/silent-america", image: "https://archive.org/services/img/silent-america", year: "1924", why: "The Revolution as a silent epic, from Lexington to Yorktown; in the public domain." },
+      course("https://oyc.yale.edu/history/hist-116", "The American Revolution", "Joanne Freeman", "Yale's course, lecture by lecture."),
     ],
   },
   {
@@ -91,22 +121,50 @@ export const COLLECTIONS: readonly Collection[] = [
   },
   {
     id: "stoics", name: "The Stoics", by: "Reflect", for: [],
-    about: "An emperor's notebook, a freed slave's handbook and a statesman's letters on how to live well whatever happens.",
+    about: "An emperor's notebook, a freed slave's handbook and a statesman's letters on how to live well whatever happens, with what scholars say of each and the faces history kept.",
     items: [
-      ab("1095", "Meditations", "Marcus Aurelius"),
-      ab("518", "Enchiridion", "Epictetus"),
-      ab("9230", "Moral Letters, Vol. I", "Seneca"),
+      ab("1095", "Meditations", "Marcus Aurelius", "Notes an emperor wrote to himself on campaign, never meant to be read."),
+      aic(5644, "9b312820-971d-04ba-361d-4b008eaaaccc", "Aureus (Coin) Portraying Marcus Aurelius", "Ancient Roman, 153-154", "His face as Romans carried it, struck before he was emperor."),
+      iot("1tyinop5kt3m0", "Marcus Aurelius", "The man behind the notebook."),
+      yt("lecture", "Auuk1y4DRgk", "Marcus Aurelius' Meditations: The Stoic Ideal", "Michael Sugrue", "A lecture on what the Meditations teach."),
+      ab("518", "Enchiridion", "Epictetus", "The handbook: what is up to us, and what is not."),
+      iot("1sgaxe81uzkg3n", "Stoicism", "The school from Zeno to Rome."),
+      ab("9230", "Moral Letters, Vol. I", "Seneca", "Letters to a friend on time, grief, wealth and death."),
+      iot("cjg9rz1cs4rja", "Seneca the Younger", "A Stoic who served Nero."),
+      aic(9612, "0922f579-59e0-7c34-fbd0-52361d1dbcbe", "Fantasy on the Death of Seneca", "Giovanni Battista Tiepolo, 1735/40", "How he died, as a painter imagined it."),
     ],
   },
 ];
 
 export const collectionById = (id: string): Collection | undefined => COLLECTIONS.find((c) => c.id === id);
 
-/** Where an item opens in Scholē. */
-export const itemHref = (i: CollectionItem): string => (i.kind === "audiobook" ? `/schole/audiobooks/${i.id}` : `/schole/courses?u=${encodeURIComponent(i.url)}`);
+const q = (k: string, v: string | undefined) => (v ? `&${k}=${encodeURIComponent(v)}` : "");
 
-/** A stable key for an item, to tell whether the person already has it. */
-export const itemKey = (i: CollectionItem): string => (i.kind === "audiobook" ? `audiobook:${i.id}` : `course:${i.url}`);
+/** Where an item opens in Scholē: its own page, or the find page that plays, shows or reads it. */
+export function itemHref(i: CollectionItem): string {
+  switch (i.kind) {
+    case "audiobook": return `/schole/audiobooks/${i.id}`;
+    case "course": return `/schole/courses?u=${encodeURIComponent(i.url)}`;
+    case "episode": return `/schole/podcasts/episode?u=${encodeURIComponent(i.feed)}&k=${i.key}${q("t", i.show)}${q("i", i.image)}`;
+    case "find": return `/schole/find?m=${i.medium}${q("t", i.title)}${q("by", i.by)}${q("u", i.url)}${q("i", i.image)}${q("y", i.year)}&h=1`;
+  }
+}
+
+/** A stable key for an item, to tell whether the person already has it (a find is keyed as kept items are: medium and title). */
+export function itemKey(i: CollectionItem): string {
+  switch (i.kind) {
+    case "audiobook": return `audiobook:${i.id}`;
+    case "course": return `course:${i.url}`;
+    case "episode": return `episode:${i.feed}#${i.key}`;
+    case "find": return `${i.medium}|${i.title.toLowerCase()}`;
+  }
+}
+
+/** The kinds a collection holds, in the order they first appear ("Audiobook", "Podcast episode", "Art"...). */
+export const KIND_LABEL: Record<FindMedium | "audiobook" | "course" | "episode", string> = {
+  audiobook: "Audiobook", course: "Course", episode: "Podcast episode", film: "Film", lecture: "Lecture", debate: "Debate", discussion: "Discussion", music: "Music", art: "Art", theatre: "Play", game: "Game",
+};
+export const kindOf = (i: CollectionItem): string => KIND_LABEL[i.kind === "find" ? i.medium : i.kind];
 
 /** The first of the person's aims a collection serves, or null. Aims are what they want in Work ("Teacher"). */
 export function servedAim(c: Collection, aims: readonly string[]): string | null {

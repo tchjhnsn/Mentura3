@@ -1,4 +1,4 @@
-import { COLLECTIONS, itemKey, type CollectionItem } from "@reflect/core/collections";
+import { COLLECTIONS, itemKey, kindOf, type CollectionItem } from "@reflect/core/collections";
 import { lifeRecords } from "./life-store";
 import { audiobookById, coverOf } from "./audiobooks";
 import { WANTED_KINDS } from "./work-space";
@@ -19,6 +19,7 @@ export async function aimsOf(userId: string): Promise<string[]> {
 export function haveKeys(items: readonly LearnItem[]): Set<string> {
   const keys = new Set<string>();
   for (const i of items) {
+    keys.add(`${i.medium}|${i.title.toLowerCase()}`);
     if (!i.url) continue;
     for (const c of COLLECTIONS) for (const x of c.items) {
       if (x.kind === "course" && i.url.replace(/\/$/, "") === x.url.replace(/\/$/, "")) keys.add(itemKey(x));
@@ -32,15 +33,16 @@ export type ItemArt = { image: string | null; seconds: number | null; kind: stri
 
 /** An item's cover and length: recordings from the catalog, courses with neither (they show a type tile). */
 export function artOf(i: CollectionItem): ItemArt {
-  if (i.kind === "course") return { image: null, seconds: null, kind: "Course" };
-  const a = audiobookById(i.id);
-  return { image: a ? coverOf(a) : null, seconds: a?.seconds || null, kind: "Audiobook" };
+  if (i.kind === "audiobook") {
+    const a = audiobookById(i.id);
+    return { image: a ? coverOf(a) : null, seconds: a?.seconds || null, kind: kindOf(i) };
+  }
+  return { image: i.kind === "episode" ? i.image : i.kind === "find" ? i.image ?? null : null, seconds: null, kind: kindOf(i) };
 }
 
-/** A collection's length in hours, counting the recordings (courses add their lectures, not counted here), and its size. */
+/** A collection's size and the kinds it holds, in the order they first appear: "15 items · audiobooks, podcasts, lectures, art". */
 export function sizeLine(items: readonly CollectionItem[]): string {
-  const seconds = items.reduce((n, i) => n + (artOf(i).seconds ?? 0), 0);
-  const hours = Math.round(seconds / 3600);
-  const courses = items.filter((i) => i.kind === "course").length;
-  return [hours ? `${hours} hours` : null, courses ? `${courses} ${courses === 1 ? "course" : "courses"}` : null, `${items.length} items`].filter(Boolean).join(" · ");
+  const plural: Record<string, string> = { Audiobook: "audiobooks", Course: "courses", "Podcast episode": "podcasts", Film: "film", Lecture: "lectures", Debate: "debates", Discussion: "discussions", Music: "music", Art: "art", Play: "a play", Game: "games" };
+  const kinds = [...new Set(items.map(kindOf))].map((k) => plural[k] ?? k.toLowerCase());
+  return `${items.length} items · ${kinds.join(", ")}`;
 }

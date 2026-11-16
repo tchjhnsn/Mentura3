@@ -47,12 +47,13 @@ export default async function CollectionPage({ params }: { params: Promise<{ id:
             const a = artOf(i);
             return (
               <li key={itemKey(i)}>
-                <Link href={itemHref(i)} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg px-2 py-2.5">
-                  <span className="text-muted-foreground w-5 shrink-0 text-right text-sm tabular-nums">{n + 1}</span>
-                  <Art image={a.image} kind={a.kind} title={i.title} tiny className="size-12 shrink-0" />
+                <Link href={itemHref(i)} className="hover:bg-muted/60 -mx-2 flex items-start gap-3 rounded-lg px-2 py-3">
+                  <span className="text-muted-foreground w-5 shrink-0 pt-3.5 text-right text-sm tabular-nums">{n + 1}</span>
+                  <Art image={a.image} kind={a.kind} title={i.title} tiny className="size-14 shrink-0" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-medium">{i.title}</span>
-                    <span className="text-muted-foreground block truncate text-[13px]">{[i.by, a.kind, a.seconds ? hoursOf(a.seconds) : null].filter(Boolean).join(" · ")}</span>
+                    <span className="text-muted-foreground block truncate text-[13px]">{[a.kind, i.by, a.seconds ? hoursOf(a.seconds) : null].filter(Boolean).join(" · ")}</span>
+                    {i.why ? <span className="text-foreground/80 mt-0.5 line-clamp-2 block text-sm">{i.why}</span> : null}
                   </span>
                   {have.has(itemKey(i)) ? <span className="text-muted-foreground shrink-0 text-xs">Kept</span> : null}
                 </Link>

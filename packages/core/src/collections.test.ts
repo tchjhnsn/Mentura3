@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { COLLECTIONS, collectionById, itemHref, itemKey, nextInCollection, servedAim, suggestCollections } from "./collections.ts";
+import { COLLECTIONS, collectionById, itemHref, itemKey, kindOf, nextInCollection, servedAim, suggestCollections } from "./collections.ts";
 
 describe("collections", () => {
   it("names who chose each one, with unique ids and things that play here", () => {
@@ -15,6 +15,25 @@ describe("collections", () => {
   it("points every recording at a line of the audiobook catalog", () => {
     const ids = new Set(readFileSync(new URL("../../../web/src/data/audiobooks.txt", import.meta.url), "utf8").split("\n").map((l) => l.split("|")[0]));
     for (const c of COLLECTIONS) for (const i of c.items) if (i.kind === "audiobook") expect(ids.has(i.id), `${c.id}: ${i.title}`).toBe(true);
+  });
+
+  it("mixes media, and gives a reason for each item in the mixed collections", () => {
+    for (const id of ["greeks", "stoics", "founding"]) {
+      const c = collectionById(id)!;
+      expect(new Set(c.items.map((i) => i.kind)).size, id).toBeGreaterThanOrEqual(3);
+      for (const i of c.items) expect(i.why, `${id}: ${i.title}`).toBeTruthy();
+    }
+  });
+
+  it("opens episodes and finds where Scholē plays them", () => {
+    const greeks = collectionById("greeks")!;
+    const ep = greeks.items.find((i) => i.kind === "episode")!;
+    expect(itemHref(ep)).toMatch(/^\/schole\/podcasts\/episode\?u=https%3A%2F%2Fpodcasts\.files\.bbci\.co\.uk%2Fb006qykl\.rss&k=\w+&t=In%20Our%20Time&i=/);
+    const art = greeks.items.find((i) => i.kind === "find" && i.medium === "art")!;
+    expect(itemHref(art)).toMatch(/^\/schole\/find\?m=art&t=Amphora.*&u=https%3A%2F%2Fwww\.artic\.edu%2Fartworks%2F166.*&h=1$/);
+    expect(kindOf(art)).toBe("Art");
+    expect(itemKey(art)).toBe("art|amphora (storage jar)");
+    expect(kindOf(ep)).toBe("Podcast episode");
   });
 
   it("opens each item on its Scholē page", () => {
@@ -40,7 +59,7 @@ describe("collections", () => {
   it("finds the next item not yet begun", () => {
     const c = collectionById("stoics")!;
     expect(nextInCollection(c, new Set())?.title).toBe("Meditations");
-    expect(nextInCollection(c, new Set([itemKey(c.items[0]!)]))?.title).toBe("Enchiridion");
+    expect(nextInCollection(c, new Set([itemKey(c.items[0]!)]))?.title).toBe(c.items[1]!.title);
     expect(nextInCollection(c, new Set(c.items.map(itemKey)))).toBeNull();
   });
 });
