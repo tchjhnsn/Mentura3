@@ -49,7 +49,7 @@ export function Session({ work, title, audiobook, steps }: { work: string; title
         <Button asChild size="lg" className="w-full rounded-full"><Link href={`/schole/audiobooks/${audiobook}`}>Listen to {title}</Link></Button>
         <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
           <Link href={`/schole/dialectic/practice/${work}`} className="underline underline-offset-4">Practise again</Link>
-          <Link href="/schole/dialectic" className="underline underline-offset-4">Back to Dialectic</Link>
+          <Link href="/schole/courses/dialectic" className="underline underline-offset-4">Back to the course</Link>
         </div>
       </section>
     );

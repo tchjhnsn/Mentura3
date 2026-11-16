@@ -25,6 +25,8 @@ import { LEISURE, MEDIA, WAYS, bookWay, mediumOf, placeOf } from "@reflect/core/
 import { categoryOf } from "@reflect/core/thema";
 import { lookLink, searchMedium, type Fetch } from "@reflect/core/lookup";
 import { clock, readTranscript, searchTranscript } from "@reflect/core/media";
+import { DIALOGUES } from "@reflect/core/practice-settled";
+import { DIALECTIC_COURSE } from "@reflect/core/start-dialectic";
 
 export const maxDuration = 60;
 const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
@@ -84,6 +86,21 @@ export async function POST(req: Request) {
         stopWhen: stepCountIs(4),
         onFinish: async ({ steps }) => keep("reflect", steps.map((st) => st.text).filter(Boolean).join("\n\n")),
         tools: {
+          // Practice belongs to courses, or to what the person asks the chat for (Torian, 2026-11-16 21:53Z): a quiz on a
+          // dialogue opens a practice session, whose questions also label the argument; a course opens Reflect's course.
+          practice_dialectic: tool({
+            description: "When the person asks to be quizzed or to practise on Plato's Euthyphro, Laches or Meno, or on dialectic, arguments, rebuttals or stasis: open a practice session of ten questions on a dialogue, or Reflect's course on dialectic when they ask for a course.",
+            inputSchema: z.object({ work: z.enum(["euthyphro", "laches", "meno", "course"]).describe("The dialogue, or course for the course on dialectic") }),
+            execute: async ({ work }) => {
+              if (work === "course") {
+                show({ kind: "quote", text: DIALECTIC_COURSE.about, cite: `Course: ${DIALECTIC_COURSE.name}`, href: "/schole/courses/dialectic" });
+                return `Shown: the course ${DIALECTIC_COURSE.name}, four units, each a playlist and then practice. Courses made for one person are not built; do not offer one.`;
+              }
+              const d = DIALOGUES.find((x) => x.id === work)!;
+              show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the speaker is doing, what they answer, what is in question.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
+              return `Shown: a practice session on ${d.title}. Do not write quiz questions about it yourself; the session asks them.`;
+            },
+          }),
           show_shelves: tool({
             description: "Show the person's shelves: their books and subjects by Thema section.",
             inputSchema: z.object({}),
