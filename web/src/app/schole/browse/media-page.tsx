@@ -20,6 +20,8 @@ import { WORKS } from "@reflect/core/topic-pages";
 import { PEOPLE, personHref } from "@reflect/core/historical-people";
 import { IDEAS, TERMS } from "@reflect/core/great-ideas";
 import { SUBJECTS, subjectRow } from "@reflect/core/subjects";
+import { redirect } from "next/navigation";
+import { listDebates } from "@/server/dialectic-store";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
@@ -105,6 +107,54 @@ const NOT_HERE: Partial<Record<Medium, string>> = {
 };
 
 /** Browse for every medium but books: all of them together, or one medium, searched or from its catalogs and lists. */
+/** One line on each way, under its heading in Browse. */
+const WAY_LINE: Record<WayPick, string> = {
+  teaching: "Someone who knows shows you the causes.",
+  dialectic: "Question and answer with other people.",
+  imitation: "Learn from a model: plays, films, lives.",
+  practice: "Do it yourself: essays, exercises, examinations.",
+  leisure: "Games, music and art for their own sake.",
+};
+
+/**
+ * Browse's All tab as the guide drew it (tab "Ways and dialectic"): a section for each way, in Aristotle's order, its
+ * heading the way to all of it, with a row of things to take in. Dialectic leads with a debate live now or the next one.
+ */
+async function WayRows({ userId }: { userId: string }) {
+  const [items, courses, films, art, debates] = await Promise.all([
+    listItems(userId), finds("course").then((r) => r.found).catch(() => []), filmsToWatch(), finds("art").then((r) => r.found).catch(() => []), listDebates(),
+  ]);
+  const mine = new Map(items.map((i) => [keyOf(i), i.id]));
+  const lead = debates.live[0] ?? debates.upcoming[0];
+  const here = (fs: Find[]) => fs.map((f) => ({ ...f, here: true }));
+  const head = (id: WayPick) => <SectionHead title={WAY_PICKS.find((w) => w.id === id)!.label} href={id === "dialectic" ? "/schole/dialectic" : href("all", id)} note={WAY_LINE[id]} />;
+  return (
+    <div className="space-y-10">
+      <section className="space-y-4">{head("teaching")}<MediaGrid row finds={[...courses.slice(0, 8), ...listFinds("lecture").slice(0, 6)]} mine={mine} showMedium /></section>
+      <section className="space-y-4">
+        {head("dialectic")}
+        {lead ? (
+          <Link href={lead.state === "live" && lead.roomId ? `/schole/dialectic/rooms/${lead.roomId}` : `/schole/dialectic/debates/${lead.id}`} className={`block rounded-xl p-4 ${lead.state === "live" ? "border-primary bg-primary/5 border-2" : "border hover:bg-muted/50"}`}>
+            <span className="text-sm font-semibold">{lead.state === "live" ? "Live now · debate" : "Next debate"}</span>
+            <span className="block leading-snug">{lead.motion}</span>
+          </Link>
+        ) : null}
+        <MediaGrid row finds={[...listFinds("debate").slice(0, 8), ...listFinds("discussion").slice(0, 4)]} mine={mine} showMedium />
+      </section>
+      <section className="space-y-4">{head("imitation")}<MediaGrid row finds={[...films.slice(0, 8), ...here(listFinds("theatre").slice(0, 6))]} mine={mine} showMedium /></section>
+      <section className="space-y-3">
+        {head("practice")}
+        <ul className="divide-y text-sm">
+          <li><Link href="/journal" className="block py-2 hover:underline hover:underline-offset-4">Write an essay in your journal, from a prompt</Link></li>
+          <li><Link href={href("course", null)} className="block py-2 hover:underline hover:underline-offset-4">Put yourself under examination on a course you took</Link></li>
+        </ul>
+        <MediaGrid row finds={listFinds("game").slice(0, 8)} mine={mine} showMedium />
+      </section>
+      <section className="space-y-4">{head("leisure")}<MediaGrid row finds={[...art.slice(0, 8), ...listFinds("music").slice(0, 6)]} mine={mine} showMedium /></section>
+    </div>
+  );
+}
+
 export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Medium | "all"; way: WayPick | null; q: string }) {
   const [view, items] = await Promise.all([learnView(userId), listItems(userId)]);
   const mine = new Map(items.map((i) => [keyOf(i), i.id]));
@@ -112,6 +162,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
   const show = (x: Medium) => inWay(x, way);
   const here = (fs: Find[]) => fs.map((f) => ({ ...f, here: true }));
 
+  if (way === "dialectic" && m === "all" && !q) redirect("/schole/dialectic");
   let body: ReactNode;
   if (m === "all") {
     if (q) {
@@ -127,7 +178,14 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
         </div>
       );
     } else {
-      body = <div className="space-y-8"><ForYouRows userId={userId} /><DiscoverRows userId={userId} way={way} /></div>;
+      // Arranged by way of learning (Torian, 2026-11-16 09:09Z: "I actually like this approach of arranging browse by
+      // way"); one way's own page when a way is chosen.
+      body = way ? (
+        <div className="space-y-8">
+          <header className="space-y-1"><h2 className="text-2xl font-semibold tracking-tight">{WAY_PICKS.find((w) => w.id === way)!.label}</h2><p className="text-muted-foreground">{WAY_LINE[way]}</p></header>
+          <DiscoverRows userId={userId} way={way} />
+        </div>
+      ) : <div className="space-y-10"><WayRows userId={userId} /><ForYouRows userId={userId} /></div>;
     }
   } else {
     const lists = listFinds(m);
