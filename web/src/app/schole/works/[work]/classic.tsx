@@ -1,0 +1,72 @@
+import Link from "next/link";
+import { ab, COLLECTIONS, type CollectionItem } from "@reflect/core/collections";
+import { GROUP_LABEL, topicPageById, workOf, type VersionGroup, type Work } from "@reflect/core/topic-pages";
+import { Button } from "@/components/ui/button";
+import { SectionHead } from "@/components/section-head";
+import { ThingHeader } from "@/components/headers";
+import { PAGE } from "@/components/page-header";
+import { audiobookById } from "@/server/audiobooks";
+import { artOf } from "@/server/collections";
+import { LEARN } from "../../crumbs";
+import { Art } from "../../art";
+import { CollectionCard, PlaylistRows } from "../../playlists/card";
+
+/** A recording as a row: its title and who read it, in how many voices. */
+function recording(id: string): CollectionItem | null {
+  const a = audiobookById(id);
+  if (!a) return null;
+  const who = a.dramatic ? "A dramatic reading" : a.readers > 1 ? `Read by ${a.readers} readers` : "Read by one reader";
+  return ab(id, a.title, "LibriVox", who);
+}
+
+/**
+ * A work with every version of it in one place (guide "Topics and playlists", points 7 and 8): its filled button
+ * plays the recording to start with; then every recording, and the other versions grouped by what you do with them
+ * (understand it, its music, watch it, see it), then the playlists it is in.
+ */
+export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> }) {
+  const t = topicPageById(w.topic)!;
+  const form = t.forms.find((f) => f.id === w.form);
+  const recordings = w.audiobooks.map(recording).filter((r): r is CollectionItem => r !== null);
+  const cover = artOf(recordings[0] ?? ab(w.audiobooks[0]!, w.title, w.by));
+  const groups = (Object.keys(GROUP_LABEL) as VersionGroup[]).map((g) => ({ g, items: w.versions.filter((x) => x.group === g).map((x) => x.item) })).filter((x) => x.items.length);
+  const playlists = COLLECTIONS.filter((c) => c.items.some((i) => workOf(i)?.id === w.id));
+  const formHref = `/schole/topics/${t.id}?f=${w.form}`;
+  return (
+    <main className={PAGE}>
+      <ThingHeader back={formHref} crumbs={[LEARN, { label: "Browse", href: "/schole/browse" }, { label: t.name, href: `/schole/topics/${t.id}` }, ...(form ? [{ label: form.label, href: formHref }] : [])]} title={w.title} />
+      <div className="mt-8 space-y-8">
+        <header className="flex gap-5">
+          <Art image={cover.image} kind="Work" title={w.title} className="aspect-square w-28 shrink-0 sm:w-40" />
+          <div className="min-w-0 space-y-2">
+            <h1 id="page-title" className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">{w.title}</h1>
+            <p className="text-muted-foreground text-[13px]">{w.by} · {w.when}</p>
+            <p className="text-muted-foreground text-[13px]">{form ? <Link href={formHref} className="text-foreground underline-offset-4 hover:underline">{form.label}</Link> : null} · <Link href={`/schole/topics/${t.id}`} className="text-foreground underline-offset-4 hover:underline">{t.name}</Link></p>
+            <p className="hidden max-w-prose sm:block">{w.about}</p>
+            {recordings[0] ? <Button asChild size="lg" className="mt-1 h-10 sm:px-8"><Link href={`/schole/audiobooks/${w.audiobooks[0]}`}>Play the audiobook</Link></Button> : null}
+          </div>
+        </header>
+        <p className="max-w-prose sm:hidden">{w.about}</p>
+        <section className="space-y-1">
+          <SectionHead title="Hear it" note={recordings.length > 1 ? `${recordings.length} recordings, the most listened first; the others are other translations or readers.` : undefined} />
+          <PlaylistRows items={recordings} have={have} numbered={false} />
+        </section>
+        {groups.map(({ g, items }) => (
+          <section key={g} className="space-y-1">
+            <SectionHead title={GROUP_LABEL[g]} />
+            <PlaylistRows items={items} have={have} numbered={false} />
+          </section>
+        ))}
+        {playlists.length ? (
+          <section className="space-y-4">
+            <SectionHead title="In playlists" />
+            <ul className="grid grid-cols-1 gap-x-5 gap-y-6 min-[420px]:grid-cols-2 lg:grid-cols-3">
+              {playlists.map((c) => <li key={c.id}><CollectionCard c={c} /></li>)}
+            </ul>
+          </section>
+        ) : null}
+      </div>
+    </main>
+  );
+}
+

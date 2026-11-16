@@ -13,7 +13,7 @@ import { Head, SPACE } from "@/app/life/space";
 import { calendar } from "@/server/calendar-store";
 import { aimsOf, artOf, haveKeys } from "@/server/collections";
 import { Art } from "./art";
-import { CollectionCard } from "./collections/card";
+import { CollectionCard } from "./playlists/card";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
@@ -116,7 +116,7 @@ async function UpNext({ userId, today }: { userId: string; today: string }) {
 
 /**
  * The way in (guide "Home, browse and library", point 1): one question, what the person is working toward, answered
- * by what they want in Work; a chip picks which aim the collections below serve. With nothing in Work, a link there.
+ * by what they want in Work; a chip picks which aim the playlists below serve. With nothing in Work, a link there.
  */
 function WorkingToward({ aims, aim }: { aims: string[]; aim: string | null }) {
   return (
@@ -124,7 +124,7 @@ function WorkingToward({ aims, aim }: { aims: string[]; aim: string | null }) {
       <h2 id="toward" className="text-xl font-semibold tracking-tight">What are you working toward?</h2>
       {aims.length ? (
         <>
-          <p className="text-muted-foreground mt-1 text-[13px]">From your Work. Pick one and the collections below follow it.</p>
+          <p className="text-muted-foreground mt-1 text-[13px]">From your Work. Pick one and the playlists below follow it.</p>
           <ul className="mt-3 flex flex-wrap gap-2">
             {aims.slice(0, 6).map((a) => (
               <li key={a}><Link href={a === aim ? "/schole" : `/schole?aim=${encodeURIComponent(a)}`} aria-current={a === aim ? "true" : undefined} className={cn("inline-flex h-8 max-w-[16rem] items-center rounded-full border px-3 text-sm", a === aim ? "bg-foreground text-background border-foreground" : "hover:bg-muted")}><span className="truncate">{a}</span></Link></li>
@@ -133,7 +133,7 @@ function WorkingToward({ aims, aim }: { aims: string[]; aim: string | null }) {
           </ul>
         </>
       ) : (
-        <p className="text-muted-foreground mt-1 text-sm">Scholē suggests what to hear and watch from the work you want. <Link href="/life/work/browse" className="text-foreground font-medium underline underline-offset-4">Tell Reflect what you&apos;re working toward</Link>, or start with a collection below.</p>
+        <p className="text-muted-foreground mt-1 text-sm">Scholē suggests what to hear and watch from the work you want. <Link href="/life/work/browse" className="text-foreground font-medium underline underline-offset-4">Tell Reflect what you&apos;re working toward</Link>, or start with a playlist below.</p>
       )}
     </section>
   );
@@ -144,7 +144,7 @@ function NextUp({ picks }: { picks: { c: Collection; next: CollectionItem }[] })
   if (!picks.length) return null;
   return (
     <section className="grid grid-cols-1 gap-3">
-      <Head title="Next in your collections" note="" />
+      <Head title="Next in your playlists" note="" />
       <ul className="grid grid-cols-1 gap-1">
         {picks.map(({ c, next }) => {
           const a = artOf(next);
@@ -220,7 +220,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
         <div className={`mt-4 ${SPACE}`}>
           <WorkingToward aims={aims} aim={aim} />
           <section className="grid grid-cols-1 gap-4">
-            <Head title="Chosen by people" href="/schole/collections" note="" />
+            <Head title="Chosen by people" href="/schole/playlists" note="" />
             <ul className="grid grid-cols-1 gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
               {suggested.slice(0, 3).map(({ collection, reason }) => <li key={collection.id}><CollectionCard c={collection} reason={reason} /></li>)}
             </ul>
@@ -261,7 +261,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
         <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
         {!rest.length && firstPick ? (
           <section className="grid grid-cols-1 gap-3">
-            <Head title="Chosen by people" href="/schole/collections" note="" />
+            <Head title="Chosen by people" href="/schole/playlists" note="" />
             <CollectionCard c={firstPick.collection} reason={firstPick.reason} className="max-w-sm" />
           </section>
         ) : null}

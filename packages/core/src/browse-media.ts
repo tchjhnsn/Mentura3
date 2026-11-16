@@ -35,7 +35,7 @@ export function playsHere(f: { medium: Medium; url?: string | null | undefined; 
   if (f.medium === "podcast") return Boolean(f.url && (/podcasts\.apple\.com\/.+\/id\d+/.test(f.url) || (/^https?:\/\//.test(f.url) && !/spotify\.com|podcasts\.apple\.com/.test(f.url))));
   if (f.medium === "art") return Boolean(f.url?.includes("artic.edu/artworks/") && f.image);
   const e = embedOf(f.url);
-  return e !== null && (e.kind === "youtube" || /vimeo|archive/i.test(e.site));
+  return e !== null && (e.kind === "youtube" || /vimeo|archive|apple music/i.test(e.site));
 }
 
 const obj = (v: unknown) => (v && typeof v === "object" ? (v as Record<string, unknown>) : {});

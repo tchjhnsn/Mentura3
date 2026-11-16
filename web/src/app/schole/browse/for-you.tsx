@@ -4,7 +4,8 @@ import { SectionHead } from "@/components/section-head";
 import { aimsOf, artOf, haveKeys } from "@/server/collections";
 import { listItems } from "@/server/ways-store";
 import { Art } from "../art";
-import { CollectionCard } from "../collections/card";
+import { CollectionCard, Fan } from "../playlists/card";
+import { formItems, TOPIC_PAGES } from "@reflect/core/topic-pages";
 import { ROW_LINE } from "../row-line";
 
 type Pick = { item: CollectionItem; reason: string };
@@ -46,7 +47,21 @@ export async function ForYouRows({ userId }: { userId: string }) {
         </section>
       ) : null}
       <section className="space-y-4">
-        <SectionHead title="Collections" href="/schole/collections" note="Chosen by people, each saying who chose it." className="pt-2" />
+        <SectionHead title="Topics" note="Wide places to discover, each with playlists through it." className="pt-2" />
+        <ul className="-mx-4 flex snap-x scroll-px-4 gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 [&>li]:w-60 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-[calc((100%-2.5rem)/3)] lg:[&>li]:w-[calc((100%-3.75rem)/4)]">
+          {TOPIC_PAGES.map((t) => (
+            <li key={t.id}>
+              <Link href={`/schole/topics/${t.id}`} className="group block space-y-2">
+                <Fan items={t.forms.flatMap(formItems).filter((i) => i.kind !== "course").slice(0, 4)} />
+                <span className="block leading-snug font-semibold group-hover:underline group-hover:underline-offset-2">{t.name}</span>
+                <span className="text-muted-foreground line-clamp-2 block text-[13px]">{t.forms.map((f) => f.label).join(", ")}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="space-y-4">
+        <SectionHead title="Playlists" href="/schole/playlists" note="Chosen by people, each saying who chose it." className="pt-2" />
         <ul className="-mx-4 flex snap-x scroll-px-4 gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0 [&>li]:w-60 [&>li]:shrink-0 [&>li]:snap-start sm:[&>li]:w-[calc((100%-2.5rem)/3)] lg:[&>li]:w-[calc((100%-3.75rem)/4)]">
           {suggested.map(({ collection, reason }) => <li key={collection.id}><CollectionCard c={collection} reason={reason} /></li>)}
         </ul>
