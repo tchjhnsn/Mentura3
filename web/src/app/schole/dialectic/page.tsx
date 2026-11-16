@@ -137,6 +137,7 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
             <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
               {DIALECTIC_PLAYLISTS.map((c) => <CollectionCard key={c.id} c={c} />)}
             </div>
+            <p className="text-muted-foreground text-sm">The modern work behind the practice: <Link href="/schole/courses/argument" className="text-foreground underline underline-offset-4">Argument: what speakers do with words</Link>, a course on speech acts, argument technology and many readers.</p>
           </section>
         )}
 
