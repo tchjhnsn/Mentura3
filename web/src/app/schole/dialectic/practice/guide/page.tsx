@@ -37,7 +37,7 @@ export default async function GuidePage() {
   );
   return (
     <main className="mx-auto w-full max-w-xl px-6 py-6">
-      <ThingHeader back="/schole/dialectic/practice" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, { label: "Practice", href: "/schole/dialectic/practice" }]} title="Guidelines" />
+      <ThingHeader back="/schole/dialectic/practice" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, { label: "Course", href: "/schole/courses/dialectic" }, { label: "Practice", href: "/schole/dialectic/practice" }]} title="Guidelines" />
       <div className="mt-6 space-y-10">
         <header className="space-y-2">
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">Guidelines</h1>

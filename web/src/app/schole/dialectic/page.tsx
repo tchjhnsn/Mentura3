@@ -68,7 +68,7 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
         <header className="space-y-3">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h1 className="text-3xl font-semibold tracking-tight">Dialectic</h1>
-            <span className="flex gap-4"><a href="#what-dialectic-is" className="text-sm font-medium underline-offset-4 hover:underline">What is dialectic?</a><Link href="/schole/dialectic/practice" className="text-sm font-medium underline-offset-4 hover:underline">Practice</Link></span>
+            <a href="#what-dialectic-is" className="text-sm font-medium underline-offset-4 hover:underline">What is dialectic?</a>
           </div>
           <p className="text-muted-foreground">Watch and listen to people argue a question out: one new for every old, changing each Monday.</p>
           {/* Subjects as tabs, one row that swipes on a phone (Torian, 2026-11-16 20:27Z), like Browse's tabs. */}
@@ -132,18 +132,14 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
         {/* The ways of questioning the page borrows from, each a playlist (Torian, 2026-11-16 20:33Z). */}
         {subject ? null : (
           <section className="space-y-3" aria-labelledby="methods">
-            <SectionHead title={<span id="methods">Methods of dialectic</span>} note="How people have argued a question out: stasis, the Socratic method, Aristotle's dialectic and the medieval disputed question." />
+            <SectionHead title={<span id="methods">Methods of dialectic</span>} href="/schole/courses/dialectic" note="A course: each method as a playlist, with practice on one of Plato's dialogues after it." />
             <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
               {DIALECTIC_PLAYLISTS.map((c) => <CollectionCard key={c.id} c={c} />)}
             </div>
           </section>
         )}
 
-        <div id="what-dialectic-is" className="scroll-mt-20 space-y-3">
-          <WayLessonCard l={lesson} />
-          {/* Practice that also tags the arguments (Torian, 2026-11-16 20:45Z; guide "Dialectic practice: tagging arguments"). */}
-          <Button asChild variant="outline" className="rounded-full"><Link href="/schole/dialectic/practice">Practise on a dialogue</Link></Button>
-        </div>
+        <div id="what-dialectic-is" className="scroll-mt-20"><WayLessonCard l={lesson} /></div>
       </div>
     </main>
   );

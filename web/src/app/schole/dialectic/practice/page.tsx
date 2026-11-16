@@ -21,7 +21,7 @@ export default async function PracticePage() {
   const least = DIALOGUES[mine.indexOf(Math.min(...mine))] ?? DIALOGUES[0];
   return (
     <main className="mx-auto w-full max-w-xl px-6 py-6">
-      <ThingHeader back="/schole/dialectic" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }]} title="Practice" />
+      <ThingHeader back="/schole/courses/dialectic" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, { label: "Course", href: "/schole/courses/dialectic" }]} title="Practice" />
       <div className="mt-6 space-y-8">
         <header className="space-y-3">
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">Practice</h1>

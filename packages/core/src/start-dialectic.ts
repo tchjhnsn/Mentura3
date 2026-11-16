@@ -67,3 +67,20 @@ export const DIALECTIC_PLAYLISTS: readonly Collection[] = [
     ],
   },
 ];
+
+/**
+ * The course the methods make (Torian, 2026-11-16 21:53Z, "Go": practice belongs to courses, or to quizzes and courses
+ * a person asks the chat for). Each unit is a method's playlist, then practice on a dialogue where the method is at work.
+ */
+export const DIALECTIC_COURSE = {
+  id: "dialectic",
+  name: "Dialectic: how to argue a question out",
+  by: "Reflect's editors",
+  about: "Four ways people have argued a question out, from Socrates to the medieval schools. Each unit is a playlist to watch and listen to, then practice on one of Plato's dialogues: a passage at a time, you say what the speaker is doing, what they answer and what is in question.",
+  units: [
+    { playlist: "socratic-method", practice: { work: "euthyphro", note: "Follow Socrates from a lawsuit to the question of what piety is." } },
+    { playlist: "aristotle-dialectic", practice: { work: "laches", note: "Test two generals' answers about what courage is." } },
+    { playlist: "stasis", practice: { work: "meno", note: "Find what is in question: whether virtue can be taught, or what virtue is." } },
+    { playlist: "disputed-questions", practice: null },
+  ],
+} as const;

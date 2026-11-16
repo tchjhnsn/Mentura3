@@ -45,7 +45,7 @@ export default async function PracticeSessionPage({ params, searchParams }: { pa
   });
   return (
     <main className="mx-auto w-full max-w-xl px-6 py-6">
-      <ThingHeader back="/schole/dialectic/practice" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, { label: "Practice", href: "/schole/dialectic/practice" }]} title={d.title} />
+      <ThingHeader back="/schole/dialectic/practice" crumbs={[LEARN, { label: "Dialectic", href: "/schole/dialectic" }, { label: "Course", href: "/schole/courses/dialectic" }, { label: "Practice", href: "/schole/dialectic/practice" }]} title={d.title} />
       <h1 id="page-title" className="sr-only">Practice: {d.title}</h1>
       <Session work={work} title={d.title} audiobook={d.audiobook} steps={steps} />
     </main>
