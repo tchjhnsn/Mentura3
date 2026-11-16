@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PlayIcon } from "lucide-react";
-import { itemHref, itemKey, type CollectionItem } from "@reflect/core/collections";
+import { collectionById, itemHref, itemKey, type CollectionItem } from "@reflect/core/collections";
 import { DIALECTIC_SHELVES, OLD_ARGUMENTS, QUESTION_SUBJECTS, SUBJECTS, eraLine, eraOf, isSubject, subjectsOf, type Subject, formatOf, mixOldNew, weekOf } from "@reflect/core/dialectic-media";
 import { rankDialectics } from "@reflect/core/dialectics";
 import { wayLesson } from "@reflect/core/way-lessons";
 import { DIALECTIC_PLAYLISTS } from "@reflect/core/start-dialectic";
+import { DEBATE_COURSES } from "@reflect/core/start-debates";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { SectionHead } from "@/components/section-head";
@@ -21,7 +22,7 @@ import { WayLessonCard } from "../way-lesson";
 import { LearnHeader } from "../header";
 import { CardRow, FormatChip } from "../media-card";
 import { QuestionsGrid } from "./questions-grid";
-import { CollectionCard } from "../playlists/card";
+import { CollectionCard, Fan } from "../playlists/card";
 
 export const metadata: Metadata = { title: "Dialectic" };
 export const dynamic = "force-dynamic";
@@ -135,6 +136,22 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
             <SectionHead title={<span id="methods">Methods of dialectic</span>} href="/schole/courses/dialectic" note="A course: each method as a playlist, with practice on one of Plato's dialogues after it." />
             <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
               {DIALECTIC_PLAYLISTS.map((c) => <CollectionCard key={c.id} c={c} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Courses on the quarrels new art and new inventions start (Torian, 2026-11-16 22:33Z). */}
+        {subject ? null : (
+          <section className="space-y-3" aria-labelledby="quarrels">
+            <SectionHead title={<span id="quarrels">Quarrels over art and machines</span>} note="Two courses: each new art and each new invention starts a quarrel that echoes an older one." />
+            <div className="grid gap-x-4 gap-y-6 sm:grid-cols-2">
+              {DEBATE_COURSES.map((c) => (
+                <Link key={c.id} href={`/schole/courses/debates/${c.id}`} className="group block space-y-2">
+                  <Fan items={c.units.flatMap((u) => collectionById(u.playlist)?.items.slice(0, 1) ?? [])} className="h-32" />
+                  <p className="leading-snug font-medium group-hover:underline group-hover:underline-offset-4">{c.name}</p>
+                  <p className="text-muted-foreground text-sm">Course · {c.units.length} units</p>
+                </Link>
+              ))}
             </div>
           </section>
         )}
