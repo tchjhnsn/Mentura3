@@ -79,6 +79,25 @@ export const DIALECTICS: readonly Dialectic[] = [
       { side: "Sympathy", who: "Adam Smith", work: "moral-sentiments", at: "Part I", holds: "We judge by sympathy, imagining ourselves in another's place, and by the impartial spectator within." },
     ],
   },
+  {
+    id: "god-exists", question: "Does God exist?", subject: "God",
+    about: "Whether reason can show there is a God, or whether the arguments fail.",
+    positions: [
+      { side: "Yes, by reason", who: "Thomas Aquinas", work: "summa-theologica", at: "I, q. 2, a. 3", holds: "The five ways: from motion, cause, contingency, degrees of being and order in nature to a first mover and cause." },
+      { side: "Yes, from the idea of God", who: "Anselm of Canterbury", title: "Proslogion", at: "chapters 2–4", holds: "God is that than which nothing greater can be thought; such a being must exist in reality, not only in the mind." },
+      { side: "The arguments fail", who: "David Hume", work: "hume-dialogues", at: "Parts II–VIII", holds: "Philo presses the argument from design until it shows at most an author we cannot know, not the God of religion." },
+    ],
+  },
+  {
+    id: "human-nature", question: "Is there a human nature?", subject: "Human nature",
+    about: "Whether people are born with a nature that fixes what is good for them, or are made by what happens to them.",
+    positions: [
+      { side: "Yes, a political animal", who: "Aristotle", work: "politics", at: "I.2 (1253a1–39)", holds: "Man is by nature an animal made for the city; one who lives outside it is a beast or a god." },
+      { side: "Yes, and at war", who: "Thomas Hobbes", title: "Leviathan", at: "chapter XIII", holds: "Without a power over them all, men are in a war of each against all, and life is solitary, poor, nasty, brutish and short." },
+      { side: "Good, then corrupted", who: "Jean-Jacques Rousseau", work: "inequality", at: "Part I", holds: "Natural man is solitary and moved by pity; property and society, not nature, made him unequal and vicious." },
+      { side: "A blank page", who: "John Locke", work: "locke-understanding", at: "II.1", holds: "The mind starts as white paper with no innate ideas; everything in it comes from experience." },
+    ],
+  },
 ];
 
 export const dialecticById = (id: string): Dialectic | undefined => DIALECTICS.find((d) => d.id === id);

@@ -2,15 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { itemHref } from "@reflect/core/collections";
 import { DIALECTIC_SHELVES } from "@reflect/core/dialectic-media";
+import { rankDialectics } from "@reflect/core/dialectics";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { SectionHead } from "@/components/section-head";
 import { requireUser } from "@/server/session";
 import { artOf, haveKeys } from "@/server/collections";
+import { keptWorks } from "@/server/kept-works";
 import { listItems } from "@/server/ways-store";
 import { Art } from "../art";
 import { LearnHeader } from "../header";
 import { PlaylistRows } from "../playlists/card";
+import { QuestionsGrid } from "./questions-grid";
 
 export const metadata: Metadata = { title: "Dialectic" };
 export const dynamic = "force-dynamic";
@@ -18,12 +21,14 @@ export const dynamic = "force-dynamic";
 /**
  * Dialectic to watch and listen to (Torian, 2026-11-16 18:18Z: "We can not do interactive dialectics. Instead, we can
  * allow you to watch dialectics... videos and audios of dialectic conversations"). One debate first, with the page's
- * one filled button; then shelves: famous debates, conversations with philosophers, discussions, and Plato's dialogues
- * read aloud. The feed, rooms and threads built earlier stay in the code, off the page, to come back to later.
+ * one filled button; then the standing questions (those drawing on what the person keeps first), then shelves: famous
+ * debates, conversations with philosophers, discussions, dialogues read aloud and plays that argue. The feed, rooms and threads built earlier stay in the code, off the page, to come back to later.
  */
 export default async function DialecticPage() {
   const user = await requireUser();
-  const have = haveKeys(await listItems(user.id).catch(() => []));
+  const items = await listItems(user.id).catch(() => []);
+  const have = haveKeys(items);
+  const ranked = rankDialectics(keptWorks(items));
   const first = DIALECTIC_SHELVES[0]!.items[0]!;
   const art = artOf(first);
   return (
@@ -46,6 +51,11 @@ export default async function DialecticPage() {
             {first.why ? <p className="text-muted-foreground">{first.why}</p> : null}
             <Button asChild className="mt-1 rounded-full"><Link href={itemHref(first)}>Listen</Link></Button>
           </div>
+        </section>
+
+        <section className="space-y-3" aria-labelledby="questions">
+          <SectionHead title={<span id="questions">Questions</span>} href="/schole/dialectic/questions" note="Standing questions, with the recordings that argue them." />
+          <QuestionsGrid ranked={ranked.slice(0, 6)} row />
         </section>
 
         {DIALECTIC_SHELVES.map((s) => (

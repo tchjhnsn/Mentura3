@@ -13,6 +13,7 @@ import { CollectionCard, PlaylistRows } from "../../playlists/card";
 import { adaptationsOf, MODE_LABEL, MODE_MEANS } from "@reflect/core/adaptations";
 import { cite, namedIn, personHref, personNamed } from "@reflect/core/historical-people";
 import { ideasIn } from "@reflect/core/great-ideas";
+import { DIALECTICS } from "@reflect/core/dialectics";
 
 /** A recording as a row: its title and who read it, in how many voices. */
 function recording(id: string): CollectionItem | null {
@@ -86,6 +87,19 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
                 <li key={`${by.id}${n.at.at}`} className="py-3">
                   <p><Link href={personHref(by)} className="font-medium hover:underline">{by.name}</Link> <span className="text-muted-foreground text-[13px]">· {cite(n.at)}</span></p>
                   <p className="text-foreground/80 text-sm">{n.names}. {n.why}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {DIALECTICS.some((d) => d.positions.some((p) => p.work === w.id)) ? (
+          <section className="space-y-2">
+            <SectionHead title="Questions it argues" note="Standing questions in Dialectic, with where this work takes a side." />
+            <ul className="max-w-3xl divide-y">
+              {DIALECTICS.filter((d) => d.positions.some((p) => p.work === w.id)).map((d) => (
+                <li key={d.id} className="py-3">
+                  <Link href={`/schole/dialectic/questions/${d.id}`} className="font-medium hover:underline">{d.question}</Link>
+                  <p className="text-muted-foreground text-[13px]">{d.positions.filter((p) => p.work === w.id).map((p) => `${p.side}, ${p.at}`).join("; ")}</p>
                 </li>
               ))}
             </ul>
