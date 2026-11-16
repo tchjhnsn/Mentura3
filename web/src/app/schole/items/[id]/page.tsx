@@ -1,4 +1,6 @@
 import { newNoteAction } from "../../notes/actions";
+import { debateRecord } from "@reflect/core/dialectic-media";
+import { DebateFacts, Verdict } from "../../dialectic/debate-record";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
@@ -58,9 +60,10 @@ const fmt = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US"
  * sessions of a practice. A video or recording plays here with your place kept and notes at a moment; a pasted
  * transcript is searched and quoted. Subjects, the book it adapts, editing and removing are here too.
  */
-export default async function ItemPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ItemPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
   const item = await getItem(user.id, (await params).id);
+  const keptVerdict = (await searchParams).verdict;
   if (!item) notFound();
   const [view, claims, published, ideas] = await Promise.all([learnView(user.id), listClaims(user.id).catch(() => []), publishedBy(user.id).catch(() => []), listIdeas(user.id).catch((): IdeaOut[] => [])]);
   // An item merged from an older input keeps its id, so an idea may name it either way.
@@ -264,6 +267,10 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
 
 
         {embed || item.notes.some((n) => !n.unit) || item.transcript ? section(embed ? `${m.done === "Heard" ? "Listen" : "Watch"} here` : "Notes", <ItemMedia id={item.id} title={item.title} by={item.by} embed={embed} place={item.place} notes={item.notes.filter((n) => !n.unit)} transcript={item.transcriptText} />) : null}
+
+        {item.medium === "debate" && debateRecord(item.url) ? section("The debate", <DebateFacts r={debateRecord(item.url)!} />, "debate") : null}
+
+        {item.medium === "debate" ? section("Your verdict", <Verdict title={item.title} url={item.url ?? ""} record={debateRecord(item.url)} back={`/schole/items/${item.id}`} kept={typeof keptVerdict === "string" ? keptVerdict : undefined} />, "verdict-section") : null}
 
         {!lectures.length && (item.medium === "course" || item.parts) ? section("Parts", (
           <form action={setItemFactsAction} className="flex flex-wrap items-center gap-2 text-sm">
