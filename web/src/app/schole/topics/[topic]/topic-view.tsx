@@ -145,7 +145,7 @@ export function TopicView({ t, form, following, have, made, faces }: { t: TopicP
           </section>
 
           <section className="space-y-3">
-            <SectionHead title="People" />
+            <SectionHead title="People" href="/schole/people/history" />
             <Faces faces={faces} />
           </section>
         </>
@@ -185,7 +185,7 @@ function FormView({ t, f, have, faces }: { t: TopicPage; f: TopicPage["forms"][n
       ) : null}
       {people.length ? (
         <section className="space-y-3">
-          <SectionHead title="People" />
+          <SectionHead title="People" href="/schole/people/history" />
           <Faces faces={people} />
         </section>
       ) : null}

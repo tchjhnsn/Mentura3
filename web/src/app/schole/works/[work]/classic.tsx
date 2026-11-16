@@ -11,7 +11,7 @@ import { LEARN } from "../../crumbs";
 import { Art } from "../../art";
 import { CollectionCard, PlaylistRows } from "../../playlists/card";
 import { adaptationsOf, MODE_LABEL, MODE_MEANS } from "@reflect/core/adaptations";
-import { cite, namedIn, philosopherNamed } from "@reflect/core/philosophers";
+import { cite, namedIn, personHref, personNamed } from "@reflect/core/historical-people";
 
 /** A recording as a row: its title and who read it, in how many voices. */
 function recording(id: string): CollectionItem | null {
@@ -34,7 +34,7 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
   const groups = (Object.keys(GROUP_LABEL) as VersionGroup[]).map((g) => ({ g, items: w.versions.filter((x) => x.group === g).map((x) => x.item) })).filter((x) => x.items.length);
   const playlists = COLLECTIONS.filter((c) => c.items.some((i) => workOf(i)?.id === w.id));
   const formHref = `/schole/topics/${t.id}?f=${w.form}`;
-  const author = philosopherNamed(w.by);
+  const author = personNamed(w.by);
   const adaptations = adaptationsOf(w.id);
   const named = namedIn(w.id);
   return (
@@ -45,7 +45,7 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
           <Art image={cover.image} kind="Work" title={w.title} className="aspect-square w-28 shrink-0 sm:w-40" />
           <div className="min-w-0 space-y-2">
             <h1 id="page-title" className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">{w.title}</h1>
-            <p className="text-muted-foreground text-[13px]">{author ? <Link href={`/schole/philosophers/${author.id}`} className="text-foreground underline-offset-4 hover:underline">{w.by}</Link> : w.by} · {w.when}</p>
+            <p className="text-muted-foreground text-[13px]">{author ? <Link href={personHref(author)} className="text-foreground underline-offset-4 hover:underline">{w.by}</Link> : w.by} · {w.when}</p>
             <p className="text-muted-foreground text-[13px]">{form ? <Link href={formHref} className="text-foreground underline-offset-4 hover:underline">{form.label}</Link> : null} · <Link href={`/schole/topics/${t.id}`} className="text-foreground underline-offset-4 hover:underline">{t.name}</Link></p>
             <p className="hidden max-w-prose sm:block">{w.about}</p>
             {recordings[0] ? <Button asChild size="lg" className="mt-1 h-10 sm:px-8"><Link href={`/schole/audiobooks/${w.audiobooks[0]}`}>Play the audiobook</Link></Button> : null}
@@ -78,11 +78,11 @@ export function ClassicWork({ w, have }: { w: Work; have: ReadonlySet<string> })
         ) : null}
         {named.length ? (
           <section id="named" className="space-y-2">
-            <SectionHead title="Named by" note="Philosophers who point to this work, and why." />
+            <SectionHead title="Named by" note="People who point to this work, and why." />
             <ul className="max-w-3xl divide-y">
               {named.map(({ by, n }) => (
                 <li key={`${by.id}${n.at.at}`} className="py-3">
-                  <p><Link href={`/schole/philosophers/${by.id}`} className="font-medium hover:underline">{by.name}</Link> <span className="text-muted-foreground text-[13px]">· {cite(n.at)}</span></p>
+                  <p><Link href={personHref(by)} className="font-medium hover:underline">{by.name}</Link> <span className="text-muted-foreground text-[13px]">· {cite(n.at)}</span></p>
                   <p className="text-foreground/80 text-sm">{n.names}. {n.why}</p>
                 </li>
               ))}

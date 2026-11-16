@@ -10,6 +10,11 @@
  * Every version plays in Scholē: a LibriVox recording by its catalogue id, a podcast episode, a course, or a find
  * (music, art, a lecture) that the find page plays or shows. Pure: no I/O.
  */
+import { ANCIENT_FORMS } from "./topic-ancient";
+import { MEDIEVAL_FORMS, MEDIEVAL_TOPIC, MEDIEVAL_WORKS } from "./topic-medieval";
+import { RENAISSANCE_FORMS, RENAISSANCE_TOPIC, RENAISSANCE_WORKS } from "./topic-renaissance";
+import { ENLIGHTENMENT_FORMS, ENLIGHTENMENT_TOPIC, ENLIGHTENMENT_WORKS } from "./topic-enlightenment";
+import { FOUNDING_FORMS, FOUNDING_TOPIC, FOUNDING_WORKS } from "./topic-founding";
 import { ab, aic, collectionById, COLLECTIONS, course, iot, itemKey, yt, type Collection, type CollectionItem } from "./collections";
 
 /** What you do with a version of a work, the groups of a work page after its recordings. */
@@ -72,7 +77,7 @@ const PANIAGUA: CollectionItem = {
 };
 const SEIKILOS = yt("music", "mGfOHoun0OQ", "Seikilos Epitaph", "Ancient Greek song, about 200 BCE", "The oldest complete song with its tune: \"While you live, shine.\"");
 
-export const WORKS: readonly Work[] = [
+const BASE_WORKS: readonly Work[] = [
   W("iliad", "Iliad", "Homer", "8th century BC", "greeks", "epic", "The wrath of Achilles in the tenth year of the Trojan War: the poem every Greek learned first.", ["690", "5513", "3965", "20625"], [
     v("understand", iot("1pk8p2aa043pl", "The Iliad", "What the poem is about, and why it lasted.")),
     v("see", AMPHORA),
@@ -129,12 +134,14 @@ export const WORKS: readonly Work[] = [
   W("plutarch", "Parallel Lives", "Plutarch", "about AD 100", "greeks", "histories", "Greek and Roman lives side by side, to see what character does.", ["3119"]),
 ];
 
+export const WORKS: readonly Work[] = [...BASE_WORKS, ...MEDIEVAL_WORKS, ...RENAISSANCE_WORKS, ...ENLIGHTENMENT_WORKS, ...FOUNDING_WORKS];
+
 export const workById = (id: string): Work | undefined => WORKS.find((w) => w.id === id);
 
 const STOICISM = iot("1sgaxe81uzkg3n", "Stoicism", "The school from Zeno to Rome.");
 const AUREUS = aic(5644, "9b312820-971d-04ba-361d-4b008eaaaccc", "Aureus (Coin) Portraying Marcus Aurelius", "Ancient Roman, 153-154", "His face as Romans carried it.");
 
-export const TOPIC_PAGES: readonly TopicPage[] = [
+const BASE_TOPICS: readonly TopicPage[] = [
   {
     id: "greeks", name: "The Greeks", start: "greeks",
     about: "Homer to Plutarch: the epics, the tragedies and comedies of Athens, Plato's dialogues, Aristotle, the historians, and the music, vases and coins that survive.",
@@ -276,6 +283,18 @@ export const TOPIC_PAGES: readonly TopicPage[] = [
     ],
   },
 ];
+
+/** Forms an era's own file adds to a topic page, ids prefixed with the topic ("founding:music"); one with the same id replaces the old one. */
+const EXTRA_FORMS: readonly TopicForm[] = [...ANCIENT_FORMS, ...MEDIEVAL_FORMS, ...RENAISSANCE_FORMS, ...ENLIGHTENMENT_FORMS, ...FOUNDING_FORMS];
+const withForms = (t: TopicPage): TopicPage => {
+  const extra = EXTRA_FORMS.filter((f) => f.id.startsWith(`${t.id}:`)).map((f) => ({ ...f, id: f.id.slice(t.id.length + 1) }));
+  if (!extra.length) return t;
+  const ids = new Set(extra.map((f) => f.id));
+  const kept = t.forms.filter((f) => !ids.has(f.id));
+  const last = (f: TopicForm) => f.id === "podcasts" || f.id === "art" || f.id === "lectures";
+  return { ...t, forms: [...kept.filter((f) => !last(f)), ...extra, ...kept.filter(last)] };
+};
+export const TOPIC_PAGES: readonly TopicPage[] = [...BASE_TOPICS, ...[MEDIEVAL_TOPIC, RENAISSANCE_TOPIC, ENLIGHTENMENT_TOPIC, FOUNDING_TOPIC].filter((t): t is TopicPage => t !== null)].map(withForms);
 
 export const topicPageById = (id: string): TopicPage | undefined => TOPIC_PAGES.find((t) => t.id === id);
 

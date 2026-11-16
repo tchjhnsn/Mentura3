@@ -14,6 +14,10 @@
  * is one ordered path through a topic (`topics`, the topic pages it belongs to, in `topic-pages.ts`). The code keeps
  * the name collection.
  */
+import { MEDIEVAL_PLAYLISTS } from "./start-medieval";
+import { RENAISSANCE_PLAYLISTS } from "./start-renaissance";
+import { ENLIGHTENMENT_PLAYLISTS } from "./start-enlightenment";
+import { FOUNDING_PLAYLISTS } from "./start-founding";
 
 /** The media a find in a collection may be: the ones Scholē's find page plays, shows or reads. */
 export type FindMedium = "film" | "lecture" | "debate" | "discussion" | "music" | "art" | "theatre" | "game";
@@ -23,7 +27,7 @@ export type CollectionItem = { why?: string } & (
   | { kind: "audiobook"; id: string; title: string; by: string }
   | { kind: "course"; url: string; title: string; by: string }
   | { kind: "episode"; feed: string; key: string; show: string; image: string; title: string; by: string }
-  | { kind: "find"; medium: FindMedium; title: string; by: string; url?: string; image?: string; year?: string }
+  | { kind: "find"; medium: FindMedium; title: string; by: string; url?: string; image?: string; year?: string; /** Who recorded it and under what licence, when the recording is free to use. */ credit?: string }
 );
 
 export type Collection = {
@@ -45,9 +49,15 @@ export const course = (url: string, title: string, by: string, why?: string): Co
 const IOT = { feed: "https://podcasts.files.bbci.co.uk/b006qykl.rss", show: "In Our Time", image: "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/f3/12/e7/f312e703-b626-0091-5bdf-73d79cce25c5/mza_16900938594910783199.jpg/600x600bb.jpg" };
 export const iot = (key: string, title: string, why?: string): CollectionItem => ({ kind: "episode", ...IOT, key, title, by: "Melvyn Bragg and guests", ...(why ? { why } : {}) });
 export const yt = (medium: FindMedium, id: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "find", medium, title, by, url: `https://www.youtube.com/watch?v=${id}`, image: `https://i.ytimg.com/vi/${id}/hqdefault.jpg`, ...(why ? { why } : {}) });
+/**
+ * A recording on Wikimedia Commons, in the public domain or under Creative Commons, that Reflect's own player plays
+ * (Torian, 2026-11-16 04:02Z: music "we can actually play ourselves"). `path` is the file's two hash folders ("b/b6").
+ */
+export const commons = (path: string, file: string, title: string, by: string, credit: string, why?: string): CollectionItem =>
+  ({ kind: "find", medium: "music", title, by, url: `https://upload.wikimedia.org/wikipedia/commons/${path}/${encodeURIComponent(file.replace(/ /g, "_"))}`, credit, ...(why ? { why } : {}) });
 export const aic = (id: number, image: string, title: string, by: string, why?: string): CollectionItem => ({ kind: "find", medium: "art", title, by, url: `https://www.artic.edu/artworks/${id}`, image: `https://www.artic.edu/iiif/2/${image}/full/400,/0/default.jpg`, ...(why ? { why } : {}) });
 
-export const COLLECTIONS: readonly Collection[] = [
+const BASE: readonly Collection[] = [
   {
     id: "greeks", name: "Homer to Socrates", by: "Reflect", for: [], topics: ["greeks"],
     about: "Where the questions began: Socrates on trial, Plato's city, Aristotle on the good life, and the poems and plays the Greeks learned from, heard, watched and looked at.",
@@ -189,6 +199,8 @@ export const COLLECTIONS: readonly Collection[] = [
   },
 ];
 
+export const COLLECTIONS: readonly Collection[] = [...BASE, ...MEDIEVAL_PLAYLISTS, ...RENAISSANCE_PLAYLISTS, ...ENLIGHTENMENT_PLAYLISTS, ...FOUNDING_PLAYLISTS];
+
 export const collectionById = (id: string): Collection | undefined => COLLECTIONS.find((c) => c.id === id);
 
 const q = (k: string, v: string | undefined) => (v ? `&${k}=${encodeURIComponent(v)}` : "");
@@ -199,7 +211,7 @@ export function itemHref(i: CollectionItem): string {
     case "audiobook": return `/schole/audiobooks/${i.id}`;
     case "course": return `/schole/courses?u=${encodeURIComponent(i.url)}`;
     case "episode": return `/schole/podcasts/episode?u=${encodeURIComponent(i.feed)}&k=${i.key}${q("t", i.show)}${q("i", i.image)}`;
-    case "find": return `/schole/find?m=${i.medium}${q("t", i.title)}${q("by", i.by)}${q("u", i.url)}${q("i", i.image)}${q("y", i.year)}&h=1`;
+    case "find": return `/schole/find?m=${i.medium}${q("t", i.title)}${q("by", i.by)}${q("u", i.url)}${q("i", i.image)}${q("y", i.year)}${q("c", i.credit)}&h=1`;
   }
 }
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { playsHere } from "@reflect/core/browse-media";
-import { embedOf } from "@reflect/core/media";
+import { audioOf, embedOf } from "@reflect/core/media";
 import { mediumOf, type Medium } from "@reflect/core/ways";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
@@ -12,6 +12,7 @@ import { browseCrumbs } from "../crumbs";
 import { browseAddAction } from "../actions";
 import { LocalDay } from "../items/local-day";
 import { wayLabel } from "../browse/media";
+import { PlayButton } from "../play-button";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -36,6 +37,9 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
   const url = https(one(sp.u));
   const image = https(one(sp.i));
   const year = one(sp.y);
+  const credit = one(sp.c);
+  // A free recording (Wikimedia Commons) plays in Scholē's own player, with who recorded it and its licence.
+  const free = medium === "music" ? audioOf(url) : null;
   const here = one(sp.h) === "1" || playsHere({ medium: medium as Medium, url, image });
   const m = mediumOf(medium as Medium);
   const square = medium === "music" || medium === "podcast" || medium === "art";
@@ -57,9 +61,14 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
             <input type="hidden" name="medium" value={medium} /><input type="hidden" name="title" value={title} />
             {by ? <input type="hidden" name="by" value={by} /> : null}{url ? <input type="hidden" name="url" value={url} /> : null}{image ? <input type="hidden" name="image" value={image} /> : null}
             <LocalDay />
-            {here ? <Button name="go" value="start">Start here</Button> : null}
-            <Button variant={here ? "outline" : "default"}>Keep for later</Button>
+            {free ? <PlayButton src={free.src} title={title} by={by} href={`/schole/find?m=music&t=${encodeURIComponent(title)}&u=${encodeURIComponent(url)}`} label="Play" /> : here ? <Button name="go" value="start">Start here</Button> : null}
+            <Button variant={here || free ? "outline" : "default"}>Keep for later</Button>
           </form>
+          {free ? (
+            <p className="text-muted-foreground text-xs">
+              {credit ? `${credit}. ` : ""}Free to play from <a href={free.page} target="_blank" rel="noreferrer" className="underline underline-offset-2">Wikimedia Commons</a>, where its licence is.
+            </p>
+          ) : null}
         </div>
       </div>
       {album?.kind === "frame" && album.site === "Apple Music" ? (
