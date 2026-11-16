@@ -105,3 +105,53 @@ export const QUESTION_MEDIA: Readonly<Record<string, readonly CollectionItem[]>>
   "god-exists": [RUSSELL_COPLESTON, CRAIG_HITCHENS, IQ2_RELIGION, IQ2_CHURCH, MAGEE_MEDIEVAL, IOT_AQUINAS, HUME_DIALOGUES, DON_JUAN],
   "human-nature": [CHOMSKY_FOUCAULT, MAGEE_FRANKFURT, IOT_CONTRACT, IOT_EMILE],
 };
+
+/**
+ * What a debate argued, who took each side, and how it ended, where a source says so (Torian, 2026-11-16 18:26Z:
+ * "motion and result"). Only what was checked on 2026-11-16 is here: a debate without a vote has no result, and a vote
+ * no source gives is left out. `for` and `against` are the sides of the motion or question, in speaking order.
+ */
+export type DebateRecord = {
+  motion: string;
+  /** The motion as a question, or as a resolution moved in a chamber. */
+  form: "motion" | "question";
+  when: string;
+  where: string;
+  /** The sides, when the debate had two; a conversation that took no sides names its speakers instead. */
+  for?: readonly string[];
+  against?: readonly string[];
+  speakers?: readonly string[];
+  result?: string;
+  source: { label: string; url: string };
+};
+
+const urlOf = (i: CollectionItem) => (i.kind === "find" ? i.url ?? "" : "");
+const wiki = (title: string) => ({ label: "Wikipedia", url: `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}` });
+
+export const DEBATE_RECORDS: Readonly<Record<string, DebateRecord>> = {
+  [urlOf(RUSSELL_COPLESTON)]: {
+    motion: "Does God exist?", form: "question", when: "28 January 1948", where: "BBC Third Programme",
+    for: ["Frederick Copleston"], against: ["Bertrand Russell"], source: wiki("Copleston–Russell debate"),
+  },
+  [urlOf(BALDWIN_BUCKLEY)]: {
+    motion: "The American dream is at the expense of the American Negro.", form: "motion", when: "18 February 1965", where: "Cambridge Union, broadcast by the BBC",
+    for: ["David Heycock", "James Baldwin"], against: ["Jeremy Burford", "William F. Buckley Jr."],
+    result: "Carried, 544 to 164", source: wiki("Baldwin–Buckley debate"),
+  },
+  [urlOf(CHOMSKY_FOUCAULT)]: {
+    motion: "Is there a human nature, independent of experience?", form: "question", when: "22 October 1971", where: "Eindhoven University of Technology, broadcast 28 November 1971",
+    speakers: ["Noam Chomsky", "Michel Foucault"], source: wiki("Chomsky–Foucault debate"),
+  },
+  [urlOf(IQ2_CHURCH)]: {
+    motion: "The Catholic Church is a force for good in the world.", form: "motion", when: "2009", where: "Intelligence Squared, London",
+    for: ["John Onaiyekan", "Ann Widdecombe"], against: ["Christopher Hitchens", "Stephen Fry"],
+    result: "Defeated: the side against won the audience vote", source: wiki("Ann Widdecombe"),
+  },
+  [urlOf(DEATH_FINAL)]: {
+    motion: "Death is not final.", form: "motion", when: "2014", where: "Intelligence Squared US, now Open to Debate",
+    for: ["Eben Alexander", "Raymond Moody"], against: ["Sean Carroll", "Steven Novella"], source: wiki("Sean M. Carroll"),
+  },
+};
+
+/** The record of a debate by its recording's link, when one was checked. */
+export const debateRecord = (url: string | null | undefined): DebateRecord | null => (url ? DEBATE_RECORDS[url] ?? null : null);

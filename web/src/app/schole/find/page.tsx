@@ -13,6 +13,8 @@ import { browseAddAction } from "../actions";
 import { LocalDay } from "../items/local-day";
 import { wayLabel } from "../browse/media";
 import { PlayButton } from "../play-button";
+import { debateRecord } from "@reflect/core/dialectic-media";
+import { DebateFacts, Verdict } from "../dialectic/debate-record";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -45,6 +47,9 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
   const square = medium === "music" || medium === "podcast" || medium === "art";
   // An album plays right here, before it is kept: Apple Music's player gives previews, and whole tracks to its subscribers.
   const album = embedOf(url);
+  const record = medium === "debate" ? debateRecord(url) : null;
+  const back = `/schole/find?${new URLSearchParams(Object.entries(sp).filter(([k, v]) => k !== "verdict" && typeof v === "string") as [string, string][]).toString()}`;
+  const verdict = one(sp.verdict);
   return (
     <main className={PAGE}>
       <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />
@@ -73,6 +78,12 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
       </div>
       {album?.kind === "frame" && album.site === "Apple Music" ? (
         <iframe src={album.src} title={`${title} on ${album.site}`} className={`mt-8 ${album.list ? "h-[450px]" : "h-[175px]"} w-full max-w-3xl rounded-lg border`} allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation" loading="lazy" />
+      ) : null}
+      {medium === "debate" ? (
+        <div className="mt-10 grid max-w-3xl gap-10">
+          {record ? <section className="space-y-3" aria-labelledby="debate"><h2 id="debate" className="text-base font-semibold">The debate</h2><DebateFacts r={record} /></section> : null}
+          <section className="space-y-3" aria-labelledby="verdict-h"><h2 id="verdict-h" className="text-base font-semibold">Your verdict</h2><Verdict title={title} url={url} record={record} back={back} kept={verdict || undefined} /></section>
+        </div>
       ) : null}
     </main>
   );
