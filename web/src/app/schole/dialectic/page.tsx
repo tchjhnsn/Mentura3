@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { SectionHead } from "@/components/section-head";
 import { requireUser } from "@/server/session";
+import { DIALOGUES } from "@reflect/core/practice-settled";
+import { gameOf } from "@/server/practice";
+import { Game } from "./practice/[work]/game";
 import { artOf } from "@/server/collections";
 import { keptWorks } from "@/server/kept-works";
 import { listItems } from "@/server/ways-store";
@@ -62,6 +65,9 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
   const art = artOf(first);
   const verb = formatOf(first) === "Video" ? "Watch" : "Listen";
   const lesson = wayLesson("dialectic")!;
+  // A round of the annotation game on the week's dialogue (Torian, 2026-11-16 23:18Z: rounds woven into Scholē).
+  const dialogue = DIALOGUES[week % DIALOGUES.length]!;
+  const rounds = subject ? [] : await gameOf(dialogue.id, user.id, Math.floor(Math.random() * 1e9) + 1, 1).catch(() => []);
   return (
     <main className={PAGE}>
       <LearnHeader on="browse" />
@@ -129,6 +135,13 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
             </section>
           ) : null;
         })}
+
+        {rounds.length ? (
+          <section className="max-w-xl space-y-3" aria-labelledby="annotate">
+            <SectionHead title={<span id="annotate">Annotate {dialogue.title}</span>} href={`/schole/dialectic/practice/${dialogue.id}`} note={`${dialogue.question} Mark what each sentence does and link a reason to its claim; Done shows how you did.`} />
+            <Game work={dialogue.id} title={dialogue.title} audiobook={dialogue.audiobook} rounds={rounds} inline />
+          </section>
+        ) : null}
 
         {/* The ways of questioning the page borrows from, each a playlist (Torian, 2026-11-16 20:33Z). */}
         {subject ? null : (
