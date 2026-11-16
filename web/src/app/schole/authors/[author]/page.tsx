@@ -8,7 +8,7 @@ import { requireUser } from "@/server/session";
 import { learnView } from "@/server/learn-store";
 import { isFilter, listBooks, openLibrary, PER, type BookSource, type Filter } from "@/server/browse";
 import { ThingHeader } from "@/components/headers";
-import { philosopherByOl } from "@reflect/core/philosophers";
+import { personByOl, personHref } from "@reflect/core/historical-people";
 import { browseCrumbs } from "../../crumbs";
 import { BookGrid } from "../../book-card";
 import { FilterMenu, SortMenu, type ListState } from "../../browse/list-menus";
@@ -66,7 +66,7 @@ export default async function AuthorPage({ params, searchParams }: { params: Pro
             <div className="space-y-1">
               <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">{a.name}</h1>
               {meta ? <p className="text-muted-foreground text-[13px]">{meta}</p> : null}
-              {philosopherByOl(author) ? <Link href={`/schole/philosophers/${philosopherByOl(author)!.id}`} className="text-sm font-medium underline underline-offset-4">Philosopher page: music, theatre and their time</Link> : null}
+              {personByOl(author) ? <Link href={personHref(personByOl(author)!)} className="text-sm font-medium underline underline-offset-4">Their page: who they knew, what they read, their time</Link> : null}
             </div>
             {a.bio ? (
               <div className="text-muted-foreground">

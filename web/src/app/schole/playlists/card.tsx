@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { itemHref, itemKey, type Collection, type CollectionItem } from "@reflect/core/collections";
 import { hoursOf } from "@reflect/core/audiobooks";
+import { audioOf } from "@reflect/core/media";
+import { PlayButton } from "../play-button";
 import { artOf, sizeLine } from "@/server/collections";
 import { Art } from "../art";
 import { cn } from "@/lib/utils";
@@ -56,9 +58,11 @@ export function PlaylistRows({ items, have, numbered = true }: { items: readonly
     <ol className="max-w-3xl divide-y">
       {items.map((i, n) => {
         const a = artOf(i);
+        // A free recording plays here, in Scholē's own player; the row still opens its page.
+        const free = i.kind === "find" && i.medium === "music" ? audioOf(i.url) : null;
         return (
-          <li key={itemKey(i)}>
-            <Link href={itemHref(i)} className="hover:bg-muted/60 -mx-2 flex items-start gap-3 rounded-lg px-2 py-3">
+          <li key={itemKey(i)} className="flex items-center gap-2">
+            <Link href={itemHref(i)} className="hover:bg-muted/60 -mx-2 flex min-w-0 flex-1 items-start gap-3 rounded-lg px-2 py-3">
               {numbered ? <span className="text-muted-foreground w-5 shrink-0 pt-3.5 text-right text-sm tabular-nums">{n + 1}</span> : null}
               <Art image={a.image} kind={a.kind} title={i.title} tiny className="size-14 shrink-0" />
               <span className="min-w-0 flex-1">
@@ -68,6 +72,7 @@ export function PlaylistRows({ items, have, numbered = true }: { items: readonly
               </span>
               {have.has(itemKey(i)) ? <span className="text-muted-foreground shrink-0 text-xs">Kept</span> : null}
             </Link>
+            {free ? <PlayButton src={free.src} title={i.title} by={i.by} href={itemHref(i)} image={a.image} className="shrink-0" /> : null}
           </li>
         );
       })}

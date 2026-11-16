@@ -8,7 +8,7 @@ import { madePrompt, readMade, storedItems } from "@reflect/core/made-playlists"
 import { topicCandidates, topicPageById } from "@reflect/core/topic-pages";
 import { chatModel } from "./chat-model";
 import { bioFor } from "./guests";
-import { philosopherNamed } from "@reflect/core/philosophers";
+import { personHref, personNamed } from "@reflect/core/historical-people";
 
 const TOPIC = /^[a-z0-9-]{2,40}$/;
 
@@ -93,11 +93,11 @@ export async function makePlaylist(userId: string, topic: string, o: { aims: rea
 
 export type Face = { name: string; image: string | null; href: string | null };
 
-/** The faces of a topic's people, from their Wikipedia pages (kept a day), each opening their philosopher page, else their author page, when there is one. */
+/** The faces of a topic's people, from their Wikipedia pages (kept a day), each opening their person page, else their author page, when there is one. */
 export async function facesOf(people: readonly { name: string; wiki: string; ol?: string }[]): Promise<Face[]> {
   return Promise.all(people.map(async (p) => {
     const bio = await bioFor(p.name, `https://en.wikipedia.org/wiki/${p.wiki}`).catch(() => null);
-    const own = philosopherNamed(p.name);
-    return { name: p.name, image: bio?.image ?? null, href: own ? `/schole/philosophers/${own.id}` : p.ol ? `/schole/authors/${p.ol}` : null };
+    const own = personNamed(p.name);
+    return { name: p.name, image: bio?.image ?? null, href: own ? personHref(own) : p.ol ? `/schole/authors/${p.ol}` : null };
   }));
 }

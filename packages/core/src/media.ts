@@ -88,3 +88,21 @@ export function searchTranscript(parts: readonly Part[], q: string, limit = 30):
   if (!words.length) return [];
   return parts.filter((p) => { const t = p.text.toLowerCase(); return words.every((w) => t.includes(w)); }).slice(0, limit);
 }
+
+/**
+ * A free recording Reflect's own player can play: a Wikimedia Commons file, as the MP3 copy Commons makes of every
+ * recording (so it plays on iPhones too, which do not play Ogg), with its page on Commons for the credit and licence.
+ */
+export function audioOf(url: string | null | undefined): { src: string; page: string; file: string } | null {
+  if (!url) return null;
+  let u: URL;
+  try { u = new URL(url); } catch { return null; }
+  if (u.hostname !== "upload.wikimedia.org") return null;
+  const m = /^\/wikipedia\/commons\/([0-9a-f])\/([0-9a-f]{2})\/([^/]+)$/.exec(u.pathname);
+  if (!m || m[2]![0] !== m[1]) return null;
+  const name = m[3]!;
+  const file = decodeURIComponent(name);
+  if (!/\.(ogg|oga|opus|flac|wav|mp3)$/i.test(file)) return null;
+  const src = /\.mp3$/i.test(file) ? `https://upload.wikimedia.org/wikipedia/commons/${m[1]}/${m[2]}/${name}` : `https://upload.wikimedia.org/wikipedia/commons/transcoded/${m[1]}/${m[2]}/${name}/${name}.mp3`;
+  return { src, page: `https://commons.wikimedia.org/wiki/File:${name}`, file };
+}

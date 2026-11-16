@@ -13,7 +13,7 @@ describe("articles", () => {
     ]);
   });
 
-  it("reads only articles a philosopher page names", () => {
+  it("reads only articles a person page names", () => {
     expect(readsArticle("Gregorian mode")).toBe(true);
     expect(readsArticle("Main Page")).toBe(false);
     expect(articleOfSlug(articleSlug("Musical system of ancient Greece"))).toBe("Musical system of ancient Greece");

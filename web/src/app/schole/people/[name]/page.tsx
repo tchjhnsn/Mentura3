@@ -19,8 +19,13 @@ import { LatestCards, type LatestCard } from "../latest";
 import { Clamp } from "../clamp";
 import { ShowTiles, type ShowTile } from "../show-tiles";
 import type { Track } from "../../player";
+import { personById, personNamed } from "@reflect/core/historical-people";
+import { HistoricalPerson } from "../historical";
 
-export const metadata: Metadata = { title: "Person" };
+export async function generateMetadata({ params }: { params: Promise<{ name: string }> }): Promise<Metadata> {
+  const raw = decodeURIComponent((await params).name);
+  return { title: (personNamed(raw) ?? personById(raw))?.name ?? "Person" };
+}
 export const dynamic = "force-dynamic";
 
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -69,7 +74,11 @@ const H2 = "text-base font-semibold";
  */
 export default async function PersonPage({ params, searchParams }: { params: Promise<{ name: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
-  const name = bareName(decodeURIComponent((await params).name)).slice(0, 80);
+  const raw = decodeURIComponent((await params).name);
+  // A person in history has a page of their own, by name or by id.
+  const past = personNamed(raw) ?? personById(raw);
+  if (past) { const t = (await searchParams).tab; return <HistoricalPerson x={past} userId={user.id} asked={typeof t === "string" ? t : ""} />; }
+  const name = bareName(raw).slice(0, 80);
   if (!/^[\p{L}][\p{L}'’. -]{2,79}$/u.test(name)) notFound();
   const sp = await searchParams;
   const feed = one(sp.u);

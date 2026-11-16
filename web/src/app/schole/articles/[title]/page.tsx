@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { articleOfSlug, readsArticle } from "@reflect/core/articles";
-import { philosopherById } from "@reflect/core/philosophers";
+import { personById, personHref } from "@reflect/core/historical-people";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
@@ -23,8 +23,8 @@ export default async function ArticlePage({ params, searchParams }: { params: Pr
   const title = articleOfSlug((await params).title);
   if (!readsArticle(title)) notFound();
   const from = (await searchParams).from;
-  const x = typeof from === "string" ? philosopherById(from) : undefined;
-  const back = x ? `/schole/philosophers/${x.id}?tab=read` : "/schole/browse";
+  const x = typeof from === "string" ? personById(from) : undefined;
+  const back = x ? personHref(x, "about") : "/schole/browse";
   const a = await articleFor(title);
   return (
     <main className={PAGE}>
