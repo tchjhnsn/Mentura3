@@ -6,6 +6,7 @@ import { itemHref, itemKey, type CollectionItem } from "@reflect/core/collection
 import { DIALECTIC_SHELVES, OLD_ARGUMENTS, QUESTION_SUBJECTS, SUBJECTS, eraLine, eraOf, isSubject, subjectsOf, type Subject, formatOf, mixOldNew, weekOf } from "@reflect/core/dialectic-media";
 import { rankDialectics } from "@reflect/core/dialectics";
 import { wayLesson } from "@reflect/core/way-lessons";
+import { DIALECTIC_PLAYLISTS } from "@reflect/core/start-dialectic";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { SectionHead } from "@/components/section-head";
@@ -20,6 +21,7 @@ import { WayLessonCard } from "../way-lesson";
 import { LearnHeader } from "../header";
 import { CardRow, FormatChip } from "../media-card";
 import { QuestionsGrid } from "./questions-grid";
+import { CollectionCard } from "../playlists/card";
 
 export const metadata: Metadata = { title: "Dialectic" };
 export const dynamic = "force-dynamic";
@@ -126,6 +128,16 @@ export default async function DialecticPage({ searchParams }: { searchParams: Pr
             </section>
           ) : null;
         })}
+
+        {/* The ways of questioning the page borrows from, each a playlist (Torian, 2026-11-16 20:33Z). */}
+        {subject ? null : (
+          <section className="space-y-3" aria-labelledby="methods">
+            <SectionHead title={<span id="methods">Methods of dialectic</span>} note="How people have argued a question out: stasis, the Socratic method, Aristotle's dialectic and the medieval disputed question." />
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6 md:grid-cols-4">
+              {DIALECTIC_PLAYLISTS.map((c) => <CollectionCard key={c.id} c={c} />)}
+            </div>
+          </section>
+        )}
 
         <div id="what-dialectic-is" className="scroll-mt-20"><WayLessonCard l={lesson} /></div>
       </div>
