@@ -2,11 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { adventureOf, cleanChecklist, ideaById, peopleOf, toggleTile, WITH } from "@reflect/core/adventures";
+import { cleanChecklist, ideaById, peopleOf, toggleTile, WITH } from "@reflect/core/adventures";
 import { requireUser } from "@/server/session";
-import { addLifeRecord, lifeRecord, removeLifeRecord, restoreLifeRecord, saveLifeRecord, setLifeState } from "@/server/life-store";
-import { addEvent, removeEvent } from "@/server/calendar-store";
+import { lifeRecord } from "@/server/life-store";
 import { geocode } from "@/server/geocode";
+import { fromPage } from "@/server/actions/page";
+import { addRecord, bodyFields, changeRecord, removeRecord, restoreRecord, setRecordState } from "@/server/actions/records";
+import { adventureToCalendar } from "@/server/actions/adventure-calendar";
+
+// Each change goes through the action registry (Ask Reflect plan, step 4), so it is in the change log and can be undone.
 
 async function mine(userId: string, id: string) {
   const r = await lifeRecord(userId, id);
@@ -18,7 +22,7 @@ async function mine(userId: string, id: string) {
 async function patch(id: string, change: (b: Record<string, unknown>) => Record<string, unknown>): Promise<void> {
   const user = await requireUser();
   const r = await mine(user.id, id);
-  await saveLifeRecord(user.id, id, change({ ...r.body }));
+  await fromPage(changeRecord, user.id, { id, fields: bodyFields(change({ ...r.body })), whole: true });
   revalidatePath(`/adventures/${id}`);
   revalidatePath("/adventures");
 }
@@ -29,7 +33,7 @@ export async function addAdventureAction(idea: string | null, form?: FormData): 
   const i = idea ? ideaById(idea) : null;
   const name = i?.name ?? String(form?.get("name") ?? "").trim();
   if (!name) redirect("/adventures/new");
-  const id = await addLifeRecord(user.id, "legacy", "adventure", { name, ref: i?.id, tiles: i?.tiles.join(","), with: i?.with }, "not-yet");
+  const { id } = await fromPage(addRecord, user.id, { app: "legacy", kind: "adventure", fields: bodyFields({ name, ref: i?.id, tiles: i?.tiles.join(","), with: i?.with }), state: "not-yet" });
   revalidatePath("/adventures");
   redirect(`/adventures/${id}`);
 }
@@ -95,19 +99,8 @@ export async function removeAdventurePersonAction(id: string, i: number): Promis
  */
 export async function addAdventureToCalendarAction(id: string): Promise<void> {
   const user = await requireUser();
-  const r = await mine(user.id, id);
-  const a = adventureOf(r);
-  if (!a.start) throw new Error("Pick the dates first.");
-  for (const e of String(r.body.events ?? "").split(",").filter(Boolean)) await removeEvent(user.id, e, true).catch(() => {});
-  const ids: string[] = [];
-  const last = a.end ?? a.start;
-  for (let t = Date.parse(a.start), n = 0; t <= Date.parse(last) && n < 31; t += 86400_000, n++) {
-    const d = new Date(t).toISOString().slice(0, 10);
-    const plan = a.plan.find((p) => p.day === d) ?? (a.plan.every((p) => !p.day) ? a.plan.at(n) : undefined);
-    const note = plan ? plan.stops.map((s) => `${s.time ? `${s.time} ` : ""}${s.title}`).join("\n") : null;
-    ids.push(await addEvent(user.id, { title: a.name, tile: null, day: d, note, recordId: id }));
-  }
-  await saveLifeRecord(user.id, id, { ...r.body, events: ids.join(",") });
+  await mine(user.id, id);
+  await fromPage(adventureToCalendar, user.id, { id });
   revalidatePath(`/adventures/${id}`);
   revalidatePath("/calendar");
 }
@@ -115,7 +108,7 @@ export async function addAdventureToCalendarAction(id: string): Promise<void> {
 export async function setAdventureDoneAction(id: string, done: boolean): Promise<void> {
   const user = await requireUser();
   await mine(user.id, id);
-  await setLifeState(user.id, id, done ? "done" : "not-yet");
+  await fromPage(setRecordState, user.id, { id, state: done ? "done" : "not-yet" });
   revalidatePath("/adventures");
   revalidatePath(`/adventures/${id}`);
 }
@@ -123,14 +116,14 @@ export async function setAdventureDoneAction(id: string, done: boolean): Promise
 export async function removeAdventureAction(id: string): Promise<void> {
   const user = await requireUser();
   await mine(user.id, id);
-  await removeLifeRecord(user.id, id);
+  await fromPage(removeRecord, user.id, { id });
   revalidatePath("/adventures");
   redirect(`/adventures?removed=${id}`);
 }
 
 export async function restoreAdventureAction(id: string): Promise<void> {
   const user = await requireUser();
-  await restoreLifeRecord(user.id, id);
+  await fromPage(restoreRecord, user.id, { id });
   revalidatePath("/adventures");
   redirect("/adventures");
 }

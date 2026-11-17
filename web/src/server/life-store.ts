@@ -100,8 +100,8 @@ export async function restoreLifeRecord(userId: string, id: string): Promise<voi
   await db().query("UPDATE life_record SET removed_at = NULL WHERE id = $1 AND user_id = $2", [id, userId]);
 }
 
-/** Keeps an act on a record: what was done, on what day, for how long or how much, with a note. */
-export async function keepLifeAct(userId: string, id: string, a: { kind: string; day: string; minutes?: unknown; amount?: unknown; note?: unknown }, now = new Date()): Promise<void> {
+/** Keeps an act on a record: what was done, on what day, for how long or how much, with a note. Returns the act's id. */
+export async function keepLifeAct(userId: string, id: string, a: { kind: string; day: string; minutes?: unknown; amount?: unknown; note?: unknown }, now = new Date()): Promise<string> {
   const r = await lifeRecord(userId, id);
   if (!r) throw new Error("No such record.");
   const k = kindOf(r.app, r.kind)!;
@@ -114,7 +114,9 @@ export async function keepLifeAct(userId: string, id: string, a: { kind: string;
   const amount = ak.amount && a.amount !== undefined && a.amount !== "" ? Number(String(a.amount).replace(/[$,\s]/g, "")) : null;
   if (amount !== null && !(Number.isFinite(amount) && amount >= 0 && amount < 1e10)) throw new Error("Give an amount in dollars.");
   const note = typeof a.note === "string" && a.note.trim() ? seal(userId, a.note.trim().slice(0, 4000)) : null;
-  await db().query("INSERT INTO life_act (id, record_id, user_id, kind, day, minutes, amount, note_ct) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [randomUUID(), id, userId, a.kind, a.day, minutes, amount, note]);
+  const actId = randomUUID();
+  await db().query("INSERT INTO life_act (id, record_id, user_id, kind, day, minutes, amount, note_ct) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)", [actId, id, userId, a.kind, a.day, minutes, amount, note]);
+  return actId;
 }
 
 /** The person's acts, on one record or on all of them, newest first. */

@@ -2,18 +2,21 @@
 // turns it into cards (show) and the words the model reads back. The tool names are the registry's ids.
 import { tool, type Tool } from "ai";
 import type { z } from "zod";
-import { describeFor, type Action, type ActionContext } from "@/server/actions";
+import { actionsOn, describeFor, type Action, type ActionContext } from "@/server/actions";
 import { adventures, connections, household, householdPlan, meals, place, planAdventureAction } from "@/server/actions/life";
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
 import { recentChanges, undoChangeAction } from "@/server/actions/changes";
-import { runAction } from "@/server/actions/run";
+import { pendingChangesAction } from "@/server/actions/approvals";
+import { HOLD_DAYS, runAction } from "@/server/actions/run";
 import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "@/server/actions/home-cards";
 import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
 import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
+import { plansAction, startPlan, type PlanView } from "@/server/actions/workflows";
+import { messagesAction, sendMessageAction } from "@/server/actions/messages";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -29,14 +32,21 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   const ctx: ActionContext = { userId, ...(today ? { today } : {}), loaded: { view, claims, items } };
   const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
   // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
-  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card.
+  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card. A
+  // shared or outside action does not run: it shows an Approval card (Keep or Send) and the model is told it waits.
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
     tool({
       description: describeFor(a as Action, "chat"),
       inputSchema: a.input as z.ZodType<z.output<S>>,
       execute: async (input: z.output<S>) => {
-        const { result, changeId } = await runAction(a, ctx, input, "chat");
+        const ran = await runAction(a, ctx, input, "chat");
+        if (ran.held) {
+          const tap = a.tier === "outside" ? "Send" : "Keep";
+          show({ kind: "approval", change: ran.changeId, title: a.title, preview: ran.preview, tier: a.tier === "outside" ? "outside" : "shared" });
+          return `Not done yet: it waits for the person to tap ${tap} on the card (change ${ran.changeId}), for ${HOLD_DAYS} days. Do not say it is done.`;
+        }
+        const { result, changeId } = ran;
         const said = say(result, input);
         if (!changeId || a.tier !== "own" || !a.undo) return said;
         show({ kind: "undo", change: changeId, title: a.title });
@@ -68,7 +78,21 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
   const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
 
-  return Object.fromEntries([
+  // A plan as a Plan card, with the held step's Approval card while it waits, and what the model reads back.
+  const planSaid = (p: PlanView) => {
+    show({ kind: "plan", title: p.title, status: p.status, steps: p.steps.map((s) => ({ title: s.title, status: s.status })), note: p.note });
+    if (p.waiting) show({ kind: "approval", ...p.waiting });
+    const steps = p.steps.map((s, i) => `${i + 1}. ${s.title} (${s.action}): ${s.status.replace("_", " ")}${s.change ? `, change ${s.change}` : ""}${s.note ? `, ${s.note}` : ""}`).join("; ");
+    const state = p.status === "waiting" && p.waiting
+      ? `Waiting: step ${p.steps.findIndex((s) => s.status === "waiting") + 1} waits for the person to tap ${p.waiting.tier === "outside" ? "Send" : "Keep"} on the card (change ${p.waiting.change}), for ${HOLD_DAYS} days; the plan goes on by itself after the tap. Do not say the waiting or later steps are done.`
+      : p.status === "done" ? "Done: every step ran." : p.status === "failed" ? `Stopped. ${p.note ?? ""}` : "Running.";
+    return `Plan ${p.id}, ${p.title}. ${state} Steps: ${steps}.`;
+  };
+
+  // Every other chat action (the page acts, Ask Reflect plan step 4) answers with its result as data; a change the
+  // person can undo still gets its Undo chip from `use`.
+  const plain = (r: unknown) => (r === undefined || r === null ? "Done." : `Done: ${JSON.stringify(r).slice(0, 12000)}`);
+  const named: [string, Tool][] = [
     use(practiceDialectic, (r) => {
       if (r.kind === "course") {
         show({ kind: "quote", text: r.course.about, cite: `Course: ${r.course.name}`, href: "/schole/courses/dialectic" });
@@ -171,6 +195,12 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       show({ kind: "note", text: `Undone: ${r.title}.` });
       return `Undone: ${r.title} (change ${r.undone}).`;
     }),
+    use(pendingChangesAction, (list) => {
+      for (const p of list) show({ kind: "approval", change: p.id, title: p.title, preview: p.preview, tier: p.tier === "outside" ? "outside" : "shared" });
+      return list.length ? `Shown with Keep or Send: ${JSON.stringify(list.map((p) => ({ id: p.id, title: p.title, source: p.source, until: p.until })))}. Only the person can tap them.` : "Nothing is waiting for the person.";
+    }),
+    use(startPlan, (p) => planSaid(p)),
+    use(plansAction, (list) => (list.length ? list.map(planSaid).join("\n") : "No plans are running or waiting.")),
     use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
     use(addHomeCardAction, (c) => card(c, "Placed on Home")),
     use(removeHomeCardAction, () => "Removed from Home."),
@@ -203,5 +233,13 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       if (r.lens) lensCard(r.lens);
       return JSON.stringify(r);
     }),
-  ]);
+    // Messages are read into the conversation only because the person asked; they are not shown as cards.
+    use(messagesAction, (r) => {
+      if (r.kind === "threads") return r.threads.length ? JSON.stringify(r.threads.map((t) => ({ name: t.name, via: t.via, last: t.last, href: t.href }))).slice(0, 12000) : "There is no one the person can message yet. They invite a friend from Messages on the Friends tile (/life/friends/messages); household members can message each other.";
+      return r.messages.length ? `Messages with ${r.with.name} (${r.href}), oldest first: ${JSON.stringify(r.messages.map((m) => ({ from: m.from, text: m.text, at: m.at })))}`.slice(0, 12000) : `No messages with ${r.with.name} yet.`;
+    }),
+    use(sendMessageAction, (r) => `Sent to ${r.to}. It cannot be taken back. The conversation is at ${r.href}.`),
+  ];
+  const ids = new Set(named.map(([id]) => id));
+  return Object.fromEntries([...named, ...actionsOn("chat").filter((a) => !ids.has(a.id)).map((a) => use(a, plain))]);
 }

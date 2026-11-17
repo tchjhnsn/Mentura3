@@ -1,62 +1,78 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cleanEntry } from "@reflect/core/openlibrary";
 import { requireUser } from "@/server/session";
-import { addBook } from "@/server/learn-store";
-import { keepClaim } from "@/server/claims-store";
-import { addItem } from "@/server/ways-store";
-import { undoChange } from "@/server/actions/run";
+import { fromPage } from "@/server/actions/page";
+import { keepClaimAction, keepLibraryBook } from "@/server/actions/learn-page";
+import { addItemAction } from "@/server/actions/learning";
+import { undoChangeAction } from "@/server/actions/changes";
+import { approveChange, declineChange } from "@/server/actions/run";
+import { planCard } from "./spec";
+
+// A tap on a card in the chat runs the same registry entry the chat would (Ask Reflect plan, step 4), as the person's
+// own act from the page, so it is in the change log too.
+
+const parsed = (json: string, what: string): Record<string, unknown> => {
+  let v: unknown;
+  try {
+    v = JSON.parse(String(json));
+  } catch {
+    throw new Error(`that ${what} could not be read`);
+  }
+  if (!v || typeof v !== "object") throw new Error(`that ${what} could not be read`);
+  return v as Record<string, unknown>;
+};
 
 /** Add to my shelves, from a library card in the chat. The person tapped it; the entry is cleaned again. */
 export async function addBookFromChat(entryJson: string): Promise<void> {
   const user = await requireUser();
-  let raw: unknown;
-  try {
-    raw = JSON.parse(String(entryJson));
-  } catch {
-    throw new Error("that library entry could not be read");
-  }
-  const clean = cleanEntry(raw);
-  if (!clean) throw new Error("that library entry has no title");
-  await addBook(user.id, { title: clean.title, authors: clean.authors, ...(clean.isbn ? { isbn: clean.isbn } : {}), status: "want", subjects: [], catalog: clean });
+  await fromPage(keepLibraryBook, user.id, { entry: parsed(entryJson, "library entry"), status: "want" });
   revalidatePath("/schole");
 }
 
 /** Accept, from a proposed claim in the chat. keepClaim checks the stance and cleans the text and holders. */
 export async function keepClaimFromChat(claimJson: string): Promise<void> {
   const user = await requireUser();
-  let c: { text?: unknown; holders?: unknown; stance?: unknown; subject?: unknown };
-  try {
-    c = JSON.parse(String(claimJson)) as typeof c;
-  } catch {
-    throw new Error("that claim could not be read");
-  }
+  const c = parsed(claimJson, "claim");
   const holders = (Array.isArray(c.holders) ? c.holders : [])
     .map((h) => (h && typeof h === "object" ? (h as Record<string, unknown>) : {}))
-    .filter((h) => typeof h.name === "string")
+    .filter((h) => typeof h.name === "string" && h.name)
     .map((h) => ({ name: String(h.name), ...(typeof h.citation === "string" ? { citation: h.citation } : {}) }));
-  await keepClaim(user.id, { text: String(c.text ?? ""), holders, stance: String(c.stance ?? ""), ...(typeof c.subject === "string" ? { subject: c.subject } : {}) });
+  await fromPage(keepClaimAction, user.id, { text: String(c.text ?? ""), holders, stance: String(c.stance ?? ""), ...(typeof c.subject === "string" ? { subject: c.subject } : {}) });
   revalidatePath("/schole");
 }
 
 /** Add, from a found item in the chat: the find comes back from the page, so addItem checks it again. */
 export async function addItemFromChat(itemJson: string): Promise<void> {
   const user = await requireUser();
-  let f: Record<string, unknown>;
-  try {
-    f = JSON.parse(String(itemJson)) as Record<string, unknown>;
-  } catch {
-    throw new Error("that item could not be read");
-  }
-  const s = (k: string) => (typeof f[k] === "string" ? (f[k] as string) : undefined);
-  await addItem(user.id, { medium: s("medium") ?? "", title: s("title") ?? "", ...(s("by") ? { by: s("by") } : {}), ...(s("url") ? { url: s("url") } : {}), ...(s("image") ? { image: s("image") } : {}), status: "want" });
+  const f = parsed(itemJson, "item");
+  const s = (k: string) => (typeof f[k] === "string" && f[k] ? (f[k] as string) : undefined);
+  await fromPage(addItemAction, user.id, { medium: s("medium") ?? "", title: s("title") ?? "", ...(s("by") ? { by: s("by") } : {}), ...(s("url") ? { url: s("url") } : {}), ...(s("image") ? { image: s("image") } : {}), status: "want" });
   revalidatePath("/schole");
 }
 
 /** Undo, from the chip under a change the chat made. undoChange checks it is the person's own, own tier and under 30 days old. */
 export async function undoFromChat(changeId: string): Promise<void> {
   const user = await requireUser();
-  await undoChange({ userId: user.id }, String(changeId));
+  await fromPage(undoChangeAction, user.id, { change_id: String(changeId) });
   revalidatePath("/", "layout");
+}
+
+/**
+ * Keep or Send, from an Approval card: runs the held change as this person. approveChange checks it is theirs, still
+ * held and under 7 days old, and runs it once. When it was a step of a plan, the plan goes on, and its Plan card's
+ * props come back so the card can show how far it got.
+ */
+export async function approveFromChat(changeId: string): Promise<ReturnType<typeof planCard> | null> {
+  const user = await requireUser();
+  const r = await approveChange({ userId: user.id }, String(changeId));
+  revalidatePath("/", "layout");
+  return r.plan ? planCard(r.plan) : null;
+}
+
+/** Decline, from an Approval card: the held change never runs. */
+export async function declineFromChat(changeId: string): Promise<void> {
+  const user = await requireUser();
+  await declineChange({ userId: user.id }, String(changeId));
+  revalidatePath("/chat");
 }

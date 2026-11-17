@@ -104,6 +104,11 @@ export const keepLegacyPlan = action({
   tier: "outside",
   on: ["mcp"],
   input: legacySchema,
+  preview: (_ctx, { confirmations, wait_days, trustees, gifts }) => [
+    "Keep your legacy release plan. It replaces the plan you kept before and that plan's trustee links stop working.",
+    `Trustees: ${trustees.map((t) => `${t.name} (${t.contact})`).join("; ")}. After your death, ${confirmations} of them must confirm it; then ${wait_days} ${wait_days === 1 ? "day passes" : "days pass"} in which you or any trustee can stop the release.`,
+    ...(gifts.length ? gifts.flatMap((g) => [`${g.to} (${g.contact}) receives:`, ...g.items.map((i) => `${i.title}: ${i.text}`)]) : ["No one receives anything yet."]),
+  ].join("\n"),
   run: async ({ userId }, { confirmations, wait_days, trustees, gifts }) => toolKeepLegacyPlan(userId, { confirmations, waitDays: wait_days, trustees, gifts }),
 });
 

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { parseRef, refHref, refString } from "@reflect/core/work-browse";
 import { requireUser } from "@/server/session";
-import { addLifeRecord, lifeRecords, saveLifeRecord } from "@/server/life-store";
+import { lifeRecords } from "@/server/life-store";
+import { fromPage } from "@/server/actions/page";
+import { addRecord, bodyFields, changeRecord } from "@/server/actions/records";
 
 /**
  * Keeps a job, company or imagined work as an inspiration, with what draws the person to it, the origins they mark
@@ -18,8 +20,9 @@ export async function inspireAction(ref: string, title: string, form: FormData):
   const body = { ref: refString(r), title: title.slice(0, 300), type, draws: String(form.get("draws") ?? ""), origins: form.getAll("origins").map(String).join(","), end: String(form.get("end") ?? "") };
   const had = (await lifeRecords(user.id, "work")).find((x) => x.kind === "inspiration" && x.body.ref === body.ref);
   // Keep what the form does not carry (what is learned toward it, its kind of work when the person set it).
-  if (had) await saveLifeRecord(user.id, had.id, { ...had.body, ...body, type: had.body.type ?? type });
-  else await addLifeRecord(user.id, "work", "inspiration", body);
+  // Through the registry (Ask Reflect plan, step 4), so keeping it is in the change log and can be undone.
+  if (had) await fromPage(changeRecord, user.id, { id: had.id, fields: bodyFields({ ...had.body, ...body, type: had.body.type ?? type }), whole: true });
+  else await fromPage(addRecord, user.id, { app: "work", kind: "inspiration", fields: body });
   revalidatePath("/", "layout");
   redirect(`${refHref(r)}#inspires`);
 }

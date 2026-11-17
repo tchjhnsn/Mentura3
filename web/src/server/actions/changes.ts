@@ -1,7 +1,8 @@
 // The change log as actions (Ask Reflect plan, step 2): what the person's AI changed lately, and Undo.
 import { z } from "zod";
 import { action } from "./types";
-import { canUndo, changesOf, undoChange, UNDO_DAYS } from "./run";
+import { canUndo, changesOf, undoChange } from "./run";
+import { UNDO_DAYS } from "./limits";
 import { actionById } from "./index";
 
 export const recentChanges = action({

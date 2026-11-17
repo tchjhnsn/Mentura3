@@ -4,6 +4,7 @@ import { bodySpace } from "@reflect/core/body";
 import { childrenOf, friendsSpace, kinSpace, legacySpace, mateSpace, polisSpace } from "@reflect/core/tile-spaces";
 import { lifeRecords, type LifeAct, type LifeRecord } from "@/server/life-store";
 import { householdOf } from "@/server/household-store";
+import { threadsOf } from "@/server/messages-store";
 import { Bars, DashCard, DashHead, Face, Hero, Ring } from "@/components/dash";
 import { QuickLog } from "@/components/quick-log";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,8 @@ export async function FitnessDash({ userId, records, acts, today }: { userId: st
  */
 export async function FriendsDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   const s = friendsSpace(records, acts, today);
+  // Before migration 0047 is applied the message tables are missing; Messages then shows only its link.
+  const threads = await threadsOf(userId).catch(() => []);
   const EVERY: Record<string, number> = { "Every week": 7, "Every 2 weeks": 14, "Every month": 30, "Every 3 months": 91, "Every 6 months": 182, "Every year": 365 };
   const left = (f: (typeof s.close)[number]) => { const n = f.every ? EVERY[f.every] : 30; return f.since === null ? 0 : Math.max(0, 1 - f.since / (n ?? 30)); };
   const due = s.close.filter((f) => f.overdue).slice(0, 4);
@@ -203,6 +206,25 @@ export async function FriendsDash({ userId, records, acts, today }: { userId: st
           <Button asChild variant="outline" className="justify-self-start"><Link href="/life/friends?k=friend"><PlusIcon />Add a friend</Link></Button>
         )}
       </Hero>
+
+      <section className="grid gap-3">
+        <DashHead title="Messages" href="/life/friends/messages" more={threads.length ? "See all" : "Open"} />
+        {threads.length ? (
+          <ul className="bg-card divide-y overflow-hidden rounded-2xl border">
+            {threads.slice(0, 3).map((t) => (
+              <li key={t.id}>
+                <Link href={`/life/friends/messages/${encodeURIComponent(t.id)}`} className="hover:bg-accent flex items-center gap-3 px-4 py-3 transition">
+                  <Face name={t.name} size={36} />
+                  <span className="grid min-w-0 flex-1">
+                    <span className="truncate font-medium">{t.name}</span>
+                    <span className="text-muted-foreground truncate text-sm">{t.last ? `${t.last.you ? "You: " : ""}${t.last.text}` : t.via === "household" ? "Household" : "Friend"}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="text-muted-foreground text-sm">Message friends inside Reflect. <Link href="/life/friends/messages" className="text-primary">Invite a friend</Link></p>}
+      </section>
 
       {s.close.length + s.others.length > lead.length ? (
         <section className="grid gap-3">
