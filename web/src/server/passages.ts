@@ -2,7 +2,7 @@ import { workAccess } from "@reflect/core/openlibrary";
 import { searchBook, type Hit } from "@reflect/core/reading";
 import { learnView, type BookOut } from "./learn-store";
 import { openLibrary } from "./browse";
-import { readText, textSource } from "./texts";
+import { readText, textSource, type BookText } from "./texts";
 
 /** The free books searched at once: the ones the person is reading first, then read, then want to read. */
 export const PASSAGE_BOOKS = 16;
@@ -38,15 +38,26 @@ export async function searchShelves(userId: string, phrase: string): Promise<{ b
   return { books: free.filter((b) => b.total > 0).sort((a, b) => b.total - a.total), searched: free.length, unread };
 }
 
+/** A work as the catalog names it: enough to find its free text. */
+export type HeldWork = { work: string; title: string; authors: readonly string[] };
+
+/**
+ * A work's text as Reflect holds it, the same text the reading page shows: its Standard Ebooks or Gutenberg
+ * edition, found as the reader finds it. Null when it has no free text, "unread" when the text did not come.
+ */
+export async function heldText(c: HeldWork): Promise<BookText | null | "unread"> {
+  const access = await workAccess(c.work, openLibrary).catch(() => null);
+  const source = await textSource({ title: c.title, authors: c.authors }, access).catch(() => null);
+  if (!source) return null;
+  return (await readText(source, access?.gutenberg[0] ? { kind: "gutenberg", id: access.gutenberg[0] } : null).catch(() => null)) ?? "unread";
+}
+
 /** One shelved book's free text searched for a phrase: null when it has no free text, "unread" when the text did not come. */
 async function searchOne(b: BookOut, phrase: string, limit: number): Promise<PassageBook | null | "unread"> {
   const c = b.catalog;
   if (!c?.work) return null;
-  const access = await workAccess(c.work, openLibrary).catch(() => null);
-  const source = await textSource({ title: c.title, authors: c.authors }, access).catch(() => null);
-  if (!source) return null;
-  const text = await readText(source, access?.gutenberg[0] ? { kind: "gutenberg", id: access.gutenberg[0] } : null).catch(() => null);
-  if (!text) return "unread";
+  const text = await heldText({ work: c.work, title: c.title, authors: c.authors });
+  if (!text || text === "unread") return text;
   const r = searchBook(text.chapters, phrase, limit);
   return { work: c.work, title: c.title, author: c.authors[0] ?? "", total: r.total, hits: r.hits, chapters: r.hits.map((h) => text.chapters[h.chapter - 1]?.title ?? "") };
 }

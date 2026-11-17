@@ -8,6 +8,7 @@ import { actionsOn, describeFor, inputFor, type Action } from "./actions";
 import { addEvent, addEventsAction } from "./actions/calendar";
 import { connections, household, householdPlan, meals, place } from "./actions/life";
 import { piano } from "./actions/schole";
+import { coursesAction, draftCourseAction, excerptAction } from "./actions/courses";
 import { GUIDE } from "./actions/journal";
 import { siteUrl } from "./site";
 
@@ -29,6 +30,9 @@ const REPLIES = new Map<string, (r: unknown) => unknown>([
   reply(piano, (r) => r ?? "No such part of the piano course."),
   reply(addEvent, (r) => withLinks(r)[0]),
   reply(addEventsAction, (r) => withLinks(r)),
+  reply(excerptAction, (r) => (r.held ? { ...r, passages: withLinks(r.passages) } : r.reason)),
+  reply(draftCourseAction, (r) => (r.ok ? { ...r, link: `${siteUrl()}${r.href}` } : { kept: false, errors: r.errors })),
+  reply(coursesAction, (r) => withLinks(r)),
 ]);
 
 /** One MCP server for one signed-in person. */
