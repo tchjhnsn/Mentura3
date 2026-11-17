@@ -12,7 +12,7 @@ describe("connections", () => {
     expect(connectorsFor("home", "food").map((c) => c.id)).toEqual(["instacart"]);
     expect(connectorsFor("work", "income").map((c) => c.id)).toEqual(["plaid", "pinwheel"]);
     expect(connectorsFor("home", "firearm")).toEqual([]);
-    expect(connectorsFor("calendar").map((c) => c.id)).toEqual(["calendars", "google-calendar"]);
+    expect(connectorsFor("calendar").map((c) => c.id)).toEqual(["calendars", "google-calendar", "microsoft-calendar"]);
     expect(tileHref("calendar")).toBe("/calendar");
   });
 
@@ -23,6 +23,7 @@ describe("connections", () => {
     expect(stateWord(connectorOf("strava")!, "unavailable")).toBe("Not offered");
     expect(stateWord(connectorOf("apple-health")!, "unavailable")).toBe("Phone app");
     expect(stateWord(connectorOf("google-calendar")!, "unavailable")).toBe("Needs setup");
+    expect(stateWord(connectorOf("microsoft-calendar")!, "unavailable")).toBe("Needs setup");
     expect(stateWord(connectorOf("calendars")!, "not-connected")).toBe("Connect");
   });
 

@@ -92,6 +92,26 @@ export async function setBookStatus(userId: string, bookId: string, status: Book
   });
 }
 
+/** Where the person was with a book: its status and the days it was started and finished, to undo a change of status. */
+export type BookStatusWas = { status: BookStatus; startedOn: string | null; finishedOn: string | null };
+
+export async function bookStatusOf(userId: string, bookId: string): Promise<BookStatusWas | null> {
+  if (!/^[0-9a-f-]{36}$/.test(bookId)) return null;
+  const r = await db().query("SELECT status, started_on::text AS started_on, finished_on::text AS finished_on FROM learn_book WHERE id = $1 AND user_id = $2", [bookId, userId]);
+  const b = r.rows[0] as { status: BookStatus; started_on: string | null; finished_on: string | null } | undefined;
+  return b ? { status: b.status, startedOn: b.started_on, finishedOn: b.finished_on } : null;
+}
+
+/** Put a book back where it was (Undo of a status change). The history keeps both changes: a new status row is added. */
+export async function restoreBookStatus(userId: string, bookId: string, was: BookStatusWas, now = new Date()): Promise<void> {
+  if (!(BOOK_STATUS as readonly string[]).includes(was.status)) throw new Error(`status is one of ${BOOK_STATUS.join(", ")}`);
+  await tx(async (c) => {
+    const b = await ownBook(c, userId, bookId);
+    await c.query("UPDATE learn_book SET status = $3, started_on = $4, finished_on = $5 WHERE id = $1 AND user_id = $2", [bookId, userId, was.status, was.startedOn, was.finishedOn]);
+    if (b.status !== was.status) await keepStatus(c, userId, bookId, was.status, now.toISOString().slice(0, 10));
+  });
+}
+
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**

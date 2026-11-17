@@ -4,11 +4,11 @@ import { z } from "zod";
 import { BOOK_STATUS, FILM_KINDS, FILM_STATUS, GRASP, RESOURCE_KINDS, type BookStatus, type FilmStatus } from "@reflect/core/learning";
 import { lookupIsbn, type Fetch } from "@reflect/core/openlibrary";
 import { MEDIA, WAYS, placeOf } from "@reflect/core/ways";
-import { addBook, addSubjects, getBook, keepRecall, learnView, rateSubject, setBookStatus } from "../learn-store";
+import { addBook, addSubjects, bookStatusOf, getBook, keepRecall, learnView, rateSubject, restoreBookStatus, setBookStatus, type BookStatusWas } from "../learn-store";
 import { addCourses, addCredential, listCourses, listCredentials } from "../learn-sources-store";
 import { addInput, inputTitle, listInputs, markSubject } from "../ideas-store";
-import { addItem, addItemSubjects, changeItem, listItems } from "../ways-store";
-import { action } from "./types";
+import { addItem, addItemSubjects, changeItem, listItems, removeItem } from "../ways-store";
+import { action, idsIn } from "./types";
 
 const openLibrary: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app" } });
 
@@ -81,6 +81,15 @@ export const setBookStatusAction = action({
   on: ["mcp"],
   input: z.object({ book_id: z.string().uuid(), status: z.enum(BOOK_STATUS as unknown as [string, ...string[]]) }),
   run: async ({ userId }, { book_id, status }) => setBookStatus(userId, book_id, status as BookStatus).then(() => ok),
+  // Undo puts back the status and its days; the status history keeps both changes.
+  before: async ({ userId }, { book_id }) => bookStatusOf(userId, book_id),
+  change: (_r, { book_id, status }, before) => ({ before, after: { book_id, status } }),
+  undo: async ({ userId }, c) => {
+    const [bookId] = idsIn(c.after, "book_id");
+    const was = c.before as BookStatusWas | null;
+    if (!bookId || !was?.status) throw new Error("This change cannot be undone.");
+    await restoreBookStatus(userId, bookId, was);
+  },
 });
 
 export const recallCheck = action({
@@ -173,6 +182,11 @@ export const addItemAction = action({
     const id = await addItem(userId, { medium: a.medium, title: a.title, ...(a.by ? { by: a.by } : {}), ...(a.url ? { url: a.url } : {}), status: a.status, ...(a.way ? { way: a.way } : {}), ...(a.lesson ? { lesson: a.lesson } : {}), ...(a.took_part ? { tookPart: true } : {}) });
     if (a.subjects?.length) await addItemSubjects(userId, id, a.subjects);
     return { item_id: id };
+  },
+  // Undo removes the item, kept so it can be restored, as Remove on its page does.
+  change: (r) => ({ after: r }),
+  undo: async ({ userId }, c) => {
+    for (const id of idsIn(c.after, "item_id")) await removeItem(userId, id);
   },
 });
 

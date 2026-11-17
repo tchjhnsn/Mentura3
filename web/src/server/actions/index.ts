@@ -8,9 +8,12 @@ import { addEvent, addEventsAction, calendar } from "./calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "./schole";
 import { addBookAction, addBookSubjects, addCoursesAction, addCredentialAction, addInputAction, addItemAction, addLesson, learning, markSubjectAction, rateSubjectAction, recallCheck, setBookStatusAction } from "./learning";
 import { ideas, keepIdeaAction, proposeClaim, showClaims } from "./ideas";
+import { recentChanges, undoChangeAction } from "./changes";
+import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "./home-cards";
+import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
 
-export type { Action, ActionContext, Surface } from "./types";
+export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
 export { GUIDE };
 
@@ -20,7 +23,10 @@ export const ACTIONS: readonly Action[] = [
   listEntriesAction, writeEntry, getEntry, keepLegacyPlan, legacyStatusAction,
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
+  recentChanges, undoChangeAction,
   practiceDialectic, showShelves, showWays, findItem, quoteTranscript, showClaims, searchLibrary, browseCategory, quoteBook, proposeClaim,
+  homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
+  excerptAction, draftCourseAction, coursesAction,
 ];
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id);

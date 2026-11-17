@@ -27,13 +27,18 @@ export type AdventureDraft = {
   checklist?: string[];
 };
 
+/** The adventure a draft plans: the one with its id, else the one with its name, else none (a new one). */
+export async function adventureFor(userId: string, d: Pick<AdventureDraft, "id" | "name">) {
+  const recs = (await lifeRecords(userId, "legacy")).filter((r) => r.kind === "adventure");
+  return d.id ? recs.find((r) => r.id === d.id) : d.name ? recs.find((r) => String(r.body.name ?? "").toLowerCase() === d.name!.trim().toLowerCase()) : undefined;
+}
+
 /**
  * Saves a plan drafted by the chat or an MCP client onto an adventure (or a new one), marked drafted so the person
  * keeps or changes it on the adventure's page. The place is put on the map with OpenStreetMap. Returns the adventure.
  */
 export async function planAdventure(userId: string, d: AdventureDraft): Promise<{ id: string; href: string; adventure: Adventure }> {
-  const recs = (await lifeRecords(userId, "legacy")).filter((r) => r.kind === "adventure");
-  const old = d.id ? recs.find((r) => r.id === d.id) : d.name ? recs.find((r) => String(r.body.name ?? "").toLowerCase() === d.name!.trim().toLowerCase()) : undefined;
+  const old = await adventureFor(userId, d);
   if (d.id && !old) throw new Error("No such adventure.");
   const body: Record<string, unknown> = { ...(old?.body ?? {}) };
   if (d.name && !old) body.name = d.name.trim();

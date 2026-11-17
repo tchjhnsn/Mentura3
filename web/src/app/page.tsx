@@ -9,6 +9,9 @@ import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
 import { dashboardFacts } from "@/server/dashboard";
 import { GLYPHS, hrefOf, MINE, toneOf, type Tone } from "./home-tiles";
 import { HomeToggle } from "./home-toggle";
+import { HomeCards, type CardView } from "./home-cards";
+import { homeCardsToday } from "@/server/home-cards-store";
+import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { cookies } from "next/headers";
 import { LookMenu } from "@/components/look-menu";
 import { LOOK_COOKIE, lookOf } from "@/lib/themes";
@@ -21,6 +24,15 @@ const DOT: Record<Tone, string> = { action: "bg-foreground", thought: "bg-tone-t
 const SAY: Record<Tone, string> = { action: "in action", thought: "in thought", unstated: "unstated" };
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
+
+/** A Home card as the strip draws it, its words worked out for today. */
+function cardView(c: HomeCard, today: string): CardView {
+  const t = MINE.find((x) => x.id === c.tile);
+  return {
+    id: c.id, title: c.title, tile: t?.label ?? c.tile, href: t ? hrefOf(t) : null, kind: c.content.kind,
+    lines: cardLines(c, today), items: c.content.kind === "checklist" ? c.content.items : [], marked: c.content.kind === "streak" && c.content.days.includes(today),
+  };
+}
 
 /** The steps still to be reached, in order, the chosen one heavy; Add a step is the screen's one filled element. */
 function Steps({ steps, chosen }: { steps: Stage[]; chosen: Stage | null }) {
@@ -59,7 +71,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const user = await requireUser();
   const sp = await searchParams;
   const notYet = one(sp.view) === "not-yet";
-  const { facts, plan } = await dashboardFacts(user.id);
+  const today = new Date().toISOString().slice(0, 10);
+  const [{ facts, plan }, cards] = await Promise.all([dashboardFacts(user.id), notYet ? [] : homeCardsToday(user.id, today).catch(() => [])]);
   const look = lookOf((await cookies()).get(LOOK_COOKIE)?.value);
   const chosen = notYet ? plan.steps.find((s) => s.id === one(sp.step)) ?? plan.next : null;
   const stage = chosen ?? plan.already;
@@ -94,6 +107,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           ) : null}
         </section>
       ) : null}
+
+      {/* Cards Ask Reflect placed on Home for a time (`@reflect/core/home-cards`), on Already only. */}
+      <HomeCards cards={cards.map((c) => cardView(c, today))} />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_4fr_2fr]">
         {GROUPS.map((g) => (
@@ -134,7 +150,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
 
       {!notYet ? (
         <footer className="mt-auto flex justify-center pt-8">
-          <LookMenu look={look} today={new Date().toISOString().slice(0, 10)}>
+          <LookMenu look={look} today={today}>
             {(["unstated", "thought", "action"] as const).map((t) => (
               <span key={t} className="flex items-center gap-2"><i className={cn("inline-block size-2.5 rounded-full", DOT[t])} />{SAY[t].replace(/^./, (c) => c.toUpperCase())}</span>
             ))}
