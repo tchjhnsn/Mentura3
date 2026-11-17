@@ -14,6 +14,7 @@ export type Piece =
   | { kind: "found_item"; medium: string; label: string; title: string; by?: string; image?: string; source: string; kept: boolean; item: string }
   | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
   | { kind: "note"; text: string }
+  | { kind: "lifeline" }
   /** Undo for a change the chat just made in the person's own records (the change log's id). */
   | { kind: "undo"; change: string; title: string };
 
@@ -39,6 +40,7 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
   const note = (text: string) => add({ type: "Note", props: { text } });
   for (const p of pieces) {
     if (p.kind === "note") note(p.text);
+    else if (p.kind === "lifeline") add({ type: "Lifeline", props: {} });
     else if (p.kind === "undo") add({ type: "UndoChange", props: { change: p.change, text: `Done: ${p.title.charAt(0).toLowerCase()}${p.title.slice(1).replace(/the person's/g, "your")}.` } });
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
     else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });

@@ -19,6 +19,7 @@ export const catalog = defineCatalog(schema, {
     CalendarEvent: { props: z.object({ title: z.string(), day: z.string(), when: z.string(), tile: z.string(), href: z.string().regex(/^\/calendar\?day=\d{4}-\d{2}-\d{2}$/) }), description: "An event added to the person's calendar, opening the calendar at its day" },
     UndoChange: { props: z.object({ change: z.string().uuid(), text: z.string() }), description: "A change the chat just made in the person's own records, with Undo (change is the change log's id)" },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
+    Lifeline: { props: z.object({}), description: "The 988 Suicide and Crisis Lifeline: call, text or chat, shown in place of an answer when a message shows a crisis signal" },
   },
   // No json-render actions: a card's one tap calls Reflect's server action itself (registry.tsx).
   actions: {},
