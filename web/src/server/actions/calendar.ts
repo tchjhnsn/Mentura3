@@ -1,7 +1,14 @@
 // The calendar (Torian: "the AI chat will be central (itineraries, putting things on the calendar)").
 import { z } from "zod";
-import { addEvents, calendarPart, calendarSchema, eventSchema } from "../calendar-tools";
-import { action } from "./types";
+import { addEvents, calendarPart, calendarSchema, eventSchema, type AddedEvent } from "../calendar-tools";
+import { removeEvent } from "../calendar-store";
+import { action, idsIn, type ActionContext, type LoggedChange } from "./types";
+
+// Undo of an added event removes it (kept with its removal time, as Remove on /calendar does).
+const added = (list: AddedEvent[]) => ({ after: { events: list.map((e) => e.id), titles: list.map((e) => `${e.title}, ${e.day}`) } });
+const removeAdded = async ({ userId }: ActionContext, c: LoggedChange) => {
+  for (const id of idsIn(c.after, "events")) await removeEvent(userId, id, true);
+};
 
 export const calendar = action({
   id: "calendar",
@@ -23,6 +30,8 @@ export const addEvent = action({
   input: eventSchema,
   mcp: { description: "Add one event, only when the person asks, with the day and times they said; ask first when either is unclear. Returns its id and a link to the calendar at its day. Tell the person the day and time." },
   run: async ({ userId }, e) => addEvents(userId, [e]),
+  change: added,
+  undo: removeAdded,
 });
 
 export const addEventsAction = action({
@@ -34,4 +43,6 @@ export const addEventsAction = action({
   input: z.object({ events: z.array(eventSchema).min(1).max(20) }),
   mcp: { description: "Add an itinerary or several events at once, only when the person asks. Each is checked before any is added. Tell the person the day and time of each." },
   run: async ({ userId }, { events }) => addEvents(userId, events),
+  change: added,
+  undo: removeAdded,
 });
