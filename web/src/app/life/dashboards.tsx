@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarPlusIcon, DumbbellIcon, HeartPulseIcon, MessageCircleIcon, PlusIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import { bodySpace } from "@reflect/core/body";
-import { friendsSpace } from "@reflect/core/tile-spaces";
+import { friendsSpace, kinSpace, mateSpace, polisSpace } from "@reflect/core/tile-spaces";
 import type { LifeAct, LifeRecord } from "@/server/life-store";
 import { Bars, DashCard, DashHead, Face, Hero, Ring } from "@/components/dash";
 import { QuickLog } from "@/components/quick-log";
@@ -238,6 +238,159 @@ export async function FriendsDash({ userId, records, acts, today }: { userId: st
         </div>
       </section>
       <Upcoming userId={userId} tile="friends" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+const daysTo = (day: string, today: string) => Math.round((Date.parse(`${day}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / DAY);
+const CARER: Record<string, string> = { me: "you", family: "family", "paid-help": "paid help", "given-by-church-or-charity": "a church or charity", "no-one-yet": "no one yet" };
+
+/**
+ * Kin (doc "Tile designs"): the family as faces, those who need care first; the care circle as cards (who provides
+ * care, the hours you gave, the last visit); what each wants, answered in their words; and Kin's calendar.
+ */
+export async function KinDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
+  const s = kinSpace(records, acts, today);
+  const all = [...s.care, ...s.others];
+  const answered = all.reduce((n, k) => n + [k.matters, k.speaks, k.where].filter(Boolean).length, 0);
+  return (
+    <div className="grid gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="grid gap-0.5">
+            <h2 className="text-2xl font-bold tracking-tight">{all.length ? `${all.length} in your family` : "Who is your family?"}</h2>
+            <span className="text-muted-foreground text-sm">{s.care.length ? `${s.care.length} ${s.care.length === 1 ? "needs" : "need"} care. You gave ${s.careHours} hours a week over four weeks.` : all.length ? "No one needs care now." : "Parents, children, grandparents: kept so a plan is made before any need starts."}</span>
+          </div>
+          <Button asChild><Link href="/life/kin?k=relative"><PlusIcon />Add someone</Link></Button>
+        </div>
+        {all.length ? (
+          <ul className="flex flex-wrap gap-4">
+            {all.slice(0, 12).map((k) => (
+              <li key={k.id}>
+                <Link href={`/life/kin/${k.id}`} className="grid w-20 justify-items-center gap-1 text-center">
+                  <Face name={k.name} size={64} ring={k.needsCare ? 1 : undefined} />
+                  <span className="w-full truncate text-sm font-medium">{k.name}</span>
+                  <span className="text-muted-foreground w-full truncate text-xs">{k.needsCare ? "Needs care" : k.relation ?? (k.age !== null ? `${k.age}` : "")}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </Hero>
+      {s.care.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Care circle" />
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {s.care.map((k) => (
+              <li key={k.id}>
+                <DashCard href={`/life/kin/${k.id}`} title={k.relation ?? "Kin"} value={k.name} sub={`${k.carer ? `Care by ${CARER[k.carer] ?? k.carer}` : "Who provides care is not said"} · ${k.careMinutes ? `${Math.round(k.careMinutes / 6) / 10} hours given in four weeks` : "no care logged"} · ${k.visited ? `visited ${shortDay(k.visited)}` : "no visit kept"}`} className="h-full">
+                  <Face name={k.name} size={40} />
+                </DashCard>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {all.length ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <DashCard href={`/life/kin/${all[0]!.id}`} title="What they want" value={`${answered} of ${all.length * 3} answered`} sub="What matters most, who speaks for them, where they want care (The Conversation Project)">
+            <Bars values={all.slice(0, 12).map((k) => [k.matters, k.speaks, k.where].filter(Boolean).length)} max={3} className="h-8" />
+          </DashCard>
+          <DashCard href="/life/work/season" title="What Kin asks of Work" value={s.careHours ? `${s.careHours} hours a week of care` : "No care logged"} sub="Time that work cannot use" />
+        </div>
+      ) : null}
+      <Upcoming userId={userId} tile="kin" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+/**
+ * Mate (doc "Tile designs"): the next date first, with who and where; what the person is looking for, in their words,
+ * private; the dates planned as faces; and the dates gone on, counted against their must-haves.
+ */
+export async function MateDash({ userId, records, today }: { userId: string; records: LifeRecord[]; today: string }) {
+  const s = mateSpace(records, today);
+  const next = s.planned[0];
+  return (
+    <div className="grid gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center gap-5">
+          {next ? <Face name={next.who} size={80} /> : null}
+          <div className="grid min-w-0 flex-1 basis-48 gap-1">
+            <span className="text-muted-foreground text-sm">{next ? (next.day ? (daysTo(next.day, today) === 0 ? "Next date, today" : `Next date, in ${daysTo(next.day, today)} days`) : "Next date") : s.seeking?.state ?? "Mate"}</span>
+            <span className="text-3xl font-bold tracking-tight">{next ? next.who : "Plan time together"}</span>
+            <span className="text-muted-foreground text-sm">{next ? [next.day ? shortDay(next.day) : null, next.where].filter(Boolean).join(" · ") || "Day not set" : "A date night, a walk, a dance class. Reflect puts it on your calendar."}</span>
+          </div>
+          <Button asChild><Link href={ask(next ? `Help me plan my date with ${next.who}.` : "Help me plan a date and put it on my calendar.")}><SparklesIcon />Plan a date</Link></Button>
+        </div>
+      </Hero>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <DashCard href="/life/mate?k=seeking" title="What you are looking for" value={s.seeking?.state ?? "Not written"} sub={s.seeking?.must ? `Must-haves: ${s.seeking.must.split("\n")[0]}` : "Your must-haves and dealbreakers, private to you"} />
+        <DashCard href="/life/mate?k=date" title="Dates you went on" value={s.tally.of ? `${s.tally.of} ${s.tally.of === 1 ? "date" : "dates"}` : "None kept yet"} sub={s.tally.of ? `${s.tally.all} met all your must-haves, ${s.tally.some} some. A dealbreaker came up on ${s.tally.dealbreakers}.` : "What you learned from each"}>
+          {s.tally.of ? <Bars values={[s.tally.all, s.tally.some, s.tally.none]} labels={["Met all", "Met some", "Met none"]} className="h-10 max-w-32" /> : null}
+        </DashCard>
+      </div>
+      {s.planned.length > 1 || s.went.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Dates"><Link href="/life/mate?k=date" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>
+          <ul className="flex flex-wrap gap-4">
+            {[...s.planned, ...s.went.slice(0, 8)].map((d) => (
+              <li key={d.id}>
+                <Link href={`/life/mate/${d.id}`} className="grid w-20 justify-items-center gap-1 text-center">
+                  <Face name={d.who} size={56} ring={d.state === "planned" ? 1 : undefined} />
+                  <span className="w-full truncate text-sm font-medium">{d.who}</span>
+                  <span className="text-muted-foreground text-xs">{d.day ? shortDay(d.day) : d.state === "planned" ? "Planned" : "Went"}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      <Upcoming userId={userId} tile="mate" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+/**
+ * Polis (doc "Tile designs"): the next election with the days to go and your plan to vote; registration; duties due
+ * (jury service, taxes); where you serve.
+ */
+export async function PolisDash({ userId, records, today }: { userId: string; records: LifeRecord[]; today: string }) {
+  const s = polisSpace(records, today);
+  const next = s.elections.find((e) => !e.late);
+  const duty = s.duties[0];
+  return (
+    <div className="grid gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center gap-5">
+          {next?.day ? (
+            <span className="bg-primary/10 grid size-20 place-items-center rounded-2xl text-center">
+              <span className="text-3xl leading-none font-bold">{daysTo(next.day, today)}</span>
+              <span className="text-muted-foreground -mt-3 text-xs">days</span>
+            </span>
+          ) : null}
+          <div className="grid min-w-0 flex-1 basis-48 gap-1">
+            <span className="text-muted-foreground text-sm">{next ? "Next election" : "Elections"}</span>
+            <span className="text-2xl font-bold tracking-tight sm:text-3xl">{next ? next.name || "An election" : "No election kept"}</span>
+            <span className="text-muted-foreground text-sm">{next ? (next.plan ? [next.plan.how, next.plan.when ? `on ${next.plan.when}` : null, next.plan.place ? `at ${next.plan.place}` : null].filter(Boolean).join(" ") : "No plan to vote yet") : "Add the elections where you vote"}</span>
+          </div>
+          <Button asChild><Link href={next ? `/life/polis/${next.id}` : "/life/polis?k=election"}>{next ? "Plan my vote" : <><PlusIcon />Add an election</>}</Link></Button>
+        </div>
+      </Hero>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <DashCard href="/life/polis?k=civic" title="Registered to vote" value={s.civic ? (s.civic.registered ? "Yes" : "Not yet") : "Not said"} tone={s.civic && !s.civic.registered ? "warn" : undefined} sub={s.civic?.residence ?? "Where you live and vote"} />
+        <DashCard href={duty ? `/life/polis/${duty.id}` : "/life/polis?k=duty"} title="Duties due" value={duty ? duty.name || "A duty" : "Nothing due"} tone={duty?.late ? "warn" : undefined} sub={duty ? `${duty.day ? (duty.late ? `Was due ${shortDay(duty.day)}` : `Due ${shortDay(duty.day)}`) : "No date"}${s.duties.length > 1 ? `, and ${s.duties.length - 1} more` : ""}` : "Jury service, taxes, licenses"} />
+        <DashCard href="/life/polis?k=standing" title="Where you serve" value={s.serving.length ? s.serving[0]!.role : "No role kept"} sub={s.serving.length ? [s.serving[0]!.where, s.serving.length > 1 ? `and ${s.serving.length - 1} more` : null].filter(Boolean).join(", ") : "Offices and roles you are trusted with"} />
+      </div>
+      {s.elections.length > 1 ? (
+        <section className="grid gap-3">
+          <DashHead title="Elections" href="/life/polis?k=election" />
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {s.elections.map((e) => <li key={e.id}><DashCard href={`/life/polis/${e.id}`} title={e.day ? (e.late ? `${shortDay(e.day)}, passed` : shortDay(e.day)) : "Day not given"} value={e.name || "An election"} sub={e.plan ? "Plan made" : "No plan yet"} className="h-full" /></li>)}
+          </ul>
+        </section>
+      ) : null}
+      <Upcoming userId={userId} tile="polis" today={today} hideEmpty title="Coming up" />
     </div>
   );
 }

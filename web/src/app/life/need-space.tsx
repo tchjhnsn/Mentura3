@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CheckIcon, CircleIcon, MapPinIcon, PlusIcon, ShoppingCartIcon, UtensilsIcon } from "lucide-react";
+import { CheckIcon, CircleIcon, MapPinIcon, PlusIcon, ShoppingCartIcon, SparklesIcon, UtensilsIcon } from "lucide-react";
+import { DashCard, DashHead, Hero, Ring } from "@/components/dash";
 import { counts } from "@reflect/core/household";
 import { housingShare, markedByReflect, waterDays } from "@reflect/core/home";
 import { incomeSummary, kindOf, shown, WAYS, type Kind } from "@reflect/core/life";
@@ -20,16 +21,6 @@ import { addWayAction, checkedTodayAction, setFieldAction } from "./actions";
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const DAY = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" });
 const SHORT = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
-
-function Headline({ figure, sub, href }: { figure: string | null; sub: string | null; href?: string }) {
-  const big = <span className={cn("block text-3xl font-semibold tracking-tight", figure ? "" : "text-muted-foreground text-2xl")}>{figure ?? "Not stated yet"}</span>;
-  return (
-    <div className="grid justify-items-center gap-1 py-2 text-center">
-      {href && !figure ? <Link href={href} className="hover:underline">{big}</Link> : big}
-      {sub ? <span className="text-muted-foreground text-sm">{sub}</span> : null}
-    </div>
-  );
-}
 
 export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }) {
   const [home, work, household] = await Promise.all([lifeRecords(userId, "home"), lifeRecords(userId, "work"), householdOf(userId).catch(() => null)]);
@@ -53,7 +44,7 @@ export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }
     sub = share !== null ? `${money(cost!)} a month. HUD's line is 30%.` : cost !== null ? "Add your income in Work to see its share" : "HUD's line is 30% of income";
     marked = markedByReflect("shelter", { share });
     const place = await placeRecord(userId);
-    own = <Group title="Where you live" id="where"><Row href="/settings/place" icon={<MapPinIcon />} label={place?.county ? `${place.county} County, ${place.state}` : "Where you live"} value={place?.county ? undefined : "Not set"} /></Group>;
+    own = <DashCard href="/settings/place" title="Where you live" value={place?.county ? `${place.county} County, ${place.state}` : "Not set"} sub="Fair market rent and hazards come from here"><MapPinIcon className="text-muted-foreground size-4" /></DashCard>;
   } else if (kind.id === "water") {
     const gallons = typeof b.gallons === "number" ? b.gallons : null;
     const days = waterDays(gallons, people);
@@ -73,10 +64,13 @@ export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }
     const wayKind = kindOf("home", "way")!;
     const kept = new Set(ways.map((w) => String(w.body.how)));
     own = (
-      <Group title="Ways you get around" id="ways">
-        {ways.map((w) => <Row key={w.id} href={`/life/home/${w.id}`} label={shown(wayKind.fields[0]!, w.body) ?? "A way"} />)}
-        {WAYS.filter((o) => !kept.has(o.id)).map((o) => <ActionRow key={o.id} icon={<PlusIcon />} label={o.label} action={addWayAction.bind(null, o.id)} />)}
-      </Group>
+      <section className="grid gap-3">
+        <DashHead title="Ways you get around" />
+        {ways.length ? <ul className="grid gap-4 sm:grid-cols-3">{ways.map((w) => <li key={w.id}><DashCard href={`/life/home/${w.id}`} title="Way" value={shown(wayKind.fields[0]!, w.body) ?? "A way"} className="h-full" /></li>)}</ul> : null}
+        <div className="flex flex-wrap gap-2">
+          {WAYS.filter((o) => !kept.has(o.id)).map((o) => <form key={o.id} action={addWayAction.bind(null, o.id)}><button type="submit" className="hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition"><PlusIcon className="size-3.5" />{o.label}</button></form>)}
+        </div>
+      </section>
     );
   } else if (kind.id === "food") {
     const v = await mealsView(userId);
@@ -100,42 +94,62 @@ export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }
   const facts = kind.fields.filter((f) => ["choice", "money", "number"].includes(f.kind) && f.key !== "gallons");
   const gallons = kind.fields.find((f) => f.key === "gallons");
   const checks = kind.fields.filter((f) => f.kind === "check");
+  const metOf = (key: string) => (key in marked ? marked[key]! : b[key] === true);
+  const done = checks.filter((f) => metOf(f.key)).length;
+  const ASK: Record<string, string> = {
+    shelter: "Help me with housing: what I pay against my county's fair market rent, and the home I intend.",
+    water: "Help me get water stored for my household and check my water system.",
+    safety: "Help me get my household ready for emergencies: a kit, a plan, a fund and documents.",
+    transport: "Help me cut what getting around costs and plan the car or transit I need.",
+    food: "Help me plan this week's meals within my budget.",
+  };
   return (
-    <div className="mx-auto grid w-full max-w-xl gap-8 pb-4">
-      <Headline figure={figure} sub={sub} href={set("cost")} />
+    <div className="grid gap-6 pb-4">
+      <Hero>
+        <div className="flex flex-wrap items-center gap-5">
+          <div className="flex min-w-0 flex-1 basis-full items-center gap-5 sm:basis-0">
+          {checks.length ? (
+            <Ring value={checks.length ? done / checks.length : 0} size={96} stroke={9} label={`${done} of ${checks.length} of the standard met`}>
+              <span className="text-lg font-bold">{done}/{checks.length}</span>
+            </Ring>
+          ) : null}
+          <div className="grid min-w-0 flex-1 gap-1">
+            <span className="text-muted-foreground text-sm">{kind.standard?.source && kind.standard.source !== "Domain design" ? `By ${kind.standard.source}` : kind.plural}</span>
+            {figure ? <span className="text-2xl font-bold tracking-tight sm:text-4xl">{figure}</span> : <Link href={set("cost")} className="text-muted-foreground text-xl font-semibold hover:underline sm:text-2xl">Not stated yet</Link>}
+            {sub ? <span className="text-muted-foreground text-sm">{sub}</span> : null}
+          </div>
+          </div>
+          <Button asChild><Link href={`/chat?q=${encodeURIComponent(ASK[kind.id] ?? `Help me with ${kind.plural.toLowerCase()}.`)}`}><SparklesIcon />Ask Reflect</Link></Button>
+        </div>
+        {checks.length ? (
+          <ul className="flex flex-wrap gap-2" aria-label="The standard">
+            {checks.map((f) => {
+              const byReflect = f.key in marked, met = metOf(f.key);
+              const chip = cn("flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition", met ? "bg-primary/10 border-primary/40" : "hover:bg-accent");
+              const inner = <>{met ? <CheckIcon aria-hidden="true" className="text-primary size-4" /> : <CircleIcon aria-hidden="true" className="text-muted-foreground size-4" />}{f.label}</>;
+              return (
+                <li key={f.key}>
+                  {byReflect ? <span className={chip} title="From your figures">{inner}</span> : (
+                    <form action={setFieldAction.bind(null, "home", kind.id, f.key, !met, back)}><button type="submit" aria-pressed={met} className={chip}>{inner}</button></form>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+      </Hero>
       {own}
-      <Group title="How it is met" id="met">
-        {gallons ? <Row href={set("gallons")} label={gallons.label} value={shown(gallons, b) ?? "Not said"} /> : null}
-        {facts.map((f) => <Row key={f.key} href={set(f.key)} label={f.label} value={shown(f, b) ?? "Not said"} />)}
-      </Group>
-      {checks.length ? (
-        <Group title={kind.standard?.source && kind.standard.source !== "Domain design" ? `Standard, ${kind.standard.source}` : "Standard"} id="standard">
-          {checks.map((f) => {
-            const byReflect = f.key in marked;
-            const met = byReflect ? marked[f.key]! : b[f.key] === true;
-            const inner = (
-              <>
-                {met ? <CheckIcon aria-hidden="true" className="text-primary size-5 shrink-0" /> : <CircleIcon aria-hidden="true" className="text-muted-foreground size-5 shrink-0" />}
-                <span className="flex-1 text-base">{f.label}</span>
-                {byReflect ? <span className="text-muted-foreground text-xs">From your figures</span> : null}
-              </>
-            );
-            return (
-              <li key={f.key}>
-                {byReflect ? <div className="flex min-h-14 items-center gap-4 px-4 py-3">{inner}</div> : (
-                  <form action={setFieldAction.bind(null, "home", kind.id, f.key, !met, back)}>
-                    <button type="submit" aria-pressed={met} className="hover:bg-accent flex min-h-14 w-full items-center gap-4 px-4 py-3 text-left transition">{inner}</button>
-                  </form>
-                )}
-              </li>
-            );
-          })}
-        </Group>
-      ) : null}
-      <Group title="What you did" id="did">
-        {acts.slice(0, 3).map((a) => <li key={a.id} className="flex min-h-12 items-center justify-between gap-4 px-4 py-3 text-base"><span>Checked the standard</span><span className="text-muted-foreground text-sm">{SHORT(a.day)}</span></li>)}
-        <ActionRow icon={<CheckIcon />} label="Checked the standard today" action={checkedTodayAction.bind(null, kind.id)} />
-      </Group>
+      <section className="grid gap-3">
+        <DashHead title="How it is met" />
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {gallons ? <li><DashCard href={set("gallons")} title={gallons.label} value={shown(gallons, b) ?? "Not said"} className="h-full" /></li> : null}
+          {facts.map((f) => <li key={f.key}><DashCard href={set(f.key)} title={f.label} value={shown(f, b) ?? "Not said"} className="h-full" /></li>)}
+        </ul>
+      </section>
+      <form action={checkedTodayAction.bind(null, kind.id)} className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
+        <span>{acts[0] ? `You last checked the standard on ${SHORT(acts[0].day)}.` : "You have not checked the standard yet."}</span>
+        <Button type="submit" variant="outline" size="sm"><CheckIcon />Checked it today</Button>
+      </form>
     </div>
   );
 }

@@ -9,14 +9,13 @@ import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "@/server/l
 import { Acts, RecordCard, RecordForm, States } from "../record";
 import { Summary } from "../summary";
 import { BodySpace } from "../body-space";
-import { KinSpace, MateSpace, PolisSpace } from "../tile-spaces";
 import { restoreLifeAction } from "../actions";
 import { WorkHeader, type WorkTab } from "../work/parts";
 import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
 import { TileConnections } from "../tile-connections";
 import { NeedSpace } from "../need-space";
-import { FitnessDash, FriendsDash, HealthDash } from "../dashboards";
+import { FitnessDash, FriendsDash, HealthDash, KinDash, MateDash, PolisDash } from "../dashboards";
 
 export const dynamic = "force-dynamic";
 /** The tiles an app's workspace speaks for, where they are not its own id. */
@@ -66,9 +65,9 @@ function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userI
   switch (app) {
     case "body": return <BodySpace userId={userId} records={records} acts={acts} today={today} />;
     case "friends": return <FriendsDash userId={userId} records={records} acts={acts} today={today} />;
-    case "mate": return <MateSpace userId={userId} records={records} today={today} />;
-    case "kin": return <KinSpace userId={userId} records={records} acts={acts} today={today} />;
-    case "polis": return <PolisSpace userId={userId} records={records} today={today} />;
+    case "mate": return <MateDash userId={userId} records={records} today={today} />;
+    case "kin": return <KinDash userId={userId} records={records} acts={acts} today={today} />;
+    case "polis": return <PolisDash userId={userId} records={records} today={today} />;
     default: return <Summary app={app} records={records} acts={acts} today={today} />;
   }
 }
@@ -109,7 +108,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
         </form>
       ) : null}
       <div className="mt-4 grid max-w-4xl gap-6">
-        {need || dash || (!kind && app === "friends") ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
+        {need || dash || (!kind && ["friends", "kin", "mate", "polis"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
         {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
         <TileAdventures userId={user.id} tiles={tile ? [tile] : APP_TILES[app] ?? [app]} />
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
