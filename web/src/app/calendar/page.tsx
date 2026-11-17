@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon, RepeatIcon } from "lucide-react";
+import { isFeedEvent } from "@reflect/core/ics";
 import { CAL_TILES, isCalTile, isRecordEvent, monthGrid, occurrences, REPEATS, shiftMonth, tileLabel, type CalTile, type Occurrence } from "@reflect/core/calendar";
 import { PAGE, PageHeader } from "@/components/page-header";
 import { Segmented } from "@/components/segmented";
@@ -19,6 +20,8 @@ const SELECT = "border-input bg-background h-9 rounded-md border px-3 text-sm";
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const longDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
 const monthName = (m: string) => new Date(`${m}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+/** Where an event is from, on its row: the calendar it syncs from, or its tile. */
+const fromLabel = (e: Occurrence["event"]) => e.feed?.name ?? tileLabel(e.tile);
 const when = (o: Occurrence) => (o.event.starts ? `${o.event.starts}${o.event.ends ? `–${o.event.ends}` : ""}` : "All day");
 
 function EventForm({ tile, day, back, e }: { tile: CalTile | null; day: string; back: string; e?: Occurrence["event"] }) {
@@ -115,7 +118,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
             [...new Set(inMonth.map((o) => o.day))].map((d) => (
               <div key={d} className="grid gap-1">
                 <Link href={q({ day: d })} className={cn("text-sm font-semibold", d === today && "underline underline-offset-4")}>{longDay(d)}</Link>
-                <ul className="divide-y rounded-lg border text-sm">{byDay.get(d)!.map((o) => <li key={o.event.id} className="flex gap-3 px-3 py-2"><span className="text-muted-foreground w-20 shrink-0 text-xs">{when(o)}</span><span className="min-w-0">{o.event.title}{!tile && o.event.tile ? <span className="text-muted-foreground"> · {tileLabel(o.event.tile)}</span> : null}</span></li>)}</ul>
+                <ul className="divide-y rounded-lg border text-sm">{byDay.get(d)!.map((o) => <li key={o.event.id} className="flex gap-3 px-3 py-2"><span className="text-muted-foreground w-20 shrink-0 text-xs">{when(o)}</span><span className="min-w-0">{o.event.title}{o.event.feed ? <span className="text-muted-foreground"> · {o.event.feed.name}</span> : !tile && o.event.tile ? <span className="text-muted-foreground"> · {tileLabel(o.event.tile)}</span> : null}</span></li>)}</ul>
               </div>
             ))
           ) : <p className="text-muted-foreground text-sm">Nothing on the calendar this month.</p>}
@@ -132,9 +135,15 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                       <span className="text-muted-foreground w-24 shrink-0 text-xs">{when(o)}</span>
                       <span className="min-w-0 flex-1 font-medium">{o.event.title}</span>
                       {o.event.repeat !== "none" ? <RepeatIcon className="text-muted-foreground size-3.5" aria-label={REPEATS.find((r) => r.id === o.event.repeat)!.label} /> : null}
-                      <span className="text-muted-foreground text-xs">{tileLabel(o.event.tile)}</span>
+                      <span className="text-muted-foreground truncate text-xs">{fromLabel(o.event)}</span>
                     </summary>
-                    {isRecordEvent(o.event) ? (
+                    {isFeedEvent(o.event) ? (
+                      // Synced events are read-only here: they are changed in the app that keeps them.
+                      <div className="grid gap-2 border-t p-4 text-sm">
+                        {o.event.note ? <p className="whitespace-pre-line">{o.event.note}</p> : null}
+                        <p className="text-muted-foreground">From {o.event.feed!.name}. Change it there.</p>
+                      </div>
+                    ) : isRecordEvent(o.event) ? (
                       <p className="text-muted-foreground border-t p-4 text-sm">From your {tileLabel(o.event.tile)} records. <Link href={`/life/${o.event.tile}/${o.event.recordId}`} className="text-foreground underline underline-offset-2">Open it</Link> to change it.</p>
                     ) : (
                       <div className="grid gap-3 border-t p-4">
@@ -148,6 +157,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
               ))}
             </ul>
           ) : <p className="text-muted-foreground text-sm">Nothing on this day{tile ? ` in ${tileLabel(tile)}` : ""}.</p>}
+          <p className="text-sm"><Link href="/settings/connections/calendars" className="text-muted-foreground underline underline-offset-2">Sync a calendar</Link></p>
           <details className="rounded-xl border p-4" open={!list.length}>
             <summary className="cursor-pointer font-semibold">Add an event</summary>
             <div className="mt-4"><EventForm tile={tile} day={day} back={back} /></div>

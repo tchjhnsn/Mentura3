@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import { isCalTile, isRepeat, recordEvents, type CalEvent, type CalTile } from "@reflect/core/calendar";
 import { isLifeApp } from "@reflect/core/life";
 import { db } from "@/db/pool";
+import { feedCalEvents } from "./calendar-feeds";
 import { open, seal } from "./crypto";
+import { googleCalEvents, mirrorToGoogle } from "./google-calendar";
 import { lifeRecords } from "./life-store";
 
 // The calendar's events (migration 0030): sealed titles and notes, tagged with a tile, removable with undo.
@@ -35,6 +37,7 @@ export async function addEvent(userId: string, e: EventInput): Promise<string> {
     "INSERT INTO calendar_event (id, user_id, tile, title_ct, note_ct, day, starts, ends, repeat, until, record_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
     [id, userId, c.tile, seal(userId, c.title), c.note ? seal(userId, c.note) : null, c.day, c.starts, c.ends, c.repeat, c.until, c.recordId],
   );
+  await mirrorToGoogle(userId, id, c); // does nothing unless Google Calendar is connected
   return id;
 }
 
@@ -44,10 +47,16 @@ export async function saveEvent(userId: string, id: string, e: EventInput): Prom
     "UPDATE calendar_event SET tile = $3, title_ct = $4, note_ct = $5, day = $6, starts = $7, ends = $8, repeat = $9, until = $10, updated_at = now() WHERE id = $1 AND user_id = $2",
     [id, userId, c.tile, seal(userId, c.title), c.note ? seal(userId, c.note) : null, c.day, c.starts, c.ends, c.repeat, c.until],
   );
+  await mirrorToGoogle(userId, id, c);
 }
 
 export async function removeEvent(userId: string, id: string, removed: boolean): Promise<void> {
   await db().query(`UPDATE calendar_event SET removed_at = ${removed ? "now()" : "NULL"} WHERE id = $1 AND user_id = $2`, [id, userId]);
+  if (removed) await mirrorToGoogle(userId, id, null);
+  else {
+    const [e] = (await db().query("SELECT title_ct, note_ct, day::text AS day, to_char(starts, 'HH24:MI') AS starts, to_char(ends, 'HH24:MI') AS ends, repeat, until::text AS until FROM calendar_event WHERE id = $1 AND user_id = $2", [id, userId])).rows;
+    if (e) await mirrorToGoogle(userId, id, { title: open(userId, e.title_ct as string), note: e.note_ct ? open(userId, e.note_ct as string) : null, day: e.day as string, starts: (e.starts as string | null) ?? null, ends: (e.ends as string | null) ?? null, repeat: e.repeat as CalEvent["repeat"], until: (e.until as string | null) ?? null });
+  }
 }
 
 /** Events that can fall between two days: those starting by `to` that are repeating or start from `from` on. Filtered to a tile when given. */
@@ -65,9 +74,18 @@ export async function events(userId: string, from: string, to: string, tile?: Ca
 
 /**
  * A calendar's events with the days the person's records hold (a date planned, an election, a duty due, a goal's
- * day, a birthday), so nothing is entered twice. Filtered to a tile when given.
+ * day, a birthday), so nothing is entered twice, and the events of the calendars they sync (subscribed calendars and
+ * Google Calendar, migration 0043), read-only and marked with `feed`. Filtered to a tile when given; Google Calendar's
+ * events have no tile, so they show on the master calendar only. A synced calendar that cannot be read leaves the
+ * rest showing.
  */
 export async function calendar(userId: string, from: string, to: string, tile?: CalTile | null): Promise<CalEvent[]> {
-  const [own, records] = await Promise.all([events(userId, from, to, tile), !tile ? lifeRecords(userId) : isLifeApp(tile) ? lifeRecords(userId, tile) : Promise.resolve([])]);
-  return [...own, ...recordEvents(records)];
+  const none = () => [] as CalEvent[];
+  const [own, records, subscribed, google] = await Promise.all([
+    events(userId, from, to, tile),
+    !tile ? lifeRecords(userId) : isLifeApp(tile) ? lifeRecords(userId, tile) : Promise.resolve([]),
+    feedCalEvents(userId, from, to, tile).catch(none),
+    tile ? Promise.resolve([]) : googleCalEvents(userId, from, to).catch(none),
+  ]);
+  return [...own, ...recordEvents(records), ...subscribed, ...google];
 }
