@@ -7,6 +7,8 @@ import { adventures, connections, household, householdPlan, meals, place, planAd
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
+import { recentChanges, undoChangeAction } from "@/server/actions/changes";
+import { runAction } from "@/server/actions/run";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -21,10 +23,21 @@ export type ChatDeps = { userId: string; today?: string; view: LearnView; claims
 export function chatTools({ userId, today, view, claims, items, show }: ChatDeps): Record<string, Tool> {
   const ctx: ActionContext = { userId, ...(today ? { today } : {}), loaded: { view, claims, items } };
   const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
-  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply.
+  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
+  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card.
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
-    tool({ description: describeFor(a as Action, "chat"), inputSchema: a.input as z.ZodType<z.output<S>>, execute: async (input: z.output<S>) => say(await a.run(ctx, input), input) }) as Tool,
+    tool({
+      description: describeFor(a as Action, "chat"),
+      inputSchema: a.input as z.ZodType<z.output<S>>,
+      execute: async (input: z.output<S>) => {
+        const { result, changeId } = await runAction(a, ctx, input, "chat");
+        const said = say(result, input);
+        if (!changeId || a.tier !== "own" || !a.undo) return said;
+        show({ kind: "undo", change: changeId, title: a.title });
+        return typeof said === "string" ? `${said} Change ${changeId}: the person can tap Undo, or ask you (undo_change).` : said;
+      },
+    }) as Tool,
   ];
 
   const library = (r: { label: string; href: string; books: CatalogEntry[] | null }) => {
@@ -124,6 +137,11 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       if (!p) return "That claim could not be proposed.";
       show({ kind: "propose_claim", ...p });
       return "Proposed. It is not kept unless the person taps Accept.";
+    }),
+    use(recentChanges, (list) => (list.length ? JSON.stringify(list).slice(0, 12000) : "No changes yet.")),
+    use(undoChangeAction, (r) => {
+      show({ kind: "note", text: `Undone: ${r.title}.` });
+      return `Undone: ${r.title} (change ${r.undone}).`;
     }),
   ]);
 }
