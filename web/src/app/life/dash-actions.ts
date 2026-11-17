@@ -49,3 +49,14 @@ export async function logFriendAction(id: string, kind: string, amount: number |
   else throw new Error("No such thing to log.");
   revalidatePath("/", "layout");
 }
+
+/** Standing and Ventures: minutes given to one role or one venture today, kept on that record. */
+export async function logTimeAction(app: "polis" | "ventures", kind: string, amount: number | null): Promise<void> {
+  const user = await requireUser();
+  const r = await lifeRecord(user.id, kind);
+  const want = app === "polis" ? "standing" : "venture";
+  if (!r || r.app !== app || r.kind !== want) throw new Error("No such record.");
+  if (!(amount && amount > 0 && amount <= 1440)) throw new Error("Pick the minutes.");
+  await keepLifeAct(user.id, r.id, { kind: app === "polis" ? "served" : "worked", day: today(), minutes: amount });
+  revalidatePath("/", "layout");
+}

@@ -15,7 +15,7 @@ import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
 import { TileConnections } from "../tile-connections";
 import { NeedSpace } from "../need-space";
-import { FitnessDash, FriendsDash, HealthDash, KinDash, MateDash, PolisDash } from "../dashboards";
+import { FitnessDash, FriendsDash, HealthDash, KinDash, MateDash, PolisDash, StandingDash, VenturesDash } from "../dashboards";
 
 export const dynamic = "force-dynamic";
 /** The tiles an app's workspace speaks for, where they are not its own id. */
@@ -68,6 +68,7 @@ function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userI
     case "mate": return <MateDash userId={userId} records={records} today={today} />;
     case "kin": return <KinDash userId={userId} records={records} acts={acts} today={today} />;
     case "polis": return <PolisDash userId={userId} records={records} today={today} />;
+    case "ventures": return <VenturesDash userId={userId} records={records} acts={acts} today={today} />;
     default: return <Summary app={app} records={records} acts={acts} today={today} />;
   }
 }
@@ -97,7 +98,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   // Home's needs (Food, Water, Shelter, Transport, Safety) open their own workspace, without a form.
   const need = app === "home" && kind?.one && kind.standard && !kind.hidden;
   // Health and Fitness open to their dashboards (doc "Tile designs"); ?all=1 shows the records behind them.
-  const dash = app === "body" && !one(sp.all) && (kind?.id === "health" || kind?.id === "fitness") ? kind.id : null;
+  const dash = !one(sp.all) && ((app === "body" && (kind?.id === "health" || kind?.id === "fitness")) || (app === "polis" && kind?.id === "standing")) ? kind!.id : null;
   const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
@@ -107,9 +108,9 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>
         </form>
       ) : null}
-      <div className="mt-4 grid max-w-4xl gap-6">
-        {need || dash || (!kind && ["friends", "kin", "mate", "polis"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
-        {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+      <div className="mt-4 grid max-w-4xl grid-cols-1 gap-6">
+        {need || dash || (!kind && ["friends", "kin", "mate", "polis", "ventures"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
+        {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "standing" ? <StandingDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
         <TileAdventures userId={user.id} tiles={tile ? [tile] : APP_TILES[app] ?? [app]} />
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}

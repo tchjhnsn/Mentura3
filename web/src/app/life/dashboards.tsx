@@ -7,7 +7,7 @@ import { Bars, DashCard, DashHead, Face, Hero, Ring } from "@/components/dash";
 import { QuickLog } from "@/components/quick-log";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { logFitnessAction, logFriendAction, logHealthAction } from "./dash-actions";
+import { logFitnessAction, logFriendAction, logHealthAction, logTimeAction } from "./dash-actions";
 import { Upcoming } from "./upcoming";
 
 const DAY = 86400_000;
@@ -170,7 +170,7 @@ export async function FriendsDash({ userId, records, acts, today }: { userId: st
   const lead = due.length ? due : s.close.slice(0, 4);
   const sinceWords = (d: number | null) => (d === null ? "Not yet" : d < 1 ? "Today" : d < 14 ? `${d} days` : d < 60 ? `${Math.round(d / 7)} weeks` : `${Math.round(d / 30)} months`);
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <Hero>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="grid gap-0.5">
@@ -254,7 +254,7 @@ export async function KinDash({ userId, records, acts, today }: { userId: string
   const all = [...s.care, ...s.others];
   const answered = all.reduce((n, k) => n + [k.matters, k.speaks, k.where].filter(Boolean).length, 0);
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <Hero>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="grid gap-0.5">
@@ -312,7 +312,7 @@ export async function MateDash({ userId, records, today }: { userId: string; rec
   const s = mateSpace(records, today);
   const next = s.planned[0];
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <Hero>
         <div className="flex flex-wrap items-center gap-5">
           {next ? <Face name={next.who} size={80} /> : null}
@@ -360,7 +360,7 @@ export async function PolisDash({ userId, records, today }: { userId: string; re
   const next = s.elections.find((e) => !e.late);
   const duty = s.duties[0];
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <Hero>
         <div className="flex flex-wrap items-center gap-5">
           {next?.day ? (
@@ -391,6 +391,138 @@ export async function PolisDash({ userId, records, today }: { userId: string; re
         </section>
       ) : null}
       <Upcoming userId={userId} tile="polis" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+const hoursOf = (min: number) => (min < 60 ? `${min} min` : `${Math.round((min / 60) * 10) / 10} h`);
+const minutesSince = (acts: LifeAct[], id: string, since: string) => acts.filter((a) => a.record === id && a.day >= since).reduce((n, a) => n + (a.minutes ?? 0), 0);
+const TIME = [30, 60, 90, 120, 180, 240, 360, 480].map((v) => ({ value: v, label: hoursOf(v) }));
+const money = (n: number) => `${n < 0 ? "−" : ""}$${Math.abs(Math.round(n)).toLocaleString("en-US")}`;
+
+/**
+ * Standing (doc "Tile designs"): the roles you serve in, the hours given this month against last, then a card per
+ * role. Log service is the one filled act; a role that ended stays below, as honor kept.
+ */
+export async function StandingDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
+  const roles = records.filter((r) => r.kind === "standing");
+  const serving = roles.filter((r) => r.state !== "ended");
+  const ended = roles.filter((r) => r.state === "ended");
+  const month = dayBefore(today, 29), before = dayBefore(today, 59);
+  const now = serving.reduce((n, r) => n + minutesSince(acts, r.id, month), 0);
+  const last = serving.reduce((n, r) => n + acts.filter((a) => a.record === r.id && a.day >= before && a.day < month).reduce((m, a) => m + (a.minutes ?? 0), 0), 0);
+  const weeks = Array.from({ length: 8 }, (_, i) => { const from = dayBefore(today, 7 * (8 - i) - 1), to = dayBefore(today, 7 * (7 - i)); return acts.filter((a) => roles.some((r) => r.id === a.record) && a.day >= from && a.day <= to).reduce((n, a) => n + (a.minutes ?? 0), 0) / 60; });
+  const name = (r: LifeRecord) => String(r.body.role || "A role");
+  return (
+    <div className="grid grid-cols-1 gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="grid gap-0.5">
+            <span className="text-muted-foreground text-sm">{serving.length ? `Serving in ${serving.length} ${serving.length === 1 ? "role" : "roles"}` : "Standing"}</span>
+            <span className="text-3xl font-bold tracking-tight">{serving.length ? (now ? `${hoursOf(now)} this month` : serving.length === 1 ? String(serving[0]!.body.role || "A role") : "No time logged this month") : "Where are you trusted to serve?"}</span>
+            <span className="text-muted-foreground text-sm">{serving.length ? (last ? `${hoursOf(last)} the month before` : "Log the time you give to see it over the weeks") : "Offices, boards, a congregation, a team you coach"}</span>
+          </div>
+          {serving.length ? (
+            <QuickLog title="Log service" action={logTimeAction.bind(null, "polis")} trigger={<><PlusIcon />Log service</>} choices={serving.map((r) => ({ id: r.id, label: name(r), amounts: TIME }))} />
+          ) : <Button asChild><Link href="/life/polis?k=standing&all=1"><PlusIcon />Add a role</Link></Button>}
+        </div>
+        {weeks.some((h) => h > 0) ? <Bars values={weeks} labels={weeks.map((h, i) => `${8 - i} weeks ago: ${Math.round(h * 10) / 10} h`)} /> : null}
+      </Hero>
+      {serving.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Where you serve"><Link href="/life/polis?k=standing&all=1" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {serving.map((r) => <li key={r.id}><DashCard href={`/life/polis/${r.id}`} title={String(r.body.body || "Where not said")} value={name(r)} sub={[typeof r.body.since === "string" && r.body.since ? `Since ${shortDay(r.body.since)} ${r.body.since.slice(0, 4)}` : null, `${hoursOf(minutesSince(acts, r.id, dayBefore(today, 364)))} this year`].filter(Boolean).join(", ")} className="h-full" /></li>)}
+          </ul>
+        </section>
+      ) : null}
+      <section className="grid gap-3">
+        <DashHead title="Find a way to serve" />
+        <div className="flex flex-wrap gap-2">
+          {["Find a board or commission I could serve on", "Find volunteer work near me that fits my skills", "What offices are up for election where I live?"].map((q) => (
+            <Link key={q} href={ask(q)} className="hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition"><MessageCircleIcon className="size-3.5" />{q}</Link>
+          ))}
+        </div>
+      </section>
+      {ended.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Served before" />
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {ended.map((r) => <li key={r.id}><DashCard href={`/life/polis/${r.id}`} title={String(r.body.body || "Where not said")} value={name(r)} sub="Ended" className="h-full" /></li>)}
+          </ul>
+        </section>
+      ) : null}
+      <Upcoming userId={userId} tile="polis" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+const STAGE: Record<string, string> = { idea: "An idea", starting: "Starting", operating: "Operating", paused: "Paused", closed: "Closed" };
+
+/**
+ * Ventures (doc "Tile designs"): what operating ventures bring in after costs, the year's profit as the figure that
+ * feeds the income plan; then a card per venture with its month and stage, and ideas apart. Log time is the filled act.
+ */
+export async function VenturesDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
+  const all = records.filter((r) => r.kind === "venture");
+  const live = all.filter((r) => r.state === "operating" || r.state === "starting");
+  const rest = all.filter((r) => !live.includes(r));
+  const num = (v: unknown) => (typeof v === "number" ? v : 0);
+  const operating = all.filter((r) => r.state === "operating");
+  const rev = operating.reduce((n, r) => n + num(r.body.revenue), 0), cost = operating.reduce((n, r) => n + num(r.body.costs), 0);
+  const month = dayBefore(today, 29);
+  const time = live.reduce((n, r) => n + minutesSince(acts, r.id, month), 0);
+  const name = (r: LifeRecord) => String(r.body.name || "A venture");
+  return (
+    <div className="grid grid-cols-1 gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="grid gap-0.5">
+            <span className="text-muted-foreground text-sm">{operating.length ? "Profit a year, after costs" : "Ventures"}</span>
+            <span className={cn("text-3xl font-bold tracking-tight", operating.length && rev - cost < 0 && "text-destructive")}>{operating.length ? money((rev - cost) * 12) : all.length ? "Nothing operating yet" : "Do you have a business of your own?"}</span>
+            <span className="text-muted-foreground text-sm">{operating.length ? `${money(rev)} in, ${money(cost)} out a month${time ? `, ${hoursOf(time)} given this month` : ""}` : "A store, a practice, a side business. What it brings in counts in your income plan."}</span>
+          </div>
+          {live.length ? (
+            <QuickLog title="Log time" action={logTimeAction.bind(null, "ventures")} trigger={<><PlusIcon />Log time</>} choices={live.map((r) => ({ id: r.id, label: name(r), amounts: TIME }))} />
+          ) : <Button asChild><Link href="/life/ventures?k=venture"><PlusIcon />Add a venture</Link></Button>}
+        </div>
+        {operating.length > 1 ? (
+          <div className="grid gap-1.5">
+            <span className="bg-muted flex h-3 overflow-hidden rounded-full">
+              {operating.map((r, i) => <span key={r.id} className={i % 2 ? "bg-primary/50" : "bg-primary"} style={{ width: `${rev ? (num(r.body.revenue) / rev) * 100 : 0}%` }} title={`${name(r)}: ${money(num(r.body.revenue))} a month`} />)}
+            </span>
+            <span className="text-muted-foreground text-xs">What each brings in a month</span>
+          </div>
+        ) : null}
+      </Hero>
+      {live.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Your ventures"><Link href="/life/ventures?k=venture" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {live.map((r) => {
+              const net = num(r.body.revenue) - num(r.body.costs);
+              return <li key={r.id}><DashCard href={`/life/ventures/${r.id}`} title={[STAGE[r.state ?? ""] ?? "Venture", typeof r.body.where === "string" ? r.body.where : null].filter(Boolean).join(" · ")} value={name(r)} tone={r.state === "operating" && net < 0 ? "warn" : undefined} sub={r.state === "operating" ? `${money(net)} a month after costs` : String(r.body.what || "What it sells not said")} className="h-full" /></li>;
+            })}
+          </ul>
+        </section>
+      ) : null}
+      {rest.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Ideas and paused" />
+          <ul className="grid gap-4 sm:grid-cols-3">
+            {rest.map((r) => <li key={r.id}><DashCard href={`/life/ventures/${r.id}`} title={STAGE[r.state ?? ""] ?? "Venture"} value={name(r)} sub={String(r.body.what || "")} className="h-full" /></li>)}
+          </ul>
+        </section>
+      ) : null}
+      <section className="grid gap-3">
+        <DashHead title="Ask Reflect" />
+        <div className="flex flex-wrap gap-2">
+          {["What would it take to turn my idea into a business?", "How do I set aside taxes for my side business?", ...(all.length ? ["Which of my ventures is worth the time I give it?"] : [])].map((q) => (
+            <Link key={q} href={ask(q)} className="hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition"><MessageCircleIcon className="size-3.5" />{q}</Link>
+          ))}
+        </div>
+      </section>
+      <Upcoming userId={userId} tile="ventures" today={today} hideEmpty title="Coming up" />
     </div>
   );
 }

@@ -11,7 +11,7 @@ export async function Upcoming({ userId, tile, today, title = "Coming up", note,
   const list = occurrences(await calendar(userId, today, to, tile), today, to).slice(0, 8);
   if (hideEmpty && !list.length) return null;
   return (
-    <section className="grid gap-3">
+    <section className="grid grid-cols-1 gap-3">
       <SectionHead title={title} href={`/calendar?tile=${tile}`} add={{ label: `Add an event tagged ${tileLabel(tile)}`, href: `/calendar?tile=${tile}&day=${today}` }} note={note ?? `The next two weeks on your ${tileLabel(tile)} calendar.`} />
       {list.length ? (
         <ul className="divide-y rounded-xl border text-sm">
