@@ -17,7 +17,9 @@ export const REPEATS = [
 export type Repeat = (typeof REPEATS)[number]["id"];
 export const isRepeat = (v: unknown): v is Repeat => REPEATS.some((r) => r.id === v);
 
-export type CalEvent = { id: string; tile: CalTile | null; title: string; note: string | null; day: string; starts: string | null; ends: string | null; repeat: Repeat; until: string | null; recordId: string | null };
+export type CalEvent = { id: string; tile: CalTile | null; title: string; note: string | null; day: string; starts: string | null; ends: string | null; repeat: Repeat; until: string | null; recordId: string | null;
+  /** The calendar it came from, for an event read from a subscribed calendar or Google Calendar (`@reflect/core/ics`). Such an event is read-only in Reflect. */
+  feed?: { id: string; name: string } };
 export type Occurrence = { event: CalEvent; day: string };
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;

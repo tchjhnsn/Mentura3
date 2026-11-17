@@ -22,6 +22,8 @@ export type Connector = {
   why?: string;
   /** A page that states the reason, where there is one. */
   source?: { name: string; url: string };
+  /** For a built connector that needs the deployment's keys: what the owner must set up. Its row says "Needs setup". */
+  setup?: string;
 };
 
 export const GROUP_LABEL: Record<ConnectorGroup, string> = { household: "The household", ventures: "Ventures", person: "The person", polis: "The polis" };
@@ -72,6 +74,20 @@ export const CONNECTORS: readonly Connector[] = [
     why: "Reflect cannot connect to Etsy yet.",
   },
   {
+    id: "calendars", name: "Calendar subscriptions", by: "iCalendar", group: "person", availability: "built", tiles: ["calendar"],
+    reads: [
+      "The events of a calendar you subscribe to by its address in iCal format: Google Calendar's secret address, an iCloud public calendar, or Outlook's ICS link",
+      "Its events again at most every 15 minutes, shown in your calendar beside your own",
+    ],
+    never: ["Change or add events in that calendar", "Show or send the calendar's address once it is saved"],
+  },
+  {
+    id: "google-calendar", name: "Google Calendar", by: "Google", group: "person", availability: "built", tiles: ["calendar"],
+    reads: ["The events on your primary Google calendar, shown in your calendar", "Events you add in Reflect after connecting, which Reflect adds to Google Calendar"],
+    never: [NO_PASSWORD, "Change or remove events you made in Google Calendar", NO_SHARE],
+    setup: "Google Calendar needs setup: the owner of this Reflect has not added Google's sign-in keys yet.",
+  },
+  {
     id: "apple-health", name: "Health", by: "Apple Health", group: "person", availability: "phone-app", tiles: ["body"],
     reads: ["Workouts, sleep and steps"],
     never: [NO_SHARE],
@@ -119,6 +135,7 @@ export type Connection = { id: string; state: ConnectionState; /** What it holds
 /** The word on a list row's right, from the design guide's states. */
 export function stateWord(c: Connector, s: ConnectionState): string {
   if (s === "connected") return c.id === "instacart" ? "Ready" : "Connected";
+  if (s === "unavailable" && c.setup) return "Needs setup";
   if (c.availability === "phone-app") return "Phone app";
   if (c.availability === "not-offered") return "Not offered";
   if (s === "unavailable" || c.availability === "not-built") return "Not yet";
@@ -127,10 +144,10 @@ export function stateWord(c: Connector, s: ConnectionState): string {
 
 const TILE_LABEL: Record<string, string> = {
   "home/safety": "Home, Safety", "home/water": "Home, Water", "home/food": "Home, Food", "work/income": "Work, Income",
-  ventures: "Ventures", body: "Body", polis: "Polis",
+  ventures: "Ventures", body: "Body", polis: "Polis", calendar: "Calendar",
 };
 export const tileLabel = (t: string) => TILE_LABEL[t] ?? t;
-export const tileHref = (t: string) => { const [app, kind] = t.split("/"); return `/life/${app}${kind ? `?k=${kind}` : ""}`; };
+export const tileHref = (t: string) => { if (t === "calendar") return "/calendar"; const [app, kind] = t.split("/"); return `/life/${app}${kind ? `?k=${kind}` : ""}`; };
 
 export const CONNECTIONS_PATHS = "'' (every connector and its state), 'connected', 'public' (public data Reflect reads), '<connector id>' (such as 'plaid' or 'place')";
 
@@ -145,5 +162,5 @@ export function connectionsPart(states: readonly Connection[], path: string): un
   if (head === "public") return PUBLIC_SOURCES.map((s) => ({ ...s }));
   const c = connectorOf(head);
   if (!c) return null;
-  return { ...brief(c), reads: c.reads, never: c.never, usedBy: c.tiles.map(tileLabel), ...(c.why ? { why: c.why } : {}) };
+  return { ...brief(c), reads: c.reads, never: c.never, usedBy: c.tiles.map(tileLabel), ...(c.why ? { why: c.why } : byId.get(c.id)?.state === "unavailable" && c.setup ? { why: c.setup } : {}) };
 }
