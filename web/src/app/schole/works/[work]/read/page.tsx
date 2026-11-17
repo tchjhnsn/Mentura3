@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SidebarButton } from "@/components/sidebar";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, SearchIcon } from "lucide-react";
@@ -91,7 +92,7 @@ export default async function ReadPage({ params, searchParams }: { params: Promi
     <ReaderFrame>
       <main className={`mx-auto w-full ${beside ? "max-w-6xl" : "max-w-3xl"} px-4 pt-6 pb-24 sm:px-6`}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <Button asChild variant="ghost" size="sm" className="max-w-[50%]"><Link href={`/schole/works/${work}`}><ArrowLeftIcon /><span className="truncate">{entry.title}</span></Link></Button>
+          <span className="flex max-w-[60%] min-w-0 items-center"><SidebarButton className="-ml-2 shrink-0" /><Button asChild variant="ghost" size="sm" className="min-w-0"><Link href={`/schole/works/${work}`}><ArrowLeftIcon /><span className="truncate">{entry.title}</span></Link></Button></span>
           <div className="flex items-center gap-1">
             {audio ? <ListenAlong book={audio} work={work} title={entry.title} map={map} chapter={n} cover={entry.cover ? coverUrl(entry, "M") : null} /> : null}
             <Contents work={work} current={n} suffix={keep.size ? `&${keep}` : ""} chapters={book.chapters.map((c, i) => ({ title: c.title, words: words[i]! }))} />

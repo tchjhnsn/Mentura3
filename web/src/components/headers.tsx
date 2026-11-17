@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { BackButton } from "./back-button";
 import { SearchButton } from "./search-button";
+import { SidebarButton } from "./sidebar";
 
 // Three kinds of header, each matched to its page (Torian, 2026-11-14): a section's pages keep the section's tabs;
 // one thing's page (a book, a course, an author) says where it sits and, once its title scrolls away, carries its
@@ -33,11 +34,14 @@ function Back({ fallback, label }: { fallback: string; label: string }) {
  */
 export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: string; backLabel: string; title: string; tabs?: ReactNode; icons?: ReactNode }) {
   // A tile's header (one with its own icons): the tile's name, always, as the way to the tile's workspace (or the home
-  // screen from the workspace), and the icons, which show where in the tile you are. No back button (Torian,
-  // 2026-11-16 08:53Z: "the title should remain the name of the app/tile that you're in").
+  // screen from the workspace), and the icons, which show where in the tile you are (Torian, 2026-11-16 08:53Z: "the
+  // title should remain the name of the app/tile that you're in"). Back sits before it as on every page but Home
+  // (2026-11-17): the page you came from, else the tile's workspace or Home.
   if (icons) return (
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
+        <SidebarButton className="-ml-2" />
+        <Back fallback={back} label={backLabel} />
         <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight"><Link href={back} title={backLabel} className="hover:opacity-80">{title}</Link></h1>
         <div className="ml-auto flex shrink-0 items-center gap-2">{icons}</div>
       </div>
@@ -47,6 +51,7 @@ export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: s
     <>
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
+        <SidebarButton className="-ml-2" />
         <Back fallback={back} label={backLabel} />
         {/* With icons, a phone gives the title its own line under them (a large title, as iOS does), so a larger
             text size or a long name never cuts it to "Sc...". */}
@@ -97,6 +102,7 @@ export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, s
   return (
     <header className={cn(BAR, "py-2", past ? "border-b" : "")}>
       <div className="flex min-h-10 items-center gap-2">
+        <SidebarButton className="-ml-2" />
         <Back fallback={back} label={backLabel} />
         {past ? <p className="min-w-0 truncate font-semibold">{title}</p> : <Crumbs crumbs={crumbs} />}
         <div className="ml-auto flex shrink-0 items-center gap-2">
@@ -113,7 +119,8 @@ export function TaskHeader({ back, title, position, right }: { back: { href: str
   return (
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-2">
-        <Button asChild variant="ghost" size="icon" aria-label={back.label}><Link href={back.href}><ArrowLeftIcon /></Link></Button>
+        <SidebarButton className="-ml-2" />
+        <Back fallback={back.href} label={back.label} />
         <Link href={back.href} className="min-w-0 truncate text-sm hover:underline"><span className="font-medium">{title}</span>{position ? <span className="text-muted-foreground"> · {position}</span> : null}</Link>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {right}
