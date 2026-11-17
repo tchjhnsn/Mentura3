@@ -41,4 +41,10 @@ describe("calendar cards", () => {
     const spec = buildSpec([{ kind: "event", title: "Dinner with Sam", day: "2026-11-20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" }])!;
     expect(spec.elements.e0).toEqual({ type: "CalendarEvent", props: { title: "Dinner with Sam", day: "Friday, November 20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" } });
   });
+
+  it("puts Undo under a change the chat made, by its change id", () => {
+    const change = "6f1c2c1e-6c1a-4f0e-9a8e-3b2a1d0c9b8a";
+    const spec = buildSpec([{ kind: "undo", change, title: "Put an event on the person's calendar" }])!;
+    expect(spec.elements.e0).toEqual({ type: "UndoChange", props: { change, text: "Done: put an event on your calendar." } });
+  });
 });
