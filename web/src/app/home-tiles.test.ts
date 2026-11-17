@@ -14,7 +14,7 @@ describe("home tiles", () => {
 
   it("opens every tile, at the part it names", () => {
     const links = Object.fromEntries(MINE.map((t) => [t.id, hrefOf(t)]));
-    expect(links).toMatchObject({ learn: "/schole", food: "/life/home?k=food", income: "/life/work?k=income", standing: "/life/polis?k=standing", ventures: "/life/ventures" });
+    expect(links).toMatchObject({ learn: "/schole", food: "/meals", income: "/life/work?k=income", standing: "/life/polis?k=standing", ventures: "/life/ventures" });
     for (const t of MINE) expect(hrefOf(t), t.id).not.toBeNull();
   });
 
