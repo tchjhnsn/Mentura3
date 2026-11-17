@@ -1,51 +1,26 @@
 // The chat's endpoint, on the pattern of json-render's chat example (vercel-labs/json-render,
 // examples/chat): AI SDK streaming, tools first, cards streamed as json-render spec parts. One difference
 // on purpose: the model never writes a spec. Each tool fetches the person's records and Reflect builds the
-// card (../../chat/spec.ts), so a card can only show what the app holds.
-import { adventuresPart, planAdventure } from "@/server/adventures";
-import { HOUSEHOLD_PATHS } from "@reflect/core/household";
-import { householdPartOf } from "@/server/household-store";
-import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
-import { placeFacts } from "@/server/public-data";
-import { MEALS_PATHS } from "@reflect/core/meals";
-import { mealsPartOf } from "@/server/meals-store";
-import { INSTRUMENT_PATHS, PIANO } from "@reflect/core/instruments";
-import { instrumentPartOf } from "@/server/instruments";
-import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
-import { connectionsPartOf } from "@/server/connections-store";
-import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
+// card (../../chat/spec.ts), so a card can only show what the app holds. The tools are the action registry's
+// chat actions (@/server/actions), rendered in ./tools.ts.
+import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
-import { z } from "zod";
-import { ASK_SYSTEM, cleanProposal, learnSummary, themaCode } from "@reflect/core/ask";
-import { STANCES } from "@reflect/core/claims";
-import { browseQuery, searchBooks } from "@reflect/core/openlibrary";
-import { themaCategory, themaQuery, themaSection } from "@reflect/core/thema";
+import { ASK_SYSTEM, learnSummary } from "@reflect/core/ask";
 import { acceptLocalDate, clean } from "@reflect/core/journal";
 import { chatPart, isChatId } from "@reflect/core/chat-journal";
 import { isoDate } from "@reflect/core/person";
+import { mediumOf } from "@reflect/core/ways";
 import { currentUser } from "@/server/session";
 import { keepChatMessage } from "@/server/journal-store";
 import { chatModel } from "@/server/chat-model";
 import { learnView } from "@/server/learn-store";
 import { listClaims, type ClaimOut } from "@/server/claims-store";
-import { shelvesOf } from "@/server/learn-shelves";
-import { quoteFromShelves } from "@/server/passages";
+import { listItems, type LearnItem } from "@/server/ways-store";
 import { buildSpec, type Piece } from "../../chat/spec";
-import { getItem, listItems, type LearnItem } from "@/server/ways-store";
-import { LEISURE, MEDIA, WAYS, bookWay, mediumOf, placeOf } from "@reflect/core/ways";
-import { categoryOf } from "@reflect/core/thema";
-import { lookLink, searchMedium, type Fetch } from "@reflect/core/lookup";
-import { clock, readTranscript, searchTranscript } from "@reflect/core/media";
-import { DIALOGUES } from "@reflect/core/practice-settled";
-import { DIALECTIC_COURSE } from "@reflect/core/start-dialectic";
-import { partSummary, planPart, PLAN_PATHS } from "@reflect/core/plan";
-import { planOf } from "@/server/plan";
-import { addEvents, calendarPart, calendarSchema, eventSchema, type AddedEvent } from "@/server/calendar-tools";
+import { chatTools } from "./tools";
 
 export const maxDuration = 60;
-const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
 const MAX_MESSAGES = 30;
-const catalogFetch: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app (learn items)" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
 
 export async function POST(req: Request) {
   const user = await currentUser();
@@ -73,8 +48,6 @@ export async function POST(req: Request) {
   const last = messages.at(-1);
   if (last?.role === "user") await keep("you", last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""));
 
-  const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
-
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
       // Every card of this answer, redrawn as one spec each time a tool adds one.
@@ -84,258 +57,13 @@ export async function POST(req: Request) {
         const spec = buildSpec(pieces);
         if (spec) writer.write({ type: SPEC_DATA_PART_TYPE, id: "cards", data: { type: "flat", spec } });
       };
-      const library = async (label: string, run: () => Promise<Awaited<ReturnType<typeof searchBooks>>>, href: string) => {
-        const books = await run().catch(() => null);
-        if (!books) {
-          show({ kind: "note", text: "The open library did not answer." });
-          return "The open library did not answer.";
-        }
-        show({ kind: "library", label, books, kept, href });
-        return books.length ? `Shown: ${books.map((b) => `${b.title} by ${b.authors.join(", ") || "unknown"}${kept.has(b.work) ? " (already on their shelves)" : ""}`).join("; ")}` : "Nothing found.";
-      };
-      const added = (list: AddedEvent[]) => {
-        for (const e of list) show({ kind: "event", title: e.title, day: e.day, when: e.when, tile: e.tile ? e.tile_label : "", href: e.href });
-        return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
-      };
       const result = streamText({
         model,
         system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}`,
         messages: await convertToModelMessages(messages),
         stopWhen: stepCountIs(4),
         onFinish: async ({ steps }) => keep("reflect", steps.map((st) => st.text).filter(Boolean).join("\n\n")),
-        tools: {
-          // Practice belongs to courses, or to what the person asks the chat for (Torian, 2026-11-16 21:53Z): a quiz on a
-          // dialogue opens a practice session, whose questions also label the argument; a course opens Reflect's course.
-          practice_dialectic: tool({
-            description: "When the person asks to be quizzed or to practise on Plato's Euthyphro, Laches or Meno, or on dialectic, arguments, rebuttals or stasis: open a practice session of ten questions on a dialogue, or Reflect's course on dialectic when they ask for a course.",
-            inputSchema: z.object({ work: z.enum(["euthyphro", "laches", "meno", "course"]).describe("The dialogue, or course for the course on dialectic") }),
-            execute: async ({ work }) => {
-              if (work === "course") {
-                show({ kind: "quote", text: DIALECTIC_COURSE.about, cite: `Course: ${DIALECTIC_COURSE.name}`, href: "/schole/courses/dialectic" });
-                return `Shown: the course ${DIALECTIC_COURSE.name}, four units, each a playlist and then practice. Courses made for one person are not built; do not offer one.`;
-              }
-              const d = DIALOGUES.find((x) => x.id === work)!;
-              show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the words do, what they support or attack, and how good the argument is.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
-              return `Shown: a practice session on ${d.title}. Do not write quiz questions about it yourself; the session asks them.`;
-            },
-          }),
-          // The Adventures lens (2026-11-17): what the person wants to do, across the tiles each touches.
-          adventures: tool({
-            description: "Fetch the person's adventures (camping, a league, travel, a game night...): each with the tiles it touches, who it is with, and whether it is done. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
-            inputSchema: z.object({ path: z.string().max(200).default("") }),
-            execute: async ({ path }) => adventuresPart(user.id, path),
-          }),
-          plan_adventure: tool({
-            description: "Draft a plan for one of the person's adventures, or a new one: the place, dates, a day-by-day plan of stops (with coordinates when known, so they show on the map), a packing checklist and a budget. It is saved as a draft the person keeps or changes on the adventure's page. Give links only to real pages; never invent coordinates.",
-            inputSchema: z.object({
-              id: z.string().max(60).optional().describe("The adventure's id, to plan one that exists"),
-              name: z.string().max(140).optional().describe("Its name, to start a new one (or find one by name)"),
-              place: z.string().max(200).optional().describe("Where, as a place name OpenStreetMap can find"),
-              start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-              budget: z.number().min(0).max(1e7).optional().describe("Total cost in dollars"),
-              days: z.array(z.object({ day: z.string().optional().describe("YYYY-MM-DD"), title: z.string().max(100).optional(), stops: z.array(z.object({ time: z.string().optional().describe("HH:MM"), title: z.string().max(140), note: z.string().max(300).optional(), link: z.string().max(500).optional().describe("https link out, such as the trail on AllTrails or the campsite on Recreation.gov"), lat: z.number().optional(), lon: z.number().optional() })).max(12) })).max(14).optional(),
-              checklist: z.array(z.string().max(140)).max(60).optional().describe("What to pack or do before"),
-            }),
-            execute: async (d) => {
-              const r = await planAdventure(user.id, d);
-              show({ kind: "quote", text: [r.adventure.place, r.adventure.start, `${r.adventure.plan.length} days planned`].filter(Boolean).join(" · "), cite: `Adventure: ${r.adventure.name}`, href: r.href });
-              return `Saved as a draft on ${r.href}. The person keeps or changes it there.`;
-            },
-          }),
-          // The calendar (Torian: "the AI chat will be central (itineraries, putting things on the calendar)").
-          calendar: tool({
-            description: "Fetch the person's calendar from one day through another (a week when 'to' is left out, at most 92 days): every tile's events, or one tile's, with the days their records hold. Read it before saying when they are free.",
-            inputSchema: calendarSchema,
-            execute: async ({ from, to, tile }) => JSON.stringify(await calendarPart(user.id, from, to, tile)).slice(0, 12000),
-          }),
-          add_event: tool({
-            description: "Put one event on the person's calendar, only when they ask. Use the day and times they said; ask first when either is unclear. Say the day and time in your reply.",
-            inputSchema: eventSchema,
-            execute: async (e) => added(await addEvents(user.id, [e])),
-          }),
-          add_events: tool({
-            description: "Put several events on the person's calendar at once, such as an itinerary, only when they ask. Each is checked before any is added. Say the day and time of each in your reply.",
-            inputSchema: z.object({ events: z.array(eventSchema).min(1).max(20) }),
-            execute: async ({ events }) => added(await addEvents(user.id, events)),
-          }),
-          // The household plan is a tree of small parts (doc "Already and Not yet design guide"): fetch only the one asked about.
-          household_plan: tool({
-            description: `Fetch one part of the person's household plan: what life costs now, each step still to be reached, its costs, taxes, household and what must be earned. Fetch the smallest part that answers. Paths: ${PLAN_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'next/costs/food' or 'already/household'") }),
-            execute: async ({ path }) => {
-              const { plan } = await planOf(user.id);
-              const said = partSummary(plan, path);
-              if (!said) return "No such part of the plan. Do not guess a figure.";
-              const stage = path.split("/")[0] || "";
-              show({ kind: "quote", text: said, cite: "Your household plan", href: stage && stage !== "already" ? `/plan?step=${encodeURIComponent(stage)}` : "/plan" });
-              return JSON.stringify(planPart(plan, path));
-            },
-          }),
-          household: tool({
-            description: `Fetch one part of the person's household: who lives there, how each is related, ages, dependents, and whether it is a family household. Fetch the smallest part that answers. Paths: ${HOUSEHOLD_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'members' or 'counts'") }),
-            execute: async ({ path }) => {
-              const part = await householdPartOf(user.id, path);
-              return part === null ? "No such part of the household. Do not guess." : JSON.stringify(part);
-            },
-          }),
-          place: tool({
-            description: `Fetch what public data says about where the person lives: FEMA's natural hazard rating for their county and the EPA record of their water system. Fetch the smallest part that answers, and name the source. Paths: ${PLACE_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'hazards' or 'water'") }),
-            execute: async ({ path }) => {
-              const p = await placeFacts(user.id);
-              if (!p.set) return "The person has not said where they live. They can set it at Settings, Where you live.";
-              const part = placePart(p, path);
-              return part === null ? "No such part, or the source could not be read. Do not guess." : JSON.stringify(part);
-            },
-          }),
-          connections: tool({
-            description: `Fetch the person's connections: what they have connected, what each connector reads and never does, which tiles use it, and why one cannot be connected yet. Never connect anything: to connect, send the person to Settings, Connections, then the connector's page (/settings/connections/<id>). Paths: ${CONNECTIONS_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'connected' or 'plaid'") }),
-            execute: async ({ path }) => {
-              const part = await connectionsPartOf(user.id, path);
-              return part === null ? "No such connector. Do not guess." : JSON.stringify(part);
-            },
-          }),
-          meals: tool({
-            description: `Fetch one part of the person's meal planning: their meals and ingredients, this week's meals by day, and the shopping list scaled to the household. Fetch the smallest part that answers. Paths: ${MEALS_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'week' or 'list'") }),
-            execute: async ({ path }) => {
-              const part = await mealsPartOf(user.id, path);
-              return part === null ? "No such part of the meals. Do not guess." : JSON.stringify(part);
-            },
-          }),
-          piano: tool({
-            description: `Fetch one part of the person's piano course in Scholē: the piece to practise today with its recording and score, the graded pieces and which are learned, and minutes practised a day. Never log practice: the person logs it on the course page (/schole/courses/piano). Paths: ${INSTRUMENT_PATHS}.`,
-            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'pieces' or 'practice'") }),
-            execute: async ({ path }) => {
-              const part = await instrumentPartOf(user.id, PIANO, path);
-              return part === null ? "No such part of the piano course. Do not guess." : JSON.stringify(part);
-            },
-          }),
-          show_shelves: tool({
-            description: "Show the person's shelves: their books and subjects by Thema section.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const names = new Map(view.books.flatMap((b) => b.subjects).map((x) => [x.id, x.name]));
-              const sh = shelvesOf(view).shelves.map((x) => ({ id: x.id, name: x.name, books: x.books.map((b) => b.title), subjects: x.subjects.map((y) => names.get(y.id) ?? y.name) }));
-              show({ kind: "shelves", shelves: sh });
-              return sh.length ? `Shown: ${sh.map((s) => `${s.id} ${s.name}: ${[...s.books, ...s.subjects].join(", ")}`).join("; ")}` : "No shelves yet.";
-            },
-          }),
-          show_ways: tool({
-            description: "Show what the person learns from by the ways of learning: books and items (lectures, debates, films, music, games) under teaching, dialectic, imitation, practice, and rest and leisure.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              const wayOf = (b: (typeof view.books)[number]) => b.way ?? bookWay(b.catalog ? categoryOf(b.catalog) : null, b.catalog?.subjects ?? []);
-              const ways = [...WAYS, LEISURE].map((w) => ({
-                id: w.label.slice(0, 1), name: w.label,
-                books: [...view.books.filter((b) => w.id !== "leisure" && wayOf(b) === w.id).map((b) => b.title), ...items.filter((i) => placeOf(i) === w.id).map((i) => `${i.title} (${mediumOf(i.medium).label.toLowerCase()})`)],
-                subjects: [] as string[],
-              })).filter((w) => w.books.length);
-              show({ kind: "shelves", shelves: ways });
-              return ways.length ? `Shown: ${ways.map((w) => `${w.name}: ${w.books.join(", ")}`).join("; ")}` : "Nothing on their shelves yet.";
-            },
-          }),
-          find_item: tool({
-            description: "Look up a lecture, debate, podcast, film, series, play, music, art or game for the person to add: a link, or a search of the free catalog for its medium.",
-            inputSchema: z.object({ medium: z.enum(MEDIA.map((m) => m.id) as [string, ...string[]]), query: z.string().min(1).max(300).describe("A link, or words of its title") }),
-            execute: async ({ medium, query }) => {
-              const r = /^https?:\/\//i.test(query.trim()) ? await lookLink(query.trim(), catalogFetch).then((x) => ({ found: x.found ? [x.found] : [], error: x.error })) : await searchMedium(medium, query, catalogFetch);
-              if (!r.found.length) {
-                show({ kind: "note", text: r.error ?? `Nothing found for “${query}”.` });
-                return `Nothing found${r.error ? `: ${r.error}` : ""}. Do not name one from memory.`;
-              }
-              const have = new Set(items.map((i) => `${i.medium}|${i.title.toLowerCase()}`));
-              for (const f of r.found.slice(0, 5)) show({ kind: "found_item", medium: f.medium, label: mediumOf(f.medium).label, title: f.title, ...(f.by ? { by: f.by } : {}), ...(f.image ? { image: f.image } : {}), source: f.source, kept: have.has(`${f.medium}|${f.title.toLowerCase()}`), item: JSON.stringify(f) });
-              return `Shown: ${r.found.slice(0, 5).map((f) => `${f.title}${f.by ? ` (${f.by})` : ""} from ${f.source}`).join("; ")}. Not kept unless the person taps Add.`;
-            },
-          }),
-          quote_transcript: tool({
-            description: "Find words in the transcripts the person pasted for their videos and recordings, and show each place with its moment.",
-            inputSchema: z.object({ words: z.string().min(2).max(100), item: z.string().max(200).optional().describe("Words of the item's title, when the person names one") }),
-            execute: async ({ words, item }) => {
-              const withText = items.filter((i) => i.transcript && (!item || i.title.toLowerCase().includes(item.toLowerCase())));
-              const out: string[] = [];
-              for (const i of withText.slice(0, 10)) {
-                const full = await getItem(user.id, i.id).catch(() => null);
-                if (!full?.transcriptText) continue;
-                for (const part of searchTranscript(readTranscript(full.transcriptText), words, 3)) {
-                  const cite = `${[i.by, i.title].filter(Boolean).join(", ")}, at ${clock(part.at)}`;
-                  show({ kind: "quote", text: part.text, cite, href: `/schole/items/${i.id}` });
-                  out.push(`"${part.text}" (${cite})`);
-                  if (out.length >= 5) break;
-                }
-                if (out.length >= 5) break;
-              }
-              if (!out.length) {
-                show({ kind: "note", text: `“${words}” was not found in your transcripts.` });
-                return "Not found. Do not quote from memory; say it was not found.";
-              }
-              return `Shown: ${out.join("; ")}`;
-            },
-          }),
-          show_claims: tool({
-            description: "Show the claims the person keeps, with their stance on each.",
-            inputSchema: z.object({}),
-            execute: async () => {
-              if (!claims) {
-                show({ kind: "note", text: "Claims are not set up here yet." });
-                return "Claims are not set up.";
-              }
-              show({ kind: "claims", claims: claims.map((c) => ({ text: c.text, stance: c.stance?.stance ?? null, holders: c.holders })) });
-              return claims.length ? `Shown: ${claims.map((c) => `${c.text} (${c.stance?.stance ?? "no stance"})`).join("; ")}` : "They keep no claims yet.";
-            },
-          }),
-          search_library: tool({
-            description: "Search the open library by title, author or topic; the person can add a result to their shelves.",
-            inputSchema: z.object({ query: z.string().min(1).max(200) }),
-            execute: async ({ query }) => library(`"${query}"`, () => searchBooks(query, openLibrary, 5), `/schole/browse?q=${encodeURIComponent(query)}`),
-          }),
-          browse_category: tool({
-            description: "Show the best rated books in one Thema section (one letter) or category (two letters).",
-            inputSchema: z.object({ code: z.string().min(1).max(2).describe("A Thema code, such as F (fiction), FM (fantasy), JM (psychology), JH (sociology), QR (religion)") }),
-            execute: async (input) => {
-              const c = themaCode(input.code);
-              const q = c ? themaQuery(c) : null;
-              if (!c || !q) return "That is not a Thema section or category Reflect knows.";
-              return library((themaCategory(c) ?? themaSection(c))!.short, () => browseQuery(q, openLibrary, { limit: 5 }), `/schole/browse?cat=${c}`);
-            },
-          }),
-          quote_book: tool({
-            description: "Find words in the text of a book the person reads in Reflect (one they are reading, or the one named) and show each place with its chapter, to quote and cite.",
-            inputSchema: z.object({ words: z.string().min(2).max(100).describe("A few words that occur in the book, as they would be written in it"), book: z.string().max(200).optional().describe("Words of the book's title, when the person names one") }),
-            execute: async ({ words, book }) => {
-              const r = await quoteFromShelves(view.books, words, book).catch(() => null);
-              if (!r) {
-                show({ kind: "note", text: book ? `“${words}” was not found in ${book} in Reflect.` : `“${words}” was not found in the books you are reading in Reflect.` });
-                return "Not found. Do not quote from memory; say it was not found.";
-              }
-              const cites = r.hits.map((h, i) => {
-                const text = `${h.before}${h.match}${h.after}`.trim();
-                const cite = [r.author, r.title, r.chapters[i]].filter(Boolean).join(", ");
-                show({ kind: "quote", text, cite, href: `/schole/works/${r.work}/read?c=${h.chapter}&find=${encodeURIComponent(words)}&p=${h.p}` });
-                return `"${text}" (${cite})`;
-              });
-              return `Shown, ${r.total} ${r.total === 1 ? "place" : "places"} in all: ${cites.join("; ")}`;
-            },
-          }),
-          propose_claim: tool({
-            description: "Propose a claim for the person to keep, only when they stated it and their stance in this conversation. They accept or ignore it.",
-            inputSchema: z.object({
-              text: z.string().min(1).max(500),
-              subject: z.string().max(120).optional(),
-              holders: z.array(z.object({ name: z.string(), citation: z.string().optional() })).max(10).default([]),
-              stance: z.enum(STANCES.map((s) => s.id) as [string, ...string[]]),
-            }),
-            execute: async (input) => {
-              const p = cleanProposal(input);
-              if (!p) return "That claim could not be proposed.";
-              show({ kind: "propose_claim", ...p });
-              return "Proposed. It is not kept unless the person taps Accept.";
-            },
-          }),
-        },
+        tools: chatTools({ userId: user.id, ...(day ? { today: day } : {}), view, claims, items, show }),
       });
       writer.merge(result.toUIMessageStream());
     },
