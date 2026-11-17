@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { HomeIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
+import { HomeIcon, MapPinIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
 import { ARRANGEMENT_LABEL, arrangement } from "@reflect/core/household";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { db } from "@/db/pool";
 import { householdOf } from "@/server/household-store";
+import { placeRecord } from "@/server/public-data";
 import { requireUser } from "@/server/session";
 import { inviteAction, startHouseholdAction } from "./actions";
 import { ActionRow, COLUMN, Group, Initials, Row } from "./list";
@@ -16,6 +17,7 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const user = await requireUser();
   const [who, h] = await Promise.all([db().query(`SELECT name, email FROM "user" WHERE id = $1`, [user.id]).then((r) => r.rows[0] as { name?: string; email?: string } | undefined), householdOf(user.id)]);
+  const place = await placeRecord(user.id);
   const name = who?.name || "You";
   return (
     <main className={PAGE}>
@@ -36,6 +38,7 @@ export default async function SettingsPage() {
 
         <Group title="Your life" id="life">
           <Row href="/settings/household" icon={<HomeIcon />} label="Household" value={h ? `${ARRANGEMENT_LABEL[arrangement(h.members)]}, ${h.members.length}` : "Not set up"} />
+          <Row href="/settings/place" icon={<MapPinIcon />} label="Where you live" value={place?.county ? `${place.county}, ${place.state}` : "Not set"} />
           <Row href="/settings/connections" icon={<PlugIcon />} label="Connections" value="None yet" />
         </Group>
 

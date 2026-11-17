@@ -195,6 +195,19 @@ export const APPS: readonly LifeApp[] = [
       need("transport", "Transport", "How you get to work and essentials, and what it costs.", { text: "Reliable access to work and essentials at a cost you can keep up.", source: "Domain design" }, [["reliable", "Reliable every day"], ["backup", "A second way when the first fails"]]),
       need("safety", "Safety", "Physical safety at home and away, an emergency fund and preparedness.", { text: "An emergency kit and plan, an emergency fund, and important documents kept safe.", source: "Ready.gov" }, [["kit", "An emergency kit"], ["plan", "A plan the household knows"], ["fund", "An emergency fund"], ["documents", "Important documents kept safe"]]),
       {
+        // Where the household lives, for public data about the place (`@reflect/core/public-data`): FEMA's risk index
+        // for the county and EPA's record of the water system. Set at Settings, Where you live.
+        id: "place", label: "Where you live", plural: "Where you live", title: "county", one: true, hidden: true,
+        intro: "The county and state you live in, and the water system that serves you.",
+        fields: [
+          { key: "county", label: "County", kind: "text", hint: "Travis" },
+          { key: "state", label: "State", kind: "text", hint: "TX" },
+          { key: "pwsid", label: "Water system id", kind: "text" },
+          { key: "water", label: "Water system", kind: "text" },
+          { key: "served", label: "People it serves", kind: "number" },
+        ],
+      },
+      {
         // A step still to be reached, on Home's Not yet (doc "Already and Not yet design guide"). Each carries forward
         // the ones before it; a cost left empty is carried, food is estimated from the USDA plans (`@reflect/core/plan`).
         id: "step", label: "Step", plural: "Steps", title: "name", hidden: true,

@@ -4,6 +4,8 @@
 // card (../../chat/spec.ts), so a card can only show what the app holds.
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "@/server/household-store";
+import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
+import { placeFacts } from "@/server/public-data";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { z } from "zod";
@@ -124,6 +126,16 @@ export async function POST(req: Request) {
             execute: async ({ path }) => {
               const part = await householdPartOf(user.id, path);
               return part === null ? "No such part of the household. Do not guess." : JSON.stringify(part);
+            },
+          }),
+          place: tool({
+            description: `Fetch what public data says about where the person lives: FEMA's natural hazard rating for their county and the EPA record of their water system. Fetch the smallest part that answers, and name the source. Paths: ${PLACE_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'hazards' or 'water'") }),
+            execute: async ({ path }) => {
+              const p = await placeFacts(user.id);
+              if (!p.set) return "The person has not said where they live. They can set it at Settings, Where you live.";
+              const part = placePart(p, path);
+              return part === null ? "No such part, or the source could not be read. Do not guess." : JSON.stringify(part);
             },
           }),
           show_shelves: tool({

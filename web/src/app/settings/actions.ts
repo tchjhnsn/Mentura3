@@ -3,6 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/session";
+import { isState } from "@reflect/core/public-data";
+import { addLifeRecord, saveLifeRecord } from "@/server/life-store";
+import { countyRisk, placeRecord } from "@/server/public-data";
 import { acceptInvite, addMember, createInvite, ensureHousehold, leaveHousehold, removeMember, revokeInvite, saveMember } from "@/server/household-store";
 
 // Settings, Household (doc "Tiles and their connections"): members join by invite and keep their own login; a member
@@ -70,4 +73,30 @@ export async function acceptInviteAction(token: string): Promise<void> {
     redirect(`/household/join/${encodeURIComponent(token)}?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not join.")}`);
   }
   done();
+}
+
+const PLACE = "/settings/place";
+
+/** Where the person lives, a county checked against FEMA's index; a new county clears the water system chosen. */
+export async function savePlaceAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  const state = String(form.get("state") ?? "").toUpperCase();
+  const county = String(form.get("county") ?? "");
+  if (!isState(state)) redirect(`${PLACE}?error=${encodeURIComponent("Choose your state.")}`);
+  const risk = await countyRisk(state, county);
+  if (!risk) redirect(`${PLACE}?error=${encodeURIComponent(`No county named ${county.trim() || "that"} in ${state}.`)}`);
+  const had = await placeRecord(user.id);
+  const body = { county: risk.county, state: risk.state, ...(had?.county === risk.county && had.state === risk.state ? { pwsid: had.pwsid, water: had.water, served: had.served } : {}) };
+  if (had) await saveLifeRecord(user.id, had.id, body);
+  else await addLifeRecord(user.id, "home", "place", body);
+  done(PLACE);
+}
+
+/** The water system that serves the person, from those EPA lists for their county. */
+export async function chooseWaterAction(pwsid: string, name: string, served: number | null): Promise<void> {
+  const user = await requireUser();
+  const had = await placeRecord(user.id);
+  if (!had) redirect(PLACE);
+  await saveLifeRecord(user.id, had.id, { county: had.county, state: had.state, pwsid, water: name, served: served ?? undefined });
+  done(PLACE);
 }

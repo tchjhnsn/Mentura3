@@ -21,6 +21,8 @@ import { PLAN_PATHS } from "@reflect/core/plan";
 import { planPartOf } from "./plan";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "./household-store";
+import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
+import { placeFacts } from "./public-data";
 
 export const GUIDE = [
   "Reflect keeps a person's journal, what they learn, their own ideas and the plan for what survives them. You help them write and keep things; you never decide for them.",
@@ -128,6 +130,16 @@ export function reflectServer(userId: string): McpServer {
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text((await householdPartOf(userId, path)) ?? "No such part of the household."));
+
+  server.registerTool("place", {
+    title: "Read public data about where the person lives",
+    description: `FEMA's natural hazard rating for the person's county and the EPA record of their water system. Fetch only the part asked about, and name the source. Paths: ${PLACE_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => {
+    const p = await placeFacts(userId);
+    return text(p.set ? (placePart(p, path) ?? "No such part, or the source could not be read.") : "The person has not said where they live.");
+  });
 
   server.registerTool("list_entries", {
     title: "List journal entries",

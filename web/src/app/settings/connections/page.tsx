@@ -12,6 +12,8 @@ export const dynamic = "force-dynamic";
 const SOURCES: { name: string; url: string; feeds: string }[] = [
   { name: "USDA Food Plans", url: "https://www.fns.usda.gov/cnpp/usda-food-plans-cost-food-monthly-reports", feeds: "Food in your income plan" },
   { name: "IRS tax brackets, tax year 2026", url: "https://www.irs.gov/filing/federal-income-tax-rates-and-brackets", feeds: "Taxes in your income plan" },
+  { name: "FEMA National Risk Index", url: "https://hazards.fema.gov/nri/", feeds: "Safety, from where you live" },
+  { name: "EPA Safe Drinking Water Information System", url: "https://enviro.epa.gov/facts/sdwis/search.html", feeds: "Water, from where you live" },
   { name: "Project Gutenberg, LibriVox, Open Library", url: "https://openlibrary.org", feeds: "Books and audiobooks in Scholē" },
   { name: "Apple Podcasts search, fyyd, gpodder", url: "https://fyyd.de", feeds: "Podcasts in Scholē" },
 ];
