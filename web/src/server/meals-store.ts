@@ -2,7 +2,7 @@
 // calendar event on the Home tile pointing at the meal; the shopping list is scaled to the people in the household.
 // Sending the list to Instacart needs INSTACART_API_KEY (Instacart Developer Platform), read by name only.
 import { instacartBody, mealsPart, parseIngredients, shoppingList, weekOf, type Meal, type MealsView, type Planned } from "@reflect/core/meals";
-import { planWeek, recipeOf, recipesOfMeal, wholeMealOf, type Likes, type Recipe, type Region, type Tag } from "@reflect/core/recipes";
+import { fitMeal, mealPlanOf, planWeek, recipeOf, recipesOfMeal, wholeMealOf, type Likes, type Recipe, type Region, type Tag } from "@reflect/core/recipes";
 import { addEvent, events, removeEvent } from "./calendar-store";
 import { householdOf } from "./household-store";
 import { addLifeRecord, lifeRecord, lifeRecords, removeLifeRecord } from "./life-store";
@@ -54,6 +54,17 @@ export async function planMyWeek(userId: string, day: string): Promise<number> {
   const plan = planWeek({ ...likes, nights: Math.min(room, open.length) }, open, w.week[0]);
   for (const p of plan.slice(0, room)) for (const r of recipesOfMeal(p.meal)) await planMeal(userId, await ensureMeal(userId, r), p.day);
   return Math.min(plan.length, room);
+}
+
+/** Puts a meal plan's whole meals on this week's open days, from today, in order. */
+export async function startMealPlan(userId: string, planId: string, day: string): Promise<void> {
+  const p = mealPlanOf(planId);
+  if (!p) throw new Error("No such meal plan.");
+  const [likes, w] = await Promise.all([likesOf(userId), plannedWeek(userId, day)]);
+  const taken = new Set(w.plan.map((x) => x.day));
+  const open = w.week.filter((d) => !taken.has(d) && d >= day);
+  const meals = p.meals.map(wholeMealOf).filter((m) => m !== undefined).map((m) => fitMeal(m, likes)).filter((m) => m !== null);
+  for (const [i, m] of meals.slice(0, open.length).entries()) for (const r of recipesOfMeal(m)) await planMeal(userId, await ensureMeal(userId, r), open[i]!);
 }
 
 /** What is in the week's basket without a day: each a meal of the person's. */

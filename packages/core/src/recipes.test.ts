@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aisleOf, fitMeal, fits, ingredientsOf, planWeek, recipeOf, RECIPES, shelves, WHOLE_MEALS } from "./recipes";
+import { MEAL_PLANS, aisleOf, mealMinutes, minutesPerNight, fitMeal, fits, ingredientsOf, planWeek, recipeOf, RECIPES, shelves, WHOLE_MEALS } from "./recipes";
 
 const week = ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22"];
 
@@ -35,10 +35,21 @@ describe("recipes", () => {
     expect(planWeek({ eat: "vegetarian", nights: 5 }, week).every((x) => fits(recipeOf(x.meal.main)!, { eat: "vegetarian" }))).toBe(true);
   });
 
+  it("keeps to the time the person gives cooking", () => {
+    const p = planWeek({ hours: 3, nights: 5 }, week);
+    expect(p.every((x) => mealMinutes(x.meal) <= 36)).toBe(true);
+    expect(minutesPerNight({ hours: 3, nights: 5 })).toBe(36);
+    expect(minutesPerNight({})).toBeNull();
+  });
+
   it("puts where a person is from first on Discover", () => {
     expect(shelves({ region: "south" })[0]?.region).toBe("south");
     expect(shelves({ region: "tex-mex" })[0]?.region).toBe("tex-mex");
     expect(shelves({ eat: "vegetarian" }).flatMap((s) => s.meals).every((m) => fits(recipeOf(m.main)!, { eat: "vegetarian" }))).toBe(true);
+  });
+
+  it("names whole meals that exist in every meal plan", () => {
+    for (const p of MEAL_PLANS) for (const m of p.meals) expect(WHOLE_MEALS.some((w) => w.id === m), `${p.id}/${m}`).toBe(true);
   });
 
   it("finds the aisle of each item", () => {

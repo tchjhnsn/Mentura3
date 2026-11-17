@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { HeartIcon, MinusIcon, PlusIcon } from "lucide-react";
 import { itemText } from "@reflect/core/meals";
+import { photoOf } from "@reflect/core/food-photos";
 import { ingredientsOf, recipeOf, REGIONS } from "@reflect/core/recipes";
 import { ThingHeader } from "@/components/headers";
 import { COLUMN, Group, Row } from "@/components/list-rows";
@@ -37,15 +38,17 @@ export default async function RecipePage({ params, searchParams }: { params: Pro
   const factor = n / r.serves;
   const here = `/meals/r/${r.id}`;
   const region = REGIONS.find((x) => x.id === r.region)!.label;
+  const photo = photoOf(r.id);
   return (
     <main className={PAGE}>
       <ThingHeader search={false} back="/meals/discover" backLabel="Discover" crumbs={[{ label: "Food", href: "/meals" }, { label: "Discover", href: "/meals/discover" }]} title={r.name} />
       <div className={COLUMN}>
-        <RecipeArt region={r.region} className="aspect-[16/9] w-full" />
+        <RecipeArt recipe={r.id} eager className="aspect-[16/9] w-full" />
         <div className="flex items-start gap-3">
           <div className="grid flex-1 gap-1">
             <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{r.name}</h1>
             <p className="text-muted-foreground text-sm">{r.minutes} minutes, serves {r.serves}, {region}</p>
+            {photo ? <p className="text-muted-foreground text-xs">Photo: <a href={photo.page} target="_blank" rel="noreferrer" className="underline underline-offset-2">{photo.author || "Wikimedia Commons"}</a>, {photo.license}</p> : null}
           </div>
           <form action={keepRecipeAction.bind(null, r.id, !mine)}>
             <Button type="submit" variant="ghost" size="icon" aria-pressed={Boolean(mine)} aria-label={mine ? "Kept in Your recipes" : "Keep in Your recipes"}>
@@ -86,7 +89,7 @@ export default async function RecipePage({ params, searchParams }: { params: Pro
 
         {r.goesWith?.length ? (
           <Group title="Goes with" id="goes">
-            {r.goesWith.map(recipeOf).filter((x) => x !== undefined).map((g) => <Row key={g.id} href={`/meals/r/${g.id}`} icon={<RecipeArt region={g.region} className="size-8" />} label={g.name} value={`${g.minutes} min`} />)}
+            {r.goesWith.map(recipeOf).filter((x) => x !== undefined).map((g) => <Row key={g.id} href={`/meals/r/${g.id}`} icon={<RecipeArt recipe={g.id} className="size-10" />} label={g.name} value={`${g.minutes} min`} />)}
           </Group>
         ) : null}
       </div>

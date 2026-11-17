@@ -220,6 +220,27 @@ export const APPS: readonly LifeApp[] = [
         ],
       },
       {
+        // A receipt the person added (doc "Food design guide", revision 2): read by a model, confirmed by them. The
+        // photo is not kept; only what was read. Counted toward the month once confirmed.
+        id: "receipt", label: "Receipt", plural: "Receipts", title: "store", hidden: true,
+        intro: "A receipt for food: the store, the day, the total and its lines.",
+        fields: [
+          { key: "store", label: "Store", kind: "text" },
+          { key: "day", label: "Day", kind: "day" },
+          { key: "total", label: "Total", kind: "money" },
+          { key: "spend", label: "Counts as", kind: "choice", options: [{ id: "groceries", label: "Groceries" }, { id: "eating-out", label: "Eating out" }] },
+          { key: "items", label: "Lines", kind: "long", internal: true },
+          { key: "confirmed", label: "Confirmed", kind: "check" },
+        ],
+      },
+      {
+        // The next grocery run (doc "Food design guide", revision 2): the day the person means to shop. What it covers
+        // is that day's week: its planned meals and the basket.
+        id: "grocery-run", label: "Next grocery run", plural: "Next grocery run", title: "day", one: true, hidden: true,
+        intro: "The day you mean to shop for food.",
+        fields: [{ key: "day", label: "Day", kind: "day" }],
+      },
+      {
         // A meal put in the week's basket without a day (doc "Food design guide"): its ingredients join the week's list.
         id: "basket", label: "In the basket", plural: "Basket", title: "meal", hidden: true,
         intro: "A meal in the week's basket.",

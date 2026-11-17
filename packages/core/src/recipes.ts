@@ -75,14 +75,14 @@ export const ingredientsOf = (r: Recipe): Ingredient[] => parseIngredients(r.ing
 export const recipesOfMeal = (m: WholeMeal): Recipe[] => [m.main, ...m.sides].map(recipeOf).filter((r): r is Recipe => Boolean(r));
 
 /** How a person likes to eat, from Food's first questions. Every answer is optional. */
-export type Likes = { eat?: "any" | "lower-carb" | "higher-carb" | "vegetarian" | "no-pork"; avoid?: readonly Tag[]; region?: Region; nights?: number; cooking?: "love" | "fine" | "rather-not" };
+export type Likes = { eat?: "any" | "lower-carb" | "higher-carb" | "vegetarian" | "no-pork"; avoid?: readonly Tag[]; region?: Region; nights?: number; cooking?: "love" | "fine" | "rather-not"; /** Hours a week the person gives to cooking. */ hours?: number };
 
 export const QUESTIONS = [
   { key: "eat", label: "How do you like to eat?", options: [["any", "No preference"], ["lower-carb", "Lower carb"], ["higher-carb", "Higher carb"], ["vegetarian", "Vegetarian"], ["no-pork", "No pork"]] },
   { key: "region", label: "What food did you grow up on?", options: REGIONS.map((r) => [r.id, r.label]) },
   { key: "avoid", label: "Anything you will not eat?", many: true, options: [["shellfish", "Shellfish"], ["fish", "Fish"], ["dairy", "Dairy"], ["nuts", "Nuts"], ["gluten", "Gluten"], ["pork", "Pork"]] },
   { key: "nights", label: "How many nights a week do you cook?", options: [["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"], ["7", "Every night"]] },
-  { key: "cooking", label: "How do you feel about cooking?", options: [["love", "I love it"], ["fine", "It's fine"], ["rather-not", "I'd rather not"]] },
+  { key: "hours", label: "How many hours a week do you want to spend cooking?", options: [["1", "About an hour"], ["2", "2 hours"], ["3", "3 hours"], ["5", "5 hours"], ["7", "7 hours"], ["10", "10 hours or more"]] },
 ] as const;
 
 /** Whether a recipe fits what the person will and will not eat. */
@@ -100,6 +100,11 @@ export function fitMeal(m: WholeMeal, l: Likes): WholeMeal | null {
   return { ...m, sides: m.sides.filter((s) => { const r = recipeOf(s); return r ? fits(r, l) : false; }) };
 }
 
+/** How long a whole meal takes: its longest recipe, since sides cook beside the main. */
+export const mealMinutes = (m: WholeMeal): number => Math.max(...recipesOfMeal(m).map((r) => r.minutes));
+/** The minutes a night the person's cooking hours allow, or null when they have not said. */
+export const minutesPerNight = (l: Likes): number | null => (l.hours ? Math.round((l.hours * 60) / Math.min(7, Math.max(1, l.nights ?? 5))) : null);
+
 const score = (m: WholeMeal, l: Likes) => {
   const main = recipeOf(m.main)!;
   let s = 0;
@@ -107,6 +112,8 @@ const score = (m: WholeMeal, l: Likes) => {
   if (l.eat === "lower-carb" && main.tags.includes("lower-carb")) s += 2;
   if (l.eat === "higher-carb" && main.tags.includes("higher-carb")) s += 2;
   if (l.cooking === "rather-not") s += main.minutes <= 45 ? 2 : -1;
+  const cap = minutesPerNight(l);
+  if (cap !== null) s += mealMinutes(m) <= cap ? 2 : -4;
   return s;
 };
 
@@ -117,6 +124,9 @@ const score = (m: WholeMeal, l: Likes) => {
 export function planWeek(l: Likes, week: readonly string[], seed = week[0] ?? ""): { day: string; meal: WholeMeal }[] {
   const nights = Math.min(7, Math.max(1, l.nights ?? 5));
   const ranked = WHOLE_MEALS.map((m) => fitMeal(m, l)).filter((m): m is WholeMeal => m !== null).sort((a, b) => score(b, l) - score(a, l) || a.id.localeCompare(b.id));
+  const cap = minutesPerNight(l);
+  const quick = cap === null ? ranked : ranked.filter((m) => mealMinutes(m) <= cap);
+  if (quick.length) ranked.splice(0, ranked.length, ...quick);
   if (!ranked.length) return [];
   const turn = [...seed].reduce((s, c) => s + c.charCodeAt(0), 0) % ranked.length;
   const top = ranked.slice(0, Math.max(nights, Math.min(ranked.length, nights + 3)));
@@ -142,3 +152,12 @@ export function aisleOf(name: string): string {
   if (/^cans? |canned|broth|dried|^rice$|flour|cornmeal|macaroni|sugar|^salt$|black pepper|paprika|cumin|powder|seasoning|cinnamon|^oil$|vinegar|ketchup|mayonnaise|bay leaves|crushed tomatoes|diced tomatoes|kidney beans|black beans/.test(n)) return "Pantry";
   return AISLES.find(([, re]) => re.test(n))?.[0] ?? "Pantry";
 }
+
+/** Meal plans to start from Discover: a week of whole meals, put on the week's open days in order. */
+export const MEAL_PLANS: readonly { id: string; name: string; about: string; meals: readonly string[] }[] = [
+  { id: "southern-week", name: "A Southern week", about: "5 dinners, whole meals", meals: ["sunday-chicken", "red-beans-monday", "baked-chicken-dinner", "fish-fry", "pork-chop-dinner"] },
+  { id: "creole-week", name: "A Creole week", about: "4 dinners from New Orleans", meals: ["red-beans-monday", "gumbo-night", "jambalaya-night", "shrimp-gumbo-night"] },
+  { id: "lower-carb-southern", name: "Lower carb, Southern", about: "4 dinners", meals: ["baked-chicken-dinner", "pot-roast-dinner", "salmon-night", "fish-fry"] },
+  { id: "quick-weeknights", name: "Quick weeknights", about: "Dinners in about 35 minutes", meals: ["fish-fry", "salmon-night", "taco-night"] },
+];
+export const mealPlanOf = (id: string) => MEAL_PLANS.find((p) => p.id === id);

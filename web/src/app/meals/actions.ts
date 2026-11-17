@@ -3,10 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/session";
+import { readReceipt, setReceipt } from "@/server/spending-store";
 import { weekOf } from "@reflect/core/meals";
 import { recipeOf } from "@reflect/core/recipes";
 import { removeLifeRecord, saveLifeRecord, setLifeField } from "@/server/life-store";
-import { addMeal, addToBasket, ensureMeal, meals, planMeal, planMyWeek, sendToInstacart, takeFromBasket, unplanMeal } from "@/server/meals-store";
+import { startMealPlan, addMeal, addToBasket, ensureMeal, meals, planMeal, planMyWeek, sendToInstacart, takeFromBasket, unplanMeal } from "@/server/meals-store";
 
 // Meals (`@reflect/core/meals`): the person's own meals, put on the week's days, and the shopping list.
 
@@ -16,7 +17,7 @@ function fields(form: FormData): Record<string, string> {
   return out;
 }
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
-const week = (day: string) => (DAY.test(day) ? `/meals?day=${day}` : "/meals");
+const week = (day: string) => (DAY.test(day) ? `/meals/week?day=${day}` : "/meals/week");
 const done = (to: string) => {
   revalidatePath("/", "layout");
   redirect(to);
@@ -117,4 +118,60 @@ export async function unplanDayAction(eventIds: string[], day: string): Promise<
   const user = await requireUser();
   for (const id of eventIds) await unplanMeal(user.id, id);
   done(week(day));
+}
+
+/** Reads a receipt's photo, then opens what was read for the person to confirm. */
+export async function readReceiptAction(form: FormData): Promise<{ error: string } | void> {
+  const user = await requireUser();
+  const photo = form.get("photo");
+  if (!(photo instanceof Blob) || !photo.size) return { error: "Choose a photo of a receipt." };
+  if (photo.size > 4_000_000) return { error: "That picture is too large." };
+  let id: string;
+  try {
+    id = await readReceipt(user.id, new Uint8Array(await photo.arrayBuffer()), photo.type || "image/jpeg", new Date().toISOString().slice(0, 10));
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not read it." };
+  }
+  done(`/meals/receipts/${id}`);
+}
+
+export async function receiptSpendAction(id: string, spend: "groceries" | "eating-out"): Promise<void> {
+  const user = await requireUser();
+  await setReceipt(user.id, id, { spend });
+  done(`/meals/receipts/${id}`);
+}
+
+export async function receiptDropLineAction(id: string, line: number): Promise<void> {
+  const user = await requireUser();
+  await setReceipt(user.id, id, { dropLine: line });
+  done(`/meals/receipts/${id}`);
+}
+
+/** Keeps a receipt as read, so it counts toward the month. */
+export async function receiptKeepAction(id: string): Promise<void> {
+  const user = await requireUser();
+  await setReceipt(user.id, id, { confirmed: true });
+  done("/meals");
+}
+
+export async function receiptRemoveAction(id: string): Promise<void> {
+  const user = await requireUser();
+  await removeLifeRecord(user.id, id);
+  done("/meals/spending");
+}
+
+/** Sets the day of the next grocery run. */
+export async function runDayAction(day: string): Promise<void> {
+  const user = await requireUser();
+  if (!DAY.test(day)) throw new Error("Give the day.");
+  await setLifeField(user.id, "home", "grocery-run", "day", day);
+  done("/meals/run");
+}
+
+/** Starts a meal plan from Discover on this week's open days, then opens the week. */
+export async function startPlanAction(id: string): Promise<void> {
+  const user = await requireUser();
+  const today = new Date().toISOString().slice(0, 10);
+  await startMealPlan(user.id, id, today);
+  done(week(today));
 }
