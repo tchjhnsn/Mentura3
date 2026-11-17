@@ -60,11 +60,12 @@ export const MINE: readonly Tile[] = [
 
 /**
  * Where a tile goes: Learn, the journal (Ideas and Journal), or its app in `@reflect/core/life`, at the part it
- * names (Income opens Work's income, Food opens Home's food).
+ * names (Income opens Work's income). Food opens its own app at /meals.
  */
 export function hrefOf(t: Tile): string | null {
   if (t.app === "learn") return "/schole";
   if (t.app === "journal") return "/journal";
+  if (t.id === "food") return "/meals";
   const life = TILE_KIND[t.id];
   return life ? `/life/${life.app}${life.kind ? `?k=${life.kind}` : ""}` : null;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
+import { kindOf, shown } from "@reflect/core/life";
 import { recipeOf } from "@reflect/core/recipes";
 import { ThingHeader } from "@/components/headers";
 import { COLUMN, Group, Row } from "@/components/list-rows";
@@ -8,6 +9,7 @@ import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { likesOf, mealsView, toBuy, type KeptMeal } from "@/server/meals-store";
 import { requireUser } from "@/server/session";
+import { lifeRecords } from "@/server/life-store";
 import { foodMoney } from "@/server/spending-store";
 import { RecipeArt } from "./recipe-art";
 import { ReceiptPicker } from "./receipt-picker";
@@ -27,7 +29,11 @@ export default async function FoodPage() {
   const user = await requireUser();
   const today = new Date().toISOString().slice(0, 10);
   const month = today.slice(0, 7);
-  const [v, likes, f] = await Promise.all([mealsView(user.id, today), likesOf(user.id), foodMoney(user.id, month)]);
+  const [v, likes, f, home] = await Promise.all([mealsView(user.id, today), likesOf(user.id), foodMoney(user.id, month), lifeRecords(user.id, "home")]);
+  // Who meets the need and how, which the income plan reads; each opens one choice on its own page.
+  const need = kindOf("home", "food")!;
+  const met = home.find((r) => r.kind === "food")?.body ?? {};
+  const facts = need.fields.filter((x) => ["choice", "money", "number"].includes(x.kind) && x.key !== "cost");
   const byId = new Map(v.meals.map((m) => [m.id, m]));
   const items = toBuy(v).length;
 
@@ -49,7 +55,7 @@ export default async function FoodPage() {
 
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back="/life/home?k=food" backLabel="Home" crumbs={[{ label: "Home", href: "/life/home" }]} title="Food" />
+      <ThingHeader search={false} back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Food" />
       <div className={COLUMN}>
         <div className="flex items-baseline justify-between gap-4">
           <h1 id="page-title" className="text-3xl font-bold tracking-tight">Food</h1>
@@ -104,6 +110,12 @@ export default async function FoodPage() {
           <Row href="/meals/mine" label="Your recipes" value={String(v.meals.length)} />
           <Row href="/meals/week#likes" label="How you eat" value={likes.answered ? undefined : "Not said"} />
         </Group>
+
+        {facts.length ? (
+          <Group title="How it is met" id="met">
+            {facts.map((x) => <Row key={x.key} href={`/life/home/set?k=food&f=${x.key}&to=/meals`} label={x.label} value={shown(x, met) ?? "Not said"} />)}
+          </Group>
+        ) : null}
       </div>
     </main>
   );

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { TILE_KIND, appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const sp = await searchParams;
   const a = appOf(app);
   const kind = kindOf(app, one(sp.k));
+  // Food is its own app; every way into Home's food lands on it.
+  if (app === "home" && kind?.id === "food") redirect("/meals");
   const [records, acts] = await Promise.all([lifeRecords(user.id, app), lifeActs(user.id)]);
   const ids = new Set(records.map((r) => r.id));
   const mine = acts.filter((x) => ids.has(x.record));
