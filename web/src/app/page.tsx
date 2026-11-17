@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CalendarIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronRightIcon } from "lucide-react";
+import { Sidebar } from "@/components/sidebar";
 import { requireUser } from "@/server/session";
 import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
 import { dashboardFacts } from "@/server/dashboard";
@@ -50,13 +50,13 @@ function Steps({ steps, chosen }: { steps: Stage[]; chosen: Stage | null }) {
 /**
  * Home (doc "Already and Not yet design guide"): the tiles in three groups, after Aristotle's order of association.
  * Already is life as it is; Not yet lays out the steps still to be reached, with what each would cost and the tiles
- * it would change. Each tile opens its app, and each group's heading opens that group's dashboard (`/group/<id>`).
+ * it would change. Each tile opens its app, and the sidebar (the button at the top left) reaches every tile, tool and lens from any page it sits on.
  */
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
   const sp = await searchParams;
   const notYet = one(sp.view) === "not-yet";
-  const { facts, plan } = await dashboardFacts(user.id);
+  const { facts, plan, chats } = await dashboardFacts(user.id);
   const chosen = notYet ? plan.steps.find((s) => s.id === one(sp.step)) ?? plan.next : null;
   const stage = chosen ?? plan.already;
   const changed = chosen ? changedTiles(plan.already, chosen) : null;
@@ -64,9 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6">
       <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         {/* The toggle sits under the header on a phone, full width, so the longer pairs of words fit. */}
-        <Button asChild variant="outline" size="icon" aria-label="Ask Reflect">
-          <Link href="/chat"><PlusIcon /></Link>
-        </Button>
+        <Sidebar chats={chats} groups={GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.flatMap((id) => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; }) }))} />
         <div className="col-span-3 row-start-2 flex min-w-0 justify-center sm:col-span-1 sm:col-start-2 sm:row-start-1"><HomeToggle notYet={notYet} /></div>
         <div className="col-start-3 row-start-1 flex items-center gap-1">
           <Button asChild variant="ghost" size="icon" aria-label="Your calendar" title="Calendar">
@@ -96,7 +94,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_4fr_2fr]">
         {GROUPS.map((g) => (
           <section key={g.id} aria-labelledby={`group-${g.id}`} className="grid content-start gap-3">
-            <h2 id={`group-${g.id}`} className={cn("font-semibold", changed && !g.tiles.some((t) => changed.has(t)) && "text-muted-foreground")}><Link href={`/group/${g.id}`} className="inline-flex items-center gap-1 hover:underline">{g.label}<ChevronRightIcon aria-hidden="true" className="text-muted-foreground size-4" /></Link></h2>
+            <h2 id={`group-${g.id}`} className={cn("font-semibold", changed && !g.tiles.some((t) => changed.has(t)) && "text-muted-foreground")}>{g.label}</h2>
             <ul className={cn("grid grid-cols-3 gap-3", g.id === "household" ? "sm:grid-cols-4" : g.id === "person" ? "sm:grid-cols-4 lg:grid-cols-2" : "lg:grid-cols-2")}>
               {g.tiles.map((id) => {
                 const t = MINE.find((x) => x.id === id);
