@@ -17,7 +17,9 @@ export const REPEATS = [
 export type Repeat = (typeof REPEATS)[number]["id"];
 export const isRepeat = (v: unknown): v is Repeat => REPEATS.some((r) => r.id === v);
 
-export type CalEvent = { id: string; tile: CalTile | null; title: string; note: string | null; day: string; starts: string | null; ends: string | null; repeat: Repeat; until: string | null; recordId: string | null };
+export type CalEvent = { id: string; tile: CalTile | null; title: string; note: string | null; day: string; starts: string | null; ends: string | null; repeat: Repeat; until: string | null; recordId: string | null;
+  /** The calendar it came from, for an event read from a subscribed calendar or Google Calendar (`@reflect/core/ics`). Such an event is read-only in Reflect. */
+  feed?: { id: string; name: string } };
 export type Occurrence = { event: CalEvent; day: string };
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -86,3 +88,35 @@ export function recordEvents(records: readonly DatedRecord[]): CalEvent[] {
   return out;
 }
 export const isRecordEvent = (e: Pick<CalEvent, "id">) => e.id.startsWith("record:");
+
+// What the chat and the person's own AI read and add (Torian: "the AI chat will be central (itineraries, putting
+// things on the calendar)"). A reading is at most 92 days; each line says the day, the time, the tile and where it opens.
+
+/** The days a calendar reading covers: `from` through `to`, `to` defaulting to `from` plus a week, at most 92 days. Null when `from` is not a day. */
+export function calendarRange(from: unknown, to?: unknown): { from: string; to: string } | null {
+  if (typeof from !== "string" || !DAY.test(from) || Number.isNaN(ms(from))) return null;
+  const end = typeof to === "string" && DAY.test(to) && !Number.isNaN(ms(to)) && to >= from ? to : addDays(from, 7);
+  const most = addDays(from, 91);
+  return { from, to: end > most ? most : end };
+}
+
+/** How an event's time reads: "09:00–10:30", "09:00", or "All day". */
+export const whenOf = (e: Pick<CalEvent, "starts" | "ends">) => (e.starts ? `${e.starts}${e.ends ? `–${e.ends}` : ""}` : "All day");
+
+/** The calendar page at a day, where an event is seen and changed. */
+export const calendarHref = (day: string) => `/calendar?day=${day}`;
+
+/** Each occurrence as plain JSON: one line per day an event falls on. */
+export function agenda(list: readonly Occurrence[]) {
+  return list.map((o) => ({
+    id: o.event.id, day: o.day, title: o.event.title, when: whenOf(o.event), starts: o.event.starts, ends: o.event.ends,
+    tile: o.event.tile, tile_label: tileLabel(o.event.tile), repeat: o.event.repeat, note: o.event.note,
+    from_record: isRecordEvent(o.event), href: calendarHref(o.day),
+  }));
+}
+
+/** An event as the chat's tools take it (snake case, as the model writes it), in the store's own shape; the store checks it. */
+export type EventToolInput = { title: string; day: string; starts?: string; ends?: string; tile?: string; repeat?: string; until?: string; note?: string };
+export const eventInputOf = (e: EventToolInput) => ({
+  title: e.title, day: e.day, starts: e.starts ?? null, ends: e.ends ?? null, tile: e.tile ?? null, repeat: e.repeat ?? "none", until: e.until ?? null, note: e.note ?? null,
+});

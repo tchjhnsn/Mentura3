@@ -55,7 +55,7 @@ export function FieldInput({ f, body }: { f: Field; body: Body }) {
 }
 
 /** The fields of a kind as a form: a new record when none is given, else the record's own. */
-export function RecordForm({ app, kind, record, back, submit, quiet }: { app: LifeAppId; kind: Kind; record?: LifeRecord; back: string; submit?: string; /** An outline button, on a page whose filled button is another act. */ quiet?: boolean }) {
+export function RecordForm({ app, kind, record, back, submit, quiet, initial }: { app: LifeAppId; kind: Kind; record?: LifeRecord; back: string; submit?: string; /** An outline button, on a page whose filled button is another act. */ quiet?: boolean; /** Values chosen in advance for a new record. */ initial?: Body }) {
   const action = record ? saveLifeAction.bind(null, record.id) : addLifeAction.bind(null, app, kind.id);
   const checks = kind.fields.filter((f) => f.kind === "check");
   return (
@@ -63,7 +63,7 @@ export function RecordForm({ app, kind, record, back, submit, quiet }: { app: Li
       <input type="hidden" name="$back" value={back} />
       {kind.fields.filter((f) => f.internal && typeof record?.body[f.key] === "string").map((f) => <input key={f.key} type="hidden" name={f.key} value={String(record!.body[f.key])} />)}
       <div className="grid gap-4 sm:grid-cols-2">
-        {kind.fields.filter((f) => f.kind !== "check" && !f.internal).map((f) => <FieldInput key={f.key} f={f} body={record?.body ?? {}} />)}
+        {kind.fields.filter((f) => f.kind !== "check" && !f.internal).map((f) => <FieldInput key={f.key} f={f} body={record?.body ?? initial ?? {}} />)}
       </div>
       {checks.length ? <div className="grid gap-2 sm:grid-cols-2">{checks.map((f) => <FieldInput key={f.key} f={f} body={record?.body ?? {}} />)}</div> : null}
       <div><Button type="submit" variant={quiet ? "outline" : "default"}>{submit ?? (record ? "Save" : `Keep ${kind.one ? "it" : `this ${kind.label.toLowerCase()}`}`)}</Button></div>

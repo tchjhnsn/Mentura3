@@ -19,6 +19,7 @@ describe("ask", () => {
   it("tells the model it never answers from memory or claims to save, and summarizes only titles and names", () => {
     expect(ASK_SYSTEM).toContain("never answer from memory");
     expect(ASK_SYSTEM).toContain("never say you recorded");
+    expect(ASK_SYSTEM).toContain("add_event(title, day");
     expect(learnSummary({ books: [{ title: "Romans", status: "reading" }], subjects: ["The Bible"], claims: [{ text: "Marriage is a covenant", stance: "belief" }] })).toBe(
       "LEARN\nBooks: Romans (reading)\nSubjects: The Bible\nClaims: Marriage is a covenant (belief)",
     );

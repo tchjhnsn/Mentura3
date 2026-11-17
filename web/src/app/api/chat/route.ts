@@ -40,6 +40,7 @@ import { DIALOGUES } from "@reflect/core/practice-settled";
 import { DIALECTIC_COURSE } from "@reflect/core/start-dialectic";
 import { partSummary, planPart, PLAN_PATHS } from "@reflect/core/plan";
 import { planOf } from "@/server/plan";
+import { addEvents, calendarPart, calendarSchema, eventSchema, type AddedEvent } from "@/server/calendar-tools";
 
 export const maxDuration = 60;
 const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
@@ -92,9 +93,13 @@ export async function POST(req: Request) {
         show({ kind: "library", label, books, kept, href });
         return books.length ? `Shown: ${books.map((b) => `${b.title} by ${b.authors.join(", ") || "unknown"}${kept.has(b.work) ? " (already on their shelves)" : ""}`).join("; ")}` : "Nothing found.";
       };
+      const added = (list: AddedEvent[]) => {
+        for (const e of list) show({ kind: "event", title: e.title, day: e.day, when: e.when, tile: e.tile ? e.tile_label : "", href: e.href });
+        return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
+      };
       const result = streamText({
         model,
-        system: `${ASK_SYSTEM}\n\n${summary}`,
+        system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}`,
         messages: await convertToModelMessages(messages),
         stopWhen: stepCountIs(4),
         onFinish: async ({ steps }) => keep("reflect", steps.map((st) => st.text).filter(Boolean).join("\n\n")),
@@ -136,6 +141,22 @@ export async function POST(req: Request) {
               show({ kind: "quote", text: [r.adventure.place, r.adventure.start, `${r.adventure.plan.length} days planned`].filter(Boolean).join(" · "), cite: `Adventure: ${r.adventure.name}`, href: r.href });
               return `Saved as a draft on ${r.href}. The person keeps or changes it there.`;
             },
+          }),
+          // The calendar (Torian: "the AI chat will be central (itineraries, putting things on the calendar)").
+          calendar: tool({
+            description: "Fetch the person's calendar from one day through another (a week when 'to' is left out, at most 92 days): every tile's events, or one tile's, with the days their records hold. Read it before saying when they are free.",
+            inputSchema: calendarSchema,
+            execute: async ({ from, to, tile }) => JSON.stringify(await calendarPart(user.id, from, to, tile)).slice(0, 12000),
+          }),
+          add_event: tool({
+            description: "Put one event on the person's calendar, only when they ask. Use the day and times they said; ask first when either is unclear. Say the day and time in your reply.",
+            inputSchema: eventSchema,
+            execute: async (e) => added(await addEvents(user.id, [e])),
+          }),
+          add_events: tool({
+            description: "Put several events on the person's calendar at once, such as an itinerary, only when they ask. Each is checked before any is added. Say the day and time of each in your reply.",
+            inputSchema: z.object({ events: z.array(eventSchema).min(1).max(20) }),
+            execute: async ({ events }) => added(await addEvents(user.id, events)),
           }),
           // The household plan is a tree of small parts (doc "Already and Not yet design guide"): fetch only the one asked about.
           household_plan: tool({
