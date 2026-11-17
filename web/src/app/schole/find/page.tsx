@@ -15,6 +15,8 @@ import { wayLabel } from "../browse/media";
 import { PlayButton } from "../play-button";
 import { debateRecord } from "@reflect/core/dialectic-media";
 import { curated, upNext } from "@reflect/core/up-next";
+import { rerank } from "@reflect/core/recommend";
+import { signalsOf } from "@/server/recommend";
 import { BookmarkIcon } from "lucide-react";
 import { DebateFacts, whenWhere } from "../dialectic/debate-record";
 import { ROUND_ACTION, VideoFrame, WatchDetails, WatchView } from "../watch";
@@ -22,7 +24,7 @@ import { Reactions } from "../reactions";
 import { ShareButton } from "../share-button";
 import { Suspense } from "react";
 import { AiDescription, debateArticle } from "../ai-description";
-import { dislikedKeys, reactionKey, reactionOf } from "@/server/reaction-store";
+import { reactionKey, reactionOf } from "@/server/reaction-store";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -75,8 +77,8 @@ export default async function FindPage({ searchParams }: { searchParams: Promise
     : album?.kind === "frame" && album.tall ? <VideoFrame src={album.src} title={`${title} on ${album.site}`} /> : null;
   if (video) {
     const key = reactionKey({ url, medium, title });
-    const [reaction, disliked] = await Promise.all([reactionOf(user.id, key), dislikedKeys(user.id)]);
-    const next = upNext({ url, title }, 20).filter((i) => !disliked.has(i.kind === "find" && i.url ? i.url : `${i.kind === "find" ? i.medium : i.kind}|${i.title.toLowerCase()}`)).slice(0, 10);
+    const [reaction, signals] = await Promise.all([reactionOf(user.id, key), signalsOf(user.id)]);
+    const next = rerank(upNext({ url, title }, 20), signals).slice(0, 10);
     return (
       <main className={PAGE}>
         <ThingHeader back={`/schole/browse?m=${medium}`} crumbs={browseCrumbs(medium)} title={title} />

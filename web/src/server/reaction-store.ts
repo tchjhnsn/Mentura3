@@ -27,12 +27,17 @@ export async function reactionOf(userId: string, key: string): Promise<Reaction 
   }
 }
 
-/** Every thing the person dislikes now, to leave out of Up next. Empty before migration 0039 runs. */
-export async function dislikedKeys(userId: string): Promise<Set<string>> {
+/** Every thing the person likes and dislikes now, by key. Both empty before migration 0039 runs. */
+export async function reactionsOf(userId: string): Promise<{ liked: Set<string>; disliked: Set<string> }> {
   try {
     const r = await db().query<{ key: string; reaction: string }>("SELECT DISTINCT ON (key) key, reaction FROM media_reaction WHERE user_id = $1 ORDER BY key, created_at DESC, id DESC", [userId]);
-    return new Set(r.rows.filter((x) => x.reaction === "dislike").map((x) => x.key));
+    return { liked: new Set(r.rows.filter((x) => x.reaction === "like").map((x) => x.key)), disliked: new Set(r.rows.filter((x) => x.reaction === "dislike").map((x) => x.key)) };
   } catch {
-    return new Set();
+    return { liked: new Set(), disliked: new Set() };
   }
+}
+
+/** Every thing the person dislikes now, to leave out of Up next. Empty before migration 0039 runs. */
+export async function dislikedKeys(userId: string): Promise<Set<string>> {
+  return (await reactionsOf(userId)).disliked;
 }

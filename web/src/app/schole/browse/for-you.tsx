@@ -2,7 +2,9 @@ import Link from "next/link";
 import { ideasByCount, worksDiscussing } from "@reflect/core/great-ideas";
 import { COLLECTIONS, itemHref, itemKey, nextInCollection, suggestCollections, type CollectionItem } from "@reflect/core/collections";
 import { SectionHead } from "@/components/section-head";
-import { aimsOf, artOf, haveKeys } from "@/server/collections";
+import { keysOf, recommend } from "@reflect/core/recommend";
+import { artOf, haveKeys } from "@/server/collections";
+import { signalsOf } from "@/server/recommend";
 import { listItems } from "@/server/ways-store";
 import { Art } from "../art";
 import { CollectionCard, Fan } from "../playlists/card";
@@ -13,19 +15,22 @@ type Pick = { item: CollectionItem; reason: string };
 
 /**
  * Browse's first rows (guide "Home, browse and library", points 6 and 7). For you: the next thing in each collection
- * the person began, then things from the collections serving what they want in Work, each saying why; nothing is
+ * the person began, then the ranker's picks (recommend.ts), each saying why; nothing is
  * ranked by what strangers clicked, and with no reason to give the row is not drawn. Then every collection chosen by
  * people, those serving the person's aims first.
  */
 export async function ForYouRows({ userId }: { userId: string }) {
-  const [items, aims] = await Promise.all([listItems(userId).catch(() => []), aimsOf(userId)]);
+  const [items, signals] = await Promise.all([listItems(userId).catch(() => []), signalsOf(userId)]);
+  const aims = signals.aims;
   const have = haveKeys(items);
   const picks: Pick[] = [];
   const seen = new Set<string>();
-  const add = (item: CollectionItem, reason: string) => { if (!seen.has(itemKey(item)) && !have.has(itemKey(item))) { seen.add(itemKey(item)); picks.push({ item, reason }); } };
+  const add = (item: CollectionItem, reason: string) => { if (!seen.has(itemKey(item)) && !have.has(itemKey(item)) && !keysOf(item).some((k) => signals.disliked.has(k))) { seen.add(itemKey(item)); picks.push({ item, reason }); } };
   for (const c of COLLECTIONS) if (c.items.some((i) => have.has(itemKey(i)))) { const n = nextInCollection(c, have); if (n) add(n, `Next in ${c.name}`); }
   const suggested = suggestCollections(aims);
-  for (const s of suggested) if (s.reason) for (const i of s.collection.items) add(i, s.reason);
+  // Then Scholē's ranker: what serves the person's aims and the traits they chose, then what follows from what they
+  // follow, finished, keep and like (doc "Scholē subjects by ICP and recommendations").
+  for (const p of recommend(signals)) add(p.item, p.reason);
   return (
     <div className="space-y-8">
       {picks.length ? (

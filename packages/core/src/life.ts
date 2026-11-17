@@ -134,6 +134,15 @@ export const APPS: readonly LifeApp[] = [
         acts: [{ id: "wrote", label: "Journal entry", done: "Wrote toward", hidden: true }, { id: "talked", label: "Talked with someone doing it", done: "Talked with someone doing" }],
       },
       {
+        id: "admired", label: "Person who inspires me", plural: "People who inspire me", title: "title", hidden: true,
+        intro: "A founder, a statesman or another person whose way of working you want to learn, with the traits of theirs you chose.",
+        fields: [
+          { key: "ref", label: "Who", kind: "text", internal: true },
+          { key: "title", label: "Name", kind: "text" },
+          { key: "traits", label: "Traits I want", kind: "text", internal: true },
+        ],
+      },
+      {
         id: "imagined", label: "Imagined work", plural: "Imagined", title: "name",
         intro: "Work that does not exist yet, as you imagine it.",
         fields: [

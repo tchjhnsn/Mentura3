@@ -1,5 +1,7 @@
 import { debateRecord } from "@reflect/core/dialectic-media";
 import { curated, upNext } from "@reflect/core/up-next";
+import { rerank } from "@reflect/core/recommend";
+import { signalsOf } from "@/server/recommend";
 import { clock } from "@reflect/core/media";
 import { cn } from "@/lib/utils";
 import { DebateFacts, whenWhere } from "../../dialectic/debate-record";
@@ -8,7 +10,7 @@ import { Reactions } from "../../reactions";
 import { ShareButton } from "../../share-button";
 import { Suspense } from "react";
 import { AiDescription, debateArticle } from "../../ai-description";
-import { dislikedKeys, reactionKey, reactionOf } from "@/server/reaction-store";
+import { reactionKey, reactionOf } from "@/server/reaction-store";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ShowView } from "../../podcasts/show-view";
@@ -196,8 +198,8 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
     const why = curated(item.url)?.why;
     const done = item.status === "done";
     const key = reactionKey({ url: item.url, medium: item.medium, title: item.title });
-    const [reaction, disliked] = await Promise.all([reactionOf(user.id, key), dislikedKeys(user.id)]);
-    const next = upNext({ url: item.url, title: item.title }, 20).filter((i) => !disliked.has(i.kind === "find" && i.url ? i.url : `${i.kind === "find" ? i.medium : i.kind}|${i.title.toLowerCase()}`)).slice(0, 10);
+    const [reaction, signals] = await Promise.all([reactionOf(user.id, key), signalsOf(user.id)]);
+    const next = rerank(upNext({ url: item.url, title: item.title }, 20), signals).slice(0, 10);
     const shareHref = item.url && embed.kind === "youtube" ? `/schole/find?m=${item.medium}&t=${encodeURIComponent(item.title)}${item.by ? `&by=${encodeURIComponent(item.by)}` : ""}&u=${encodeURIComponent(item.url)}${item.image ? `&i=${encodeURIComponent(item.image)}` : ""}&h=1` : undefined;
     const transcriptForm = section("Transcript", (
       <form action={setTranscriptAction} className="space-y-2">

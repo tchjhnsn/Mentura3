@@ -12,8 +12,11 @@ import { Art } from "./art";
  * phone. Nothing on the page asks the person to write: notes belong in the journal.
  */
 
+/** One thing in Up next, with the ranker's reason when it moved up for the person (recommend.ts). */
+export type NextItem = { item: CollectionItem; reason: string | null };
+
 /** The page: the main column (player first) and Up next beside it on a wide screen, below it on a phone. */
-export function WatchView({ main, upNext }: { main: ReactNode; upNext?: readonly CollectionItem[] }) {
+export function WatchView({ main, upNext }: { main: ReactNode; upNext?: readonly NextItem[] }) {
   return (
     <div className="mt-2 grid gap-x-6 gap-y-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="min-w-0 space-y-3">{main}</div>
@@ -57,12 +60,12 @@ export function WatchDetails({ title, channel, detail, actions, meta, descriptio
   );
 }
 
-function UpNext({ items }: { items: readonly CollectionItem[] }) {
+function UpNext({ items }: { items: readonly NextItem[] }) {
   return (
     <aside aria-labelledby="up-next" className="min-w-0 space-y-3">
       <h2 id="up-next" className="text-base font-semibold">Up next</h2>
       <ul className="space-y-3">
-        {items.map((i) => {
+        {items.map(({ item: i, reason }) => {
           const art = artOf(i);
           return (
             <li key={itemKey(i)}>
@@ -71,7 +74,7 @@ function UpNext({ items }: { items: readonly CollectionItem[] }) {
                 <span className="min-w-0 space-y-0.5">
                   <span className="line-clamp-2 text-sm leading-snug font-medium group-hover:underline">{i.title}</span>
                   <span className="text-muted-foreground line-clamp-1 block text-xs">{i.by}</span>
-                  <span className="text-muted-foreground block text-xs">{art.kind}</span>
+                  <span className="text-muted-foreground line-clamp-1 block text-xs">{reason ?? art.kind}</span>
                 </span>
               </Link>
             </li>

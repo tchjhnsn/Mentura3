@@ -11,7 +11,9 @@ import { Suspense } from "react";
 import { ChevronRightIcon, PlusIcon } from "lucide-react";
 import { Head, SPACE } from "@/app/life/space";
 import { calendar } from "@/server/calendar-store";
-import { aimsOf, artOf, haveKeys } from "@/server/collections";
+import { artOf, haveKeys } from "@/server/collections";
+import { recommend } from "@reflect/core/recommend";
+import { signalsOf } from "@/server/recommend";
 import { Art } from "./art";
 import { CollectionCard } from "./playlists/card";
 import { cn } from "@/lib/utils";
@@ -191,7 +193,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
-  const [view, items, recent, aims] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), aimsOf(user.id)]);
+  const [view, items, recent, signals] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), signalsOf(user.id)]);
   const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null,
     href: b.catalog?.work ? (b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
@@ -210,8 +212,18 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   const now = [...view.books.filter((b) => b.status === "reading").map(bookCard), ...doing.map(itemCard)]
     .sort((a, b) => (recent.get(b.key) ?? 0) - (recent.get(a.key) ?? 0));
   const [last, ...rest] = now;
+  const aims = [...signals.aims];
   const aim = aims.includes(one(sp.aim)) ? one(sp.aim) : null;
-  const suggested = suggestCollections(aim ? [aim] : aims);
+  // Playlists in the ranker's order (recommend.ts), each with the reason of its best pick; the rest after, as curated.
+  const ranked = recommend(aim ? { ...signals, aims: [aim] } : signals, COLLECTIONS, 200);
+  const reasonOf = new Map<string, string>();
+  for (const p of ranked) if (p.collection && !reasonOf.has(p.collection.id)) reasonOf.set(p.collection.id, p.reason);
+  const base = suggestCollections(aim ? [aim] : aims);
+  const order = [...reasonOf.keys()];
+  const suggested = [
+    ...order.map((id) => base.find((x) => x.collection.id === id)!).filter(Boolean).map((x) => ({ ...x, reason: reasonOf.get(x.collection.id)! })),
+    ...base.filter((x) => !reasonOf.has(x.collection.id)),
+  ];
 
   if (!last) {
     return (
