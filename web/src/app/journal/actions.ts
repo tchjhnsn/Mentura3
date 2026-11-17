@@ -5,14 +5,19 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/server/session";
 import { IMPORTABLE, MAX_IMPORT_BYTES } from "@reflect/core/works";
 import type { Holder } from "@reflect/core/claims";
-import { createWork, fileWork, importWork, saveWork } from "@/server/work-store";
-import { placeSubject } from "@/server/subject-domain-store";
-import { claimFromWork, beliefFromWork, compileEdition, markBelief, placeClaim, type Marking } from "@/server/book-store";
+import { importWork, saveWork } from "@/server/work-store";
+import type { Marking } from "@/server/book-store";
+import { fromPage } from "@/server/actions/page";
+import { beliefFromWorkAction as beliefEntry, compileEditionAction as editionEntry, fileWorkAction as fileEntry, markBeliefAction as markEntry, placeBeliefAction, placeSubjectAction as placeSubjectEntry, sendToLearnAction as sendEntry, startWork } from "@/server/actions/journal-works";
+
+// Each change but the editor's autosave and a file import goes through the action registry (Ask Reflect plan, step
+// 4), so it is in the change log. The autosave keeps a version of the work itself on every save; logging each would
+// copy the text into the change log many times a minute.
 
 /** Start a work from a template of the prompt library, filed in a domain when started from one, and open it. */
 export async function createWorkAction(templateId: string, about: string | null, domain: string | null = null): Promise<void> {
   const user = await requireUser();
-  const id = await createWork(user.id, templateId, about, domain);
+  const { id } = await fromPage(startWork, user.id, { template: templateId, about, domain });
   revalidatePath("/journal");
   redirect(`/journal/w/${id}`);
 }
@@ -59,43 +64,43 @@ const attempt = async (run: () => Promise<unknown>, paths: string[]): Promise<Do
 /** A selected passage becomes a belief: an ideal or a practical belief, in the chosen domain, with its origins and holders. */
 export async function beliefFromWorkAction(workId: string, passage: string, domain: string, m: Marking & { holders?: Holder[] }): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => beliefFromWork(user.id, workId, passage, domain, m), ["/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(beliefEntry, user.id, { work_id: workId, passage, domain, marking: m }), ["/journal/book", "/journal/d/[domain]"]);
 }
 
 /** Send a selected passage to Learn as a claim under a subject, with the person's stance. */
 export async function sendToLearnAction(workId: string, passage: string, subject: string, stance: string): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => claimFromWork(user.id, workId, passage, subject, stance), ["/schole", "/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(sendEntry, user.id, { work_id: workId, passage, subject, stance }), ["/schole", "/journal/book", "/journal/d/[domain]"]);
 }
 
 /** Mark a belief already kept an ideal or a practical belief, with its origins. */
 export async function markBeliefAction(claimId: string, m: Marking): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => markBelief(user.id, claimId, m), ["/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(markEntry, user.id, { claim_id: claimId, marking: m }), ["/journal/book", "/journal/d/[domain]"]);
 }
 
 /** File a work in a domain, or in none. */
 export async function fileWorkAction(workId: string, domain: string | null): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => fileWork(user.id, workId, domain), ["/journal", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(fileEntry, user.id, { id: workId, domain }), ["/journal", "/journal/d/[domain]"]);
 }
 
 /** Place a Learn subject in a domain, or take it out of every domain (null). */
 export async function placeSubjectAction(subjectId: string, domain: string | null): Promise<Done> {
   const user = await requireUser();
-  return attempt(() => placeSubject(user.id, subjectId, domain), ["/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(placeSubjectEntry, user.id, { subject_id: subjectId, domain }), ["/journal/book", "/journal/d/[domain]"]);
 }
 
 /** Place a belief in a chapter of the book. */
 export async function placeAction(claimId: string, domain: string): Promise<{ error: string } | { ok: true }> {
   const user = await requireUser();
-  return attempt(() => placeClaim(user.id, claimId, domain), ["/journal/book", "/journal/d/[domain]"]);
+  return attempt(() => fromPage(placeBeliefAction, user.id, { claim_id: claimId, domain }), ["/journal/book", "/journal/d/[domain]"]);
 }
 
 /** Keep the book as it stands as a dated edition in the journal, and open it. */
 export async function compileEditionAction(): Promise<void> {
   const user = await requireUser();
-  const id = await compileEdition(user.id);
+  const { id } = await fromPage(editionEntry, user.id, {});
   revalidatePath("/journal");
   redirect(`/journal/w/${id}`);
 }

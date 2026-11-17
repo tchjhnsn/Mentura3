@@ -78,7 +78,7 @@ export const setBookStatusAction = action({
   title: "Where the person is with a book",
   description: "want, reading, read, abandoned or referenced (cited or mentioned, how far read not said). Reading records when they started; read records when they finished.",
   tier: "own",
-  on: ["mcp"],
+  on: ["chat", "mcp"],
   input: z.object({ book_id: z.string().uuid(), status: z.enum(BOOK_STATUS as unknown as [string, ...string[]]) }),
   run: async ({ userId }, { book_id, status }) => setBookStatus(userId, book_id, status as BookStatus).then(() => ok),
   // Undo puts back the status and its days; the status history keeps both changes.
@@ -166,7 +166,7 @@ export const addItemAction = action({
   title: "Keep a lecture, debate, film, music, game or the like",
   description: `Something the person learned from, or keeps for rest, beside books, by its medium: ${MEDIA.map((m) => m.id).join(", ")}. Its way of learning follows the medium unless the person names one (${WAYS.map((w) => w.id).join(", ")}). A game, music or art counts as learning only with a lesson, in the person's own words. Keep only what the person confirms, as they state it.`,
   tier: "own",
-  on: ["mcp"],
+  on: ["chat", "mcp"],
   input: z.object({
     medium: z.enum(MEDIA.map((m) => m.id) as [string, ...string[]]),
     title: z.string().min(1),
@@ -177,9 +177,13 @@ export const addItemAction = action({
     lesson: z.string().optional().describe("what it taught the person, in their words"),
     took_part: z.boolean().optional().describe("for a debate or discussion: the person took part"),
     subjects: z.array(z.string().min(1)).max(30).optional(),
+    image: z.string().url().optional().describe("an https picture from the find, never made up"),
+    work: z.string().regex(/^OL\d+W$/).optional().describe("the Open Library work it adapts"),
+    parts: z.number().int().min(1).max(10000).optional(),
+    day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().describe("the person's today, YYYY-MM-DD"),
   }),
   run: async ({ userId }, a) => {
-    const id = await addItem(userId, { medium: a.medium, title: a.title, ...(a.by ? { by: a.by } : {}), ...(a.url ? { url: a.url } : {}), status: a.status, ...(a.way ? { way: a.way } : {}), ...(a.lesson ? { lesson: a.lesson } : {}), ...(a.took_part ? { tookPart: true } : {}) });
+    const id = await addItem(userId, { medium: a.medium, title: a.title, ...(a.by ? { by: a.by } : {}), ...(a.url ? { url: a.url } : {}), status: a.status, ...(a.way ? { way: a.way } : {}), ...(a.lesson ? { lesson: a.lesson } : {}), ...(a.took_part ? { tookPart: true } : {}), ...(a.image ? { image: a.image } : {}), ...(a.work ? { work: a.work } : {}), ...(a.parts ? { parts: a.parts } : {}), ...(a.day ? { day: a.day } : {}) });
     if (a.subjects?.length) await addItemSubjects(userId, id, a.subjects);
     return { item_id: id };
   },

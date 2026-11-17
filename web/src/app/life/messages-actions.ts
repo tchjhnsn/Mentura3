@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/server/session";
 import { acceptFriendInvite, createFriendInvite } from "@/server/messages-store";
 import { hrefFor, sendMessageAction } from "@/server/actions/messages";
-import { runAction } from "@/server/actions/run";
+import { fromPage } from "@/server/actions/page";
 
 // Messages on the Friends tile (Ask Reflect plan, step 10): invite a friend by link, accept a link, and send. A send
 // from the page is the person's own tap, so it runs at once (source page) and is kept in the change log.
@@ -36,7 +36,7 @@ export async function sendMessageFromPage(to: string, form: FormData): Promise<v
   const user = await requireUser();
   const back = hrefFor(to);
   try {
-    await runAction(sendMessageAction, { userId: user.id }, { to, text: String(form.get("text") ?? "") }, "page");
+    await fromPage(sendMessageAction, user.id, { to, text: String(form.get("text") ?? "") });
   } catch (e) {
     redirect(`${back}?error=${why(e, "Could not send.")}`);
   }

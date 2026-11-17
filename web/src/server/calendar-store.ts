@@ -55,6 +55,13 @@ export async function saveEvent(userId: string, id: string, e: EventInput): Prom
   await mirror(userId, id, c);
 }
 
+/** One of the person's own events as it is kept (removed or not), for Undo to put back; null when there is none. */
+export async function eventOf(userId: string, id: string): Promise<{ title: string; tile: string | null; day: string; starts: string | null; ends: string | null; repeat: string; until: string | null; note: string | null } | null> {
+  if (!UUID.test(id)) return null;
+  const [e] = (await db().query("SELECT tile, title_ct, note_ct, day::text AS day, to_char(starts, 'HH24:MI') AS starts, to_char(ends, 'HH24:MI') AS ends, repeat, until::text AS until FROM calendar_event WHERE id = $1 AND user_id = $2", [id, userId])).rows;
+  return e ? { title: open(userId, e.title_ct as string), tile: (e.tile as string | null) ?? null, day: e.day as string, starts: (e.starts as string | null) ?? null, ends: (e.ends as string | null) ?? null, repeat: e.repeat as string, until: (e.until as string | null) ?? null, note: e.note_ct ? open(userId, e.note_ct as string) : null } : null;
+}
+
 export async function removeEvent(userId: string, id: string, removed: boolean): Promise<void> {
   await db().query(`UPDATE calendar_event SET removed_at = ${removed ? "now()" : "NULL"} WHERE id = $1 AND user_id = $2`, [id, userId]);
   if (removed) await mirror(userId, id, null);

@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { instrumentById, instrumentHref } from "@reflect/core/instruments";
 import { requireUser } from "@/server/session";
-import { logPractice, setPieceLearned } from "@/server/instruments";
+import { fromPage } from "@/server/actions/page";
+import { learnedPiece, logPracticeAction as logPracticeEntry } from "@/server/actions/learn-page";
+
+// Through the registry (Ask Reflect plan, step 4), so practice logged here is in the change log as the chat's is.
 
 const of = (id: string) => {
   const x = instrumentById(id);
@@ -15,9 +18,7 @@ const of = (id: string) => {
 export async function logPracticeAction(instrument: string, kind: string, amount: number | null): Promise<void> {
   const user = await requireUser();
   const x = of(instrument);
-  const piece = x.pieces.find((p) => p.id === kind);
-  if (!piece && kind !== "technique") throw new Error("No such piece.");
-  await logPractice(user.id, x, amount ?? 0, piece ? piece.title : "Scales and exercises");
+  await fromPage(logPracticeEntry, user.id, { instrument: x.id, kind, minutes: amount ?? 0 });
   revalidatePath(instrumentHref(x));
   revalidatePath("/schole");
 }
@@ -26,6 +27,6 @@ export async function logPracticeAction(instrument: string, kind: string, amount
 export async function learnedAction(instrument: string, piece: string, learned: boolean): Promise<void> {
   const user = await requireUser();
   const x = of(instrument);
-  await setPieceLearned(user.id, x, piece, learned);
+  await fromPage(learnedPiece, user.id, { instrument: x.id, piece, learned });
   revalidatePath(instrumentHref(x));
 }

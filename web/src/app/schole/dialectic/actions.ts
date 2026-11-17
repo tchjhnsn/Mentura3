@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUser } from "@/server/session";
-import { addEvent } from "@/server/calendar-store";
+import { fromPage } from "@/server/actions/page";
+import { addEvent as addEventEntry } from "@/server/actions/calendar";
 import {
   addPost, closeRoom, createDebate, createRoom, createThread, getDebate, letSpeak, removePost, roomEvent, sayInRoom, startDebate, takeSeat,
 } from "@/server/dialectic-store";
@@ -38,7 +39,8 @@ export async function remindAction(form: FormData): Promise<void> {
   const user = await requireUser();
   const d = await getDebate(str(form, "id"));
   if (!d) return;
-  await addEvent(user.id, { title: `Debate: ${d.motion}`, tile: "learn", day: str(form, "day"), starts: str(form, "starts"), note: `/schole/dialectic/debates/${d.id}` });
+  // Through the registry's add_event (Ask Reflect plan, step 4), so the reminder is in the change log and can be undone.
+  await fromPage(addEventEntry, user.id, { title: `Debate: ${d.motion}`.slice(0, 200), tile: "learn", day: str(form, "day"), ...(str(form, "starts") ? { starts: str(form, "starts") } : {}), note: `/schole/dialectic/debates/${d.id}` });
   redirect(`/schole/dialectic/debates/${d.id}?reminded=1`);
 }
 
