@@ -27,3 +27,23 @@ export function ConnectorRow({ c, s }: { c: Connector; s: Connection | undefined
     </li>
   );
 }
+
+/**
+ * One assistant connected to Reflect over MCP (Claude, ChatGPT or another client): the name it gave, when the person
+ * allowed it, and Disconnect. `disconnect` is a server action bound to the assistant.
+ */
+export function AssistantRow({ name, since, disconnect }: { name: string; since: Date; disconnect: () => Promise<void> }) {
+  const day = since.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+  return (
+    <li className="flex min-h-14 w-full items-center gap-4 px-4 py-3">
+      <Initials name={name} size="size-8 text-xs" />
+      <span className="grid min-w-0 flex-1">
+        <span className="truncate text-base">{name}</span>
+        <span className="text-muted-foreground truncate text-sm">Connected {day}</span>
+      </span>
+      <form action={disconnect}>
+        <button type="submit" className="text-destructive hover:bg-accent shrink-0 rounded-md px-2 py-1 text-sm transition">Disconnect</button>
+      </form>
+    </li>
+  );
+}
