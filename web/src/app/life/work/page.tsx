@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TileAdventures } from "@/app/adventures/in-tile";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PenLineIcon, PlusIcon, StarIcon } from "lucide-react";
@@ -152,6 +153,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
           <Link href="/life/work/browse" className="hover:text-foreground">Browse work</Link>
         </nav>
       </div>
+      <div className="mt-8 max-w-xl"><TileAdventures userId={user.id} tiles={["work"]} /></div>
     </main>
   );
 }

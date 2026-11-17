@@ -32,6 +32,7 @@ export function Summary({ app, records, acts, today }: { app: LifeAppId; records
     stats.push({ label: "Work under way", value: String(working.length), note: `${working.reduce((n, r) => n + (typeof r.body.hours === "number" ? r.body.hours : 0), 0)} hours a week, paid and unpaid`, href: `/life/work?k=work` });
   } else {
     for (const k of a.kinds) {
+      if (k.hidden) continue;
       const mine = records.filter((r) => r.kind === k.id);
       if (k.one) {
         const r = mine[0];

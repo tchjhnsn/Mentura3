@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TileAdventures } from "@/app/adventures/in-tile";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 import { kindOf, shown } from "@reflect/core/life";
@@ -116,6 +117,7 @@ export default async function FoodPage() {
             {facts.map((x) => <Row key={x.key} href={`/life/home/set?k=food&f=${x.key}&to=/meals`} label={x.label} value={shown(x, met) ?? "Not said"} />)}
           </Group>
         ) : null}
+        <TileAdventures userId={user.id} tiles={["food"]} />
       </div>
     </main>
   );

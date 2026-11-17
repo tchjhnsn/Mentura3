@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TileAdventures } from "@/app/adventures/in-tile";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mediumOf } from "@reflect/core/ways";
@@ -238,6 +239,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             </ul>
           </section>
           <Suspense fallback={null}><UpNext userId={user.id} today={today} /></Suspense>
+          <Suspense fallback={null}><TileAdventures userId={user.id} tiles={["learn"]} /></Suspense>
           <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
           <p><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Browse everything<ChevronRightIcon className="size-4" /></Link></p>
         </div>
@@ -270,6 +272,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
         ) : null}
         <NextUp picks={picks} />
         <Suspense fallback={null}><UpNext userId={user.id} today={today} /></Suspense>
+        <Suspense fallback={null}><TileAdventures userId={user.id} tiles={["learn"]} /></Suspense>
         <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
         {!rest.length && firstPick ? (
           <section className="grid grid-cols-1 gap-3">
