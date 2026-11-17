@@ -27,4 +27,18 @@ describe("chat cards render", () => {
     expect(html).toContain("Accept");
     expect(html).toContain("held by Aristotle");
   });
+
+  it("renders an Approval card with the preview, its one button and Decline", () => {
+    const spec = buildSpec([{ kind: "approval", change: "00000000-0000-4000-8000-000000000001", title: "Keep the legacy release plan", preview: "Cy receives:\nLetter: Dear Cy.", tier: "outside" }])!;
+    const html = renderToStaticMarkup(
+      <JSONUIProvider registry={registry}>
+        <Renderer spec={spec} registry={registry} />
+      </JSONUIProvider>,
+    );
+    expect(html).toContain("Waiting for you");
+    expect(html).toContain("Letter: Dear Cy.");
+    expect(html).toContain(">Send<");
+    expect(html).toContain(">Decline<");
+    expect(html).not.toContain(">Keep<");
+  });
 });

@@ -26,11 +26,15 @@ export type LoggedChange = {
   input: unknown;
   before: unknown;
   after: unknown;
-  status: "done" | "held" | "undone";
+  status: "done" | "held" | "undone" | "declined";
+  /** For a held change, what will happen in plain words, shown with Keep or Send (migration 0046). Null otherwise. */
+  preview: string | null;
   createdAt: Date;
   undoneAt: Date | null;
 };
 export type NewChange = Pick<LoggedChange, "userId" | "actionId" | "source" | "tier" | "input" | "before" | "after">;
+/** A shared or outside run that waits for the person's tap: its input and the preview, nothing run yet. */
+export type HeldChange = Pick<LoggedChange, "userId" | "actionId" | "source" | "tier" | "input"> & { preview: string };
 
 /** Where changes are kept: Postgres in the app (../action-change-store.ts), a fake in tests. Every call is for one person. */
 export interface ChangeLog {
@@ -39,6 +43,19 @@ export interface ChangeLog {
   recent(userId: string, limit: number): Promise<LoggedChange[]>;
   /** Marks a done change undone; false when it is not the person's or not done. */
   markUndone(userId: string, id: string): Promise<boolean>;
+  /** Keeps a held change (status 'held'), which has not run. */
+  hold(c: HeldChange): Promise<string>;
+  /** The person's held changes made at or after `since`, newest first. */
+  held(userId: string, since: Date, limit: number): Promise<LoggedChange[]>;
+  /** Takes a held change to run it: held becomes done in one step, so only one caller gets true. False when it is not
+   * the person's, not held, or made before `since`. */
+  claim(userId: string, id: string, since: Date): Promise<boolean>;
+  /** Writes what a claimed change's run did. */
+  settle(userId: string, id: string, c: { before: unknown; after: unknown }): Promise<void>;
+  /** Puts a claimed change back to held when its run failed, so the person can tap again. */
+  release(userId: string, id: string): Promise<void>;
+  /** Marks a held change declined; false when it is not the person's or not held. */
+  decline(userId: string, id: string): Promise<boolean>;
 }
 
 /** Who an action runs for. `changes` and `now` stand in for the database and the clock in tests. */
@@ -62,6 +79,11 @@ export type Action<S extends z.ZodType = z.ZodType, R = unknown> = {
   before?(ctx: ActionContext, input: z.output<S>): Promise<unknown>;
   /** What a run changed, kept in the change log (runAction in ./run.ts). Left out, only the input is kept. */
   change?(result: R, input: z.output<S>, before: unknown): Change;
+  /**
+   * For a shared or outside action: what a run will do, in plain words (the event, the exact message text, the plan
+   * edit), shown to the person with Keep or Send before it runs. Left out, the title and the input are shown.
+   */
+  preview?(ctx: ActionContext, input: z.output<S>): string | Promise<string>;
   /** Puts back what a logged run changed. Only own-tier actions have it; left out, the change cannot be undone. */
   undo?(ctx: ActionContext, change: LoggedChange): Promise<void>;
   /** MCP's own wording, where it differs from the chat's: the same fields, other words. */

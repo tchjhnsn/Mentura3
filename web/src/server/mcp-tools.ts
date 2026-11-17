@@ -11,7 +11,7 @@ import { piano } from "./actions/schole";
 import { coursesAction, draftCourseAction, excerptAction } from "./actions/courses";
 import { budget, budgetStep, setBudget } from "./actions/budget";
 import { GUIDE } from "./actions/journal";
-import { runAction } from "./actions/run";
+import { HOLD_DAYS, runAction } from "./actions/run";
 import { siteUrl } from "./site";
 
 export { GUIDE, toolGetEntry, toolKeepLegacyPlan, toolLegacyStatus, toolListEntries, toolWriteEntry } from "./actions/journal";
@@ -48,9 +48,15 @@ export function reflectServer(userId: string): McpServer {
     const said = REPLIES.get(a.id) ?? ((r: unknown) => r);
     const config = { title: a.title, description: describeFor(a, "mcp"), inputSchema: input, ...(a.tier === "read" ? { annotations: { readOnlyHint: true } } : {}) };
     // A tool with no input is called with only the request context, so it runs with no input. Every run goes through
-    // runAction, which logs a change; one the person can undo names its change id in a second line.
+    // runAction, which logs a change; one the person can undo names its change id in a second line. A shared or
+    // outside action is always held: it does not run, and the result says it waits for a tap inside Reflect.
     const run = async (args: unknown) => {
-      const { result, changeId } = await runAction(a, { userId }, input ? args : {}, "mcp");
+      const ran = await runAction(a, { userId }, input ? args : {}, "mcp");
+      if (ran.held) {
+        const tap = a.tier === "outside" ? "Send" : "Keep";
+        return text(`Not done yet. This waits for the person to tap ${tap} inside Reflect (Ask, at the top: ${siteUrl()}/chat), for ${HOLD_DAYS} days; nothing happens until they do. Change ${ran.changeId}. What will happen:\n${ran.preview}`);
+      }
+      const { result, changeId } = ran;
       const out = text(said(result));
       if (changeId && a.tier === "own" && a.undo) out.content.push({ type: "text", text: `Change ${changeId}. The person can undo it for 30 days (undo_change).` });
       return out;

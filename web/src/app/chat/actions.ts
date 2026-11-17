@@ -6,7 +6,7 @@ import { requireUser } from "@/server/session";
 import { addBook } from "@/server/learn-store";
 import { keepClaim } from "@/server/claims-store";
 import { addItem } from "@/server/ways-store";
-import { undoChange } from "@/server/actions/run";
+import { approveChange, declineChange, undoChange } from "@/server/actions/run";
 
 /** Add to my shelves, from a library card in the chat. The person tapped it; the entry is cleaned again. */
 export async function addBookFromChat(entryJson: string): Promise<void> {
@@ -59,4 +59,18 @@ export async function undoFromChat(changeId: string): Promise<void> {
   const user = await requireUser();
   await undoChange({ userId: user.id }, String(changeId));
   revalidatePath("/", "layout");
+}
+
+/** Keep or Send, from an Approval card: runs the held change as this person. approveChange checks it is theirs, still held and under 7 days old, and runs it once. */
+export async function approveFromChat(changeId: string): Promise<void> {
+  const user = await requireUser();
+  await approveChange({ userId: user.id }, String(changeId));
+  revalidatePath("/", "layout");
+}
+
+/** Decline, from an Approval card: the held change never runs. */
+export async function declineFromChat(changeId: string): Promise<void> {
+  const user = await requireUser();
+  await declineChange({ userId: user.id }, String(changeId));
+  revalidatePath("/chat");
 }

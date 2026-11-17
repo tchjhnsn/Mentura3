@@ -8,7 +8,8 @@ import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
 import { recentChanges, undoChangeAction } from "@/server/actions/changes";
-import { runAction } from "@/server/actions/run";
+import { pendingChangesAction } from "@/server/actions/approvals";
+import { HOLD_DAYS, runAction } from "@/server/actions/run";
 import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "@/server/actions/home-cards";
 import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
@@ -29,14 +30,21 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   const ctx: ActionContext = { userId, ...(today ? { today } : {}), loaded: { view, claims, items } };
   const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
   // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
-  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card.
+  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card. A
+  // shared or outside action does not run: it shows an Approval card (Keep or Send) and the model is told it waits.
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
     tool({
       description: describeFor(a as Action, "chat"),
       inputSchema: a.input as z.ZodType<z.output<S>>,
       execute: async (input: z.output<S>) => {
-        const { result, changeId } = await runAction(a, ctx, input, "chat");
+        const ran = await runAction(a, ctx, input, "chat");
+        if (ran.held) {
+          const tap = a.tier === "outside" ? "Send" : "Keep";
+          show({ kind: "approval", change: ran.changeId, title: a.title, preview: ran.preview, tier: a.tier === "outside" ? "outside" : "shared" });
+          return `Not done yet: it waits for the person to tap ${tap} on the card (change ${ran.changeId}), for ${HOLD_DAYS} days. Do not say it is done.`;
+        }
+        const { result, changeId } = ran;
         const said = say(result, input);
         if (!changeId || a.tier !== "own" || !a.undo) return said;
         show({ kind: "undo", change: changeId, title: a.title });
@@ -170,6 +178,10 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     use(undoChangeAction, (r) => {
       show({ kind: "note", text: `Undone: ${r.title}.` });
       return `Undone: ${r.title} (change ${r.undone}).`;
+    }),
+    use(pendingChangesAction, (list) => {
+      for (const p of list) show({ kind: "approval", change: p.id, title: p.title, preview: p.preview, tier: p.tier === "outside" ? "outside" : "shared" });
+      return list.length ? `Shown with Keep or Send: ${JSON.stringify(list.map((p) => ({ id: p.id, title: p.title, source: p.source, until: p.until })))}. Only the person can tap them.` : "Nothing is waiting for the person.";
     }),
     use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
     use(addHomeCardAction, (c) => card(c, "Placed on Home")),
