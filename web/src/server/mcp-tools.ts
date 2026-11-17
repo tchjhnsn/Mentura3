@@ -11,7 +11,7 @@ import { piano } from "./actions/schole";
 import { coursesAction, draftCourseAction, excerptAction } from "./actions/courses";
 import { budget, budgetStep, setBudget } from "./actions/budget";
 import { GUIDE } from "./actions/journal";
-import { runAction } from "./actions/run";
+import { callMcpAction } from "./mcp-call";
 import { siteUrl } from "./site";
 
 export { GUIDE, toolGetEntry, toolKeepLegacyPlan, toolLegacyStatus, toolListEntries, toolWriteEntry } from "./actions/journal";
@@ -47,12 +47,14 @@ export function reflectServer(userId: string): McpServer {
     const input = inputFor(a, "mcp");
     const said = REPLIES.get(a.id) ?? ((r: unknown) => r);
     const config = { title: a.title, description: describeFor(a, "mcp"), inputSchema: input, ...(a.tier === "read" ? { annotations: { readOnlyHint: true } } : {}) };
-    // A tool with no input is called with only the request context, so it runs with no input. Every run goes through
-    // runAction, which logs a change; one the person can undo names its change id in a second line.
+    // A tool with no input is called with only the request context, so it runs with no input. Every call goes through
+    // callMcpAction (./mcp-call.ts): read and own actions run and log a change, and one the person can undo names its
+    // change id in a second line; shared and outside actions are held for the person's tap in Reflect.
     const run = async (args: unknown) => {
-      const { result, changeId } = await runAction(a, { userId }, input ? args : {}, "mcp");
-      const out = text(said(result));
-      if (changeId && a.tier === "own" && a.undo) out.content.push({ type: "text", text: `Change ${changeId}. The person can undo it for 30 days (undo_change).` });
+      const call = await callMcpAction(a, { userId }, input ? args : {});
+      if (call.kind === "held") return text(call.changeId ? `${call.message}\nHeld as change ${call.changeId}.` : call.message);
+      const out = text(said(call.result));
+      if (call.changeId && a.tier === "own" && a.undo) out.content.push({ type: "text", text: `Change ${call.changeId}. The person can undo it for 30 days (undo_change).` });
       return out;
     };
     server.registerTool(a.id, config, run);
