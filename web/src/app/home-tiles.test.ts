@@ -1,19 +1,20 @@
 import { describe, expect, it } from "vitest";
-import { GLYPHS, hrefOf, MINE, OURS, toneOf, type Facts } from "./home-tiles";
+import { GROUPS } from "@reflect/core/plan";
+import { GLYPHS, hrefOf, MINE, toneOf, type Facts } from "./home-tiles";
 
 const none: Facts = { learn: { underway: false, stated: false }, journal: { stated: false, open: false } };
 
 describe("home tiles", () => {
-  it("has 15 tiles of mine (journal, ideas and legacy are a tool and lenses, not tiles) and 6 of ours, each with a glyph", () => {
+  it("has 15 tiles (journal, ideas and legacy are a tool and lenses, not tiles), each with a glyph and in exactly one of the three groups", () => {
     expect(MINE).toHaveLength(15);
     expect(MINE.map((t) => t.id)).not.toContain("journal");
-    expect(OURS).toHaveLength(6);
-    for (const t of [...MINE, ...OURS]) expect(GLYPHS[t.id], t.id).toBeTruthy();
+    for (const t of MINE) expect(GLYPHS[t.id], t.id).toBeTruthy();
+    expect(GROUPS.flatMap((g) => g.tiles).sort()).toEqual(MINE.map((t) => t.id).sort());
   });
 
-  it("opens every tile of mine, at the part it names, and none of ours yet", () => {
-    const links = Object.fromEntries([...MINE, ...OURS].map((t) => [t.id, hrefOf(t)]));
-    expect(links).toMatchObject({ learn: "/schole", food: "/life/home?k=food", income: "/life/work?k=income", standing: "/life/polis?k=standing", marriage: null });
+  it("opens every tile, at the part it names", () => {
+    const links = Object.fromEntries(MINE.map((t) => [t.id, hrefOf(t)]));
+    expect(links).toMatchObject({ learn: "/schole", food: "/life/home?k=food", income: "/life/work?k=income", standing: "/life/polis?k=standing" });
     for (const t of MINE) expect(hrefOf(t), t.id).not.toBeNull();
   });
 

@@ -195,6 +195,32 @@ export const APPS: readonly LifeApp[] = [
       need("transport", "Transport", "How you get to work and essentials, and what it costs.", { text: "Reliable access to work and essentials at a cost you can keep up.", source: "Domain design" }, [["reliable", "Reliable every day"], ["backup", "A second way when the first fails"]]),
       need("safety", "Safety", "Physical safety at home and away, an emergency fund and preparedness.", { text: "An emergency kit and plan, an emergency fund, and important documents kept safe.", source: "Ready.gov" }, [["kit", "An emergency kit"], ["plan", "A plan the household knows"], ["fund", "An emergency fund"], ["documents", "Important documents kept safe"]]),
       {
+        // A step still to be reached, on Home's Not yet (doc "Already and Not yet design guide"). Each carries forward
+        // the ones before it; a cost left empty is carried, food is estimated from the USDA plans (`@reflect/core/plan`).
+        id: "step", label: "Step", plural: "Steps", title: "name", hidden: true,
+        intro: "A change still to be reached, such as married or two children, with what it would cost. Nothing that is not yet is guaranteed.",
+        fields: [
+          { key: "name", label: "The step", kind: "text", hint: "Married" },
+          { key: "order", label: "Order", kind: "number", hint: "1 for the next step" },
+          { key: "year", label: "Year, if you have one", kind: "number" },
+          { key: "where", label: "Where you would live", kind: "text", hint: "County and state" },
+          { key: "adults", label: "Adults in the household", kind: "number" },
+          { key: "children", label: "Children", kind: "number" },
+          { key: "food", label: "How you would eat", kind: "choice", options: [{ id: "thrifty", label: "Thrifty" }, { id: "low", label: "Low-cost" }, { id: "moderate", label: "Moderate-cost" }, { id: "liberal", label: "Liberal" }] },
+          { key: "shelter", label: "Housing a month", kind: "money" },
+          { key: "transport", label: "Transport a month", kind: "money" },
+          { key: "water", label: "Water a month", kind: "money" },
+          { key: "safety", label: "Safety a month", kind: "money" },
+          { key: "children-cost", label: "Children a month", kind: "money" },
+          { key: "health", label: "Health care a month", kind: "money" },
+          { key: "learning", label: "Learning a month", kind: "money" },
+          { key: "giving", label: "Giving a month", kind: "money" },
+          { key: "other", label: "Everything else a month", kind: "money" },
+          { key: "food-cost", label: "Food a month, if you know it", kind: "money" },
+        ],
+        states: [{ id: "not-yet", label: "Not yet", active: true }, { id: "happened", label: "It happened" }],
+      },
+      {
         id: "firearm", label: "Firearm", plural: "Firearms", title: "name",
         intro: "Each firearm you own: training, safe storage (especially with children in the home) and permits, which state law sets.",
         fields: [

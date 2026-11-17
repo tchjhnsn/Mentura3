@@ -17,6 +17,8 @@ import { FILM_KINDS, FILM_STATUS, RESOURCE_KINDS, type FilmStatus } from "@refle
 import { addInput, keepIdea, listIdeas, listInputs, markSubject, resolveByTitle, inputTitle } from "./ideas-store";
 import { addItem, addItemSubjects, changeItem, listItems } from "./ways-store";
 import { MEDIA, WAYS, placeOf } from "@reflect/core/ways";
+import { PLAN_PATHS } from "@reflect/core/plan";
+import { planPartOf } from "./plan";
 
 export const GUIDE = [
   "Reflect keeps a person's journal, what they learn, their own ideas and the plan for what survives them. You help them write and keep things; you never decide for them.",
@@ -110,6 +112,13 @@ export function reflectServer(userId: string): McpServer {
     description: "What Reflect keeps and the rules for an AI working in it.",
     annotations: { readOnlyHint: true },
   }, async () => text(GUIDE));
+
+  server.registerTool("household_plan", {
+    title: "Read one part of the household plan",
+    description: `One part of the person's household plan: what life costs now (Already), each step still to be reached (Not yet), and what must be earned. Fetch only the part asked about. Paths: ${PLAN_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text((await planPartOf(userId, path)) ?? "No such part of the plan."));
 
   server.registerTool("list_entries", {
     title: "List journal entries",

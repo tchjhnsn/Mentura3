@@ -13,7 +13,7 @@ const SELECT = "border-input bg-background h-9 w-full rounded-md border px-3 tex
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One field's input, filled with what the record holds. */
-function FieldInput({ f, body }: { f: Field; body: Body }) {
+export function FieldInput({ f, body }: { f: Field; body: Body }) {
   const v = body[f.key];
   const id = `f-${f.key}`;
   if (f.kind === "origins") {
