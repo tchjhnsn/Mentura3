@@ -15,7 +15,7 @@ export const isLifeApp = (s: unknown): s is LifeAppId => typeof s === "string" &
 
 export type Option = { id: string; label: string };
 export type FieldKind = "text" | "long" | "number" | "money" | "day" | "choice" | "check" | "origins";
-export type Field = { key: string; label: string; kind: FieldKind; options?: readonly Option[]; hint?: string; /** Set by Reflect (what it points at, what is learned toward it), kept as it is when the form saves. */ internal?: boolean };
+export type Field = { key: string; label: string; kind: FieldKind; options?: readonly Option[]; hint?: string; /** Set by Reflect (what it points at, what is learned toward it), kept as it is when the form saves. */ internal?: boolean; /** A number that may be below zero and keeps six decimals (a longitude). */ signed?: boolean };
 export type State = { id: string; label: string; /** A record in this state is under way, which makes its tile "in action". */ active?: boolean };
 export type ActKind = { id: string; label: string; /** Past tense for the log: "Worked out". */ done: string; minutes?: boolean; amount?: boolean; /** Kept by another action (a journal entry written toward it), so no form offers it. */ hidden?: boolean };
 export type Kind = {
@@ -548,6 +548,17 @@ export const APPS: readonly LifeApp[] = [
           { key: "ref", label: "From the idea", kind: "text", internal: true },
           { key: "tiles", label: "Tiles it touches", kind: "text", internal: true },
           { key: "with", label: "With", kind: "choice", options: [{ id: "alone", label: "On my own" }, { id: "partner", label: "With a spouse or partner" }, { id: "family", label: "With family" }, { id: "friends", label: "With friends" }, { id: "others", label: "With others" }] },
+          { key: "place", label: "Where", kind: "text", internal: true },
+          { key: "lat", label: "Latitude", kind: "number", internal: true, signed: true },
+          { key: "lon", label: "Longitude", kind: "number", internal: true, signed: true },
+          { key: "start", label: "Starts", kind: "day" },
+          { key: "end", label: "Ends", kind: "day" },
+          { key: "plan", label: "Plan", kind: "long", internal: true },
+          { key: "drafted", label: "Drafted by Reflect", kind: "check", internal: true },
+          { key: "checklist", label: "Checklist", kind: "long", internal: true },
+          { key: "budget", label: "Budget", kind: "money" },
+          { key: "people", label: "Who is going", kind: "text", internal: true },
+          { key: "events", label: "Calendar events", kind: "text", internal: true },
         ],
         states: [{ id: "not-yet", label: "Not yet" }, { id: "done", label: "Done" }],
       },
@@ -594,7 +605,8 @@ export function cleanBody(k: Kind, raw: Record<string, unknown>): Body {
     if (!s) continue;
     if (f.kind === "number" || f.kind === "money") {
       const n = Number(s.replace(/[$,\s]/g, ""));
-      if (Number.isFinite(n) && n >= 0 && n < 1e10) out[f.key] = Math.round(n * 100) / 100;
+      if (f.signed) { if (Number.isFinite(n) && Math.abs(n) <= 180) out[f.key] = Math.round(n * 1e6) / 1e6; }
+      else if (Number.isFinite(n) && n >= 0 && n < 1e10) out[f.key] = Math.round(n * 100) / 100;
     } else if (f.kind === "day") {
       if (/^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s))) out[f.key] = s;
     } else if (f.kind === "choice") {

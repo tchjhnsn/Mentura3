@@ -21,7 +21,7 @@ import { PLAN_PATHS } from "@reflect/core/plan";
 import { planPartOf } from "./plan";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "./household-store";
-import { adventuresPart } from "./adventures";
+import { adventuresPart, planAdventure } from "./adventures";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
 import { connectionsPartOf } from "./connections-store";
@@ -131,10 +131,24 @@ export function reflectServer(userId: string): McpServer {
 
   server.registerTool("adventures", {
     title: "Read the person's adventures",
-    description: "The person's adventures (camping, a league, travel, learning piano...): each with the tiles it touches, who it is with, and whether it is done. Fetch only the part asked about. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
+    description: "The person's adventures (camping, a league, travel, a game night...): each with the tiles it touches, who it is with, and whether it is done. Fetch only the part asked about. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text(await adventuresPart(userId, path)));
+
+  server.registerTool("plan_adventure", {
+    title: "Draft a plan for an adventure",
+    description: "Draft a plan for one of the person's adventures, or a new one: the place, dates, a day-by-day plan of stops (with coordinates when known, so they show on the map), a packing checklist and a budget. It is saved as a draft the person keeps or changes on the adventure's page. Give links only to real pages; never invent coordinates.",
+    inputSchema: z.object({
+      id: z.string().max(60).optional().describe("The adventure's id, to plan one that exists"),
+      name: z.string().max(140).optional().describe("Its name, to start a new one (or find one by name)"),
+      place: z.string().max(200).optional().describe("Where, as a place name OpenStreetMap can find"),
+      start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+      budget: z.number().min(0).max(1e7).optional().describe("Total cost in dollars"),
+      days: z.array(z.object({ day: z.string().optional().describe("YYYY-MM-DD"), title: z.string().max(100).optional(), stops: z.array(z.object({ time: z.string().optional().describe("HH:MM"), title: z.string().max(140), note: z.string().max(300).optional(), link: z.string().max(500).optional().describe("https link out, such as the trail on AllTrails or the campsite on Recreation.gov"), lat: z.number().optional(), lon: z.number().optional() })).max(12) })).max(14).optional(),
+      checklist: z.array(z.string().max(140)).max(60).optional().describe("What to pack or do before"),
+    }),
+  }, async (d) => text(await planAdventure(userId, d)));
 
   server.registerTool("household", {
     title: "Read one part of the household",
