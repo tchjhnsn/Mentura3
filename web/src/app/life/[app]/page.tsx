@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { TileAdventures } from "@/app/adventures/in-tile";
 import { notFound, redirect } from "next/navigation";
 import { TILE_KIND, appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
 import { PAGE } from "@/components/page-header";
@@ -17,6 +18,8 @@ import { TileConnections } from "../tile-connections";
 import { NeedSpace } from "../need-space";
 
 export const dynamic = "force-dynamic";
+/** The tiles an app's workspace speaks for, where they are not its own id. */
+const APP_TILES: Partial<Record<LifeAppId, string[]>> = { body: ["health", "fitness"], polis: ["polis", "standing"], home: [] };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 export async function generateMetadata({ params }: { params: Promise<{ app: string }> }): Promise<Metadata> {
@@ -105,6 +108,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
       <div className="mt-4 grid max-w-4xl gap-6">
         {need ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
         {need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+        <TileAdventures userId={user.id} tiles={tile ? [tile] : APP_TILES[app] ?? [app]} />
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}
       </div>

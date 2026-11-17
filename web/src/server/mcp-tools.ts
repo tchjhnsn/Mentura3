@@ -21,6 +21,7 @@ import { PLAN_PATHS } from "@reflect/core/plan";
 import { planPartOf } from "./plan";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "./household-store";
+import { adventuresPart } from "./adventures";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
 import { connectionsPartOf } from "./connections-store";
@@ -127,6 +128,13 @@ export function reflectServer(userId: string): McpServer {
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text((await planPartOf(userId, path)) ?? "No such part of the plan."));
+
+  server.registerTool("adventures", {
+    title: "Read the person's adventures",
+    description: "The person's adventures (camping, a league, travel, learning piano...): each with the tiles it touches, who it is with, and whether it is done. Fetch only the part asked about. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text(await adventuresPart(userId, path)));
 
   server.registerTool("household", {
     title: "Read one part of the household",

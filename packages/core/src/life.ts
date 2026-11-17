@@ -539,6 +539,19 @@ export const APPS: readonly LifeApp[] = [
         acts: [{ id: "reviewed", label: "Reviewed", done: "Reviewed" }],
       },
       {
+        // The Adventures lens (`./adventures.ts`, decided 2026-11-17 11:02Z): kept here, with the things to do before
+        // you die, but shown in its own lens and in each tile it touches.
+        id: "adventure", label: "Adventure", plural: "Adventures", title: "name", hidden: true,
+        intro: "Something you want to do, such as camping, a league, travel or learning piano, with the tiles it touches.",
+        fields: [
+          { key: "name", label: "The adventure", kind: "text", hint: "Go camping" },
+          { key: "ref", label: "From the idea", kind: "text", internal: true },
+          { key: "tiles", label: "Tiles it touches", kind: "text", internal: true },
+          { key: "with", label: "With", kind: "choice", options: [{ id: "alone", label: "On my own" }, { id: "partner", label: "With a spouse or partner" }, { id: "family", label: "With family" }, { id: "friends", label: "With friends" }, { id: "others", label: "With others" }] },
+        ],
+        states: [{ id: "not-yet", label: "Not yet" }, { id: "done", label: "Done" }],
+      },
+      {
         id: "vault", label: "What happens to my vaults", plural: "My vaults", title: "to", one: true,
         intro: "Named in advance: who receives your journal and records at your death, or that they are sealed.",
         fields: [{ key: "to", label: "Handed to", kind: "text", hint: "My children, my executor, or sealed" }, { key: "note", label: "What they should know", kind: "long" }],

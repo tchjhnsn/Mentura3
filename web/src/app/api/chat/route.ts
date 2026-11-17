@@ -2,6 +2,7 @@
 // examples/chat): AI SDK streaming, tools first, cards streamed as json-render spec parts. One difference
 // on purpose: the model never writes a spec. Each tool fetches the person's records and Reflect builds the
 // card (../../chat/spec.ts), so a card can only show what the app holds.
+import { adventuresPart } from "@/server/adventures";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "@/server/household-store";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
@@ -110,6 +111,12 @@ export async function POST(req: Request) {
               show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the words do, what they support or attack, and how good the argument is.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
               return `Shown: a practice session on ${d.title}. Do not write quiz questions about it yourself; the session asks them.`;
             },
+          }),
+          // The Adventures lens (2026-11-17): what the person wants to do, across the tiles each touches.
+          adventures: tool({
+            description: "Fetch the person's adventures (camping, a league, travel, learning piano...): each with the tiles it touches, who it is with, and whether it is done. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
+            inputSchema: z.object({ path: z.string().max(200).default("") }),
+            execute: async ({ path }) => adventuresPart(user.id, path),
           }),
           // The household plan is a tree of small parts (doc "Already and Not yet design guide"): fetch only the one asked about.
           household_plan: tool({
