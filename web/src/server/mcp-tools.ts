@@ -22,6 +22,8 @@ import { planPartOf } from "./plan";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "./household-store";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
+import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
+import { connectionsPartOf } from "./connections-store";
 import { placeFacts } from "./public-data";
 import { MEALS_PATHS } from "@reflect/core/meals";
 import { mealsPartOf } from "./meals-store";
@@ -142,6 +144,13 @@ export function reflectServer(userId: string): McpServer {
     const p = await placeFacts(userId);
     return text(p.set ? (placePart(p, path) ?? "No such part, or the source could not be read.") : "The person has not said where they live.");
   });
+
+  server.registerTool("connections", {
+    title: "Read the person's connections",
+    description: `What the person has connected, what each connector reads and never does, which tiles use it, and why one cannot be connected yet. Read only; connecting happens on the connector's page in Reflect. Paths: ${CONNECTIONS_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text((await connectionsPartOf(userId, path)) ?? "No such connector."));
 
   server.registerTool("meals", {
     title: "Read one part of meal planning",

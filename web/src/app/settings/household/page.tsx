@@ -24,7 +24,7 @@ export default async function HouseholdPage({ searchParams }: { searchParams: Pr
   const c = h ? counts(h.members, year) : null;
   return (
     <main className={PAGE}>
-      <ThingHeader back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Household" />
+      <ThingHeader search={false} back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Household" />
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">{h ? ARRANGEMENT_LABEL[arrangement(h.members)] : "Household"}</h1>

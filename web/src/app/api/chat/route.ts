@@ -8,6 +8,8 @@ import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { placeFacts } from "@/server/public-data";
 import { MEALS_PATHS } from "@reflect/core/meals";
 import { mealsPartOf } from "@/server/meals-store";
+import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
+import { connectionsPartOf } from "@/server/connections-store";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { z } from "zod";
@@ -138,6 +140,14 @@ export async function POST(req: Request) {
               if (!p.set) return "The person has not said where they live. They can set it at Settings, Where you live.";
               const part = placePart(p, path);
               return part === null ? "No such part, or the source could not be read. Do not guess." : JSON.stringify(part);
+            },
+          }),
+          connections: tool({
+            description: `Fetch the person's connections: what they have connected, what each connector reads and never does, which tiles use it, and why one cannot be connected yet. Never connect anything: to connect, send the person to Settings, Connections, then the connector's page (/settings/connections/<id>). Paths: ${CONNECTIONS_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'connected' or 'plaid'") }),
+            execute: async ({ path }) => {
+              const part = await connectionsPartOf(user.id, path);
+              return part === null ? "No such connector. Do not guess." : JSON.stringify(part);
             },
           }),
           meals: tool({
