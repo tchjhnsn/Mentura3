@@ -3,7 +3,7 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
 import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
@@ -113,6 +113,18 @@ export const { registry } = defineRegistry(catalog, {
       <div className="flex items-center justify-between gap-3 px-1">
         <span className="text-muted-foreground text-xs">{props.text}</span>
         <Tap label="Undo" doneText="Undone" run={() => undoFromChat(props.change)} />
+      </div>
+    ),
+    HomeCard: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
+        <div className="min-w-0">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs"><HouseIcon className="size-3" />On Home · {props.tile} · {props.until}</div>
+          <div className="truncate text-sm font-medium">{props.title}</div>
+          {props.lines.map((l, i) => <div key={i} className="text-muted-foreground line-clamp-2 text-xs">{l}</div>)}
+        </div>
+        <Button asChild variant="ghost" size="sm" className="shrink-0">
+          <Link href="/">Open Home<ArrowRightIcon /></Link>
+        </Button>
       </div>
     ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,

@@ -9,6 +9,8 @@ import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTra
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
 import { recentChanges, undoChangeAction } from "@/server/actions/changes";
 import { runAction } from "@/server/actions/run";
+import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "@/server/actions/home-cards";
+import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -52,6 +54,12 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   const added = (list: AddedEvent[]) => {
     for (const e of list) show({ kind: "event", title: e.title, day: e.day, when: e.when, tile: e.tile ? e.tile_label : "", href: e.href });
     return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
+  };
+
+  const day = today ?? new Date().toISOString().slice(0, 10);
+  const card = (c: HomeCard & { summary: string }, said: string) => {
+    show({ kind: "home_card", title: c.title, tile: c.tile, lines: cardLines(c, day), until: c.end });
+    return `${said}: ${c.summary} (id ${c.id}). The person removes it with the x on Home.`;
   };
 
   return Object.fromEntries([
@@ -143,5 +151,9 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       show({ kind: "note", text: `Undone: ${r.title}.` });
       return `Undone: ${r.title} (change ${r.undone}).`;
     }),
+    use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
+    use(addHomeCardAction, (c) => card(c, "Placed on Home")),
+    use(removeHomeCardAction, () => "Removed from Home."),
+    use(checkHomeItemAction, (c) => card(c, "Checked")),
   ]);
 }
