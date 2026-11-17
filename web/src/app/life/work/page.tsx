@@ -85,7 +85,7 @@ function Season({ s }: { s: Workspace }) {
     <section aria-labelledby="season" className="order-first grid content-start gap-3 lg:order-none">
       <h2 id="season" className="font-semibold">This season</h2>
       <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
-        <Figure label="To earn a year" value={s.left !== null ? money(s.left) : "Not known"} note={s.left !== null ? "After income" : "Add costs in Home"} href={s.left !== null ? "/life/work/season#earn" : "/life/home"} />
+        <Figure label="To earn a year" value={s.left !== null ? money(s.left) : "Not known"} note={s.left !== null ? "After income" : "Add costs in Home"} href="/plan" />
         <Figure label="Hours a week" value={s.hours !== null ? String(s.hours) : "Not set"} note={s.learningHours ? `Learning ${s.learningHours}` : "Set them"} href="/life/work/season#hours" />
         <Figure label="Covered" value={s.need.covered.length ? String(s.need.covered.length) : "None"} note={s.need.covered.length ? s.need.covered.map((c) => c.label).join(", ") : "By others"} href="/life/work/season#covered" />
       </div>

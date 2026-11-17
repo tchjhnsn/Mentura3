@@ -1,7 +1,8 @@
 // The home screen's tiles: one per area of life, several opening the same app (docs/design/REFLECT_UI_2026-11-12.md,
 // sections 1 to 3). A tile's tone says its state: in action when something in its app is under way, in thought
 // when something is stated, unstated otherwise. MINE's tiles all open their apps (Learn, the journal, and the
-// apps in `@reflect/core/life`); OURS, the shared spaces, is not built yet.
+// apps in `@reflect/core/life`). The shared spaces folded into them (doc "Already and Not yet design guide"): Marriage
+// into Mate, Children into Kin, Household, Home and Budget into Home and the income plan, Village into Friends.
 import { TILE_KIND } from "@reflect/core/life";
 
 /** Solid glyphs on a 100 by 100 box, drawn for Reflect. */
@@ -54,18 +55,10 @@ export const MINE: readonly Tile[] = [
   // Journal is a tool, and Ideas, Legacy and the log are lenses over tiles and tools, not tiles (Torian, 2026-11-14 17:52Z, confirmed 17:56Z).
 ];
 
-export const OURS: readonly Tile[] = [
-  { id: "marriage", label: "Marriage", app: "marriage" },
-  { id: "household", label: "Household", app: "household" },
-  { id: "home", label: "Home", app: "household" },
-  { id: "budget", label: "Budget", app: "household" },
-  { id: "children", label: "Children", app: "children" },
-  { id: "village", label: "Village", app: "village" },
-];
 
 /**
  * Where a tile goes: Learn, the journal (Ideas and Journal), or its app in `@reflect/core/life`, at the part it
- * names (Income opens Work's income, Food opens Home's food). OURS's tiles go nowhere yet.
+ * names (Income opens Work's income, Food opens Home's food).
  */
 export function hrefOf(t: Tile): string | null {
   if (t.app === "learn") return "/schole";

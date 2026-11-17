@@ -27,6 +27,8 @@ import { lookLink, searchMedium, type Fetch } from "@reflect/core/lookup";
 import { clock, readTranscript, searchTranscript } from "@reflect/core/media";
 import { DIALOGUES } from "@reflect/core/practice-settled";
 import { DIALECTIC_COURSE } from "@reflect/core/start-dialectic";
+import { partSummary, planPart, PLAN_PATHS } from "@reflect/core/plan";
+import { planOf } from "@/server/plan";
 
 export const maxDuration = 60;
 const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
@@ -99,6 +101,19 @@ export async function POST(req: Request) {
               const d = DIALOGUES.find((x) => x.id === work)!;
               show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the words do, what they support or attack, and how good the argument is.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
               return `Shown: a practice session on ${d.title}. Do not write quiz questions about it yourself; the session asks them.`;
+            },
+          }),
+          // The household plan is a tree of small parts (doc "Already and Not yet design guide"): fetch only the one asked about.
+          household_plan: tool({
+            description: `Fetch one part of the person's household plan: what life costs now, each step still to be reached, its costs, taxes, household and what must be earned. Fetch the smallest part that answers. Paths: ${PLAN_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'next/costs/food' or 'already/household'") }),
+            execute: async ({ path }) => {
+              const { plan } = await planOf(user.id);
+              const said = partSummary(plan, path);
+              if (!said) return "No such part of the plan. Do not guess a figure.";
+              const stage = path.split("/")[0] || "";
+              show({ kind: "quote", text: said, cite: "Your household plan", href: stage && stage !== "already" ? `/plan?step=${encodeURIComponent(stage)}` : "/plan" });
+              return JSON.stringify(planPart(plan, path));
             },
           }),
           show_shelves: tool({
