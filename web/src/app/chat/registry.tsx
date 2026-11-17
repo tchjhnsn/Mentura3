@@ -3,7 +3,7 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon } from "lucide-react";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,6 +95,18 @@ export const { registry } = defineRegistry(catalog, {
         <blockquote className="font-serif">{props.text}</blockquote>
         <p className="text-muted-foreground mt-2 text-xs">{props.cite}</p>
       </Link>
+    ),
+    CalendarEvent: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
+        <div className="min-w-0">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs"><CalendarIcon className="size-3" />Added to your calendar</div>
+          <div className="truncate text-sm font-medium">{props.title}</div>
+          <div className="text-muted-foreground truncate text-xs">{[props.day, props.when, props.tile].filter(Boolean).join(" · ")}</div>
+        </div>
+        <Button asChild variant="ghost" size="sm" className="shrink-0">
+          <Link href={props.href}>Open in calendar<ArrowRightIcon /></Link>
+        </Button>
+      </div>
     ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,
   },

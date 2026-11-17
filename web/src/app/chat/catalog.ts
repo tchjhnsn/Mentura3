@@ -15,7 +15,8 @@ export const catalog = defineCatalog(schema, {
     FoundItem: { props: z.object({ medium: z.string(), title: z.string(), by: z.string().nullable(), image: z.string().nullable(), source: z.string(), kept: z.boolean(), item: z.string() }), description: "A lecture, debate, film, music or game found in a catalog, which the person adds to their shelves with one tap (item is the find as JSON)" },
     ProposeClaim: { props: z.object({ text: z.string(), stance: z.string(), holders: z.string(), subject: z.string().nullable(), claim: z.string() }), description: "A claim to keep, which the person accepts with one tap (claim is the proposal as JSON)" },
     BrowseLink: { props: z.object({ href: z.string().regex(/^\/schole\/browse(\?[^\s]*)?$/), label: z.string() }), description: "A link to the same list of books on Scholē's Browse page" },
-    Quote: { props: z.object({ text: z.string(), cite: z.string(), href: z.string().regex(/^\/schole\/works\/OL\d+W\/read\?[^\s]*$/) }), description: "Words from a book the person reads in Reflect, cited to its author, book and chapter, opening the reader at them" },
+    Quote: { props: z.object({ text: z.string(), cite: z.string(), href: z.string().regex(/^\/(?!\/)[^\s]*$/) }), description: "Words from a book the person reads in Reflect, cited to its author, book and chapter, opening the reader at them" },
+    CalendarEvent: { props: z.object({ title: z.string(), day: z.string(), when: z.string(), tile: z.string(), href: z.string().regex(/^\/calendar\?day=\d{4}-\d{2}-\d{2}$/) }), description: "An event added to the person's calendar, opening the calendar at its day" },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
   },
   // No json-render actions: a card's one tap calls Reflect's server action itself (registry.tsx).

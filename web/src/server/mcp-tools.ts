@@ -28,9 +28,10 @@ import { connectionsPartOf } from "./connections-store";
 import { placeFacts } from "./public-data";
 import { MEALS_PATHS } from "@reflect/core/meals";
 import { mealsPartOf } from "./meals-store";
+import { addEvents, calendarPart, calendarSchema, eventSchema } from "./calendar-tools";
 
 export const GUIDE = [
-  "Reflect keeps a person's journal, what they learn, their own ideas and the plan for what survives them. You help them write and keep things; you never decide for them.",
+  "Reflect keeps a person's journal, what they learn, their own ideas, their calendar and the plan for what survives them. You help them write and keep things; you never decide for them.",
   "",
   "Rules: save only what the person asked you to save, in their words. Never infer facts about the person beyond what they wrote, and never share their entries.",
 ].join("\n");
@@ -100,6 +101,8 @@ export async function toolLearning(userId: string) {
     items: (await listItems(userId).catch(() => [])).map((i) => ({ id: i.id, medium: i.medium, way: placeOf(i), title: i.title, by: i.by, url: i.url, status: i.status, finished: i.finishedOn, lesson: i.lesson, subjects: i.subjects.map((x) => x.name) })),
   };
 }
+
+const withLinks = <T extends { href: string }>(list: T[]) => list.map((e) => ({ ...e, link: `${siteUrl()}${e.href}` }));
 
 const legacySchema = z.object({
   confirmations: z.number().int().min(1).describe("how many trustees must confirm the death"),
@@ -180,6 +183,25 @@ export function reflectServer(userId: string): McpServer {
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text((await mealsPartOf(userId, path)) ?? "No such part of the meals."));
+
+  server.registerTool("calendar", {
+    title: "Read the person's calendar",
+    description: "The person's calendar from one day through another (a week when 'to' is left out, at most 92 days): every tile's events, or one tile's, with the days their records hold (a date, an election, a birthday). Read it before saying when they are free.",
+    inputSchema: calendarSchema,
+    annotations: { readOnlyHint: true },
+  }, async ({ from, to, tile }) => text(await calendarPart(userId, from, to, tile)));
+
+  server.registerTool("add_event", {
+    title: "Put an event on the person's calendar",
+    description: "Add one event, only when the person asks, with the day and times they said; ask first when either is unclear. Returns its id and a link to the calendar at its day. Tell the person the day and time.",
+    inputSchema: eventSchema,
+  }, async (e) => text(withLinks(await addEvents(userId, [e]))[0]));
+
+  server.registerTool("add_events", {
+    title: "Put several events on the person's calendar",
+    description: "Add an itinerary or several events at once, only when the person asks. Each is checked before any is added. Tell the person the day and time of each.",
+    inputSchema: z.object({ events: z.array(eventSchema).min(1).max(20) }),
+  }, async ({ events }) => text(withLinks(await addEvents(userId, events))));
 
   server.registerTool("list_entries", {
     title: "List journal entries",

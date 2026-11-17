@@ -35,3 +35,10 @@ describe("chat cards", () => {
     expect(spec.elements.e0).toMatchObject({ type: "Quote", props: { cite: "Plato, Apology, Part 1", href: "/schole/works/OL1W/read?c=1&find=x&p=2" } });
   });
 });
+
+describe("calendar cards", () => {
+  it("shows an added event with its day, time, tile and the calendar at its day", () => {
+    const spec = buildSpec([{ kind: "event", title: "Dinner with Sam", day: "2026-11-20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" }])!;
+    expect(spec.elements.e0).toEqual({ type: "CalendarEvent", props: { title: "Dinner with Sam", day: "Friday, November 20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" } });
+  });
+});
