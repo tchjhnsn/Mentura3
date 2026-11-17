@@ -19,7 +19,7 @@ describe("life apps", () => {
     for (const [tile, t] of Object.entries(TILE_KIND)) {
       if (t.kind) expect(kindOf(t.app, t.kind), tile).not.toBeNull();
     }
-    expect(Object.keys(TILE_KIND).sort()).toEqual(["fitness", "food", "friends", "health", "income", "kin", "legacy", "mate", "polis", "safety", "shelter", "standing", "transport", "water", "work"]);
+    expect(Object.keys(TILE_KIND).sort()).toEqual(["fitness", "food", "friends", "health", "income", "kin", "legacy", "mate", "polis", "safety", "shelter", "standing", "transport", "ventures", "water", "work"]);
   });
 
   it("keeps only a kind's fields, each cleaned to its kind", () => {

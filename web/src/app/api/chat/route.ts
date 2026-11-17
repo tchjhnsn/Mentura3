@@ -2,6 +2,8 @@
 // examples/chat): AI SDK streaming, tools first, cards streamed as json-render spec parts. One difference
 // on purpose: the model never writes a spec. Each tool fetches the person's records and Reflect builds the
 // card (../../chat/spec.ts), so a card can only show what the app holds.
+import { HOUSEHOLD_PATHS } from "@reflect/core/household";
+import { householdPartOf } from "@/server/household-store";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { z } from "zod";
@@ -114,6 +116,14 @@ export async function POST(req: Request) {
               const stage = path.split("/")[0] || "";
               show({ kind: "quote", text: said, cite: "Your household plan", href: stage && stage !== "already" ? `/plan?step=${encodeURIComponent(stage)}` : "/plan" });
               return JSON.stringify(planPart(plan, path));
+            },
+          }),
+          household: tool({
+            description: `Fetch one part of the person's household: who lives there, how each is related, ages, dependents, and whether it is a family household. Fetch the smallest part that answers. Paths: ${HOUSEHOLD_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'members' or 'counts'") }),
+            execute: async ({ path }) => {
+              const part = await householdPartOf(user.id, path);
+              return part === null ? "No such part of the household. Do not guess." : JSON.stringify(part);
             },
           }),
           show_shelves: tool({

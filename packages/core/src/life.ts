@@ -8,7 +8,7 @@ import { ORIGINS } from "./origins";
 
 const ORIGIN_IDS: readonly string[] = ORIGINS.map((o) => o.id);
 
-export const LIFE_APPS = ["work", "home", "body", "friends", "mate", "kin", "polis", "legacy"] as const;
+export const LIFE_APPS = ["work", "home", "body", "friends", "mate", "kin", "polis", "ventures", "legacy"] as const;
 export type LifeAppId = (typeof LIFE_APPS)[number];
 export const isLifeApp = (s: unknown): s is LifeAppId => typeof s === "string" && (LIFE_APPS as readonly string[]).includes(s);
 
@@ -413,6 +413,31 @@ export const APPS: readonly LifeApp[] = [
     ],
   },
   {
+    // Ventures (Torian, 2026-11-17 04:10Z, doc "Tiles and their connections"): the businesses the person owns or is
+    // starting, apart from Work, the work they do. Exchange between households belongs to the village and polis
+    // (Politics I.9). An operating venture's profit is counted in the income plan; starting one goes through Naive.
+    id: "ventures", label: "Ventures",
+    intro: "The businesses you own or are starting, and what they bring in.",
+    kinds: [
+      {
+        id: "venture", label: "Venture", plural: "Ventures", title: "name",
+        intro: "A business of your own, a side business, a store, a practice.",
+        fields: [
+          { key: "name", label: "Name", kind: "text" },
+          { key: "what", label: "What it sells", kind: "text", hint: "Prints, tutoring, a food truck" },
+          { key: "where", label: "Where it sells", kind: "choice", options: opts("Shopify", "Etsy", "Stripe", "Square", "Amazon", "In person", "Other") },
+          { key: "link", label: "Store or site", kind: "text", hint: "https://" },
+          { key: "started", label: "Started", kind: "day" },
+          { key: "revenue", label: "Brings in a month", kind: "money" },
+          { key: "costs", label: "Costs a month", kind: "money" },
+          { key: "note", label: "Notes", kind: "long" },
+        ],
+        states: [{ id: "idea", label: "An idea" }, { id: "starting", label: "Starting", active: true }, { id: "operating", label: "Operating", active: true }, { id: "paused", label: "Paused" }, { id: "closed", label: "Closed" }],
+        acts: [{ id: "worked", label: "Time on it", done: "Worked on", minutes: true }],
+      },
+    ],
+  },
+  {
     id: "legacy", label: "Legacy",
     intro: "What you prepare for your death and what you want to survive you.",
     kinds: [
@@ -515,7 +540,7 @@ export const TILE_KIND: Record<string, { app: LifeAppId; kind?: string }> = {
   work: { app: "work", kind: "work" }, income: { app: "work", kind: "income" },
   food: { app: "home", kind: "food" }, water: { app: "home", kind: "water" }, shelter: { app: "home", kind: "shelter" }, transport: { app: "home", kind: "transport" }, safety: { app: "home", kind: "safety" },
   health: { app: "body", kind: "health" }, fitness: { app: "body", kind: "fitness" },
-  friends: { app: "friends" }, standing: { app: "polis", kind: "standing" }, mate: { app: "mate" }, kin: { app: "kin" }, polis: { app: "polis" }, legacy: { app: "legacy" },
+  friends: { app: "friends" }, standing: { app: "polis", kind: "standing" }, mate: { app: "mate" }, kin: { app: "kin" }, polis: { app: "polis" }, ventures: { app: "ventures" }, legacy: { app: "legacy" },
 };
 
 export type RecordFacts = { kind: string; state: string | null; body: Body };
@@ -561,6 +586,18 @@ export function incomeSummary(records: readonly RecordFacts[]): { year: number; 
   const h = records.find((r) => r.kind === "household");
   const need = h && typeof h.body.need === "number" && h.body.need > 0 ? h.body.need : null;
   return { year: Math.round(year), unknown, need, share: need ? Math.round((year / need) * 100) : null };
+}
+
+/** What operating ventures bring in a year after their costs, from the person's own figures. */
+export function ventureProfit(records: readonly RecordFacts[]): number {
+  let year = 0;
+  for (const r of records) {
+    if (r.kind !== "venture" || r.state !== "operating") continue;
+    const rev = typeof r.body.revenue === "number" ? r.body.revenue : 0;
+    const cost = typeof r.body.costs === "number" ? r.body.costs : 0;
+    year += (rev - cost) * 12;
+  }
+  return Math.round(year);
 }
 
 /** Activity in the seven days ending today against the guidelines: vigorous minutes count twice. */
