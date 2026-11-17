@@ -8,10 +8,9 @@ export const STATE: Record<string, string> = { drawn: "Drawn to it", exploring: 
 /** What kind of aim it is, in a word. */
 export const kindLabel = (w: Pick<Wanted, "record" | "job">) => (w.record.kind === "imagined" ? "Imagined" : TYPE[String(w.record.body.type ?? "")] ?? (w.job ? "Job" : "Work"));
 
-/** The four ways to an aim (design guide, Add an aim). */
+/** The ways to an aim (Work design guide, Add an aim; roles moved to Scholē's Lives, Qualities design guide). */
 export const WAYS = [
   { href: "/life/work/browse", label: "Browse work", note: "Jobs that exist, existed or are forming" },
-  { href: "/life/work/add#roles", label: "Pick a role", note: "Founder, teacher, farmer: then the people who did it" },
   { href: "/life/work?k=imagined", label: "Imagine work", note: "Work that does not exist yet" },
   { href: "/life/work/add#own", label: "Name your own", note: "A job, a career or a venture" },
 ] as const;

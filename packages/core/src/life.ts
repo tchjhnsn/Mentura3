@@ -145,6 +145,15 @@ export const APPS: readonly LifeApp[] = [
         ],
       },
       {
+        id: "quality", label: "Quality I am building", plural: "Qualities", title: "title", hidden: true,
+        intro: "A quality kept in the Qualities lens, holding what was written about it.",
+        fields: [
+          { key: "ref", label: "Which quality", kind: "text", internal: true },
+          { key: "title", label: "Name", kind: "text" },
+        ],
+        acts: [{ id: "wrote", label: "Journal entry", done: "Wrote about", hidden: true }],
+      },
+      {
         id: "imagined", label: "Imagined work", plural: "Imagined", title: "name",
         intro: "Work that does not exist yet, as you imagine it.",
         fields: [

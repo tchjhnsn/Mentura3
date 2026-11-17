@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { exemplarForPage } from "@reflect/core/formation";
+import { QualitiesInTheirWords } from "../qualities";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MicIcon } from "lucide-react";
@@ -122,6 +124,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
     return { key: `${a.feed}|${k}`, title: a.title, show: a.show, date: a.date, seconds: a.seconds, image: a.image, href: kept ? `/schole/items/${kept}/episodes/${k}` : `/schole/podcasts/episode?u=${encodeURIComponent(a.feed)}&k=${k}&t=${encodeURIComponent(a.show)}` };
   });
   const follow = <PersonFollowButton name={name} qid={qid} following={following} />;
+  const exemplar = exemplarForPage(name);
   const count = (n: number) => <span className="text-muted-foreground font-normal"> {n}</span>;
   const tiles: ShowTile[] = facts.shows.map((x) => {
     const link = x.feed ?? (x.apple ? `https://podcasts.apple.com/us/podcast/id${x.apple}` : null);
@@ -181,6 +184,7 @@ export default async function PersonPage({ params, searchParams }: { params: Pro
           </div>
         </header>
         <div className="max-w-3xl space-y-10">
+          {exemplar ? <QualitiesInTheirWords e={exemplar} userId={user.id} back={`/schole/people/${encodeURIComponent(name)}`} /> : null}
           {latest.length ? <section className="space-y-3"><h2 className={H2}>Latest from {facts.shows.length === 1 ? "their podcast" : "their podcasts"}</h2><LatestCards cards={latest} /></section> : null}
           {onShow.length ? <section className="space-y-3"><h2 className={H2}>On {title}{count(onShow.length)}</h2><p className="text-muted-foreground -mt-2 text-xs">The show you came from.</p><Episodes rows={onShow} today={today} /></section> : null}
           {others.length ? <section className="space-y-3"><h2 className={H2}>Guest appearances{count(others.length)}</h2><Episodes rows={others} today={today} /><p className="text-muted-foreground text-xs">Episodes of other people&apos;s shows that name {name}, from Apple Podcasts&apos; search; each plays here.</p></section> : null}

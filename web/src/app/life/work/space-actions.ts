@@ -6,7 +6,6 @@ import { requireUser } from "@/server/session";
 import { addLifeRecord, keepLifeAct, lifeRecord, lifeRecords, saveLifeRecord } from "@/server/life-store";
 import { createWork } from "@/server/work-store";
 import { listItems } from "@/server/ways-store";
-import { roleById } from "@reflect/core/formation";
 import { WANTED_KINDS } from "@/server/work-space";
 
 const TYPES = new Set(["job", "career", "venture", "company", "other"]);
@@ -70,15 +69,4 @@ export async function mainAction(recordId: string): Promise<void> {
   }
   revalidatePath("/", "layout");
   redirect(`/life/work/${recordId}`);
-}
-
-/** Take a broad role (founder, teacher) as an aim; its page then leads to the people who did it. Taking it again opens the one kept. */
-export async function addRoleAction(roleId: string): Promise<void> {
-  const user = await requireUser();
-  const role = roleById(roleId);
-  if (!role) throw new Error("No such role.");
-  const had = (await lifeRecords(user.id, "work")).find((r) => r.kind === "inspiration" && r.body.type === "role" && r.body.role === roleId);
-  const id = had?.id ?? await addLifeRecord(user.id, "work", "inspiration", { title: role.name, type: "role", role: roleId });
-  revalidatePath("/", "layout");
-  redirect(`/life/work/${id}`);
 }

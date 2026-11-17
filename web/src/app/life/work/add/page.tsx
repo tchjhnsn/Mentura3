@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PlusIcon } from "lucide-react";
-import { ROLES } from "@reflect/core/formation";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { requireUser } from "@/server/session";
-import { addOwnAction, addRoleAction } from "../space-actions";
+import { addOwnAction } from "../space-actions";
 
 export const metadata: Metadata = { title: "Add an aim" };
 export const dynamic = "force-dynamic";
 const SELECT = "border-input bg-background h-9 rounded-md border px-3 text-sm";
 
-/** Add an aim (doc "Work design guide", Interactions): four ways in, browse work, pick a role, imagine work, or name your own. */
+/** Add an aim (doc "Work design guide", Interactions): browse work, imagine work, or name your own. Roles are Lives in Scholē (doc "Qualities design guide"). */
 export default async function AddAimPage() {
   await requireUser();
   return (
@@ -29,25 +28,6 @@ export default async function AddAimPage() {
           <h2 className="text-lg font-semibold tracking-tight">Browse work</h2>
           <p className="text-muted-foreground text-sm">Jobs that exist, existed or are forming, and companies. Press It inspires me on one to keep it as an aim.</p>
           <div><Button asChild variant="outline"><Link href="/life/work/browse">Browse work</Link></Button></div>
-        </section>
-
-        <section id="roles" className="grid scroll-mt-20 gap-3">
-          <div>
-            <h2 className="text-lg font-semibold tracking-tight">Pick a role</h2>
-            <p className="text-muted-foreground text-sm">A broad role, then the people who did it well and the traits of theirs you want.</p>
-          </div>
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {ROLES.map((r) => (
-              <li key={r.id}>
-                <form action={addRoleAction.bind(null, r.id)}>
-                  <button type="submit" className="hover:bg-accent grid w-full rounded-lg border px-4 py-3 text-left transition">
-                    <span className="font-medium">{r.name}</span>
-                    <span className="text-muted-foreground text-sm">{r.about}</span>
-                  </button>
-                </form>
-              </li>
-            ))}
-          </ul>
         </section>
 
         <section className="grid gap-2">

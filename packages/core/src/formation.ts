@@ -208,3 +208,46 @@ export function traitsWanted(admired: readonly Admired[]): { trait: Trait; from:
   }
   return [...out.values()];
 }
+
+/** The qualities kept (Qualities lens, doc "Qualities design guide"), each with every person it was seen in, in the order first kept. */
+export function keptQualities(admired: readonly Admired[]): { trait: Trait; from: Exemplar[] }[] {
+  const out = new Map<TraitId, { trait: Trait; from: Exemplar[] }>();
+  for (const a of admired) {
+    const e = exemplarById(a.exemplar);
+    if (!e) continue;
+    for (const t of a.traits) {
+      const trait = traitById(t);
+      if (!trait || !e.traits.some((x) => x.trait === t)) continue;
+      const had = out.get(t);
+      if (had) { if (!had.from.includes(e)) had.from.push(e); } else out.set(t, { trait, from: [e] });
+    }
+  }
+  return [...out.values()];
+}
+
+/**
+ * Qualities named by the authors of books the person finished (by LibriVox id) and not yet kept, each with whose
+ * book: Aristotle's second sign, pleasure in the activity (Ethics II.3, X.5). Nothing is kept until the person adds it.
+ */
+export function suggestedQualities(admired: readonly Admired[], finished: ReadonlySet<string>): { trait: Trait; from: Exemplar }[] {
+  const kept = new Set(keptQualities(admired).map((q) => q.trait.id));
+  const out = new Map<TraitId, { trait: Trait; from: Exemplar }>();
+  for (const e of EXEMPLARS) {
+    if (!finished.has(e.book.id)) continue;
+    for (const x of e.traits) {
+      const trait = traitById(x.trait);
+      if (trait && !kept.has(x.trait) && !out.has(x.trait)) out.set(x.trait, { trait, from: e });
+    }
+  }
+  return [...out.values()];
+}
+
+/** The person a Scholē person page shows, by its path name ("benjamin-franklin", "Cicero") or full name. */
+export function exemplarForPage(name: string): Exemplar | undefined {
+  const n = name.trim().toLowerCase();
+  return EXEMPLARS.find((e) => e.id === n || e.name.toLowerCase() === n || e.page === `/schole/people/${n}`);
+}
+
+/** Where a person's page is in Scholē. */
+export const exemplarHref = (e: Exemplar) => e.page ?? `/schole/people/${encodeURIComponent(e.name)}`;
+

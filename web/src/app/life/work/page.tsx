@@ -4,12 +4,10 @@ import { redirect } from "next/navigation";
 import { PenLineIcon, PlusIcon, StarIcon } from "lucide-react";
 import { itemHref } from "@reflect/core/collections";
 import { recommend } from "@reflect/core/recommend";
-import { exemplarById, traitById } from "@reflect/core/formation";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { workspace, type Wanted, type Workspace } from "@/server/work-space";
-import { admiredOf } from "@/server/admired";
 import { signalsOf } from "@/server/recommend";
 import { lifeActs } from "@/server/life-store";
 import LifeAppPage from "../[app]/page";
@@ -33,9 +31,7 @@ function underWay(w: Wanted): string | null {
 }
 
 /** The main aim, as the page's hero: the largest type, the only heavy border, and the one filled button. */
-async function Hero({ w, userId }: { w: Wanted; userId: string }) {
-  const admired = w.role ? (await admiredOf(userId)).filter((a) => w.role!.exemplars.includes(a.exemplar)) : [];
-  const traits = [...new Set(admired.flatMap((a) => a.traits))].map((t) => traitById(t)?.name.toLowerCase()).filter(Boolean);
+function Hero({ w }: { w: Wanted }) {
   const draws = typeof w.record.body.draws === "string" ? w.record.body.draws : "";
   const done = underWay(w);
   return (
@@ -49,7 +45,6 @@ async function Hero({ w, userId }: { w: Wanted; userId: string }) {
         </div>
         <form action={writeTowardAction.bind(null, w.record.id)} className="relative z-10"><Button type="submit"><PenLineIcon />Write toward it</Button></form>
       </div>
-      {traits.length ? <p className="text-sm">Building {traits.join(", ")}, as {admired.map((a) => exemplarById(a.exemplar)!.name).join(" and ")} practised it</p> : null}
       {draws ? <p className="text-muted-foreground line-clamp-2 text-sm">{draws}</p> : null}
       <p className="text-muted-foreground text-sm">{done ?? "Nothing under way yet"}</p>
     </section>
@@ -117,7 +112,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
     <main className={PAGE}>
       <WorkHeader on="space" />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
-        {main ? <Hero w={main} userId={user.id} /> : <NoAim />}
+        {main ? <Hero w={main} /> : <NoAim />}
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
           {main ? (
@@ -150,7 +145,6 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
 
         <nav aria-label="Work records" className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 border-t pt-4 text-sm">
           <Link href="/life/work/season" className="hover:text-foreground">This season</Link>
-          <Link href="/life/work/people" className="hover:text-foreground">People who inspire you</Link>
           <Link href="/life/work?k=income" className="hover:text-foreground">Income</Link>
           <Link href="/life/work?k=household" className="hover:text-foreground">Intended household</Link>
           <Link href="/life/work?k=work" className="hover:text-foreground">Work you do</Link>
