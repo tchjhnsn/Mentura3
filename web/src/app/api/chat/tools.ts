@@ -7,6 +7,7 @@ import { adventures, connections, household, householdPlan, meals, place, planAd
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
+import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -64,6 +65,20 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       const stage = path.split("/")[0] || "";
       show({ kind: "quote", text: r.summary, cite: "Your household plan", href: stage && stage !== "already" ? `/plan?step=${encodeURIComponent(stage)}` : "/plan" });
       return JSON.stringify(r.part);
+    }),
+    use(budget, (r, { path }) => {
+      if (!r.summary || !r.view) return "No such part of the budget. Do not guess a figure.";
+      const stage = r.view.stage.id;
+      show({ kind: "budget", view: r.view, href: stage === "already" ? "/plan" : `/plan?step=${encodeURIComponent(stage)}` });
+      return `${r.summary} Part ${path}: ${JSON.stringify(r.part)}`;
+    }),
+    use(setBudget, (r) => {
+      show({ kind: "budget", view: r.view, href: "/plan" });
+      return `Kept. ${r.summary ?? ""} The person sees it on /plan.`;
+    }),
+    use(budgetStep, (r) => {
+      show({ kind: "quote", text: r.toEarn !== null ? `Needs $${Math.round(r.toEarn).toLocaleString("en-US")} a year before taxes, $${Math.round(r.leftToEarn ?? 0).toLocaleString("en-US")} more than comes in.` : "Not costed yet.", cite: `Step ${r.order}: ${r.name}`, href: r.href });
+      return `Added the step ${r.name} (id ${r.id}, order ${r.order}) to Not yet. ${r.toEarn !== null ? `It needs ${Math.round(r.toEarn)} a year before taxes; ${Math.round(r.leftToEarn ?? 0)} left to earn.` : "No costs yet."} The person changes it on ${r.href.replace("/plan?step=", "/plan/steps/")}.`;
     }),
     use(household, (r) => (r === null ? "No such part of the household. Do not guess." : JSON.stringify(r))),
     use(place, (r) => {

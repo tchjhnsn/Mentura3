@@ -8,6 +8,7 @@ import { actionsOn, describeFor, inputFor, type Action } from "./actions";
 import { addEvent, addEventsAction } from "./actions/calendar";
 import { connections, household, householdPlan, meals, place } from "./actions/life";
 import { piano } from "./actions/schole";
+import { budget, budgetStep, setBudget } from "./actions/budget";
 import { GUIDE } from "./actions/journal";
 import { siteUrl } from "./site";
 
@@ -22,6 +23,9 @@ const withLinks = <T extends { href: string }>(list: T[]) => list.map((e) => ({ 
 const reply = <R,>(a: Action<z.ZodType, R>, f: (r: R) => unknown) => [a.id, f as (r: unknown) => unknown] as const;
 const REPLIES = new Map<string, (r: unknown) => unknown>([
   reply(householdPlan, (r) => r.part ?? "No such part of the plan."),
+  reply(budget, (r) => (r.summary ? { summary: r.summary, part: r.part } : "No such part of the budget.")),
+  reply(setBudget, (r) => r.summary),
+  reply(budgetStep, (r) => ({ ...r, link: `${siteUrl()}${r.href}` })),
   reply(household, (r) => r ?? "No such part of the household."),
   reply(place, (r) => (r.set ? (r.part ?? "No such part, or the source could not be read.") : "The person has not said where they live.")),
   reply(connections, (r) => r ?? "No such connector."),

@@ -42,3 +42,20 @@ describe("calendar cards", () => {
     expect(spec.elements.e0).toEqual({ type: "CalendarEvent", props: { title: "Dinner with Sam", day: "Friday, November 20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" } });
   });
 });
+
+describe("budget cards", () => {
+  it("shows tiles with an allotment or a cost as bars against the largest figure, marking those over", async () => {
+    const { buildPlan } = await import("@reflect/core/plan");
+    const { budgetView } = await import("@reflect/core/budget");
+    const plan = buildPlan({ needs: [{ key: "shelter", cost: 1000, by: "market" }], income: 48_000 }, []);
+    const spec = buildSpec([{ kind: "budget", view: budgetView(plan, { shelter: 800, friends: 50 }), href: "/plan" }])!;
+    const props = spec.elements.e0!.props as { title: string; sub: string; href: string; rows: { label: string; allot: string; cost: string; allotShare: number; costShare: number | null; over: boolean }[] };
+    expect(spec.elements.e0!.type).toBe("Budget");
+    expect(props.title).toBe("Budget: $850 a month allotted");
+    expect(props.sub).toMatch(/^Of \$[\d,]+ a month after taxes; \$[\d,]+ left to allot\.$/);
+    expect(props.rows.map((r) => r.label)).toEqual(["Shelter", "Food", "Friends"]);
+    expect(props.rows[0]).toMatchObject({ allot: "$800", cost: "$1,000 in the plan", allotShare: 0.8, costShare: 1, over: true });
+    expect(props.rows[1]).toMatchObject({ allot: "Not allotted", allotShare: 0, over: false });
+    expect(props.rows[2]).toMatchObject({ cost: "no cost in the plan", costShare: null });
+  });
+});
