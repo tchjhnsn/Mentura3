@@ -4,13 +4,12 @@ import { counts } from "@reflect/core/household";
 import { housingShare, markedByReflect, waterDays } from "@reflect/core/home";
 import { incomeSummary, kindOf, shown, WAYS, type Kind } from "@reflect/core/life";
 import { foodEstimate } from "@reflect/core/plan";
-import { shoppingList } from "@reflect/core/meals";
 import { ActionRow, Group, Row } from "@/components/list-rows";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { householdOf } from "@/server/household-store";
 import { lifeActs, lifeRecords } from "@/server/life-store";
-import { mealsView } from "@/server/meals-store";
+import { mealsView, toBuy } from "@/server/meals-store";
 import { placeRecord } from "@/server/public-data";
 import { RiskCard, WaterCard } from "./place-cards";
 import { addWayAction, checkedTodayAction, setFieldAction } from "./actions";
@@ -85,13 +84,13 @@ export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }
     const usda = foodEstimate("low", n.adults || 1, n.children);
     sub = `USDA low-cost plan for ${n.adults + n.children || 1}: ${money(usda)} a month`;
     const names = new Map(v.meals.map((m) => [m.id, m.name]));
-    const list = shoppingList(v.meals, v.plan, v.people);
+    const list = toBuy(v);
     own = (
       <>
         <Group title="This week" id="week">
           {v.plan.length ? v.plan.map((p) => <Row key={p.event} href={`/meals/${p.meal}`} label={names.get(p.meal) ?? "A meal"} sub={DAY(p.day)} />) : <li className="text-muted-foreground px-4 py-4 text-sm">No meals planned this week.</li>}
-          <Row href="/meals/list" icon={<ShoppingCartIcon />} label="Shopping list" value={list.length ? `${list.length} items` : "Empty"} />
-          <Row href="/meals" icon={<UtensilsIcon />} label="Your meals" value={String(v.meals.length)} />
+          <Row href="/meals/list" icon={<ShoppingCartIcon />} label="Basket" value={list.length ? `${list.length} items` : "Empty"} />
+          <Row href="/meals" icon={<UtensilsIcon />} label="Your recipes" value={String(v.meals.length)} />
         </Group>
         <Button asChild size="lg" className="w-full"><Link href="/meals">Plan this week&apos;s meals</Link></Button>
       </>
