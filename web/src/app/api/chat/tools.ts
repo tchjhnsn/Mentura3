@@ -2,7 +2,7 @@
 // turns it into cards (show) and the words the model reads back. The tool names are the registry's ids.
 import { tool, type Tool } from "ai";
 import type { z } from "zod";
-import { describeFor, type Action, type ActionContext } from "@/server/actions";
+import { actionsOn, describeFor, type Action, type ActionContext } from "@/server/actions";
 import { adventures, connections, household, householdPlan, meals, place, planAdventureAction } from "@/server/actions/life";
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
@@ -68,7 +68,10 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
   const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
 
-  return Object.fromEntries([
+  // Every other chat action (the page acts, Ask Reflect plan step 4) answers with its result as data; a change the
+  // person can undo still gets its Undo chip from `use`.
+  const plain = (r: unknown) => (r === undefined || r === null ? "Done." : `Done: ${JSON.stringify(r).slice(0, 12000)}`);
+  const named: [string, Tool][] = [
     use(practiceDialectic, (r) => {
       if (r.kind === "course") {
         show({ kind: "quote", text: r.course.about, cite: `Course: ${r.course.name}`, href: "/schole/courses/dialectic" });
@@ -203,5 +206,7 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       if (r.lens) lensCard(r.lens);
       return JSON.stringify(r);
     }),
-  ]);
+  ];
+  const ids = new Set(named.map(([id]) => id));
+  return Object.fromEntries([...named, ...actionsOn("chat").filter((a) => !ids.has(a.id)).map((a) => use(a, plain))]);
 }

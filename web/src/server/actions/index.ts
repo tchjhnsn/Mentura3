@@ -13,6 +13,32 @@ import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCard
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
 import { applyLens, lensAction, lensesAction } from "./lenses";
+import { addRecord, changeRecord, lifeAction, logAct, quickLog, removeRecord, restoreRecord, setRecordField, setRecordState } from "./records";
+import { changeEvent, removeEventAction, restoreEventAction } from "./calendar-events";
+import { addMealAction, addToBasketAction, keepRecipeAction, planMealAction, planWeekAction, setReceiptAction, startMealPlanAction, unplanMealAction } from "./meal-plans";
+import { beliefFromWorkAction, compileEditionAction, fileWorkAction, markBeliefAction, placeBeliefAction, placeSubjectAction, saveWorkAction, sendToLearnAction, startWork } from "./journal-works";
+import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } from "./work-life";
+import { adventureToCalendar } from "./adventure-calendar";
+import {
+  addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
+  keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
+  removeSessionAction, restoreItemAction, reviseExcerptAction, savePlaylist, setBookWayAction, setFinishedAction, setReactionAction, setReadingGoal, setStanceAction, setUnitDoneAction, takeUpItem,
+} from "./learn-page";
+
+/** Every page act's entry (Ask Reflect plan, step 4), grouped by area: what a page can do, the chat and MCP can do. */
+export const PAGE_ACTIONS: readonly Action[] = [
+  lifeAction, quickLog, addRecord, changeRecord, setRecordState, setRecordField, logAct, removeRecord, restoreRecord,
+  changeEvent, removeEventAction, restoreEventAction,
+  addMealAction, planMealAction, unplanMealAction, planWeekAction, startMealPlanAction, addToBasketAction, keepRecipeAction, setReceiptAction,
+  startWork, saveWorkAction, fileWorkAction, beliefFromWorkAction, sendToLearnAction, markBeliefAction, placeSubjectAction, placeBeliefAction, compileEditionAction,
+  toggleQuality, takeOffQuality, writeQuality, writeToward, mainAim,
+  adventureToCalendar,
+  keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
+  keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
+  setUnitDoneAction, addItemNoteAction, removeItemNoteAction, addSessionAction, removeSessionAction, addItemSubjectsAction, removeItemSubjectAction,
+  setReactionAction, favoriteEpisodeAction, followListAction, keepReasonAction, highlightsToJournal, followTopic, followPerson, makePlaylistAction, savePlaylist,
+  logPracticeAction, learnedPiece,
+];
 
 export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -29,6 +55,7 @@ export const ACTIONS: readonly Action[] = [
   homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
   excerptAction, draftCourseAction, coursesAction,
   lensesAction, lensAction, applyLens,
+  ...PAGE_ACTIONS,
 ];
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id);

@@ -4,7 +4,9 @@
 import { z } from "zod";
 import { DEFAULT_DAYS, HOME_CARD_TILES, MAX_SHOWN, cardSummary, cardsToday, type HomeCard } from "@reflect/core/home-cards";
 import { addHomeCard, checkHomeItem, homeCards, removeHomeCard } from "../home-cards-store";
-import { action, type ActionContext } from "./types";
+import { restoreLifeRecord } from "../life-store";
+import { bodyBefore, putBodyBack } from "./records";
+import { action, idsIn, type ActionContext } from "./types";
 
 const dayOf = (ctx: ActionContext) => ctx.today ?? new Date().toISOString().slice(0, 10);
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -76,6 +78,11 @@ export const removeHomeCardAction = action({
     await removeHomeCard(userId, id);
     return { removed: id };
   },
+  // A card is a hidden life record; Undo restores it.
+  change: (r) => ({ after: r }),
+  undo: async ({ userId }, c) => {
+    for (const id of idsIn(c.after, "removed")) await restoreLifeRecord(userId, id);
+  },
 });
 
 export const checkHomeItemAction = action({
@@ -89,4 +96,8 @@ export const checkHomeItemAction = action({
     const today = dayOf(ctx);
     return cardOut(await checkHomeItem(ctx.userId, id, item ?? null, today), today);
   },
+  // Undo puts back the card as it was before the tap.
+  before: bodyBefore,
+  change: (r, _i, before) => ({ before, after: { id: r.id, title: r.title } }),
+  undo: putBodyBack,
 });
