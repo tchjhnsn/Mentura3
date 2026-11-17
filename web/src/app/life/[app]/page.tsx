@@ -7,7 +7,6 @@ import { requireUser } from "@/server/session";
 import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "@/server/life-store";
 import { Acts, RecordCard, RecordForm, States } from "../record";
 import { Summary } from "../summary";
-import { HomeSpace } from "../home-space";
 import { BodySpace } from "../body-space";
 import { FriendsSpace, KinSpace, MateSpace, PolisSpace } from "../tile-spaces";
 import { restoreLifeAction } from "../actions";
@@ -61,7 +60,6 @@ function KindView({ app, kind, records, acts, back }: { app: LifeAppId; kind: Ki
 /** A tile's first view: the person's own workspace for it, or where they stand where a tile has none yet (Legacy). */
 function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   switch (app) {
-    case "home": return <HomeSpace userId={userId} records={records} acts={acts} today={today} />;
     case "body": return <BodySpace userId={userId} records={records} acts={acts} today={today} />;
     case "friends": return <FriendsSpace userId={userId} records={records} acts={acts} today={today} />;
     case "mate": return <MateSpace userId={userId} records={records} today={today} />;
@@ -84,6 +82,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const kind = kindOf(app, one(sp.k));
   // Food is its own app; every way into Home's food lands on it.
   if (app === "home" && kind?.id === "food") redirect("/meals");
+  // Home is no longer a tile: its needs are tiles of the household, and its page is The household's dashboard.
+  if (app === "home" && !kind) redirect("/group/household");
   const [records, acts] = await Promise.all([lifeRecords(user.id, app), lifeActs(user.id)]);
   const ids = new Set(records.map((r) => r.id));
   const mine = acts.filter((x) => ids.has(x.record));
@@ -96,7 +96,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
-      {tile && tile !== "work" ? <TileHeader tile={app} label={kind!.plural} /> : app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
+      {tile && tile !== "work" ? <TileHeader tile={app} label={kind!.plural} /> : app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : app === "home" ? <TileHeader tile={app} label="The household" part={kind?.plural ?? null} workspace="/group/household" /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
       {removed ? (
         <form action={restoreLifeAction.bind(null, removed, back)} className="bg-muted mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>
