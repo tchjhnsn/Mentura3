@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lifeRecords } from "@/server/life-store";
 import { requireUser } from "@/server/session";
-import { setAmountAction, setFieldAction } from "../../actions";
+import { setAmountAction, setFieldAction, setWordsAction } from "../../actions";
 
 export const metadata: Metadata = { title: "Change" };
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export default async function SetPage({ params, searchParams }: { params: Promis
   if (!isLifeApp(app)) notFound();
   const kind = kindOf(app, one(sp.k));
   const f = kind?.one ? kind.fields.find((x) => x.key === one(sp.f)) : undefined;
-  if (!kind || !f || !["choice", "money", "number"].includes(f.kind)) notFound();
+  if (!kind || !f || !["choice", "money", "number", "text", "day"].includes(f.kind)) notFound();
   const r = (await lifeRecords(user.id, app)).find((x) => x.kind === kind.id);
   const now = r?.body[f.key];
   const to = one(sp.to);
@@ -49,6 +49,12 @@ export default async function SetPage({ params, searchParams }: { params: Promis
               </li>
             ))}
           </Group>
+        ) : f.kind === "text" || f.kind === "day" ? (
+          <form action={setWordsAction.bind(null, app, kind.id, f.key, back)} className="grid justify-items-center gap-6">
+            <Input name="value" type={f.kind === "day" ? "date" : "text"} autoFocus defaultValue={typeof now === "string" ? now : ""} aria-label={f.label} placeholder={f.hint ?? ""}
+              className="h-14 w-full max-w-md text-center text-xl font-medium md:text-xl" />
+            <Button type="submit" size="lg" className="w-full">Done</Button>
+          </form>
         ) : (
           <form action={setAmountAction.bind(null, app, kind.id, f.key, back)} className="grid justify-items-center gap-6">
             <label className="flex items-baseline gap-1 text-4xl font-semibold">

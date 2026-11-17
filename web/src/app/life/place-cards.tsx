@@ -38,8 +38,12 @@ export async function RiskCard({ userId }: { userId: string }) {
     <Frame title={`Natural hazards in ${c.county} County, ${c.state}`} source={NRI_SOURCE}>
       <p><span className="text-2xl font-semibold">{c.rating ?? "Not rated"}</span><span className="text-muted-foreground block text-sm">overall risk, compared with every US county</span></p>
       {c.hazards.length ? (
-        <ul className="divide-y border-y text-sm">
-          {c.hazards.map((h) => <li key={h.id} className="flex justify-between gap-4 py-2"><span>{h.name}</span><span className="text-muted-foreground">{h.rating}</span></li>)}
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {c.hazards.map((h) => (
+            <li key={h.id} className={`grid gap-0.5 rounded-xl p-3 ${/very high/i.test(h.rating ?? "") ? "bg-destructive/15" : /high/i.test(h.rating ?? "") ? "bg-primary/15" : "bg-muted"}`}>
+              <span className="font-medium">{h.name}</span><span className="text-muted-foreground text-xs">{h.rating}</span>
+            </li>
+          ))}
         </ul>
       ) : <p className="text-muted-foreground text-sm">No hazard is rated relatively high or above.</p>}
     </Frame>
