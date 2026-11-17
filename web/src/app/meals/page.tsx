@@ -1,113 +1,108 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookHeartIcon, ChevronLeftIcon, ChevronRightIcon, CompassIcon, PlusIcon, ShoppingBasketIcon, Trash2Icon } from "lucide-react";
-import { QUESTIONS, recipeOf, type Region } from "@reflect/core/recipes";
+import { ChevronRightIcon } from "lucide-react";
+import { recipeOf } from "@reflect/core/recipes";
 import { ThingHeader } from "@/components/headers";
 import { COLUMN, Group, Row } from "@/components/list-rows";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { lifeRecords } from "@/server/life-store";
 import { likesOf, mealsView, toBuy, type KeptMeal } from "@/server/meals-store";
 import { requireUser } from "@/server/session";
-import { planMyWeekAction, unplanDayAction } from "./actions";
+import { foodMoney } from "@/server/spending-store";
 import { RecipeArt } from "./recipe-art";
+import { ReceiptPicker } from "./receipt-picker";
 
 export const metadata: Metadata = { title: "Food" };
 export const dynamic = "force-dynamic";
-const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-const shift = (day: string, n: number) => new Date(Date.parse(`${day}T12:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
-const label = (day: string, o: Intl.DateTimeFormatOptions) => new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", ...o });
+const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const COURSE = { main: 0, side: 1, bread: 2 } as const;
-const regionOf = (m: KeptMeal): Region => (m.recipe ? recipeOf(m.recipe)!.region : "everyday");
-const href = (m: KeptMeal) => (m.recipe ? `/meals/r/${m.recipe}` : `/meals/${m.id}`);
+const minutesOf = (m: KeptMeal) => (m.recipe ? recipeOf(m.recipe)!.minutes : 45);
 
 /**
- * Food (doc "Food design guide"): tonight's whole meal large, the week a day to a row, one button that plans the open
- * days from how the person eats, then Discover, Your recipes and the Basket, and the answers that shape the plan.
+ * Food (doc "Food design guide", revision 2): this month's food money against what is set aside for it, split into
+ * groceries and eating out; this week's cooking time against the hours given to it; the next grocery run, the one
+ * filled button; a receipt added with a tap; then this week's meals, and Discover, Spending and Your recipes.
  */
-export default async function MealsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function FoodPage() {
   const user = await requireUser();
-  const asked = one((await searchParams).day);
-  const day = /^\d{4}-\d{2}-\d{2}$/.test(asked) ? asked : new Date().toISOString().slice(0, 10);
-  const [v, likes, home] = await Promise.all([mealsView(user.id, day), likesOf(user.id), lifeRecords(user.id, "home")]);
+  const today = new Date().toISOString().slice(0, 10);
+  const month = today.slice(0, 7);
+  const [v, likes, f] = await Promise.all([mealsView(user.id, today), likesOf(user.id), foodMoney(user.id, month)]);
   const byId = new Map(v.meals.map((m) => [m.id, m]));
   const items = toBuy(v).length;
-  const today = new Date().toISOString().slice(0, 10);
+
+  // Each day's whole meal, main first; its time is its longest recipe, since sides cook beside the main.
   const days = v.week.map((d) => {
-    const planned = v.plan.filter((p) => p.day === d && byId.has(p.meal)).map((p) => ({ event: p.event, meal: byId.get(p.meal)! }));
-    planned.sort((a, b) => (a.meal.recipe ? COURSE[recipeOf(a.meal.recipe)!.course] : 0) - (b.meal.recipe ? COURSE[recipeOf(b.meal.recipe)!.course] : 0));
-    return { day: d, main: planned[0]?.meal, sides: planned.slice(1).map((p) => p.meal), events: planned.map((p) => p.event) };
+    const meals = v.plan.filter((p) => p.day === d).map((p) => byId.get(p.meal)).filter((m): m is KeptMeal => Boolean(m));
+    meals.sort((a, b) => (a.recipe ? COURSE[recipeOf(a.recipe)!.course] : 0) - (b.recipe ? COURSE[recipeOf(b.recipe)!.course] : 0));
+    return { day: d, main: meals[0], sides: meals.slice(1), minutes: meals.length ? Math.max(...meals.map(minutesOf)) : 0 };
   });
+  const planned = days.filter((d) => d.main);
+  const cooked = planned.reduce((s, d) => s + d.minutes, 0);
   const tonight = days.find((d) => d.day === today && d.main);
-  const filled = days.filter((d) => d.main).length;
-  const open = days.filter((d) => !d.main && d.day >= today).length;
-  const canPlan = open > 0 && filled < (likes.nights ?? 5);
-  const kept = v.meals.length;
-  const b = home.find((r) => r.kind === "food-likes")?.body ?? {};
-  const avoid = QUESTIONS.find((q) => q.key === "avoid")!.options.filter(([id]) => b[`avoid-${id}`] === true).map(([, l]) => l);
+  const hours = likes.hours ?? null;
+
+  const spent = f.spent.total;
+  const share = (n: number) => `${Math.min(100, f.allot ? (n / f.allot) * 100 : 0)}%`;
+  const dayOfMonth = Number(today.slice(8, 10));
+  const monthName = new Date(`${today}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", timeZone: "UTC" });
+
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back="/life/home?k=food" backLabel="Food" crumbs={[{ label: "Home", href: "/life/home" }, { label: "Food", href: "/life/home?k=food" }]} title="Meals" />
+      <ThingHeader search={false} back="/life/home?k=food" backLabel="Home" crumbs={[{ label: "Home", href: "/life/home" }]} title="Food" />
       <div className={COLUMN}>
-        {!likes.answered ? (
-          <Link href="/meals/start" className="bg-primary text-primary-foreground grid gap-1 rounded-2xl p-5 transition hover:opacity-90">
-            <span className="text-lg font-semibold">Tell Reflect how you eat</span>
-            <span className="text-sm opacity-90">Five questions, a tap each. Then Reflect plans whole meals for your week.</span>
-          </Link>
-        ) : null}
+        <div className="flex items-baseline justify-between gap-4">
+          <h1 id="page-title" className="text-3xl font-bold tracking-tight">Food</h1>
+          <Link href="/meals/list" className="text-muted-foreground hover:text-foreground text-sm">Basket {items}</Link>
+        </div>
 
-        {tonight?.main ? (
-          <Link href={href(tonight.main)} className="hover:bg-accent grid gap-3 rounded-2xl border p-3 transition">
-            <RecipeArt region={regionOf(tonight.main)} className="aspect-[16/9] w-full" />
-            <span className="grid gap-1 px-1 pb-1">
-              <span className="text-muted-foreground text-sm">Tonight</span>
-              <span className="text-2xl font-semibold tracking-tight">{tonight.main.name}</span>
-              {tonight.sides.length ? <span className="text-muted-foreground text-base">With {tonight.sides.map((s) => s.name.toLowerCase()).join(", ")}</span> : null}
-            </span>
-          </Link>
-        ) : null}
-
-        <section className="grid gap-2" aria-labelledby="week">
-          <div className="flex items-center justify-between gap-2 px-2">
-            <Button asChild variant="ghost" size="icon" aria-label="Week before"><Link href={`/meals?day=${shift(v.week[0]!, -7)}`}><ChevronLeftIcon /></Link></Button>
-            <h2 id="week" className="text-muted-foreground text-sm">{label(v.week[0]!, { month: "short", day: "numeric" })} to {label(v.week[6]!, { month: "short", day: "numeric" })}, for {v.people} {v.people === 1 ? "person" : "people"}</h2>
-            <Button asChild variant="ghost" size="icon" aria-label="Week after"><Link href={`/meals?day=${shift(v.week[0]!, 7)}`}><ChevronRightIcon /></Link></Button>
+        <section aria-labelledby="money" className="bg-card grid gap-3 rounded-2xl border p-5">
+          <h2 id="money" className="text-muted-foreground text-sm">{monthName}, {dayOfMonth} {dayOfMonth === 1 ? "day" : "days"} in</h2>
+          <p className="flex flex-wrap items-baseline gap-x-2">
+            <span className="text-4xl font-bold tracking-tight">{money(spent)}</span>
+            <Link href="/life/home/set?k=food&f=cost&to=/meals" className="text-muted-foreground hover:text-foreground text-base underline-offset-2 hover:underline">of {money(f.allot)} for food</Link>
+          </p>
+          <div className="bg-muted flex h-2.5 overflow-hidden rounded-full" role="img" aria-label={`Groceries ${money(f.spent.groceries)} and eating out ${money(f.spent.eatingOut)} of ${money(f.allot)}`}>
+            <span className="bg-primary h-full" style={{ width: share(f.spent.groceries) }} />
+            <span className="h-full bg-amber-500" style={{ width: share(f.spent.eatingOut) }} />
           </div>
-          <ul className="bg-card divide-y overflow-hidden rounded-2xl border">
-            {days.map((d) => (
-              <li key={d.day} className="flex items-center">
-                <span className={`w-14 shrink-0 pl-4 text-sm ${d.day === today ? "text-primary font-semibold" : "text-muted-foreground"}`}>{label(d.day, { weekday: "short" })}</span>
-                {d.main ? (
-                  <>
-                    <Link href={href(d.main)} className="hover:bg-accent flex min-h-16 min-w-0 flex-1 items-center gap-3 px-3 py-3 transition">
-                      <RecipeArt region={regionOf(d.main)} className="size-10" />
-                      <span className="grid min-w-0"><span className="truncate text-base">{d.main.name}</span>{d.sides.length ? <span className="text-muted-foreground truncate text-sm">With {d.sides.map((s) => s.name.toLowerCase()).join(", ")}</span> : null}</span>
-                    </Link>
-                    <form action={unplanDayAction.bind(null, d.events, d.day)} className="pr-2"><Button type="submit" variant="ghost" size="icon" aria-label={`Take ${d.main.name} off ${label(d.day, { weekday: "long" })}`}><Trash2Icon /></Button></form>
-                  </>
-                ) : (
-                  <Link href={`/meals/plan?day=${d.day}`} className="hover:bg-accent text-muted-foreground flex min-h-16 flex-1 items-center justify-between gap-3 px-3 py-3 text-sm transition">
-                    <span>Nothing planned</span><PlusIcon aria-label={`Add a meal on ${label(d.day, { weekday: "long" })}`} className="size-4" />
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm">
+            <span className="flex items-center gap-2"><span aria-hidden="true" className="bg-primary size-2.5 rounded-full" />Groceries {money(f.spent.groceries)}</span>
+            <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full bg-amber-500" />Eating out {money(f.spent.eatingOut)}</span>
+          </div>
+          <p className="text-muted-foreground text-xs">{f.from === "set" ? `${money(f.allot)} a month, from your income plan.` : `The USDA low-cost plan for ${f.people} ${f.people === 1 ? "person" : "people"}. Tap the amount to set your own.`}{f.spent.count ? "" : " Spending comes from the receipts you add."}</p>
         </section>
 
-        {canPlan ? <form action={planMyWeekAction.bind(null, v.week[0]! < today ? today : v.week[0]!)}><Button type="submit" size="lg" className="w-full">{filled ? "Plan the rest of the week" : "Plan my week"}</Button></form> : null}
+        <Link href={hours ? "/meals/week" : "/meals/start?q=hours&one=1"} className="bg-card hover:bg-accent grid gap-2 rounded-2xl border px-5 py-4 transition">
+          <span className="flex items-baseline justify-between gap-4">
+            <span className="text-base whitespace-nowrap">Cooking this week</span>
+            <span className="text-base font-semibold whitespace-nowrap">{hours ? `${Math.round((cooked / 60) * 10) / 10} of ${hours} ${hours === 1 ? "hour" : "hours"}` : "Say how many hours"}</span>
+          </span>
+          {hours ? <span className="bg-muted block h-1.5 overflow-hidden rounded-full"><span className="bg-primary block h-full" style={{ width: `${Math.min(100, (cooked / (hours * 60)) * 100)}%` }} /></span> : null}
+        </Link>
+
+        <Button asChild size="lg" className="w-full"><Link href="/meals/run">Plan the next grocery run</Link></Button>
+
+        <Group><ReceiptPicker /></Group>
+
+        <section aria-labelledby="week" className="grid gap-2">
+          <h2 id="week" className="text-muted-foreground px-4 text-sm">This week&apos;s meals</h2>
+          <Link href="/meals/week" className="bg-card hover:bg-accent flex items-center gap-4 rounded-2xl border p-3 transition">
+            {tonight?.main ? <RecipeArt recipe={tonight.main.recipe} className="h-16 w-20" /> : <RecipeArt recipe={null} className="h-16 w-20" />}
+            <span className="grid min-w-0 flex-1">
+              <span className="text-muted-foreground text-sm">{tonight?.main ? "Tonight" : planned.length ? "Nothing tonight" : "Nothing planned yet"}</span>
+              <span className="truncate text-base font-semibold">{tonight?.main ? tonight.main.name : planned.length ? `Next: ${planned.find((d) => d.day > today)?.main?.name ?? "see the week"}` : "Plan the week's dinners"}</span>
+              <span className="text-muted-foreground truncate text-sm">{planned.length} of {likes.nights ?? 5} nights planned{planned.length ? `, about ${Math.round(cooked / planned.length)} minutes each` : ""}</span>
+            </span>
+            <ChevronRightIcon aria-hidden="true" className="text-muted-foreground size-4 shrink-0" />
+          </Link>
+        </section>
 
         <Group>
-          <Row href="/meals/discover" icon={<CompassIcon />} label="Discover" sub="Whole meals from where you grew up, and old cookbooks" />
-          <Row href="/meals/mine" icon={<BookHeartIcon />} label="Your recipes" value={String(kept)} />
-          <Row href={`/meals/list?day=${v.week[0]}`} icon={<ShoppingBasketIcon />} label="Basket" value={items ? `${items} ${items === 1 ? "item" : "items"}` : "Empty"} />
-        </Group>
-
-        <Group title="How you eat" id="likes">
-          {QUESTIONS.map((q) => {
-            const value = q.key === "avoid" ? (avoid.length ? avoid.join(", ") : null) : (q.options as readonly (readonly [string, string])[]).find(([id]) => id === b[q.key])?.[1] ?? null;
-            return <Row key={q.key} href={`/meals/start?q=${q.key}&one=1`} label={q.label} value={value ?? "Not said"} />;
-          })}
+          <Row href="/meals/discover" label="Discover recipes" />
+          <Row href="/meals/spending" label="Spending" value={f.receipts.length ? `${f.receipts.length} ${f.receipts.length === 1 ? "receipt" : "receipts"}` : undefined} />
+          <Row href="/meals/mine" label="Your recipes" value={String(v.meals.length)} />
+          <Row href="/meals/week#likes" label="How you eat" value={likes.answered ? undefined : "Not said"} />
         </Group>
       </div>
     </main>

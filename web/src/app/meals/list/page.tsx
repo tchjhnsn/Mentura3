@@ -33,7 +33,7 @@ export default async function ListPage({ searchParams }: { searchParams: Promise
   const planned = [...new Set(v.plan.map((p) => p.meal))];
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back={`/meals?day=${day}`} backLabel="Food" crumbs={[{ label: "Food", href: `/meals?day=${day}` }]} title="Basket" />
+      <ThingHeader search={false} back="/meals" backLabel="Food" crumbs={[{ label: "Food", href: "/meals" }]} title="Basket" />
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">Basket</h1>

@@ -12,3 +12,14 @@ export function chatModel(env: Record<string, string | undefined> = process.env)
   const ollama = createOpenAICompatible({ name: "ollama", baseURL: `${env.OLLAMA_HOST ?? "https://ollama.com"}/v1`, apiKey: env.OLLAMA_API_KEY });
   return ollama.chatModel(env.REFLECT_READER_MODEL ?? "gpt-oss:120b");
 }
+
+/**
+ * A model that reads pictures (a receipt's photo): Gemini 2.5 Flash through Vercel AI Gateway when deployed,
+ * otherwise Gemma 4 on Ollama Cloud. Null when neither is set up.
+ */
+export function visionModel(env: Record<string, string | undefined> = process.env): LanguageModel | null {
+  if (env.VERCEL || env.AI_GATEWAY_API_KEY) return gateway(env.REFLECT_VISION_MODEL ?? "google/gemini-2.5-flash");
+  if (!env.OLLAMA_API_KEY) return null;
+  const ollama = createOpenAICompatible({ name: "ollama", baseURL: `${env.OLLAMA_HOST ?? "https://ollama.com"}/v1`, apiKey: env.OLLAMA_API_KEY });
+  return ollama.chatModel(env.REFLECT_VISION_MODEL ?? "gemma4:31b");
+}

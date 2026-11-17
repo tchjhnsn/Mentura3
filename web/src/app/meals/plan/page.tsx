@@ -20,7 +20,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const name = new Date(`${day}T12:00:00Z`).toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "short", day: "numeric" });
   return (
     <main className={PAGE}>
-      <ThingHeader back={`/meals?day=${day}`} backLabel="Meals" crumbs={[{ label: "Meals", href: `/meals?day=${day}` }]} title="Add a meal" />
+      <ThingHeader back={`/meals/week?day=${day}`} backLabel="This week" crumbs={[{ label: "This week", href: `/meals/week?day=${day}` }]} title="Add a meal" />
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">Add a meal</h1>

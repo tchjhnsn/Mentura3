@@ -23,7 +23,7 @@ export default async function MinePage() {
         <Group>
           {mine.map((m) => {
             const r = m.recipe ? recipeOf(m.recipe) : undefined;
-            return <Row key={m.id} href={r ? `/meals/r/${r.id}` : `/meals/${m.id}`} icon={<RecipeArt region={r?.region ?? "everyday"} className="size-8" />} label={m.name} value={r ? `${r.minutes} min` : m.serves ? `Serves ${m.serves}` : undefined} />;
+            return <Row key={m.id} href={r ? `/meals/r/${r.id}` : `/meals/${m.id}`} icon={<RecipeArt recipe={r?.id} className="size-10" />} label={m.name} value={r ? `${r.minutes} min` : m.serves ? `Serves ${m.serves}` : undefined} />;
           })}
           {!mine.length ? <li className="text-muted-foreground px-4 py-4 text-sm">Tap the heart on a recipe in Discover to keep it here.</li> : null}
           <ActionRow icon={<PlusIcon />} label="Write your own recipe" href="/meals/new" />
