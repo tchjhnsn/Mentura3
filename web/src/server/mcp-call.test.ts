@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import type { Action, ChangeLog, LoggedChange, NewChange } from "./actions/types";
+import type { Action, ChangeLog, HeldChange, LoggedChange, NewChange } from "./actions/types";
 import { actionsOn } from "./actions";
 import { callMcpAction, heldOverMcp, mcpAllows } from "./mcp-call";
 
@@ -13,8 +13,24 @@ function memoryLog(): ChangeLog & { rows: LoggedChange[] } {
     rows,
     async add(c: NewChange) {
       const id = randomUUID();
-      rows.push({ ...c, id, status: "done", createdAt: new Date(), undoneAt: null });
+      rows.push({ ...c, id, status: "done", createdAt: new Date(), undoneAt: null, preview: null } as LoggedChange);
       return id;
+    },
+    async hold(c: HeldChange) {
+      const id = randomUUID();
+      rows.push({ ...c, id, status: "held", before: null, after: null, createdAt: new Date(), undoneAt: null } as unknown as LoggedChange);
+      return id;
+    },
+    async held(userId) {
+      return rows.filter((r) => r.userId === userId && r.status === "held");
+    },
+    async claim() {
+      return false;
+    },
+    async settle() {},
+    async release() {},
+    async decline() {
+      return false;
     },
     async get(userId, id) {
       return rows.find((r) => r.id === id && r.userId === userId) ?? null;
@@ -60,11 +76,12 @@ describe("callMcpAction", () => {
     for (const tier of ["shared", "outside"] as const) {
       const call = await callMcpAction(fake(tier, ran), { userId: "u1", changes }, { x: "c" });
       expect(call.kind).toBe("held");
-      expect(call.kind === "held" && call.message).toMatch(tier === "outside" ? /tap Send in Reflect/ : /tap Keep in Reflect/);
-      expect(call.kind === "held" && call.message).toMatch(/Nothing has been done yet/);
+      expect(call.kind === "held" && call.message).toMatch(tier === "outside" ? /tap Send inside Reflect/ : /tap Keep inside Reflect/);
+      expect(call.kind === "held" && call.message).toMatch(/Not done yet/);
+      expect(call.kind === "held" && call.changeId).toBe(changes.rows.at(-1)!.id);
     }
     expect(ran).toEqual([]);
-    expect(changes.rows).toEqual([]);
+    expect(changes.rows.map((r) => [r.actionId, r.status])).toEqual([["fake_shared", "held"], ["fake_outside", "held"]]);
   });
 
   it("refuses a never-tier action", async () => {

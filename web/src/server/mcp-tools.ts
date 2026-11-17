@@ -52,7 +52,7 @@ export function reflectServer(userId: string): McpServer {
     // change id in a second line; shared and outside actions are held for the person's tap in Reflect.
     const run = async (args: unknown) => {
       const call = await callMcpAction(a, { userId }, input ? args : {});
-      if (call.kind === "held") return text(call.changeId ? `${call.message}\nHeld as change ${call.changeId}.` : call.message);
+      if (call.kind === "held") return text(call.message);
       const out = text(said(call.result));
       if (call.changeId && a.tier === "own" && a.undo) out.content.push({ type: "text", text: `Change ${call.changeId}. The person can undo it for 30 days (undo_change).` });
       return out;

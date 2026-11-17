@@ -9,6 +9,7 @@ import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTra
 import { addBookAction, addBookSubjects, addCoursesAction, addCredentialAction, addInputAction, addItemAction, addLesson, learning, markSubjectAction, rateSubjectAction, recallCheck, setBookStatusAction } from "./learning";
 import { ideas, keepIdeaAction, proposeClaim, showClaims } from "./ideas";
 import { recentChanges, undoChangeAction } from "./changes";
+import { pendingChangesAction } from "./approvals";
 import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "./home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
@@ -24,7 +25,7 @@ export const ACTIONS: readonly Action[] = [
   listEntriesAction, writeEntry, getEntry, keepLegacyPlan, legacyStatusAction,
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
-  recentChanges, undoChangeAction,
+  recentChanges, undoChangeAction, pendingChangesAction,
   practiceDialectic, showShelves, showWays, findItem, quoteTranscript, showClaims, searchLibrary, browseCategory, quoteBook, proposeClaim,
   homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
   excerptAction, draftCourseAction, coursesAction,
