@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarIcon, CompassIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +66,7 @@ export function SidebarProvider({ groups, chats, children }: { groups: SidebarGr
             <Link href="/journal/log" className={ROW}><ScrollTextIcon className="text-muted-foreground size-4" />Log</Link>
             <Link href="/life/legacy" className={ROW}><HourglassIcon className="text-muted-foreground size-4" />Legacy</Link>
             <Link href="/journal/qualities" className={ROW}><SparklesIcon className="text-muted-foreground size-4" />Qualities</Link>
+            <Link href="/adventures" className={ROW}><CompassIcon className="text-muted-foreground size-4" />Adventures</Link>
           </Section>
 
           {groups.map((g) => (
