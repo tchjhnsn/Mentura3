@@ -17,6 +17,7 @@ export type Piece =
   | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
   | { kind: "home_card"; title: string; tile: string; lines: string[]; until: string }
   | { kind: "budget"; view: BudgetView; href: string }
+  | { kind: "lens"; name: string; works: string[]; living: boolean; href: string | null; ideas: { text: string; cites: { label: string; href: string }[] }[] }
   | { kind: "note"; text: string }
   | { kind: "lifeline" }
   /** Undo for a change the chat just made in the person's own records (the change log's id). */
@@ -72,6 +73,10 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
     else if (p.kind === "budget") add({ type: "Budget", props: budgetCard(p.view, p.href) });
     else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
     else if (p.kind === "home_card") add({ type: "HomeCard", props: { title: p.title, tile: p.tile, lines: p.lines, until: `Until ${longDay(p.until)}` } });
+    else if (p.kind === "lens") {
+      if (!p.ideas.length) note(`No ideas from ${p.name} here.`);
+      else add({ type: "Lens", props: { title: `Ideas from ${p.living ? p.works.join(" and ") : p.name}`, works: p.living ? p.name : p.works.join(", "), href: p.href, ideas: p.ideas } });
+    }
     else if (p.kind === "found_item") add({ type: "FoundItem", props: { medium: p.label, title: p.title, by: p.by ?? null, image: p.image ?? null, source: p.source, kept: p.kept, item: p.item } });
     else if (p.kind === "shelves") {
       if (!p.shelves.length) note("No shelves yet. Books go on a shelf once they have a call number.");

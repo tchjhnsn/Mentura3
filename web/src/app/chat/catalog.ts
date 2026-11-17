@@ -27,6 +27,10 @@ export const catalog = defineCatalog(schema, {
       }),
       description: "The person's monthly budget: each tile's allotment as a bar beside what the plan says it costs, opening the income plan",
     },
+    Lens: {
+      props: z.object({ title: z.string(), works: z.string(), href: z.string().regex(/^\/(?!\/)[^\s]*$/).nullable(), ideas: z.array(z.object({ text: z.string(), cites: z.array(z.object({ label: z.string(), href: z.string().regex(/^\/(?!\/)[^\s]*$/) })) })) }),
+      description: "Ideas from a thinker's works, each in Reflect's words with its citations, each citation opening the passage in Reflect (href is the thinker's Scholē page, when there is one)",
+    },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
     Lifeline: { props: z.object({}), description: "The 988 Suicide and Crisis Lifeline: call, text or chat, shown in place of an answer when a message shows a crisis signal" },
   },

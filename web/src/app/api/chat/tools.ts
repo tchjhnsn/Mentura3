@@ -13,6 +13,7 @@ import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCard
 import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
 import { budget, budgetStep, setBudget } from "@/server/actions/budget";
+import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -63,6 +64,9 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     show({ kind: "home_card", title: c.title, tile: c.tile, lines: cardLines(c, day), until: c.end });
     return `${said}: ${c.summary} (id ${c.id}). The person removes it with the x on Home.`;
   };
+  // A lens's ideas as a card, each citation opening its passage in Reflect.
+  type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
+  const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
 
   return Object.fromEntries([
     use(practiceDialectic, (r) => {
@@ -189,5 +193,15 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       return `Kept on the person's shelves as a course, at ${r.href}. Do not grade or write quizzes for it; examiners are people.`;
     }),
     use(coursesAction, (list) => (list.length ? JSON.stringify(list) : "The person keeps no courses yet.")),
+    use(lensesAction, (list) => JSON.stringify(list)),
+    use(lensAction, (r) => {
+      if (!r) return "No such lens or idea. Do not make one up; call lenses for the list.";
+      lensCard(r);
+      return `Shown: ${JSON.stringify(r.ideas)}`;
+    }),
+    use(applyLens, (r) => {
+      if (r.lens) lensCard(r.lens);
+      return JSON.stringify(r);
+    }),
   ]);
 }

@@ -12,6 +12,7 @@ import { recentChanges, undoChangeAction } from "./changes";
 import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "./home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
+import { applyLens, lensAction, lensesAction } from "./lenses";
 
 export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -27,6 +28,7 @@ export const ACTIONS: readonly Action[] = [
   practiceDialectic, showShelves, showWays, findItem, quoteTranscript, showClaims, searchLibrary, browseCategory, quoteBook, proposeClaim,
   homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
   excerptAction, draftCourseAction, coursesAction,
+  lensesAction, lensAction, applyLens,
 ];
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id);
