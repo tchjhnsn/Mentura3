@@ -24,6 +24,7 @@ import { PEOPLE, personHref } from "@reflect/core/historical-people";
 import { IDEAS, TERMS } from "@reflect/core/great-ideas";
 import { SUBJECTS, subjectRow } from "@reflect/core/subjects";
 import { redirect } from "next/navigation";
+import { PIANO, instrumentHref } from "@reflect/core/instruments";
 
 export type WayPick = Way | "leisure";
 export const WAY_PICKS: readonly { id: WayPick; label: string }[] = [...WAYS.map((w) => ({ id: w.id, label: w.label })), { id: "leisure", label: "Play" }];
@@ -140,6 +141,7 @@ async function WayRows({ userId }: { userId: string }) {
       <section className="space-y-3">
         {head("practice")}
         <ul className="divide-y text-sm">
+          <li><Link href={instrumentHref(PIANO)} className="block py-2 hover:underline hover:underline-offset-4">Learn the piano: {PIANO.pieces.length} pieces to listen to and practise</Link></li>
           <li><Link href="/journal" className="block py-2 hover:underline hover:underline-offset-4">Write an essay in your journal, from a prompt</Link></li>
           <li><Link href={href("course", null)} className="block py-2 hover:underline hover:underline-offset-4">Put yourself under examination on a course you took</Link></li>
         </ul>
@@ -201,6 +203,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
       <div className="space-y-8">
         {NOT_HERE[m] ? <p className="text-muted-foreground text-sm">{NOT_HERE[m]}</p> : null}
         {r.error ? <p className="text-muted-foreground text-sm">{r.error}</p> : null}
+        {m === "course" && !q ? <p className="text-sm"><Link href={instrumentHref(PIANO)} className="font-medium underline underline-offset-4">Learn the piano</Link> <span className="text-muted-foreground">· A course of {PIANO.pieces.length} pieces to listen to and practise, from Reflect&apos;s editors</span></p> : null}
         {r.found.length ? (
           <section className="space-y-4">
             {q ? <h2 className="pt-2 text-lg font-semibold">Results for “{q}”</h2> : <h2 className="pt-2 text-lg font-semibold">{m === "course" ? "Courses to take here, from Open Yale and MIT" : "The Art Institute of Chicago's best-known works"}</h2>}

@@ -28,6 +28,8 @@ import { connectionsPartOf } from "./connections-store";
 import { placeFacts } from "./public-data";
 import { MEALS_PATHS } from "@reflect/core/meals";
 import { mealsPartOf } from "./meals-store";
+import { INSTRUMENT_PATHS, PIANO } from "@reflect/core/instruments";
+import { instrumentPartOf } from "./instruments";
 import { addEvents, calendarPart, calendarSchema, eventSchema } from "./calendar-tools";
 
 export const GUIDE = [
@@ -183,6 +185,13 @@ export function reflectServer(userId: string): McpServer {
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text((await mealsPartOf(userId, path)) ?? "No such part of the meals."));
+
+  server.registerTool("piano", {
+    title: "Read the person's piano course",
+    description: `The person's piano course in Scholē: the piece to practise today with its recording and score, the graded pieces in order and which are learned, and minutes practised a day. Read only; practice is logged on the course page. Paths: ${INSTRUMENT_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text((await instrumentPartOf(userId, PIANO, path)) ?? "No such part of the piano course."));
 
   server.registerTool("calendar", {
     title: "Read the person's calendar",
