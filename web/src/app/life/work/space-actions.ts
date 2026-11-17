@@ -6,6 +6,8 @@ import { requireUser } from "@/server/session";
 import { addLifeRecord, keepLifeAct, lifeRecord, lifeRecords, saveLifeRecord } from "@/server/life-store";
 import { createWork } from "@/server/work-store";
 import { listItems } from "@/server/ways-store";
+import { roleById } from "@reflect/core/formation";
+import { WANTED_KINDS } from "@/server/work-space";
 
 const TYPES = new Set(["job", "career", "venture", "company", "other"]);
 
@@ -54,5 +56,29 @@ export async function hoursAction(form: FormData): Promise<void> {
   if (had) await saveLifeRecord(user.id, had.id, { hours });
   else await addLifeRecord(user.id, "work", "now", { hours });
   revalidatePath("/", "layout");
-  redirect("/life/work#now");
+  redirect("/life/work/season");
+}
+
+/** Star one aim as the main aim; the others lose the star. */
+export async function mainAction(recordId: string): Promise<void> {
+  const user = await requireUser();
+  const aims = (await lifeRecords(user.id, "work")).filter((r) => WANTED_KINDS.has(r.kind));
+  if (!aims.some((r) => r.id === recordId)) throw new Error("No such aim.");
+  for (const r of aims) {
+    const main = r.id === recordId ? "1" : undefined;
+    if ((r.body.main === "1") !== Boolean(main)) await saveLifeRecord(user.id, r.id, { ...r.body, main });
+  }
+  revalidatePath("/", "layout");
+  redirect(`/life/work/${recordId}`);
+}
+
+/** Take a broad role (founder, teacher) as an aim; its page then leads to the people who did it. Taking it again opens the one kept. */
+export async function addRoleAction(roleId: string): Promise<void> {
+  const user = await requireUser();
+  const role = roleById(roleId);
+  if (!role) throw new Error("No such role.");
+  const had = (await lifeRecords(user.id, "work")).find((r) => r.kind === "inspiration" && r.body.type === "role" && r.body.role === roleId);
+  const id = had?.id ?? await addLifeRecord(user.id, "work", "inspiration", { title: role.name, type: "role", role: roleId });
+  revalidatePath("/", "layout");
+  redirect(`/life/work/${id}`);
 }

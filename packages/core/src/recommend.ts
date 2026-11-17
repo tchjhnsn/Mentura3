@@ -8,10 +8,10 @@ import { COLLECTIONS, itemKey, servedAim, type Collection, type CollectionItem }
 import { EXEMPLARS, traitById, traitsWanted, type Admired } from "./formation";
 
 /** Points for each signal. A first guess, kept here so it can be tuned in one place. */
-export const WEIGHTS = { aim: 5, trait: 5, source: 6, follow: 3, finished: 3, kept: 2, liked: 2 } as const;
+export const WEIGHTS = { aim: 5, main: 1, trait: 5, source: 6, follow: 3, finished: 3, kept: 2, liked: 2 } as const;
 
 export type Signals = {
-  /** What the person wants in Work, by name ("Teacher", "Electrician"). */
+  /** What the person wants in Work, by name ("Teacher", "Electrician"), the main aim first. */
   aims: readonly string[];
   /** People they keep as inspirations, with the traits they chose. */
   admired: readonly Admired[];
@@ -78,7 +78,7 @@ export function recommend(signals: Signals, all: readonly Collection[] = COLLECT
     const liked = items.find((i) => hasAny(s.liked, i));
     for (const i of items) {
       const r: Reason[] = [];
-      if (aim) r.push({ points: WEIGHTS.aim, line: `For your aim: ${aim}` });
+      if (aim) r.push({ points: WEIGHTS.aim + (aim === s.aims[0] ? WEIGHTS.main : 0), line: `For your aim: ${aim}` });
       if (trait) r.push({ points: WEIGHTS.trait - trait.trait.playlists.indexOf(c.id), line: `For ${trait.trait.name.toLowerCase()}, as ${trait.from.name} practised it` });
       const by = i.by.toLowerCase();
       const followed = follows.find((f) => by.includes(f));

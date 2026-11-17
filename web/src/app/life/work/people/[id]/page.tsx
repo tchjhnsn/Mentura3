@@ -31,7 +31,7 @@ export default async function ExemplarPage({ params }: { params: Promise<{ id: s
   const roles = ROLES.filter((r) => r.exemplars.includes(id)).map((r) => r.name);
   return (
     <main className={PAGE}>
-      <ThingHeader back="/life/work#people" backLabel="Work" crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }]} title={e.name} />
+      <ThingHeader back="/life/work/people" backLabel="People" crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }]} title={e.name} />
       <form action={admireAction.bind(null, id)} className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid gap-2">

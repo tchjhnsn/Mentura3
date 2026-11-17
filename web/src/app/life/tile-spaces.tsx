@@ -96,7 +96,7 @@ export async function KinSpace({ userId, records, acts, today }: { userId: strin
         <Rows rows={s.others.map((k) => ({ key: k.id, href: `/life/kin/${k.id}`, main: <>{k.name}{k.relation ? <span className="text-muted-foreground font-normal"> · {k.relation}</span> : null}</>, side: [k.age !== null ? `${k.age} years old` : null, k.state].filter(Boolean).join(", ") || undefined }))} empty="No other kin kept." />
       </Section>
       <Section title="What Kin asks of Work" note="The care you give takes time that work cannot.">
-        <p className="text-sm">{s.careHours ? <>You gave <span className="font-semibold">{s.careHours} hours a week</span> of care over four weeks.</> : <span className="text-muted-foreground">No care logged these four weeks.</span>} <Link href="/life/work#now" className="underline underline-offset-2">See the hours you have for work</Link>.</p>
+        <p className="text-sm">{s.careHours ? <>You gave <span className="font-semibold">{s.careHours} hours a week</span> of care over four weeks.</> : <span className="text-muted-foreground">No care logged these four weeks.</span>} <Link href="/life/work/season" className="underline underline-offset-2">See the hours you have for work</Link>.</p>
       </Section>
       <Upcoming userId={userId} tile="kin" today={today} />
     </div>
