@@ -8,7 +8,7 @@ import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat } from "./actions";
+import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat, approveFromChat, declineFromChat } from "./actions";
 import { catalog } from "./catalog";
 
 function Tap({ label, doneText, already, run }: { label: string; doneText: string; already?: boolean; run: () => Promise<void> }) {
@@ -32,6 +32,39 @@ function Tap({ label, doneText, already, run }: { label: string; doneText: strin
       >
         {label}
       </Button>
+    </div>
+  );
+}
+
+/**
+ * A held change (Ask Reflect plan, step 3): exactly what will happen, one button for its tier (Keep for a shared
+ * record, Send for one that leaves Reflect) and Decline as a small secondary. Nothing happens until a tap.
+ */
+export function Approval({ change, title, preview, tap, from }: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from?: string }) {
+  const [state, setState] = useState<"idle" | "busy" | "kept" | "declined" | "failed">("idle");
+  const act = (run: () => Promise<void>, done: "kept" | "declined") => async () => {
+    setState("busy");
+    try {
+      await run();
+      setState(done);
+    } catch {
+      setState("failed");
+    }
+  };
+  return (
+    <div className="rounded-lg border bg-card p-4 shadow-xs">
+      <div className="text-muted-foreground text-xs">{["Waiting for you", from].filter(Boolean).join(" · ")}</div>
+      <div className="mt-1 font-medium">{title}</div>
+      <p className="text-muted-foreground mt-1 mb-3 whitespace-pre-line text-sm">{preview}</p>
+      {state === "kept" ? <Badge variant="secondary">{tap === "Send" ? "Sent" : "Kept"}</Badge>
+        : state === "declined" ? <Badge variant="outline">Declined</Badge>
+        : (
+          <div className="flex items-center gap-2">
+            <Button size="sm" disabled={state === "busy"} onClick={act(() => approveFromChat(change), "kept")}>{tap}</Button>
+            <Button size="sm" variant="ghost" disabled={state === "busy"} onClick={act(() => declineFromChat(change), "declined")}>Decline</Button>
+            {state === "failed" ? <span className="text-destructive text-xs">Didn't go through.</span> : null}
+          </div>
+        )}
     </div>
   );
 }
@@ -122,6 +155,7 @@ export const { registry } = defineRegistry(catalog, {
         <Tap label="Undo" doneText="Undone" run={() => undoFromChat(props.change)} />
       </div>
     ),
+    Approval: ({ props }) => <Approval change={props.change} title={props.title} preview={props.preview} tap={props.tap} />,
     HomeCard: ({ props }) => (
       <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
         <div className="min-w-0">
