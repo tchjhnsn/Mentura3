@@ -18,5 +18,7 @@ export async function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: 
     }
     parsed = r.data;
   }
-  return (await runAction(a, { userId }, parsed as z.output<S>, "page")).result;
+  const ran = await runAction(a, { userId }, parsed as z.output<S>, "page");
+  if (ran.held) throw new Error("That waits for a tap on its card in Ask.");
+  return ran.result;
 }

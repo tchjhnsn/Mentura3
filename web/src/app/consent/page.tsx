@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { db } from "@/db/pool";
+import { actionsOn } from "@/server/actions";
+import { mcpAllows } from "@/server/mcp-call";
 import { Consent } from "./consent";
 
 export const metadata: Metadata = { title: "Connect an app to Reflect" };
@@ -14,5 +16,6 @@ async function clientName(clientId: string): Promise<string | null> {
 export default async function ConsentPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const q = await searchParams;
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-  return <Consent name={await clientName(one(q.client_id))} scope={one(q.scope)} />;
+  // What the app will be able to do, by tier, from the action registry: the same list /api/mcp offers.
+  return <Consent name={await clientName(one(q.client_id))} scope={one(q.scope)} allows={mcpAllows(actionsOn("mcp"))} />;
 }

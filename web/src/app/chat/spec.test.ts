@@ -76,4 +76,27 @@ describe("budget cards", () => {
     expect(props.rows[1]).toMatchObject({ allot: "Not allotted", allotShare: 0, over: false });
     expect(props.rows[2]).toMatchObject({ cost: "no cost in the plan", costShare: null });
   });
+
+  it("shows a held change with the one tap its tier asks for: Keep for shared, Send for outside", async () => {
+    const { catalog } = await import("./catalog");
+    const change = "00000000-0000-4000-8000-000000000001";
+    const spec = buildSpec([
+      { kind: "approval", change, title: "Keep the person's legacy release plan", preview: "Trustees: Ann.", tier: "outside" },
+      { kind: "approval", change, title: "Add to the household list", preview: "item: milk", tier: "shared" },
+    ])!;
+    expect(spec.elements.e0).toMatchObject({ type: "Approval", props: { change, title: "Keep your legacy release plan", preview: "Trustees: Ann.", tap: "Send" } });
+    expect(spec.elements.e1!.props).toMatchObject({ tap: "Keep" });
+    expect(catalog.data.components.Approval.props.safeParse(spec.elements.e0!.props).success).toBe(true);
+  });
+
+  it("shows a plan with each step done, waiting for your tap or not started, in standard words", async () => {
+    const { catalog } = await import("./catalog");
+    const spec = buildSpec([{ kind: "plan", title: "Budget, reminders, total on Home", status: "waiting", note: null, steps: [
+      { title: "Set the person's budget", status: "done" }, { title: "Add to the household list", status: "waiting" }, { title: "Place a card on Home", status: "not_started" },
+    ] }])!;
+    expect(spec.elements.e0).toEqual({ type: "Plan", props: { title: "Budget, reminders, total on Home", status: "Waiting for your tap", note: null, steps: [
+      { title: "Set your budget", status: "Done" }, { title: "Add to the household list", status: "Waiting for your tap" }, { title: "Place a card on Home", status: "Not started" },
+    ] } });
+    expect(catalog.data.components.Plan.props.safeParse(spec.elements.e0!.props).success).toBe(true);
+  });
 });

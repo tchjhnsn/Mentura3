@@ -6,6 +6,8 @@ import { fromPage } from "@/server/actions/page";
 import { keepClaimAction, keepLibraryBook } from "@/server/actions/learn-page";
 import { addItemAction } from "@/server/actions/learning";
 import { undoChangeAction } from "@/server/actions/changes";
+import { approveChange, declineChange } from "@/server/actions/run";
+import { planCard } from "./spec";
 
 // A tap on a card in the chat runs the same registry entry the chat would (Ask Reflect plan, step 4), as the person's
 // own act from the page, so it is in the change log too.
@@ -54,4 +56,23 @@ export async function undoFromChat(changeId: string): Promise<void> {
   const user = await requireUser();
   await fromPage(undoChangeAction, user.id, { change_id: String(changeId) });
   revalidatePath("/", "layout");
+}
+
+/**
+ * Keep or Send, from an Approval card: runs the held change as this person. approveChange checks it is theirs, still
+ * held and under 7 days old, and runs it once. When it was a step of a plan, the plan goes on, and its Plan card's
+ * props come back so the card can show how far it got.
+ */
+export async function approveFromChat(changeId: string): Promise<ReturnType<typeof planCard> | null> {
+  const user = await requireUser();
+  const r = await approveChange({ userId: user.id }, String(changeId));
+  revalidatePath("/", "layout");
+  return r.plan ? planCard(r.plan) : null;
+}
+
+/** Decline, from an Approval card: the held change never runs. */
+export async function declineFromChat(changeId: string): Promise<void> {
+  const user = await requireUser();
+  await declineChange({ userId: user.id }, String(changeId));
+  revalidatePath("/chat");
 }

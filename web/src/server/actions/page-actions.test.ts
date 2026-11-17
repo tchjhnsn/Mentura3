@@ -37,6 +37,7 @@ const ROUTED: Record<string, string[]> = {
   "chat/actions.ts#keepClaimFromChat": ["keep_claim"],
   "chat/actions.ts#addItemFromChat": ["add_item"],
   "chat/actions.ts#undoFromChat": ["undo_change"],
+  "life/messages-actions.ts#sendMessageFromPage": ["send_message"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],
@@ -220,6 +221,11 @@ const EXCLUDED: Record<string, string> = {
   "settings/appearance/actions.ts#setLookAction": SETTINGS,
   "settings/connections/actions.ts#addFeedAction": "Connecting a calendar feed fetches an outside address; connections are made in Settings, never by a model.",
   "settings/connections/actions.ts#removeFeedAction": SETTINGS,
+  "chat/actions.ts#approveFromChat": "Keep or Send on a held change is the person's tap itself; a model never approves.",
+  "chat/actions.ts#declineFromChat": "Decline on a held change is the person's tap itself; a model never declines for them.",
+  "life/messages-actions.ts#inviteFriendAction": "An invite link lets another account in; the person makes it on the page, never a model.",
+  "life/messages-actions.ts#acceptFriendInviteAction": "Accepting an invite is the invited person's own act while signed in.",
+  "settings/connections/actions.ts#disconnectAssistantAction": "Disconnecting an assistant is the person's own act in Settings.",
   "settings/connections/actions.ts#disconnectGoogleAction": "Disconnecting an OAuth connection is the person's own act in Settings.",
   "settings/connections/actions.ts#disconnectMicrosoftAction": "Disconnecting an OAuth connection is the person's own act in Settings.",
 };

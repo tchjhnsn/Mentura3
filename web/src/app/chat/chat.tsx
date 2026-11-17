@@ -15,7 +15,8 @@ import { Message, MessageContent, MessageResponse } from "@/components/ai-elemen
 import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
-import { registry } from "./registry";
+import { Approval, Plan, registry } from "./registry";
+import type { planCard } from "./spec";
 
 const today = () => {
   const d = new Date();
@@ -62,7 +63,10 @@ function Answer({ message }: { message: UIMessage }) {
   );
 }
 
-export function Chat({ ask }: { ask?: string } = {}) {
+/** A held change shown at the top of Ask, with where it was asked for. */
+export type Waiting = { change: string; title: string; preview: string; tap: "Keep" | "Send"; from: string };
+
+export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[] } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
   const [id] = useState(() => crypto.randomUUID());
   const { messages, sendMessage, status } = useChat({ id, transport });
@@ -73,6 +77,12 @@ export function Chat({ ask }: { ask?: string } = {}) {
         <span className="text-sm font-medium">Ask</span>
         <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
       </div>
+      {pending.length || plans.length ? (
+        <div className="mb-4 flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
+          {plans.map((p, i) => <Plan key={i} {...p} />)}
+          {pending.map((p) => <Approval key={p.change} {...p} />)}
+        </div>
+      ) : null}
       <Conversation className="flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
