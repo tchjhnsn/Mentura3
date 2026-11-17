@@ -101,6 +101,8 @@ export function Chat({ ask }: { ask?: string } = {}) {
           <PromptInputSubmit status={status} />
         </PromptInputFooter>
       </PromptInput>
+      {/* AI disclosure (California SB 243, New York's AI companion law): always shown, beside the input. */}
+      <p className="text-muted-foreground mt-2 text-center text-xs">Ask Reflect is an AI and can be wrong.</p>
     </div>
   );
 }

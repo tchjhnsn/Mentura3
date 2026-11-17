@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addFeed, removeFeed } from "@/server/calendar-feeds";
 import { disconnectGoogle } from "@/server/google-calendar";
+import { disconnectMicrosoft } from "@/server/microsoft-calendar";
 import { requireUser } from "@/server/session";
 
-// Settings, Connections: subscribing to a calendar by its address, removing one, and disconnecting Google Calendar.
+// Settings, Connections: subscribing to a calendar by its address, removing one, and disconnecting Google or Outlook Calendar.
 
 const CALENDARS = "/settings/connections/calendars";
 const done = (to: string) => {
@@ -38,4 +39,10 @@ export async function disconnectGoogleAction(): Promise<void> {
   const user = await requireUser();
   await disconnectGoogle(user.id);
   done("/settings/connections/google-calendar");
+}
+
+export async function disconnectMicrosoftAction(): Promise<void> {
+  const user = await requireUser();
+  await disconnectMicrosoft(user.id);
+  done("/settings/connections/microsoft-calendar");
 }

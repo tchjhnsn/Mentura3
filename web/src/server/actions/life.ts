@@ -11,7 +11,8 @@ import { householdPartOf } from "../household-store";
 import { placeFacts } from "../public-data";
 import { connectionsPartOf } from "../connections-store";
 import { mealsPartOf } from "../meals-store";
-import { adventuresPart, planAdventure } from "../adventures";
+import { adventureFor, adventuresPart, planAdventure } from "../adventures";
+import { removeLifeRecord, saveLifeRecord } from "../life-store";
 import { action } from "./types";
 
 const path = z.object({ path: z.string().max(200).default("") });
@@ -60,6 +61,20 @@ export const planAdventureAction = action({
     checklist: z.array(z.string().max(140)).max(60).optional().describe("What to pack or do before"),
   }),
   run: async ({ userId }, d) => planAdventure(userId, d),
+  // Undo removes an adventure the plan started, or puts back the fields of one it changed.
+  before: async ({ userId }, d) => {
+    const old = await adventureFor(userId, d);
+    return old ? { id: old.id, body: old.body } : null;
+  },
+  change: (r, _d, before) => ({ before, after: { id: r.id, created: before === null } }),
+  undo: async ({ userId }, c) => {
+    const after = c.after as { id?: unknown; created?: unknown } | null;
+    const before = c.before as { id?: unknown; body?: unknown } | null;
+    if (typeof after?.id !== "string") throw new Error("This change cannot be undone.");
+    if (after.created === true) await removeLifeRecord(userId, after.id);
+    else if (before && before.id === after.id && before.body && typeof before.body === "object") await saveLifeRecord(userId, after.id, before.body as Record<string, unknown>);
+    else throw new Error("This change cannot be undone.");
+  },
 });
 
 export const household = action({

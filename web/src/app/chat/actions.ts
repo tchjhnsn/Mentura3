@@ -6,6 +6,7 @@ import { requireUser } from "@/server/session";
 import { addBook } from "@/server/learn-store";
 import { keepClaim } from "@/server/claims-store";
 import { addItem } from "@/server/ways-store";
+import { undoChange } from "@/server/actions/run";
 
 /** Add to my shelves, from a library card in the chat. The person tapped it; the entry is cleaned again. */
 export async function addBookFromChat(entryJson: string): Promise<void> {
@@ -51,4 +52,11 @@ export async function addItemFromChat(itemJson: string): Promise<void> {
   const s = (k: string) => (typeof f[k] === "string" ? (f[k] as string) : undefined);
   await addItem(user.id, { medium: s("medium") ?? "", title: s("title") ?? "", ...(s("by") ? { by: s("by") } : {}), ...(s("url") ? { url: s("url") } : {}), ...(s("image") ? { image: s("image") } : {}), status: "want" });
   revalidatePath("/schole");
+}
+
+/** Undo, from the chip under a change the chat made. undoChange checks it is the person's own, own tier and under 30 days old. */
+export async function undoFromChat(changeId: string): Promise<void> {
+  const user = await requireUser();
+  await undoChange({ userId: user.id }, String(changeId));
+  revalidatePath("/", "layout");
 }

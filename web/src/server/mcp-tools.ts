@@ -10,6 +10,7 @@ import { connections, household, householdPlan, meals, place } from "./actions/l
 import { piano } from "./actions/schole";
 import { coursesAction, draftCourseAction, excerptAction } from "./actions/courses";
 import { GUIDE } from "./actions/journal";
+import { runAction } from "./actions/run";
 import { siteUrl } from "./site";
 
 export { GUIDE, toolGetEntry, toolKeepLegacyPlan, toolLegacyStatus, toolListEntries, toolWriteEntry } from "./actions/journal";
@@ -42,8 +43,14 @@ export function reflectServer(userId: string): McpServer {
     const input = inputFor(a, "mcp");
     const said = REPLIES.get(a.id) ?? ((r: unknown) => r);
     const config = { title: a.title, description: describeFor(a, "mcp"), inputSchema: input, ...(a.tier === "read" ? { annotations: { readOnlyHint: true } } : {}) };
-    // A tool with no input is called with only the request context, so it runs with no input.
-    const run = async (args: unknown) => text(said(await a.run({ userId }, input ? args : {})));
+    // A tool with no input is called with only the request context, so it runs with no input. Every run goes through
+    // runAction, which logs a change; one the person can undo names its change id in a second line.
+    const run = async (args: unknown) => {
+      const { result, changeId } = await runAction(a, { userId }, input ? args : {}, "mcp");
+      const out = text(said(result));
+      if (changeId && a.tier === "own" && a.undo) out.content.push({ type: "text", text: `Change ${changeId}. The person can undo it for 30 days (undo_change).` });
+      return out;
+    };
     server.registerTool(a.id, config, run);
   }
   return server;

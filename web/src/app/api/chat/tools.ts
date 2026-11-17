@@ -7,6 +7,10 @@ import { adventures, connections, household, householdPlan, meals, place, planAd
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
+import { recentChanges, undoChangeAction } from "@/server/actions/changes";
+import { runAction } from "@/server/actions/run";
+import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "@/server/actions/home-cards";
+import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
@@ -22,10 +26,21 @@ export type ChatDeps = { userId: string; today?: string; view: LearnView; claims
 export function chatTools({ userId, today, view, claims, items, show }: ChatDeps): Record<string, Tool> {
   const ctx: ActionContext = { userId, ...(today ? { today } : {}), loaded: { view, claims, items } };
   const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
-  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply.
+  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
+  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card.
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
-    tool({ description: describeFor(a as Action, "chat"), inputSchema: a.input as z.ZodType<z.output<S>>, execute: async (input: z.output<S>) => say(await a.run(ctx, input), input) }) as Tool,
+    tool({
+      description: describeFor(a as Action, "chat"),
+      inputSchema: a.input as z.ZodType<z.output<S>>,
+      execute: async (input: z.output<S>) => {
+        const { result, changeId } = await runAction(a, ctx, input, "chat");
+        const said = say(result, input);
+        if (!changeId || a.tier !== "own" || !a.undo) return said;
+        show({ kind: "undo", change: changeId, title: a.title });
+        return typeof said === "string" ? `${said} Change ${changeId}: the person can tap Undo, or ask you (undo_change).` : said;
+      },
+    }) as Tool,
   ];
 
   const library = (r: { label: string; href: string; books: CatalogEntry[] | null }) => {
@@ -40,6 +55,12 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   const added = (list: AddedEvent[]) => {
     for (const e of list) show({ kind: "event", title: e.title, day: e.day, when: e.when, tile: e.tile ? e.tile_label : "", href: e.href });
     return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
+  };
+
+  const day = today ?? new Date().toISOString().slice(0, 10);
+  const card = (c: HomeCard & { summary: string }, said: string) => {
+    show({ kind: "home_card", title: c.title, tile: c.tile, lines: cardLines(c, day), until: c.end });
+    return `${said}: ${c.summary} (id ${c.id}). The person removes it with the x on Home.`;
   };
 
   return Object.fromEntries([
@@ -126,6 +147,15 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       show({ kind: "propose_claim", ...p });
       return "Proposed. It is not kept unless the person taps Accept.";
     }),
+    use(recentChanges, (list) => (list.length ? JSON.stringify(list).slice(0, 12000) : "No changes yet.")),
+    use(undoChangeAction, (r) => {
+      show({ kind: "note", text: `Undone: ${r.title}.` });
+      return `Undone: ${r.title} (change ${r.undone}).`;
+    }),
+    use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
+    use(addHomeCardAction, (c) => card(c, "Placed on Home")),
+    use(removeHomeCardAction, () => "Removed from Home."),
+    use(checkHomeItemAction, (c) => card(c, "Checked")),
     use(excerptAction, (r) => {
       if (!r.held) {
         show({ kind: "note", text: r.reason });

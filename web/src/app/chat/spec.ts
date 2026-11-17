@@ -14,7 +14,11 @@ export type Piece =
   | { kind: "found_item"; medium: string; label: string; title: string; by?: string; image?: string; source: string; kept: boolean; item: string }
   | { kind: "course"; title: string; goal: string; units: string; href: string }
   | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
-  | { kind: "note"; text: string };
+  | { kind: "home_card"; title: string; tile: string; lines: string[]; until: string }
+  | { kind: "note"; text: string }
+  | { kind: "lifeline" }
+  /** Undo for a change the chat just made in the person's own records (the change log's id). */
+  | { kind: "undo"; change: string; title: string };
 
 /** "Friday, November 20", read in UTC so the day is the day the person gave. */
 const longDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
@@ -38,9 +42,12 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
   const note = (text: string) => add({ type: "Note", props: { text } });
   for (const p of pieces) {
     if (p.kind === "note") note(p.text);
+    else if (p.kind === "lifeline") add({ type: "Lifeline", props: {} });
+    else if (p.kind === "undo") add({ type: "UndoChange", props: { change: p.change, text: `Done: ${p.title.charAt(0).toLowerCase()}${p.title.slice(1).replace(/the person's/g, "your")}.` } });
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
     else if (p.kind === "course") add({ type: "Course", props: { title: p.title, goal: p.goal, units: p.units, href: p.href } });
     else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
+    else if (p.kind === "home_card") add({ type: "HomeCard", props: { title: p.title, tile: p.tile, lines: p.lines, until: `Until ${longDay(p.until)}` } });
     else if (p.kind === "found_item") add({ type: "FoundItem", props: { medium: p.label, title: p.title, by: p.by ?? null, image: p.image ?? null, source: p.source, kept: p.kept, item: p.item } });
     else if (p.kind === "shelves") {
       if (!p.shelves.length) note("No shelves yet. Books go on a shelf once they have a call number.");
