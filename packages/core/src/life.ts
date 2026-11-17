@@ -44,6 +44,7 @@ const opts = (...l: string[]): Option[] => l.map((x) => ({ id: x.toLowerCase().r
 export const MET = opts("Self-provided", "Stocked", "Supplied", "Cared for");
 export const PROVIDER = opts("Self", "Market", "Nature", "Polis", "Kin", "Gifts");
 /** How often a standard is checked again, or a duty comes back (FEMA's app reminds yearly and twice a year; Torian, 2026-11-14 20:53Z). */
+export const WAYS = opts("Car", "Truck", "Motorcycle", "Bus or train", "Bicycle", "Walking", "Rides from others");
 export const CYCLE = opts("Every month", "Every 3 months", "Every 6 months", "Every year");
 /** How often the person means to see a friend, kept by them, never set for them. */
 export const EVERY = opts("Every week", "Every 2 weeks", "Every month", "Every 3 months", "Every 6 months", "Every year");
@@ -57,11 +58,12 @@ export function everyDays(v: unknown): number | null {
   return Math.round(n * (unit.startsWith("week") ? 7 : unit.startsWith("month") ? 30.4 : 365));
 }
 
-const need = (id: string, label: string, intro: string, standard: { text: string; source: string }, checks: [string, string][]): Kind => ({
+const need = (id: string, label: string, intro: string, standard: { text: string; source: string }, checks: [string, string][], extra: Field[] = []): Kind => ({
   id, label, plural: label, title: "how", one: true, intro, standard,
   fields: [
     { key: "how", label: "How it is met", kind: "choice", options: MET },
     { key: "by", label: "By whom", kind: "choice", options: PROVIDER },
+    ...extra,
     ...checks.map(([key, label]) => ({ key, label, kind: "check" as const })),
     { key: "cycle", label: "Check the standard again", kind: "choice", options: CYCLE },
     { key: "cost", label: "What it costs a month", kind: "money" },
@@ -190,7 +192,7 @@ export const APPS: readonly LifeApp[] = [
     intro: "The needs of self-preservation: how each is met now, by whom, and against what standard.",
     kinds: [
       need("food", "Food", "How you eat: who cooks, what is stocked, what it costs.", { text: "USDA food plans set what a household's food costs, from thrifty to liberal; a stocked pantry for emergencies.", source: "USDA Food Plans" }, [["pantry", "A pantry stocked for two weeks"]]),
-      need("water", "Water", "Where your water comes from and what is stored.", { text: "Store a gallon per person per day, for at least three days and up to two weeks.", source: "Ready.gov" }, [["stored", "Water stored for three days"], ["two-weeks", "Water stored for two weeks"]]),
+      need("water", "Water", "Where your water comes from and what is stored.", { text: "Store a gallon per person per day, for at least three days and up to two weeks.", source: "Ready.gov" }, [["stored", "Water stored for three days"], ["two-weeks", "Water stored for two weeks"]], [{ key: "gallons", label: "Gallons stored", kind: "number" }]),
       need("shelter", "Shelter", "Where you live: rented or owned, and what it costs.", { text: "Housing costs under 30% of income.", source: "HUD" }, [["thirty", "Housing under 30% of income"]]),
       need("transport", "Transport", "How you get to work and essentials, and what it costs.", { text: "Reliable access to work and essentials at a cost you can keep up.", source: "Domain design" }, [["reliable", "Reliable every day"], ["backup", "A second way when the first fails"]]),
       need("safety", "Safety", "Physical safety at home and away, an emergency fund and preparedness.", { text: "An emergency kit and plan, an emergency fund, and important documents kept safe.", source: "Ready.gov" }, [["kit", "An emergency kit"], ["plan", "A plan the household knows"], ["fund", "An emergency fund"], ["documents", "Important documents kept safe"]]),
@@ -209,6 +211,13 @@ export const APPS: readonly LifeApp[] = [
       {
         // Where the household lives, for public data about the place (`@reflect/core/public-data`): FEMA's risk index
         // for the county and EPA's record of the water system. Set at Settings, Where you live.
+        // A way the household gets around (Transport's workspace, doc "Household tiles design guide"): added with one
+        // tap from a list, never typed. Two ways kept meet the standard's "a second way when the first fails".
+        id: "way", label: "Way of getting around", plural: "Ways of getting around", title: "how", hidden: true,
+        intro: "Each way you get to work and essentials.",
+        fields: [{ key: "how", label: "Way", kind: "choice", options: WAYS }],
+      },
+      {
         id: "place", label: "Where you live", plural: "Where you live", title: "county", one: true, hidden: true,
         intro: "The county and state you live in, and the water system that serves you.",
         fields: [

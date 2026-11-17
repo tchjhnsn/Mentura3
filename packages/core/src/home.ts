@@ -57,3 +57,25 @@ export function homeCost(needs: readonly NeedView[]): { pay: number | null; cove
   const paid = needs.filter((n) => !n.covered && n.cost !== null);
   return { pay: paid.length ? paid.reduce((s, n) => s + n.cost!, 0) : null, covered: needs.filter((n) => n.covered) };
 }
+
+/** Housing's share of income, as a whole percent, from what it costs a month and income a year; null without both. */
+export function housingShare(costMonth: number | null, incomeYear: number): number | null {
+  return costMonth !== null && incomeYear > 0 ? Math.round((costMonth * 12 / incomeYear) * 100) : null;
+}
+
+/** Whole days of water stored for the household, at a gallon a person a day (Ready.gov); null when not stated. */
+export function waterDays(gallons: number | null, people: number): number | null {
+  return gallons !== null && people > 0 ? Math.floor(gallons / people) : null;
+}
+
+/**
+ * The parts of a need's standard Reflect can mark from the person's own figures (doc "Household tiles design guide"):
+ * housing under 30% of income, water stored for three days and for two weeks, and a second way of getting around.
+ * A part it cannot know is left out, to be marked by hand.
+ */
+export function markedByReflect(need: string, f: { share?: number | null; days?: number | null; ways?: number }): Record<string, boolean> {
+  if (need === "shelter") return f.share === null || f.share === undefined ? {} : { thirty: f.share < 30 };
+  if (need === "water") return f.days === null || f.days === undefined ? {} : { stored: f.days >= 3, "two-weeks": f.days >= 14 };
+  if (need === "transport") return f.ways === undefined ? {} : { backup: f.ways >= 2 };
+  return {};
+}
