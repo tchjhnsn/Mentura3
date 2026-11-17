@@ -2,7 +2,8 @@
 // Send tap inside Reflect. A model can list them; only the person approves or declines, by tapping (never a tool).
 import { z } from "zod";
 import { action } from "./types";
-import { HOLD_DAYS, pendingChanges } from "./run";
+import { pendingChanges } from "./run";
+import { HOLD_DAYS } from "./limits";
 
 export const pendingChangesAction = action({
   id: "pending_changes",

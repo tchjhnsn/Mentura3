@@ -6,10 +6,10 @@ import type { Tier } from "@reflect/core/actions";
 import { postgresChanges } from "../action-change-store";
 import type { Action, ActionContext, ChangeLog, LoggedChange, Source } from "./types";
 import { actionById } from "./index";
+import { HOLD_DAYS, UNDO_DAYS } from "./limits";
 
-export const UNDO_DAYS = 30;
-/** How long a held change waits for the person's tap. After that it cannot be approved; the model asks again. */
-export const HOLD_DAYS = 7;
+export { HOLD_DAYS, UNDO_DAYS };
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const changesOf = (ctx: ActionContext): ChangeLog => ctx.changes ?? postgresChanges;
