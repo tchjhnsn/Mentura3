@@ -9,12 +9,15 @@ import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
 import { dashboardFacts } from "@/server/dashboard";
 import { GLYPHS, hrefOf, MINE, toneOf, type Tone } from "./home-tiles";
 import { HomeToggle } from "./home-toggle";
+import { cookies } from "next/headers";
+import { LookMenu } from "@/components/look-menu";
+import { LOOK_COOKIE, lookOf } from "@/lib/themes";
 
 export const metadata: Metadata = { title: "Reflect" };
 export const dynamic = "force-dynamic";
 
-const FILL: Record<Tone, string> = { action: "fill-foreground", thought: "fill-neutral-400", unstated: "fill-neutral-200" };
-const DOT: Record<Tone, string> = { action: "bg-foreground", thought: "bg-neutral-400", unstated: "bg-neutral-200" };
+const FILL: Record<Tone, string> = { action: "fill-foreground", thought: "fill-tone-thought", unstated: "fill-tone-unstated" };
+const DOT: Record<Tone, string> = { action: "bg-foreground", thought: "bg-tone-thought", unstated: "bg-tone-unstated" };
 const SAY: Record<Tone, string> = { action: "in action", thought: "in thought", unstated: "unstated" };
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -57,6 +60,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const sp = await searchParams;
   const notYet = one(sp.view) === "not-yet";
   const { facts, plan } = await dashboardFacts(user.id);
+  const look = lookOf((await cookies()).get(LOOK_COOKIE)?.value);
   const chosen = notYet ? plan.steps.find((s) => s.id === one(sp.step)) ?? plan.next : null;
   const stage = chosen ?? plan.already;
   const changed = chosen ? changedTiles(plan.already, chosen) : null;
@@ -129,10 +133,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       ) : null}
 
       {!notYet ? (
-        <footer className="text-muted-foreground mt-auto flex justify-center gap-6 pt-8 text-xs">
-          {(["unstated", "thought", "action"] as const).map((t) => (
-            <span key={t} className="flex items-center gap-2"><i className={cn("inline-block size-2.5 rounded-full", DOT[t])} />{SAY[t].replace(/^./, (c) => c.toUpperCase())}</span>
-          ))}
+        <footer className="mt-auto flex justify-center pt-8">
+          <LookMenu look={look} today={new Date().toISOString().slice(0, 10)}>
+            {(["unstated", "thought", "action"] as const).map((t) => (
+              <span key={t} className="flex items-center gap-2"><i className={cn("inline-block size-2.5 rounded-full", DOT[t])} />{SAY[t].replace(/^./, (c) => c.toUpperCase())}</span>
+            ))}
+          </LookMenu>
         </footer>
       ) : null}
     </main>
