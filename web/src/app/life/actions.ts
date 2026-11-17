@@ -76,7 +76,7 @@ export async function restoreLifeAction(id: string, to: string): Promise<void> {
   redirect(to.startsWith("/life/") ? to : "/");
 }
 
-const toTile = (to: string) => (to.startsWith("/life/") ? to : "/");
+const toTile = (to: string) => (/^\/(life|meals)(\/|\?|$)/.test(to) ? to : "/");
 
 /** Sets one fact of a need from a tap (a choice, or a standard part met or not), then goes back to the tile. */
 export async function setFieldAction(app: string, kind: string, key: string, value: string | boolean | null, to: string): Promise<void> {

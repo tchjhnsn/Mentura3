@@ -5,6 +5,7 @@
 // person, never inferred; the journal is where they reflect on it. Pure data and arithmetic: no I/O.
 import type { Act } from "./log";
 import { ORIGINS } from "./origins";
+import { QUESTIONS } from "./recipes";
 
 const ORIGIN_IDS: readonly string[] = ORIGINS.map((o) => o.id);
 
@@ -206,7 +207,23 @@ export const APPS: readonly LifeApp[] = [
           { key: "serves", label: "Serves", kind: "number", hint: "4" },
           { key: "ingredients", label: "Ingredients, one a line", kind: "long", hint: "2 cups rice" },
           { key: "method", label: "How to make it", kind: "long" },
+          { key: "recipe", label: "Reflect's recipe", kind: "text", internal: true },
         ],
+      },
+      {
+        // How the household likes to eat (doc "Food design guide"): Food's first questions, each answered with one tap.
+        id: "food-likes", label: "How you eat", plural: "How you eat", title: "eat", one: true, hidden: true,
+        intro: "How you like to eat, the food you grew up on, and what you will not eat.",
+        fields: [
+          ...QUESTIONS.filter((q) => q.key !== "avoid").map((q): Field => ({ key: q.key, label: q.label, kind: "choice", options: q.options.map(([id, label]) => ({ id, label })) })),
+          ...QUESTIONS.find((q) => q.key === "avoid")!.options.map(([id, label]): Field => ({ key: `avoid-${id}`, label, kind: "check" })),
+        ],
+      },
+      {
+        // A meal put in the week's basket without a day (doc "Food design guide"): its ingredients join the week's list.
+        id: "basket", label: "In the basket", plural: "Basket", title: "meal", hidden: true,
+        intro: "A meal in the week's basket.",
+        fields: [{ key: "meal", label: "Meal", kind: "text", internal: true }, { key: "week", label: "Week of", kind: "day", internal: true }],
       },
       {
         // Where the household lives, for public data about the place (`@reflect/core/public-data`): FEMA's risk index
@@ -296,6 +313,18 @@ export const APPS: readonly LifeApp[] = [
           { key: "note", label: "Notes", kind: "long" },
         ],
         acts: [{ id: "appointment", label: "Appointment", done: "Went to an appointment" }, { id: "slept", label: "Sleep", done: "Slept", minutes: true }],
+      },
+      {
+        // Body facts, stated by the person (doc "Food design guide"), each set on its own page. Sizing a meal plan to
+        // them is not built.
+        id: "measures", label: "Your body", plural: "Your body", title: "weight", one: true, hidden: true,
+        intro: "Your height, weight and the weight you want, set by you.",
+        fields: [
+          { key: "height", label: "Height in inches", kind: "number" },
+          { key: "weight", label: "Weight in pounds", kind: "number" },
+          { key: "goal-weight", label: "Weight you want, in pounds", kind: "number" },
+          { key: "activity", label: "How active you are", kind: "choice", options: opts("Mostly sitting", "Active some days", "Active most days") },
+        ],
       },
       {
         id: "fitness", label: "Fitness goal", plural: "Fitness", title: "goal",

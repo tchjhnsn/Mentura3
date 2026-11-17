@@ -29,10 +29,11 @@ export default async function SetPage({ params, searchParams }: { params: Promis
   if (!kind || !f || !["choice", "money", "number"].includes(f.kind)) notFound();
   const r = (await lifeRecords(user.id, app)).find((x) => x.kind === kind.id);
   const now = r?.body[f.key];
-  const back = `/life/${app}?k=${kind.id}`;
+  const to = one(sp.to);
+  const back = /^\/(life|meals)(\/|\?|$)/.test(to) ? to : `/life/${app}?k=${kind.id}`;
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back={back} backLabel={kind.plural} crumbs={[{ label: kind.plural, href: back }]} title={f.label} />
+      <ThingHeader search={false} back={back} backLabel={kind.hidden ? "Back" : kind.plural} crumbs={[{ label: kind.plural, href: back }]} title={f.label} />
       <div className={COLUMN}>
         <h1 id="page-title" className="text-center text-xl font-semibold tracking-tight">{f.label}</h1>
         {f.kind === "choice" ? (
