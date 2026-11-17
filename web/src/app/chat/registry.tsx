@@ -7,7 +7,7 @@ import { ArrowRightIcon, CalendarIcon, HouseIcon } from "lucide-react";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addBookFromChat, keepClaimFromChat, addItemFromChat } from "./actions";
+import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat } from "./actions";
 import { catalog } from "./catalog";
 
 function Tap({ label, doneText, already, run }: { label: string; doneText: string; already?: boolean; run: () => Promise<void> }) {
@@ -106,6 +106,12 @@ export const { registry } = defineRegistry(catalog, {
         <Button asChild variant="ghost" size="sm" className="shrink-0">
           <Link href={props.href}>Open in calendar<ArrowRightIcon /></Link>
         </Button>
+      </div>
+    ),
+    UndoChange: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 px-1">
+        <span className="text-muted-foreground text-xs">{props.text}</span>
+        <Tap label="Undo" doneText="Undone" run={() => undoFromChat(props.change)} />
       </div>
     ),
     HomeCard: ({ props }) => (
