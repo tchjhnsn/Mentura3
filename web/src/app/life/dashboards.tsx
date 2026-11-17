@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { CalendarPlusIcon, DumbbellIcon, HeartPulseIcon, MessageCircleIcon, PlusIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import { bodySpace } from "@reflect/core/body";
-import { friendsSpace, kinSpace, mateSpace, polisSpace } from "@reflect/core/tile-spaces";
-import type { LifeAct, LifeRecord } from "@/server/life-store";
+import { childrenOf, friendsSpace, kinSpace, legacySpace, mateSpace, polisSpace } from "@reflect/core/tile-spaces";
+import { lifeRecords, type LifeAct, type LifeRecord } from "@/server/life-store";
+import { householdOf } from "@/server/household-store";
 import { Bars, DashCard, DashHead, Face, Hero, Ring } from "@/components/dash";
 import { QuickLog } from "@/components/quick-log";
 import { Button } from "@/components/ui/button";
@@ -523,6 +524,74 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
         </div>
       </section>
       <Upcoming userId={userId} tile="ventures" today={today} hideEmpty title="Coming up" />
+    </div>
+  );
+}
+
+const DOC_STATE = { "in-place": "In place", "not-yet": "Not yet", review: "Review due" } as const;
+const addPlan = (id: string) => `/life/legacy?k=plan&name=${id}`;
+
+/**
+ * Legacy (estate planning, after Trust & Will, Everplans and the ABA and Nolo checklists): how many of the core
+ * documents are in place as a ring, the first one missing and one filled act (Add, Ask Reflect or Review); a card per
+ * document with who is named and where it is kept; other plans; what survives you (vaults, bucket list, letters).
+ */
+export async function LegacyDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
+  const [kin, home] = await Promise.all([lifeRecords(userId, "kin"), householdOf(userId).catch(() => null)]);
+  const s = legacySpace(records, acts, today, childrenOf(kin, (home?.members ?? []).filter((m) => !m.you), today));
+  const core = s.docs.filter((d) => d.core), optional = s.docs.filter((d) => !d.core);
+  const act = !s.kept
+    ? <Button asChild><Link href={addPlan("will")}><PlusIcon />Add</Link></Button>
+    : s.next
+      ? <Button asChild><Link href={ask(`Help me put my ${s.next.label.toLowerCase()} in place: what it is, what I need to decide, and who can help me make it.`)}><SparklesIcon />Ask Reflect</Link></Button>
+      : s.due
+        ? <Button asChild><Link href={`/life/legacy/${s.due.record}`}>Review</Link></Button>
+        : <Button asChild><Link href={ask("Walk me through reviewing my estate plan: my will, power of attorney, advance directive, beneficiaries and life insurance.")}><SparklesIcon />Ask Reflect</Link></Button>;
+  const card = (d: (typeof s.docs)[number]) => (
+    <li key={d.id}>
+      <DashCard href={d.record ? `/life/legacy/${d.record}` : addPlan(d.id)} title={d.label} value={DOC_STATE[d.status]} tone={d.status === "review" ? "warn" : d.status === "in-place" ? "good" : undefined} className="h-full"
+        sub={d.status === "not-yet" ? (d.core ? d.what : "Only needed for children under 18") : [d.review, d.who ? `Names ${d.who}` : "No one named", d.where ? `Kept: ${d.where}` : "Where it is kept not said"].filter(Boolean).join(" · ")} />
+    </li>
+  );
+  return (
+    <div className="grid grid-cols-1 gap-8">
+      <Hero>
+        <div className="flex flex-wrap items-center gap-5">
+          <Ring value={s.of ? s.done / s.of : 0} size={88} stroke={8} label={`${s.done} of ${s.of} core documents in place`}>
+            <span className="text-xl font-bold">{s.done}<span className="text-muted-foreground text-sm font-medium">/{s.of}</span></span>
+          </Ring>
+          <div className="grid min-w-0 flex-1 basis-48 gap-1">
+            <span className="text-muted-foreground text-sm">Estate plan</span>
+            <span className="text-2xl font-bold tracking-tight sm:text-3xl">{!s.kept ? "Nothing kept yet" : s.done === s.of ? "All in place" : `${s.done} of ${s.of} in place`}</span>
+            <span className="text-muted-foreground text-sm">{s.next ? `Missing first: ${s.next.label}. ${s.next.what}.` : s.due ? `${s.due.label}: ${s.due.review}.` : "Review it each year and after a marriage, a birth or a death."}</span>
+          </div>
+          {act}
+        </div>
+      </Hero>
+
+      <section className="grid gap-3">
+        <DashHead title="Documents"><Link href="/life/legacy?k=plan" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{[...core, ...optional].map(card)}</ul>
+      </section>
+
+      {s.others.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Other plans" href="/life/legacy?k=plan" />
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {s.others.map((p) => <li key={p.id}><DashCard href={`/life/legacy/${p.id}`} title={p.inPlace ? "In place" : "Not yet"} value={p.who ?? "A plan"} sub={p.where ? `Kept: ${p.where}` : undefined} className="h-full" /></li>)}
+          </ul>
+        </section>
+      ) : null}
+
+      <section className="grid gap-3">
+        <DashHead title="What survives you" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <DashCard href="/life/legacy?k=vault" title="My vaults" value={s.vault?.to ?? "Not named"} sub={s.vault ? "Receives your journal and records" : "Who receives your journal and records, or sealed"} />
+          <DashCard href="/life/legacy?k=wish" title="Bucket list" value={s.wishes.open.length ? `${s.wishes.open.length} to do` : s.wishes.done ? "All done" : "Nothing kept"} sub={s.wishes.open.length ? [s.wishes.open[0]!.what, s.wishes.done ? `${s.wishes.done} done` : null].filter(Boolean).join(" · ") : "What you want to do, see or make"} />
+          <DashCard href="/life/legacy?k=letter" title="Letters" value={s.letters.length ? `${s.letters.length} ${s.letters.length === 1 ? "letter" : "letters"}` : "None written"} sub={s.letters.length ? `To ${s.letters.slice(0, 3).map((l) => l.to).join(", ")}${s.letters.length > 3 ? ` and ${s.letters.length - 3} more` : ""}` : "Given after your death, never before"} />
+        </div>
+      </section>
+      <Upcoming userId={userId} tile="legacy" today={today} hideEmpty title="Coming up" />
     </div>
   );
 }

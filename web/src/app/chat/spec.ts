@@ -12,8 +12,11 @@ export type Piece =
   | { kind: "propose_claim"; text: string; subject?: string; holders: Holder[]; stance: string }
   | { kind: "quote"; text: string; cite: string; href: string }
   | { kind: "found_item"; medium: string; label: string; title: string; by?: string; image?: string; source: string; kept: boolean; item: string }
+  | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
   | { kind: "note"; text: string };
 
+/** "Friday, November 20", read in UTC so the day is the day the person gave. */
+const longDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
 const holderText = (hs: readonly Holder[]) => hs.map((h) => (h.citation ? `${h.name} (${h.citation})` : h.name)).join("; ");
 const shelfName = (e: Pick<CatalogEntry, "lcc" | "subjects">) => {
   const c = categoryOf(e);
@@ -35,6 +38,7 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
   for (const p of pieces) {
     if (p.kind === "note") note(p.text);
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
+    else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
     else if (p.kind === "found_item") add({ type: "FoundItem", props: { medium: p.label, title: p.title, by: p.by ?? null, image: p.image ?? null, source: p.source, kept: p.kept, item: p.item } });
     else if (p.kind === "shelves") {
       if (!p.shelves.length) note("No shelves yet. Books go on a shelf once they have a call number.");

@@ -15,7 +15,8 @@ const UUID = /^[0-9a-f-]{36}$/;
 
 export type EventInput = { title: unknown; tile?: unknown; day: unknown; starts?: unknown; ends?: unknown; repeat?: unknown; until?: unknown; note?: unknown; recordId?: unknown };
 
-function clean(e: EventInput) {
+/** An event as the store keeps it, or an error that names what is missing. */
+export function cleanEvent(e: EventInput) {
   const title = typeof e.title === "string" ? e.title.replace(/\s+/g, " ").trim().slice(0, 200) : "";
   if (!title) throw new Error("Name the event.");
   const day = String(e.day ?? "");
@@ -30,7 +31,7 @@ function clean(e: EventInput) {
 }
 
 export async function addEvent(userId: string, e: EventInput): Promise<string> {
-  const c = clean(e);
+  const c = cleanEvent(e);
   const id = randomUUID();
   await db().query(
     "INSERT INTO calendar_event (id, user_id, tile, title_ct, note_ct, day, starts, ends, repeat, until, record_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)",
@@ -41,7 +42,7 @@ export async function addEvent(userId: string, e: EventInput): Promise<string> {
 }
 
 export async function saveEvent(userId: string, id: string, e: EventInput): Promise<void> {
-  const c = clean(e);
+  const c = cleanEvent(e);
   await db().query(
     "UPDATE calendar_event SET tile = $3, title_ct = $4, note_ct = $5, day = $6, starts = $7, ends = $8, repeat = $9, until = $10, updated_at = now() WHERE id = $1 AND user_id = $2",
     [id, userId, c.tile, seal(userId, c.title), c.note ? seal(userId, c.note) : null, c.day, c.starts, c.ends, c.repeat, c.until],
