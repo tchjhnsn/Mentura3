@@ -3,7 +3,7 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
 import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
@@ -95,6 +95,13 @@ export const { registry } = defineRegistry(catalog, {
       <Link href={props.href} className="hover:bg-muted block rounded-lg border bg-card p-4 shadow-xs">
         <blockquote className="font-serif">{props.text}</blockquote>
         <p className="text-muted-foreground mt-2 text-xs">{props.cite}</p>
+      </Link>
+    ),
+    Course: ({ props }) => (
+      <Link href={props.href} className="hover:bg-muted block rounded-lg border bg-card p-4 shadow-xs">
+        <div className="text-muted-foreground flex items-center gap-1 text-xs"><GraduationCapIcon className="size-3" />Course in Scholē · {props.units}</div>
+        <div className="mt-1 font-medium">{props.title}</div>
+        <p className="text-muted-foreground mt-1 text-sm">{props.goal}</p>
       </Link>
     ),
     CalendarEvent: ({ props }) => (

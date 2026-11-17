@@ -53,3 +53,10 @@ describe("calendar cards", () => {
     expect(spec.elements.e0).toEqual({ type: "UndoChange", props: { change, text: "Done: put an event on your calendar." } });
   });
 });
+
+describe("course cards", () => {
+  it("shows a drafted course opening its course page", () => {
+    const spec = buildSpec([{ kind: "course", title: "Socrates", goal: "Read the Apology closely.", units: "2 units, 3 passages", href: "/schole/courses/made/11111111-2222-4333-8444-555555555555" }])!;
+    expect(spec.elements.e0).toEqual({ type: "Course", props: { title: "Socrates", goal: "Read the Apology closely.", units: "2 units, 3 passages", href: "/schole/courses/made/11111111-2222-4333-8444-555555555555" } });
+  });
+});

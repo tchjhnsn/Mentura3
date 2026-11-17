@@ -12,6 +12,7 @@ const CHAT_TOOLS = [
   "show_shelves", "show_ways", "find_item", "quote_transcript", "show_claims", "search_library", "browse_category", "quote_book", "propose_claim",
   "recent_changes", "undo_change",
   "home_cards", "add_home_card", "remove_home_card", "check_home_item",
+  "excerpt", "draft_course", "courses",
 ];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
@@ -19,6 +20,7 @@ const MCP_TOOLS = [
   "add_courses", "add_credential", "rate_subject", "add_input", "add_item", "add_lesson", "mark_subject", "ideas", "keep_idea",
   "recent_changes", "undo_change",
   "home_cards", "add_home_card", "remove_home_card", "check_home_item",
+  "excerpt", "draft_course", "courses",
 ];
 
 const view: LearnView = { known: [], shown: [], vouched: [], suggested: [], books: [] };
@@ -56,7 +58,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "home_cards"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "home_cards", "excerpt", "courses"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
