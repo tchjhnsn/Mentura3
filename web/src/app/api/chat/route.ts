@@ -18,6 +18,7 @@ import { listClaims, type ClaimOut } from "@/server/claims-store";
 import { listItems, type LearnItem } from "@/server/ways-store";
 import { buildSpec, type Piece } from "../../chat/spec";
 import { chatTools } from "./tools";
+import { crisisResponse, inCrisis, messageText } from "./crisis";
 
 export const maxDuration = 60;
 const MAX_MESSAGES = 30;
@@ -28,16 +29,10 @@ export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as { id?: unknown; localDate?: unknown; messages?: UIMessage[] } | null;
   const messages = Array.isArray(body?.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
   if (!messages.length) return Response.json({ error: "messages are required" }, { status: 400 });
+  // Crisis protocol (SB 243): a sign of suicide or self-harm gets the 988 Lifeline, never coaching, and needs no model.
+  const crisis = inCrisis(messages);
   const model = chatModel();
-  if (!model) return Response.json({ error: "no model is set up" }, { status: 503 });
-
-  const [view, claims, items] = await Promise.all([learnView(user.id), listClaims(user.id).catch((): ClaimOut[] | null => null), listItems(user.id).catch((): LearnItem[] => [])]);
-  const summary = learnSummary({
-    books: view.books.map((b) => ({ title: b.title, status: b.status })),
-    subjects: [...new Set(view.books.flatMap((b) => b.subjects.map((s) => s.name)).concat(view.known.map((s) => s.name)))],
-    claims: (claims ?? []).map((c) => ({ text: c.text, stance: c.stance?.stance ?? null })),
-    items: items.map((i) => ({ title: i.title, medium: mediumOf(i.medium).label.toLowerCase(), status: i.status })),
-  });
+  if (!model && !crisis) return Response.json({ error: "no model is set up" }, { status: 503 });
   // The chat is kept in the journal as one entry (its id is the chat's id), one part per message.
   const day = typeof body?.localDate === "string" ? isoDate(body.localDate) : null;
   const journal = isChatId(body?.id) && day && acceptLocalDate(day, new Date()) ? { chat: body.id as string, day } : null;
@@ -46,7 +41,16 @@ export async function POST(req: Request) {
     if (journal && words) await keepChatMessage(user.id, journal.chat, journal.day, chatPart(who, words)).catch(() => undefined);
   };
   const last = messages.at(-1);
-  if (last?.role === "user") await keep("you", last.parts.map((p) => (p.type === "text" ? p.text : "")).join(""));
+  if (last?.role === "user") await keep("you", messageText(last));
+  if (crisis || !model) return crisisResponse((text) => keep("reflect", text));
+
+  const [view, claims, items] = await Promise.all([learnView(user.id), listClaims(user.id).catch((): ClaimOut[] | null => null), listItems(user.id).catch((): LearnItem[] => [])]);
+  const summary = learnSummary({
+    books: view.books.map((b) => ({ title: b.title, status: b.status })),
+    subjects: [...new Set(view.books.flatMap((b) => b.subjects.map((s) => s.name)).concat(view.known.map((s) => s.name)))],
+    claims: (claims ?? []).map((c) => ({ text: c.text, stance: c.stance?.stance ?? null })),
+    items: items.map((i) => ({ title: i.title, medium: mediumOf(i.medium).label.toLowerCase(), status: i.status })),
+  });
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {

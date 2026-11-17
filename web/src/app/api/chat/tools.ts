@@ -7,6 +7,12 @@ import { adventures, connections, household, householdPlan, meals, place, planAd
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
+import { recentChanges, undoChangeAction } from "@/server/actions/changes";
+import { runAction } from "@/server/actions/run";
+import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "@/server/actions/home-cards";
+import { cardLines, type HomeCard } from "@reflect/core/home-cards";
+import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
+import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
@@ -22,10 +28,21 @@ export type ChatDeps = { userId: string; today?: string; view: LearnView; claims
 export function chatTools({ userId, today, view, claims, items, show }: ChatDeps): Record<string, Tool> {
   const ctx: ActionContext = { userId, ...(today ? { today } : {}), loaded: { view, claims, items } };
   const kept = new Set(view.books.map((b) => b.catalog?.work).filter((w): w is string => Boolean(w)));
-  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply.
+  // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
+  // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card.
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
-    tool({ description: describeFor(a as Action, "chat"), inputSchema: a.input as z.ZodType<z.output<S>>, execute: async (input: z.output<S>) => say(await a.run(ctx, input), input) }) as Tool,
+    tool({
+      description: describeFor(a as Action, "chat"),
+      inputSchema: a.input as z.ZodType<z.output<S>>,
+      execute: async (input: z.output<S>) => {
+        const { result, changeId } = await runAction(a, ctx, input, "chat");
+        const said = say(result, input);
+        if (!changeId || a.tier !== "own" || !a.undo) return said;
+        show({ kind: "undo", change: changeId, title: a.title });
+        return typeof said === "string" ? `${said} Change ${changeId}: the person can tap Undo, or ask you (undo_change).` : said;
+      },
+    }) as Tool,
   ];
 
   const library = (r: { label: string; href: string; books: CatalogEntry[] | null }) => {
@@ -42,6 +59,11 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
   };
 
+  const day = today ?? new Date().toISOString().slice(0, 10);
+  const card = (c: HomeCard & { summary: string }, said: string) => {
+    show({ kind: "home_card", title: c.title, tile: c.tile, lines: cardLines(c, day), until: c.end });
+    return `${said}: ${c.summary} (id ${c.id}). The person removes it with the x on Home.`;
+  };
   // A lens's ideas as a card, each citation opening its passage in Reflect.
   type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
   const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
@@ -50,7 +72,7 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     use(practiceDialectic, (r) => {
       if (r.kind === "course") {
         show({ kind: "quote", text: r.course.about, cite: `Course: ${r.course.name}`, href: "/schole/courses/dialectic" });
-        return `Shown: the course ${r.course.name}, four units, each a playlist and then practice. Courses made for one person are not built; do not offer one.`;
+        return `Shown: the course ${r.course.name}, four units, each a playlist and then practice. To make a course for the person, use draft_course.`;
       }
       const d = r.dialogue;
       show({ kind: "quote", text: `Ten questions on ${d.title} (${d.question}), one passage at a time: what the words do, what they support or attack, and how good the argument is.`, cite: `Practice: ${d.title}`, href: `/schole/dialectic/practice/${d.id}` });
@@ -69,6 +91,20 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       const stage = path.split("/")[0] || "";
       show({ kind: "quote", text: r.summary, cite: "Your household plan", href: stage && stage !== "already" ? `/plan?step=${encodeURIComponent(stage)}` : "/plan" });
       return JSON.stringify(r.part);
+    }),
+    use(budget, (r, { path }) => {
+      if (!r.summary || !r.view) return "No such part of the budget. Do not guess a figure.";
+      const stage = r.view.stage.id;
+      show({ kind: "budget", view: r.view, href: stage === "already" ? "/plan" : `/plan?step=${encodeURIComponent(stage)}` });
+      return `${r.summary} Part ${path}: ${JSON.stringify(r.part)}`;
+    }),
+    use(setBudget, (r) => {
+      show({ kind: "budget", view: r.view, href: "/plan" });
+      return `Kept. ${r.summary ?? ""} The person sees it on /plan.`;
+    }),
+    use(budgetStep, (r) => {
+      show({ kind: "quote", text: r.toEarn !== null ? `Needs $${Math.round(r.toEarn).toLocaleString("en-US")} a year before taxes, $${Math.round(r.leftToEarn ?? 0).toLocaleString("en-US")} more than comes in.` : "Not costed yet.", cite: `Step ${r.order}: ${r.name}`, href: r.href });
+      return `Added the step ${r.name} (id ${r.id}, order ${r.order}) to Not yet. ${r.toEarn !== null ? `It needs ${Math.round(r.toEarn)} a year before taxes; ${Math.round(r.leftToEarn ?? 0)} left to earn.` : "No costs yet."} The person changes it on ${r.href.replace("/plan?step=", "/plan/steps/")}.`;
     }),
     use(household, (r) => (r === null ? "No such part of the household. Do not guess." : JSON.stringify(r))),
     use(place, (r) => {
@@ -130,6 +166,33 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       show({ kind: "propose_claim", ...p });
       return "Proposed. It is not kept unless the person taps Accept.";
     }),
+    use(recentChanges, (list) => (list.length ? JSON.stringify(list).slice(0, 12000) : "No changes yet.")),
+    use(undoChangeAction, (r) => {
+      show({ kind: "note", text: `Undone: ${r.title}.` });
+      return `Undone: ${r.title} (change ${r.undone}).`;
+    }),
+    use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
+    use(addHomeCardAction, (c) => card(c, "Placed on Home")),
+    use(removeHomeCardAction, () => "Removed from Home."),
+    use(checkHomeItemAction, (c) => card(c, "Checked")),
+    use(excerptAction, (r) => {
+      if (!r.held) {
+        show({ kind: "note", text: r.reason });
+        return `${r.reason} Nothing is quoted. Do not quote from memory.`;
+      }
+      if (!r.passages.length) {
+        show({ kind: "note", text: r.reason ?? "Nothing found in the text." });
+        return `${r.reason ?? "Nothing found."} Do not quote from memory.`;
+      }
+      for (const p of r.passages) show({ kind: "quote", text: p.text, cite: p.cite, href: p.href });
+      return `Shown, ${r.total} ${r.total === 1 ? "place" : "places"} in all, from ${r.source}${r.chapters ? `, ${r.chapters} chapters` : ""}: ${JSON.stringify(r.passages.map((p) => ({ ref: p.ref, cite: p.cite, text: p.text })))}. Quote only these words.`;
+    }),
+    use(draftCourseAction, (r, input) => {
+      if (!r.ok) return `Nothing was kept: ${r.errors.join(" ")}`;
+      show({ kind: "course", title: r.title, goal: input.goal, units: `${r.units} ${r.units === 1 ? "unit" : "units"}, ${r.passages} ${r.passages === 1 ? "passage" : "passages"}`, href: r.href });
+      return `Kept on the person's shelves as a course, at ${r.href}. Do not grade or write quizzes for it; examiners are people.`;
+    }),
+    use(coursesAction, (list) => (list.length ? JSON.stringify(list) : "The person keeps no courses yet.")),
     use(lensesAction, (list) => JSON.stringify(list)),
     use(lensAction, (r) => {
       if (!r) return "No such lens or idea. Do not make one up; call lenses for the list.";

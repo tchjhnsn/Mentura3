@@ -45,6 +45,7 @@ test("a person's AI connects, writes an entry and keeps only a reading anchored 
   await page.waitForLoadState("networkidle");
   await page.fill("#email", `mcp-${Date.now()}@example.test`);
   await page.fill("#password", "correct-horse-battery");
+  await page.check("#adult");
   await page.click("button[type=submit]");
   await expect(page.getByRole("heading", { name: "Connect an app to your journal?" })).toBeVisible();
   await expect(page.getByText("calls itself “Test AI”")).toBeVisible();
