@@ -20,6 +20,13 @@ export const catalog = defineCatalog(schema, {
     CalendarEvent: { props: z.object({ title: z.string(), day: z.string(), when: z.string(), tile: z.string(), href: z.string().regex(/^\/calendar\?day=\d{4}-\d{2}-\d{2}$/) }), description: "An event added to the person's calendar, opening the calendar at its day" },
     UndoChange: { props: z.object({ change: z.string().uuid(), text: z.string() }), description: "A change the chat just made in the person's own records, with Undo (change is the change log's id)" },
     HomeCard: { props: z.object({ title: z.string(), tile: z.string(), lines: z.array(z.string()), until: z.string() }), description: "A card placed on the person's Home screen for a time, opening Home" },
+    Budget: {
+      props: z.object({
+        title: z.string(), sub: z.string(), href: z.string().regex(/^\/plan(\?step=[^\s&]+)?$/),
+        rows: z.array(z.object({ label: z.string(), allot: z.string(), cost: z.string(), allotShare: z.number().min(0).max(1), costShare: z.number().min(0).max(1).nullable(), over: z.boolean() })),
+      }),
+      description: "The person's monthly budget: each tile's allotment as a bar beside what the plan says it costs, opening the income plan",
+    },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
     Lifeline: { props: z.object({}), description: "The 988 Suicide and Crisis Lifeline: call, text or chat, shown in place of an answer when a message shows a crisis signal" },
   },

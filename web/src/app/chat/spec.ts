@@ -4,6 +4,7 @@ import type { Spec, UIElement } from "@json-render/core";
 import type { Holder } from "@reflect/core/claims";
 import type { CatalogEntry } from "@reflect/core/openlibrary";
 import { categoryOf, themaCategory } from "@reflect/core/thema";
+import type { BudgetView } from "@reflect/core/budget";
 
 export type Piece =
   | { kind: "shelves"; shelves: { id: string; name: string; books: string[]; subjects: string[] }[] }
@@ -15,10 +16,32 @@ export type Piece =
   | { kind: "course"; title: string; goal: string; units: string; href: string }
   | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
   | { kind: "home_card"; title: string; tile: string; lines: string[]; until: string }
+  | { kind: "budget"; view: BudgetView; href: string }
   | { kind: "note"; text: string }
   | { kind: "lifeline" }
   /** Undo for a change the chat just made in the person's own records (the change log's id). */
   | { kind: "undo"; change: string; title: string };
+
+const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+/** The budget card's props: tiles with an allotment or a cost, each as a share of the largest figure shown. */
+export function budgetCard(v: BudgetView, href: string) {
+  const shown = v.tiles.filter((t) => t.allot !== null || (t.cost !== null && t.cost > 0));
+  const top = Math.max(1, ...shown.map((t) => Math.max(t.allot ?? 0, t.cost ?? 0)));
+  const left = v.leftToAllot >= 0 ? `${usd(v.leftToAllot)} left to allot` : `${usd(-v.leftToAllot)} more allotted than comes in`;
+  return {
+    title: `Budget${v.stage.id === "already" ? "" : `, ${v.stage.name}`}: ${usd(v.allotted)} a month allotted`,
+    sub: `Of ${usd(v.takeHome)} a month after taxes; ${left}.`,
+    href,
+    rows: shown.map((t) => ({
+      label: t.label,
+      allot: t.allot === null ? "Not allotted" : usd(t.allot),
+      cost: t.covered ? "covered" : t.cost === null ? "no cost in the plan" : `${usd(t.cost)} in the plan`,
+      allotShare: (t.allot ?? 0) / top,
+      costShare: t.cost === null ? null : t.cost / top,
+      over: t.status === "over",
+    })),
+  };
+}
 
 /** "Friday, November 20", read in UTC so the day is the day the person gave. */
 const longDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
@@ -46,6 +69,7 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
     else if (p.kind === "undo") add({ type: "UndoChange", props: { change: p.change, text: `Done: ${p.title.charAt(0).toLowerCase()}${p.title.slice(1).replace(/the person's/g, "your")}.` } });
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
     else if (p.kind === "course") add({ type: "Course", props: { title: p.title, goal: p.goal, units: p.units, href: p.href } });
+    else if (p.kind === "budget") add({ type: "Budget", props: budgetCard(p.view, p.href) });
     else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
     else if (p.kind === "home_card") add({ type: "HomeCard", props: { title: p.title, tile: p.tile, lines: p.lines, until: `Until ${longDay(p.until)}` } });
     else if (p.kind === "found_item") add({ type: "FoundItem", props: { medium: p.label, title: p.title, by: p.by ?? null, image: p.image ?? null, source: p.source, kept: p.kept, item: p.item } });

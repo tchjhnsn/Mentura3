@@ -134,6 +134,23 @@ export const { registry } = defineRegistry(catalog, {
         </Button>
       </div>
     ),
+    Budget: ({ props }) => (
+      <Link href={props.href} className="hover:bg-muted block rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{props.title}</div>
+        <p className="text-muted-foreground text-xs">{props.sub}</p>
+        <ul className="mt-3 grid gap-2">
+          {props.rows.map((r) => (
+            <li key={r.label} className="grid gap-1 text-sm">
+              <div className="flex justify-between gap-3"><span>{r.label}</span><span className={r.over ? "text-destructive tabular-nums" : "tabular-nums"}>{r.allot} <span className="text-muted-foreground text-xs">· {r.cost}</span></span></div>
+              <div className="bg-muted relative h-2 overflow-hidden rounded-full" aria-hidden="true">
+                <div className="bg-primary/60 absolute inset-y-0 left-0 rounded-full" style={{ width: `${r.allotShare * 100}%` }} />
+                {r.costShare !== null ? <div className="bg-foreground absolute inset-y-0 w-0.5" style={{ left: `calc(${r.costShare * 100}% - 1px)` }} /> : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Link>
+    ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,
     Lifeline: () => (
       <div className="rounded-lg border bg-card p-4 shadow-xs">

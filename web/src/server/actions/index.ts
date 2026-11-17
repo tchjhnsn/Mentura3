@@ -11,6 +11,7 @@ import { ideas, keepIdeaAction, proposeClaim, showClaims } from "./ideas";
 import { recentChanges, undoChangeAction } from "./changes";
 import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "./home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
+import { budget, budgetStep, setBudget } from "./budget";
 
 export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -18,7 +19,7 @@ export { GUIDE };
 
 /** Every action, in the order MCP lists them, then the chat's own. */
 export const ACTIONS: readonly Action[] = [
-  reflectGuide, householdPlan, adventures, planAdventureAction, household, place, connections, meals, piano, calendar, addEvent, addEventsAction,
+  reflectGuide, householdPlan, budget, setBudget, budgetStep, adventures, planAdventureAction, household, place, connections, meals, piano, calendar, addEvent, addEventsAction,
   listEntriesAction, writeEntry, getEntry, keepLegacyPlan, legacyStatusAction,
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
