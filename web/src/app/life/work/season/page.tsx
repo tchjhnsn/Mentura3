@@ -35,7 +35,7 @@ export default async function SeasonPage() {
           <h2 className="text-lg font-semibold tracking-tight">Left to earn a year</h2>
           <p className="text-3xl font-semibold">{s.left !== null ? money(s.left) : "Not known"}</p>
           <p className="text-muted-foreground text-sm">
-            Needs a year: <span className="text-foreground font-medium">{s.need.pay !== null ? money(s.need.pay) : "not known"}</span>. {needNote ?? <>Give what your needs cost in <Link href="/life/home" className={LINK}>Home</Link>, or your <Link href="/life/work?k=household" className={LINK}>intended household</Link>.</>}
+            Needs a year: <span className="text-foreground font-medium">{s.need.pay !== null ? money(s.need.pay) : "not known"}</span>. {needNote ?? <>Give what your needs cost in <Link href="/group/household" className={LINK}>the household</Link>, or your <Link href="/life/work?k=household" className={LINK}>intended household</Link>.</>}
             {s.need.unknown.length && s.need.from === "home" ? ` No cost given yet for ${s.need.unknown.join(", ").toLowerCase()}.` : ""}
             {" "}Coming in: {money(s.income.year)} a year (<Link href="/life/work?k=income" className={LINK}>income</Link>){s.income.unknown ? `, ${s.income.unknown} not counted` : ""}.
           </p>
@@ -46,7 +46,7 @@ export default async function SeasonPage() {
           {s.need.covered.length ? (
             <ul className="divide-y border-y text-sm">{s.need.covered.map((c) => <li key={c.label} className="flex justify-between gap-3 py-2"><span>{c.label}</span><span className="text-muted-foreground">by {BY[c.by] ?? c.by}</span></li>)}</ul>
           ) : <p className="text-muted-foreground text-sm">None recorded.</p>}
-          <p className="text-muted-foreground text-sm">From who meets each need in <Link href="/life/home" className={LINK}>Home</Link>.</p>
+          <p className="text-muted-foreground text-sm">From who meets each need in <Link href="/group/household" className={LINK}>the household</Link>.</p>
         </section>
 
         <section id="hours" className="grid scroll-mt-20 gap-2">

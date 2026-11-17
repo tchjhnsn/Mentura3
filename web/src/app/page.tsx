@@ -3,15 +3,11 @@ import Link from "next/link";
 import { CalendarIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChevronRightIcon } from "lucide-react";
 import { requireUser } from "@/server/session";
-import { learnView } from "@/server/learn-store";
-import { listEntries } from "@/server/journal-store";
-import { CHAT_PROMPT } from "@reflect/core/chat-journal";
-import { lifeTone, TILE_KIND } from "@reflect/core/life";
 import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
-import { lifeActs, lifeRecords } from "@/server/life-store";
-import { planOf } from "@/server/plan";
-import { GLYPHS, hrefOf, MINE, toneOf, type Facts, type Tone } from "./home-tiles";
+import { dashboardFacts } from "@/server/dashboard";
+import { GLYPHS, hrefOf, MINE, toneOf, type Tone } from "./home-tiles";
 import { HomeToggle } from "./home-toggle";
 
 export const metadata: Metadata = { title: "Reflect" };
@@ -54,20 +50,13 @@ function Steps({ steps, chosen }: { steps: Stage[]; chosen: Stage | null }) {
 /**
  * Home (doc "Already and Not yet design guide"): the tiles in three groups, after Aristotle's order of association.
  * Already is life as it is; Not yet lays out the steps still to be reached, with what each would cost and the tiles
- * it would change. Each tile opens its app.
+ * it would change. Each tile opens its app, and each group's heading opens that group's dashboard (`/group/<id>`).
  */
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
   const sp = await searchParams;
   const notYet = one(sp.view) === "not-yet";
-  const [learn, all, records, acts, { plan }] = await Promise.all([learnView(user.id), listEntries(user.id, 40), lifeRecords(user.id), lifeActs(user.id), planOf(user.id)]);
-  const today = new Date().toISOString().slice(0, 10);
-  const recent = all.filter((e) => e.promptId !== CHAT_PROMPT);
-  const facts: Facts = {
-    learn: { underway: learn.books.some((b) => b.status === "reading"), stated: learn.books.length > 0 || learn.known.length > 0 },
-    journal: { stated: recent.length > 0, open: recent.some((e) => !e.closedAt) },
-    life: Object.fromEntries(Object.entries(TILE_KIND).map(([tile, t]) => [tile, lifeTone(t.app, t.kind, records.filter((r) => r.app === t.app), acts, today)])),
-  };
+  const { facts, plan } = await dashboardFacts(user.id);
   const chosen = notYet ? plan.steps.find((s) => s.id === one(sp.step)) ?? plan.next : null;
   const stage = chosen ?? plan.already;
   const changed = chosen ? changedTiles(plan.already, chosen) : null;
@@ -107,7 +96,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_4fr_2fr]">
         {GROUPS.map((g) => (
           <section key={g.id} aria-labelledby={`group-${g.id}`} className="grid content-start gap-3">
-            <h2 id={`group-${g.id}`} className={cn("font-semibold", changed && !g.tiles.some((t) => changed.has(t)) && "text-muted-foreground")}>{g.label}</h2>
+            <h2 id={`group-${g.id}`} className={cn("font-semibold", changed && !g.tiles.some((t) => changed.has(t)) && "text-muted-foreground")}><Link href={`/group/${g.id}`} className="inline-flex items-center gap-1 hover:underline">{g.label}<ChevronRightIcon aria-hidden="true" className="text-muted-foreground size-4" /></Link></h2>
             <ul className={cn("grid grid-cols-3 gap-3", g.id === "household" ? "sm:grid-cols-4" : g.id === "person" ? "sm:grid-cols-4 lg:grid-cols-2" : "lg:grid-cols-2")}>
               {g.tiles.map((id) => {
                 const t = MINE.find((x) => x.id === id);

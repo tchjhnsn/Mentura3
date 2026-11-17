@@ -42,7 +42,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const { plan } = await planOf(user.id);
   const stages: Stage[] = [plan.already, ...plan.steps];
   const s = stages.find((x) => x.id === want) ?? plan.next ?? plan.already;
-  const change = s.id === "already" ? "/life/home" : `/plan/steps/${s.id}`;
+  const change = s.id === "already" ? "/group/household" : `/plan/steps/${s.id}`;
   return (
     <main className={PAGE}>
       <ThingHeader back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Income plan" />
