@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CONNECTORS, connectionsPart, connectorOf, connectorsFor, stateWord } from "./connectors";
+import { CONNECTORS, connectionsPart, connectorOf, connectorsFor, stateWord, tileHref } from "./connectors";
 
 describe("connections", () => {
   it("says why for every connector that cannot be connected", () => {
@@ -12,6 +12,8 @@ describe("connections", () => {
     expect(connectorsFor("home", "food").map((c) => c.id)).toEqual(["instacart"]);
     expect(connectorsFor("work", "income").map((c) => c.id)).toEqual(["plaid", "pinwheel"]);
     expect(connectorsFor("home", "firearm")).toEqual([]);
+    expect(connectorsFor("calendar").map((c) => c.id)).toEqual(["calendars", "google-calendar"]);
+    expect(tileHref("calendar")).toBe("/calendar");
   });
 
   it("names each state as the design guide does", () => {
@@ -20,6 +22,8 @@ describe("connections", () => {
     expect(stateWord(connectorOf("instacart")!, "unavailable")).toBe("Not yet");
     expect(stateWord(connectorOf("strava")!, "unavailable")).toBe("Not offered");
     expect(stateWord(connectorOf("apple-health")!, "unavailable")).toBe("Phone app");
+    expect(stateWord(connectorOf("google-calendar")!, "unavailable")).toBe("Needs setup");
+    expect(stateWord(connectorOf("calendars")!, "not-connected")).toBe("Connect");
   });
 
   it("gives each part by path", () => {
