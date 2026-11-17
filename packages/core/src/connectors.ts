@@ -88,6 +88,12 @@ export const CONNECTORS: readonly Connector[] = [
     setup: "Google Calendar needs setup: the owner of this Reflect has not added Google's sign-in keys yet.",
   },
   {
+    id: "microsoft-calendar", name: "Outlook Calendar", by: "Microsoft", group: "person", availability: "built", tiles: ["calendar"],
+    reads: ["The events on your default Outlook calendar, from a work, school or personal Microsoft account, shown in your calendar", "Your mailbox's time zone, so times match", "Events you add in Reflect after connecting, which Reflect adds to Outlook Calendar"],
+    never: [NO_PASSWORD, "Change or remove events you made in Outlook Calendar", "Read your mail", NO_SHARE],
+    setup: "Outlook Calendar needs setup: the owner of this Reflect has not added Microsoft's sign-in keys yet.",
+  },
+  {
     id: "apple-health", name: "Health", by: "Apple Health", group: "person", availability: "phone-app", tiles: ["body"],
     reads: ["Workouts, sleep and steps"],
     never: [NO_SHARE],
