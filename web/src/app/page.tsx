@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CalendarIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Sidebar } from "@/components/sidebar";
+import { SidebarButton } from "@/components/sidebar";
 import { requireUser } from "@/server/session";
 import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
 import { dashboardFacts } from "@/server/dashboard";
@@ -56,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
   const user = await requireUser();
   const sp = await searchParams;
   const notYet = one(sp.view) === "not-yet";
-  const { facts, plan, chats } = await dashboardFacts(user.id);
+  const { facts, plan } = await dashboardFacts(user.id);
   const chosen = notYet ? plan.steps.find((s) => s.id === one(sp.step)) ?? plan.next : null;
   const stage = chosen ?? plan.already;
   const changed = chosen ? changedTiles(plan.already, chosen) : null;
@@ -64,7 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-4 py-6 sm:px-6">
       <header className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
         {/* The toggle sits under the header on a phone, full width, so the longer pairs of words fit. */}
-        <Sidebar chats={chats} groups={GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.flatMap((id) => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; }) }))} />
+        <SidebarButton />
         <div className="col-span-3 row-start-2 flex min-w-0 justify-center sm:col-span-1 sm:col-start-2 sm:row-start-1"><HomeToggle notYet={notYet} /></div>
         <div className="col-start-3 row-start-1 flex items-center gap-1">
           <Button asChild variant="ghost" size="icon" aria-label="Your calendar" title="Calendar">

@@ -1,5 +1,6 @@
 "use client";
 
+import { SidebarButton } from "@/components/sidebar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, BoldIcon, Heading2Icon, ItalicIcon, ListIcon, QuoteIcon } from "lucide-react";
@@ -112,6 +113,7 @@ export function Editor({ work, ideals, subjects }: { work: Work; ideals: IdealOp
     <main className="min-h-screen">
       <header className="bg-background/90 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-2">
+          <SidebarButton className="-ml-2" />
           <Button asChild variant="ghost" size="icon" aria-label="Journal" onClick={() => void save()}><Link href="/journal"><ArrowLeftIcon /></Link></Button>
           <span className="text-muted-foreground hidden truncate text-sm sm:inline">{KINDS[work.kind].label} in</span>
           <select aria-label="Domain" value={domain ?? ""} onChange={(e) => void file(isDomain(e.target.value) ? e.target.value : null)}

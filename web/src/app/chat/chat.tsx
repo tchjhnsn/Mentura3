@@ -2,6 +2,9 @@
 
 // The chat with AI Elements (shadcn): Conversation, Message, Tool, Suggestion and Prompt Input, over the
 // same /api/chat and the same cards. Torian chose this look over the mono one (2026-11-12).
+import { Suspense } from "react";
+import { BackButton } from "@/components/back-button";
+import { SidebarButton } from "@/components/sidebar";
 import { useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type ToolUIPart, type UIMessage } from "ai";
@@ -66,7 +69,7 @@ export function Chat({ ask }: { ask?: string } = {}) {
   return (
     <div className="mx-auto flex h-screen max-w-3xl flex-col p-6">
       <div className="mb-4 flex items-center justify-between">
-        <a href="/" className="text-muted-foreground text-sm hover:text-foreground">← Home</a>
+        <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
         <span className="text-sm font-medium">Ask</span>
         <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
       </div>
