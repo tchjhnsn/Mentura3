@@ -16,6 +16,7 @@ import { coursesAction, draftCourseAction, excerptAction } from "@/server/action
 import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
 import { plansAction, startPlan, type PlanView } from "@/server/actions/workflows";
+import { messagesAction, sendMessageAction } from "@/server/actions/messages";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -229,5 +230,11 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       if (r.lens) lensCard(r.lens);
       return JSON.stringify(r);
     }),
+    // Messages are read into the conversation only because the person asked; they are not shown as cards.
+    use(messagesAction, (r) => {
+      if (r.kind === "threads") return r.threads.length ? JSON.stringify(r.threads.map((t) => ({ name: t.name, via: t.via, last: t.last, href: t.href }))).slice(0, 12000) : "There is no one the person can message yet. They invite a friend from Messages on the Friends tile (/life/friends/messages); household members can message each other.";
+      return r.messages.length ? `Messages with ${r.with.name} (${r.href}), oldest first: ${JSON.stringify(r.messages.map((m) => ({ from: m.from, text: m.text, at: m.at })))}`.slice(0, 12000) : `No messages with ${r.with.name} yet.`;
+    }),
+    use(sendMessageAction, (r) => `Sent to ${r.to}. It cannot be taken back. The conversation is at ${r.href}.`),
   ]);
 }

@@ -14,6 +14,7 @@ import { GUIDE } from "./actions/journal";
 import { callMcpAction } from "./mcp-call";
 import { startPlan } from "./actions/workflows";
 import { HOLD_DAYS } from "./actions/limits";
+import { messagesAction, sendMessageAction } from "./actions/messages";
 import { siteUrl } from "./site";
 
 export { GUIDE, toolGetEntry, toolKeepLegacyPlan, toolLegacyStatus, toolListEntries, toolWriteEntry } from "./actions/journal";
@@ -41,6 +42,8 @@ const REPLIES = new Map<string, (r: unknown) => unknown>([
   reply(draftCourseAction, (r) => (r.ok ? { ...r, link: `${siteUrl()}${r.href}` } : { kept: false, errors: r.errors })),
   reply(coursesAction, (r) => withLinks(r)),
   reply(startPlan, (p) => (p.waiting ? { ...p, waits: `Not done yet. Step ${p.steps.findIndex((s) => s.status === "waiting") + 1} waits for the person to tap ${p.waiting.tier === "outside" ? "Send" : "Keep"} inside Reflect (Ask, at the top: ${siteUrl()}/chat), for ${HOLD_DAYS} days; the plan goes on by itself after the tap.` } : p)),
+  reply(messagesAction, (r) => (r.kind === "threads" ? withLinks(r.threads) : { ...r, link: `${siteUrl()}${r.href}` })),
+  reply(sendMessageAction, (r) => ({ ...r, link: `${siteUrl()}${r.href}` })),
 ]);
 
 /** One MCP server for one signed-in person. */
