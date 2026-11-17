@@ -3,13 +3,35 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, ListChecksIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
 import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat, approveFromChat, declineFromChat } from "./actions";
 import { catalog } from "./catalog";
+import type { planCard } from "./spec";
+
+type PlanProps = ReturnType<typeof planCard>;
+
+/** A plan of several actions (Ask Reflect plan, step 9): each step with Done, Waiting for your tap or Not started. */
+export function Plan({ title, status, steps, note }: PlanProps) {
+  return (
+    <div className="rounded-lg border bg-card p-4 shadow-xs">
+      <div className="text-muted-foreground flex items-center gap-1 text-xs"><ListChecksIcon className="size-3" />Plan · {status}</div>
+      <div className="mt-1 font-medium">{title}</div>
+      <ol className="mt-2 grid gap-1">
+        {steps.map((s, i) => (
+          <li key={i} className="flex items-center justify-between gap-3 text-sm">
+            <span className="min-w-0 truncate">{i + 1}. {s.title}</span>
+            <Badge variant={s.status === "Done" ? "secondary" : s.status === "Not started" ? "outline" : s.status === "Waiting for your tap" ? "default" : "destructive"} className="shrink-0">{s.status}</Badge>
+          </li>
+        ))}
+      </ol>
+      {note ? <p className="text-muted-foreground mt-2 text-xs">{note}</p> : null}
+    </div>
+  );
+}
 
 function Tap({ label, doneText, already, run }: { label: string; doneText: string; already?: boolean; run: () => Promise<void> }) {
   const [tap, setTap] = useState<"idle" | "busy" | "done" | "failed">(already ? "done" : "idle");
@@ -42,6 +64,8 @@ function Tap({ label, doneText, already, run }: { label: string; doneText: strin
  */
 export function Approval({ change, title, preview, tap, from }: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from?: string }) {
   const [state, setState] = useState<"idle" | "busy" | "kept" | "declined" | "failed">("idle");
+  // When the change was a step of a plan, the plan as it stands after the tap.
+  const [plan, setPlan] = useState<PlanProps | null>(null);
   const act = (run: () => Promise<void>, done: "kept" | "declined") => async () => {
     setState("busy");
     try {
@@ -60,11 +84,12 @@ export function Approval({ change, title, preview, tap, from }: { change: string
         : state === "declined" ? <Badge variant="outline">Declined</Badge>
         : (
           <div className="flex items-center gap-2">
-            <Button size="sm" disabled={state === "busy"} onClick={act(() => approveFromChat(change), "kept")}>{tap}</Button>
+            <Button size="sm" disabled={state === "busy"} onClick={act(async () => setPlan(await approveFromChat(change)), "kept")}>{tap}</Button>
             <Button size="sm" variant="ghost" disabled={state === "busy"} onClick={act(() => declineFromChat(change), "declined")}>Decline</Button>
             {state === "failed" ? <span className="text-destructive text-xs">Didn't go through.</span> : null}
           </div>
         )}
+      {plan ? <div className="mt-3"><Plan {...plan} /></div> : null}
     </div>
   );
 }
@@ -155,6 +180,7 @@ export const { registry } = defineRegistry(catalog, {
         <Tap label="Undo" doneText="Undone" run={() => undoFromChat(props.change)} />
       </div>
     ),
+    Plan: ({ props }) => <Plan {...props} />,
     Approval: ({ props }) => <Approval change={props.change} title={props.title} preview={props.preview} tap={props.tap} />,
     HomeCard: ({ props }) => (
       <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">

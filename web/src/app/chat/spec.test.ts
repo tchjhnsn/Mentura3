@@ -88,4 +88,15 @@ describe("budget cards", () => {
     expect(spec.elements.e1!.props).toMatchObject({ tap: "Keep" });
     expect(catalog.data.components.Approval.props.safeParse(spec.elements.e0!.props).success).toBe(true);
   });
+
+  it("shows a plan with each step done, waiting for your tap or not started, in standard words", async () => {
+    const { catalog } = await import("./catalog");
+    const spec = buildSpec([{ kind: "plan", title: "Budget, reminders, total on Home", status: "waiting", note: null, steps: [
+      { title: "Set the person's budget", status: "done" }, { title: "Add to the household list", status: "waiting" }, { title: "Place a card on Home", status: "not_started" },
+    ] }])!;
+    expect(spec.elements.e0).toEqual({ type: "Plan", props: { title: "Budget, reminders, total on Home", status: "Waiting for your tap", note: null, steps: [
+      { title: "Set your budget", status: "Done" }, { title: "Add to the household list", status: "Waiting for your tap" }, { title: "Place a card on Home", status: "Not started" },
+    ] } });
+    expect(catalog.data.components.Plan.props.safeParse(spec.elements.e0!.props).success).toBe(true);
+  });
 });

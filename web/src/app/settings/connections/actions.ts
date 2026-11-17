@@ -5,9 +5,12 @@ import { redirect } from "next/navigation";
 import { addFeed, removeFeed } from "@/server/calendar-feeds";
 import { disconnectGoogle } from "@/server/google-calendar";
 import { disconnectMicrosoft } from "@/server/microsoft-calendar";
+import { auth } from "@/server/auth";
+import { disconnectAssistant } from "@/server/connected-assistants";
 import { requireUser } from "@/server/session";
 
-// Settings, Connections: subscribing to a calendar by its address, removing one, and disconnecting Google or Outlook Calendar.
+// Settings, Connections: subscribing to a calendar by its address, removing one, disconnecting Google or Outlook Calendar,
+// and disconnecting an assistant (Claude, ChatGPT or another MCP client) from Reflect.
 
 const CALENDARS = "/settings/connections/calendars";
 const done = (to: string) => {
@@ -45,4 +48,11 @@ export async function disconnectMicrosoftAction(): Promise<void> {
   const user = await requireUser();
   await disconnectMicrosoft(user.id);
   done("/settings/connections/microsoft-calendar");
+}
+
+/** Disconnect an assistant: its consent and its tokens go, and /api/mcp refuses it from the next request. */
+export async function disconnectAssistantAction(clientId: string): Promise<void> {
+  const user = await requireUser();
+  await disconnectAssistant(auth, user.id, clientId);
+  done("/settings/connections");
 }
