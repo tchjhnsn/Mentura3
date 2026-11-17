@@ -3,7 +3,8 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, HouseIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -127,5 +128,16 @@ export const { registry } = defineRegistry(catalog, {
       </div>
     ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,
+    Lifeline: () => (
+      <div className="rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{LIFELINE.name}</div>
+        <p className="text-muted-foreground mt-1 mb-3 text-sm">Free and confidential, any time, in the US.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm"><a href={LIFELINE.call}><PhoneIcon />Call 988</a></Button>
+          <Button asChild size="sm" variant="outline"><a href={LIFELINE.text}><MessageSquareIcon />Text 988</a></Button>
+          <Button asChild size="sm" variant="outline"><a href={LIFELINE.chat} target="_blank" rel="noreferrer"><MessageCircleIcon />Chat at 988lifeline.org</a></Button>
+        </div>
+      </div>
+    ),
   },
 });

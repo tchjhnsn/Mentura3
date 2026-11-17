@@ -20,6 +20,7 @@ export const catalog = defineCatalog(schema, {
     UndoChange: { props: z.object({ change: z.string().uuid(), text: z.string() }), description: "A change the chat just made in the person's own records, with Undo (change is the change log's id)" },
     HomeCard: { props: z.object({ title: z.string(), tile: z.string(), lines: z.array(z.string()), until: z.string() }), description: "A card placed on the person's Home screen for a time, opening Home" },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
+    Lifeline: { props: z.object({}), description: "The 988 Suicide and Crisis Lifeline: call, text or chat, shown in place of an answer when a message shows a crisis signal" },
   },
   // No json-render actions: a card's one tap calls Reflect's server action itself (registry.tsx).
   actions: {},

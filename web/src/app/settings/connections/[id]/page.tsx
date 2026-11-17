@@ -11,9 +11,10 @@ import { ActionRow, COLUMN, Group, InfoRow, Initials, Row } from "@/components/l
 import { feeds } from "@/server/calendar-feeds";
 import { connections } from "@/server/connections-store";
 import { googleState } from "@/server/google-calendar";
+import { microsoftState } from "@/server/microsoft-calendar";
 import { placeRecord } from "@/server/public-data";
 import { requireUser } from "@/server/session";
-import { disconnectGoogleAction, removeFeedAction } from "../actions";
+import { disconnectGoogleAction, disconnectMicrosoftAction, removeFeedAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 /** Where Connect goes for a connector Reflect can connect today. */
-const CONNECT: Record<string, string> = { place: "/settings/place", calendars: "/settings/connections/calendars/add", "google-calendar": "/api/connect/google/start" };
+const CONNECT: Record<string, string> = { place: "/settings/place", calendars: "/settings/connections/calendars/add", "google-calendar": "/api/connect/google/start", "microsoft-calendar": "/api/connect/microsoft/start" };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 /**
@@ -42,7 +43,13 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
   const place = c.id === "place" && connected ? await placeRecord(user.id) : null;
   const connect = CONNECT[c.id];
   const subscribed = c.id === "calendars" && connected ? await feeds(user.id) : [];
-  const google = c.id === "google-calendar" && connected ? await googleState(user.id) : null;
+  // A calendar connected two-way (Google, Outlook): which calendar it syncs, when, its last error, and how to disconnect.
+  const twoWay = !connected ? null
+    : c.id === "google-calendar" ? { state: googleState(user.id), calendar: "Primary", disconnect: disconnectGoogleAction }
+    : c.id === "microsoft-calendar" ? { state: microsoftState(user.id), calendar: "Default", disconnect: disconnectMicrosoftAction }
+    : null;
+  const held = twoWay ? await twoWay.state : null;
+  const synced = twoWay && held ? { ...held, calendar: twoWay.calendar, disconnect: twoWay.disconnect } : null;
   return (
     <main className={PAGE}>
       <ThingHeader search={false} back="/settings/connections" backLabel="Connections" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Connections", href: "/settings/connections" }]} title={c.name} />
@@ -59,7 +66,7 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
           </p>
         </div>
 
-        {/* Connect for Google Calendar starts its OAuth flow at an API route, so it is a plain link, not a client-side one. */}
+        {/* Connect for Google and Outlook Calendar starts its OAuth flow at an API route, so it is a plain link, not a client-side one. */}
         {state === "not-connected" && connect ? <Button asChild size="lg" className="w-full">{connect.startsWith("/api/") ? <a href={connect}>Connect</a> : <Link href={connect}>Connect</Link>}</Button> : null}
         {error ? <p role="alert" className="text-destructive text-center text-sm">{error}</p> : null}
         {state === "unavailable" ? (
@@ -95,13 +102,13 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
             <ActionRow icon={<CalendarIcon />} label="Open the calendar" href="/calendar" />
           </Group>
         ) : null}
-        {google ? (
+        {synced ? (
           <Group title="What it holds" id="holds">
-            <InfoRow label="Calendar" value="Primary" />
-            <InfoRow label="Connected" value={new Date(google.connectedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })} />
-            {google.lastError ? <InfoRow label="Last sync" value={<span className="text-destructive">{google.lastError}</span>} /> : null}
+            <InfoRow label="Calendar" value={synced.calendar} />
+            <InfoRow label="Connected" value={new Date(synced.connectedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })} />
+            {synced.lastError ? <InfoRow label="Last sync" value={<span className="text-destructive">{synced.lastError}</span>} /> : null}
             <ActionRow icon={<CalendarIcon />} label="Open the calendar" href="/calendar" />
-            <ActionRow icon={<UnplugIcon />} label="Disconnect" action={disconnectGoogleAction} danger />
+            <ActionRow icon={<UnplugIcon />} label="Disconnect" action={synced.disconnect} danger />
           </Group>
         ) : null}
         {c.id === "instacart" && connected ? (

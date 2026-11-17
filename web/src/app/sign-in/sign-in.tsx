@@ -18,6 +18,7 @@ export function SignIn() {
   const [mode, setMode] = useState<"sign-up" | "sign-in">("sign-up");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [adult, setAdult] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -25,9 +26,11 @@ export function SignIn() {
     e.preventDefault();
     setPending(true);
     setError(null);
+    // "adult" is checked by the server's sign-up hook (@/server/adult); the client's type does not list it.
+    const signUp = { email, password, name: "", adult };
     const result =
       mode === "sign-up"
-        ? await authClient.signUp.email({ email, password, name: "" })
+        ? await authClient.signUp.email(signUp)
         : await authClient.signIn.email({ email, password });
     setPending(false);
     if (result.error) setError(result.error.message ?? "That didn't work. Try again.");
@@ -68,6 +71,12 @@ export function SignIn() {
                 required
               />
             </div>
+            {mode === "sign-up" ? (
+              <label className="flex items-start gap-2 text-sm" htmlFor="adult">
+                <input id="adult" type="checkbox" className="mt-0.5 size-4 accent-primary" checked={adult} onChange={(e) => setAdult(e.target.checked)} required />
+                <span>I am 18 or older</span>
+              </label>
+            ) : null}
             {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
             <Button type="submit" className="w-full" disabled={pending}>{mode === "sign-up" ? "Create account" : "Sign in"}</Button>
             <Button type="button" variant="ghost" className="w-full" onClick={() => setMode(mode === "sign-up" ? "sign-in" : "sign-up")}>
