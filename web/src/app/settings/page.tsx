@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { HomeIcon, MapPinIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
+import { cookies } from "next/headers";
+import { HomeIcon, MapPinIcon, PaletteIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
+import { BACKGROUNDS, LOOK_COOKIE, lookOf, seasonalTheme, THEMES } from "@/lib/themes";
 import { ARRANGEMENT_LABEL, arrangement } from "@reflect/core/household";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -21,6 +23,9 @@ export default async function SettingsPage() {
   const [place, links] = await Promise.all([placeRecord(user.id), connections(user.id)]);
   const linked = links.filter((l) => l.state === "connected").length;
   const name = who?.name || "You";
+  const look = lookOf((await cookies()).get(LOOK_COOKIE)?.value);
+  const themeName = look.theme === "season" ? `Season, ${seasonalTheme(new Date().toISOString().slice(0, 10)).label}` : THEMES.find((t) => t.id === look.theme)?.label;
+  const lookValue = [themeName, look.bg !== "plain" ? BACKGROUNDS.find((b) => b.id === look.bg)?.label : null].filter(Boolean).join(", ");
   return (
     <main className={PAGE}>
       <ThingHeader search={false} back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Settings" />
@@ -42,6 +47,10 @@ export default async function SettingsPage() {
           <Row href="/settings/household" icon={<HomeIcon />} label="Household" value={h ? `${ARRANGEMENT_LABEL[arrangement(h.members)]}, ${h.members.length}` : "Not set up"} />
           <Row href="/settings/place" icon={<MapPinIcon />} label="Where you live" value={place?.county ? `${place.county}, ${place.state}` : "Not set"} />
           <Row href="/settings/connections" icon={<PlugIcon />} label="Connections" value={linked ? `${linked} connected` : "None yet"} />
+        </Group>
+
+        <Group title="Look" id="look">
+          <Row href="/settings/appearance" icon={<PaletteIcon />} label="Appearance" value={lookValue} />
         </Group>
 
         <Group title="Account" id="account">

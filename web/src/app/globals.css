@@ -1,5 +1,5 @@
 /* Reflect's look (Torian chose it 2026-11-12): Tailwind 4 with shadcn's default neutral theme, as
-   `shadcn init` writes it. Every page uses it. */
+   `shadcn init` writes it, which is the Reflect theme. Other themes and backgrounds (2026-11-17) change colors only. */
 @import "tailwindcss";
 @import "tw-animate-css";
 @source "../components";
@@ -33,30 +33,80 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  /* The theme (src/lib/themes.ts): a hue, the primary act's chroma and lightness, and how much the surfaces are tinted.
+     Reflect's own theme is shadcn's neutral one: no chroma, no tint. Themes change these numbers and nothing else. */
+  --h: 0; --c: 0; --t: 0; --pl: 0.205;
+  --background: oklch(1 var(--t) var(--h));
+  --foreground: oklch(0.145 calc(var(--t) * 1.5) var(--h));
+  --card: oklch(1 calc(var(--t) * 0.4) var(--h));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(var(--pl) var(--c) var(--h));
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.97 calc(var(--t) * 1.8) var(--h));
+  --secondary-foreground: oklch(0.205 calc(var(--t) * 2) var(--h));
+  --muted: var(--secondary);
+  --muted-foreground: oklch(0.556 calc(var(--t) * 2) var(--h));
+  --accent: oklch(0.96 calc(var(--t) * 2.4 + var(--c) * 0.12) var(--h));
+  --accent-foreground: var(--secondary-foreground);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: oklch(0.922 calc(var(--t) * 2) var(--h));
+  --input: var(--border);
+  --ring: oklch(0.708 var(--c) var(--h));
+  /* Grays that carry meaning (Home's key: in thought, unstated), so they follow the theme too. */
+  --tone-thought: oklch(0.708 calc(var(--t) * 3) var(--h));
+  --tone-unstated: oklch(0.88 calc(var(--t) * 2.5) var(--h));
+  --pattern: oklch(var(--pl) max(var(--c), 0.02) var(--h));
 }
+
+/* Dark: the same hue on a dark page; the primary act gets lighter so it still reads. */
+.dark {
+  --background: oklch(0.16 calc(var(--t) * 1.2) var(--h));
+  --foreground: oklch(0.97 calc(var(--t) * 0.8) var(--h));
+  --card: oklch(0.2 calc(var(--t) * 1.4) var(--h));
+  --primary: oklch(calc(0.92 - var(--c) * 1.5) var(--c) var(--h));
+  --primary-foreground: oklch(0.18 calc(var(--c) * 0.3) var(--h));
+  --secondary: oklch(0.27 calc(var(--t) * 1.6) var(--h));
+  --secondary-foreground: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.71 calc(var(--t) * 2) var(--h));
+  --accent: oklch(0.29 calc(var(--t) * 2 + var(--c) * 0.15) var(--h));
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 var(--c) var(--h));
+  --tone-thought: oklch(0.55 calc(var(--t) * 3) var(--h));
+  --tone-unstated: oklch(0.32 calc(var(--t) * 2.5) var(--h));
+  --pattern: oklch(calc(0.85 - var(--c)) max(var(--c), 0.02) var(--h));
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-tone-thought: var(--tone-thought);
+  --color-tone-unstated: var(--tone-unstated);
+}
+
+/* Backgrounds (src/lib/themes.ts): a quiet pattern behind every page in the theme's color. Cards and bars stay solid,
+   so nothing moves and text keeps its contrast. */
+body { isolation: isolate; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--pattern); opacity: var(--o, 0); }
+/* The same backgrounds as small previews in the picker (src/components/look-picker.tsx), a little stronger. */
+.bg-swatch::before { content: ""; position: absolute; inset: 0; background-color: var(--pattern); opacity: min(1, calc(var(--o, 0) * 2)); }
+[data-bg="wash"] body::before, .bg-swatch[data-bg="wash"]::before { --o: 1; background: radial-gradient(120% 60% at 50% -10%, color-mix(in oklch, var(--pattern) 22%, transparent), transparent 70%), radial-gradient(80% 50% at 100% 110%, color-mix(in oklch, var(--pattern) 12%, transparent), transparent 70%); }
+[data-bg="dots"] body::before, .bg-swatch[data-bg="dots"]::before { --o: 0.18; -webkit-mask: radial-gradient(circle, #000 1.1px, transparent 1.4px) 0 0 / 22px 22px; mask: radial-gradient(circle, #000 1.1px, transparent 1.4px) 0 0 / 22px 22px; }
+[data-bg="grid"] body::before, .bg-swatch[data-bg="grid"]::before { --o: 0.09; -webkit-mask: linear-gradient(#000 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(90deg, #000 1px, transparent 1px) 0 0 / 28px 28px; mask: linear-gradient(#000 1px, transparent 1px) 0 0 / 28px 28px, linear-gradient(90deg, #000 1px, transparent 1px) 0 0 / 28px 28px; }
+[data-bg="paper"] body::before, .bg-swatch[data-bg="paper"]::before { --o: 0.16; -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 200px 200px; mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1.4 -0.35'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 200px 200px; }
+[data-bg="leaves"] body::before, .bg-swatch[data-bg="leaves"]::before { --o: 0.08; -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='black'%3E%3Cpath d='M30 20c18 2 28 14 26 34-20-2-30-14-26-34z'/%3E%3Cpath d='M120 70c-4 18-18 26-36 20 6-18 18-24 36-20z'/%3E%3Cpath d='M50 110c14 8 18 22 8 38-14-8-18-22-8-38z'/%3E%3Cpath d='M130 130c2 10-4 18-14 20-2-10 4-18 14-20z'/%3E%3Cpath d='M95 20c8 6 9 15 2 23-8-6-9-15-2-23z'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 160px 160px; mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='black'%3E%3Cpath d='M30 20c18 2 28 14 26 34-20-2-30-14-26-34z'/%3E%3Cpath d='M120 70c-4 18-18 26-36 20 6-18 18-24 36-20z'/%3E%3Cpath d='M50 110c14 8 18 22 8 38-14-8-18-22-8-38z'/%3E%3Cpath d='M130 130c2 10-4 18-14 20-2-10 4-18 14-20z'/%3E%3Cpath d='M95 20c8 6 9 15 2 23-8-6-9-15-2-23z'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 160px 160px; }
+[data-bg="snow"] body::before, .bg-swatch[data-bg="snow"]::before { --o: 0.22; -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cg fill='black'%3E%3Ccircle cx='14' cy='20' r='2'/%3E%3Ccircle cx='70' cy='12' r='1.2'/%3E%3Ccircle cx='118' cy='34' r='2.6'/%3E%3Ccircle cx='40' cy='64' r='1.4'/%3E%3Ccircle cx='96' cy='78' r='1.8'/%3E%3Ccircle cx='20' cy='112' r='2.4'/%3E%3Ccircle cx='76' cy='124' r='1.2'/%3E%3Ccircle cx='128' cy='110' r='1.6'/%3E%3Ccircle cx='56' cy='96' r='0.9'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 140px 140px; mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cg fill='black'%3E%3Ccircle cx='14' cy='20' r='2'/%3E%3Ccircle cx='70' cy='12' r='1.2'/%3E%3Ccircle cx='118' cy='34' r='2.6'/%3E%3Ccircle cx='40' cy='64' r='1.4'/%3E%3Ccircle cx='96' cy='78' r='1.8'/%3E%3Ccircle cx='20' cy='112' r='2.4'/%3E%3Ccircle cx='76' cy='124' r='1.2'/%3E%3Ccircle cx='128' cy='110' r='1.6'/%3E%3Ccircle cx='56' cy='96' r='0.9'/%3E%3C/g%3E%3C/svg%3E") 0 0 / 140px 140px; }
+[data-bg="waves"] body::before, .bg-swatch[data-bg="waves"]::before { --o: 0.1; -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 20c20-14 40-14 60 0s40 14 60 0' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 120px 40px; mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='40'%3E%3Cpath d='M0 20c20-14 40-14 60 0s40 14 60 0' fill='none' stroke='black' stroke-width='1.5'/%3E%3C/svg%3E") 0 0 / 120px 40px; }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground antialiased; font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; }
 }
+
+/* Previews draw the bigger patterns smaller, so a swatch shows several. */
+.bg-swatch:is([data-bg="leaves"], [data-bg="snow"], [data-bg="waves"])::before { -webkit-mask-size: 56px auto; mask-size: 56px auto; }
 
 /* The journal's editor (src/app/journal/w/[id]/editor.tsx): a page to write on, in a book face. */
 @theme inline { --font-serif: var(--font-serif), ui-serif, Georgia, serif; }
