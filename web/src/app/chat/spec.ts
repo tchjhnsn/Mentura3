@@ -13,6 +13,7 @@ export type Piece =
   | { kind: "quote"; text: string; cite: string; href: string }
   | { kind: "found_item"; medium: string; label: string; title: string; by?: string; image?: string; source: string; kept: boolean; item: string }
   | { kind: "event"; title: string; day: string; when: string; tile: string; href: string }
+  | { kind: "lens"; name: string; works: string[]; living: boolean; href: string | null; ideas: { text: string; cites: { label: string; href: string }[] }[] }
   | { kind: "note"; text: string };
 
 /** "Friday, November 20", read in UTC so the day is the day the person gave. */
@@ -38,7 +39,10 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
   for (const p of pieces) {
     if (p.kind === "note") note(p.text);
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
-    else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
+    else if (p.kind === "lens") {
+      if (!p.ideas.length) note(`No ideas from ${p.name} here.`);
+      else add({ type: "Lens", props: { title: `Ideas from ${p.living ? p.works.join(" and ") : p.name}`, works: p.living ? p.name : p.works.join(", "), href: p.href, ideas: p.ideas } });
+    } else if (p.kind === "event") add({ type: "CalendarEvent", props: { title: p.title, day: longDay(p.day), when: p.when, tile: p.tile, href: p.href } });
     else if (p.kind === "found_item") add({ type: "FoundItem", props: { medium: p.label, title: p.title, by: p.by ?? null, image: p.image ?? null, source: p.source, kept: p.kept, item: p.item } });
     else if (p.kind === "shelves") {
       if (!p.shelves.length) note("No shelves yet. Books go on a shelf once they have a call number.");

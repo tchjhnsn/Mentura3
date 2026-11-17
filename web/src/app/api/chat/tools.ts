@@ -7,6 +7,7 @@ import { adventures, connections, household, householdPlan, meals, place, planAd
 import { addEvent, addEventsAction, calendar } from "@/server/actions/calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "@/server/actions/schole";
 import { proposeClaim, showClaims } from "@/server/actions/ideas";
+import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -40,6 +41,10 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     for (const e of list) show({ kind: "event", title: e.title, day: e.day, when: e.when, tile: e.tile ? e.tile_label : "", href: e.href });
     return `Added to the calendar: ${list.map((e) => `${e.title}, ${e.day}, ${e.when}${e.tile ? `, ${e.tile_label}` : ""}${e.repeat !== "none" ? `, repeats ${e.repeat}` : ""} (id ${e.id})`).join("; ")}. The person changes or removes them on /calendar.`;
   };
+
+  // A lens's ideas as a card, each citation opening its passage in Reflect.
+  type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
+  const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
 
   return Object.fromEntries([
     use(practiceDialectic, (r) => {
@@ -124,6 +129,16 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       if (!p) return "That claim could not be proposed.";
       show({ kind: "propose_claim", ...p });
       return "Proposed. It is not kept unless the person taps Accept.";
+    }),
+    use(lensesAction, (list) => JSON.stringify(list)),
+    use(lensAction, (r) => {
+      if (!r) return "No such lens or idea. Do not make one up; call lenses for the list.";
+      lensCard(r);
+      return `Shown: ${JSON.stringify(r.ideas)}`;
+    }),
+    use(applyLens, (r) => {
+      if (r.lens) lensCard(r.lens);
+      return JSON.stringify(r);
     }),
   ]);
 }

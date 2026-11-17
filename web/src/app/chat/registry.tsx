@@ -108,6 +108,22 @@ export const { registry } = defineRegistry(catalog, {
         </Button>
       </div>
     ),
+    Lens: ({ props }) => (
+      <div className="rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{props.href ? <Link href={props.href} className="hover:underline">{props.title}</Link> : props.title}</div>
+        <p className="text-muted-foreground text-xs">{props.works}</p>
+        <ul className="mt-2 divide-y">
+          {props.ideas.map((i) => (
+            <li key={i.text} className="py-2">
+              <p className="text-sm">{i.text}</p>
+              <p className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 text-xs">
+                {i.cites.map((c) => <Link key={c.href} href={c.href} className="underline-offset-4 hover:underline">{c.label}</Link>)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,
   },
 });
