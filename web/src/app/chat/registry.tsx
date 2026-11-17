@@ -3,7 +3,7 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
 import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
@@ -97,6 +97,13 @@ export const { registry } = defineRegistry(catalog, {
         <p className="text-muted-foreground mt-2 text-xs">{props.cite}</p>
       </Link>
     ),
+    Course: ({ props }) => (
+      <Link href={props.href} className="hover:bg-muted block rounded-lg border bg-card p-4 shadow-xs">
+        <div className="text-muted-foreground flex items-center gap-1 text-xs"><GraduationCapIcon className="size-3" />Course in Scholē · {props.units}</div>
+        <div className="mt-1 font-medium">{props.title}</div>
+        <p className="text-muted-foreground mt-1 text-sm">{props.goal}</p>
+      </Link>
+    ),
     CalendarEvent: ({ props }) => (
       <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
         <div className="min-w-0">
@@ -125,6 +132,39 @@ export const { registry } = defineRegistry(catalog, {
         <Button asChild variant="ghost" size="sm" className="shrink-0">
           <Link href="/">Open Home<ArrowRightIcon /></Link>
         </Button>
+      </div>
+    ),
+    Budget: ({ props }) => (
+      <Link href={props.href} className="hover:bg-muted block rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{props.title}</div>
+        <p className="text-muted-foreground text-xs">{props.sub}</p>
+        <ul className="mt-3 grid gap-2">
+          {props.rows.map((r) => (
+            <li key={r.label} className="grid gap-1 text-sm">
+              <div className="flex justify-between gap-3"><span>{r.label}</span><span className={r.over ? "text-destructive tabular-nums" : "tabular-nums"}>{r.allot} <span className="text-muted-foreground text-xs">· {r.cost}</span></span></div>
+              <div className="bg-muted relative h-2 overflow-hidden rounded-full" aria-hidden="true">
+                <div className="bg-primary/60 absolute inset-y-0 left-0 rounded-full" style={{ width: `${r.allotShare * 100}%` }} />
+                {r.costShare !== null ? <div className="bg-foreground absolute inset-y-0 w-0.5" style={{ left: `calc(${r.costShare * 100}% - 1px)` }} /> : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Link>
+    ),
+    Lens: ({ props }) => (
+      <div className="rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{props.href ? <Link href={props.href} className="hover:underline">{props.title}</Link> : props.title}</div>
+        <p className="text-muted-foreground text-xs">{props.works}</p>
+        <ul className="mt-2 divide-y">
+          {props.ideas.map((i) => (
+            <li key={i.text} className="py-2">
+              <p className="text-sm">{i.text}</p>
+              <p className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 text-xs">
+                {i.cites.map((c) => <Link key={c.href} href={c.href} className="underline-offset-4 hover:underline">{c.label}</Link>)}
+              </p>
+            </li>
+          ))}
+        </ul>
       </div>
     ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,

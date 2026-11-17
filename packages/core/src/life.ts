@@ -6,6 +6,7 @@
 import type { Act } from "./log";
 import { ORIGINS } from "./origins";
 import { QUESTIONS } from "./recipes";
+import { BUDGET_TILES } from "./budget";
 
 const ORIGIN_IDS: readonly string[] = ORIGINS.map((o) => o.id);
 
@@ -38,6 +39,9 @@ export type Kind = {
   standard?: { text: string; source: string };
 };
 export type LifeApp = { id: LifeAppId; label: string; intro: string; kinds: readonly Kind[] };
+
+/** One money field a month per tile, keyed by the tile id, for the `budget` record (`@reflect/core/budget`). */
+const BUDGET_FIELDS: readonly Field[] = BUDGET_TILES.map((t): Field => ({ key: t.id, label: `${t.label} a month`, kind: "money" }));
 
 const opts = (...l: string[]): Option[] => l.map((x) => ({ id: x.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), label: x }));
 
@@ -291,6 +295,13 @@ export const APPS: readonly LifeApp[] = [
           { key: "food-cost", label: "Food a month, if you know it", kind: "money" },
         ],
         states: [{ id: "not-yet", label: "Not yet", active: true }, { id: "happened", label: "It happened" }],
+      },
+      {
+        // The monthly budget (`@reflect/core/budget`): what the person allots a month to each tile, a money field per
+        // tile id, held against the income plan. Set from the chat (`set_budget`); shown on the income plan (/plan).
+        id: "budget", label: "Budget", plural: "Budget", title: "income", one: true, hidden: true,
+        intro: "What you allot a month to each tile, held against what your plan says each costs and what comes in after taxes.",
+        fields: BUDGET_FIELDS,
       },
       {
         id: "firearm", label: "Firearm", plural: "Firearms", title: "name",

@@ -8,17 +8,21 @@ import type { LearnView } from "../learn-store";
 // The tools each surface offered before the registry (2026-11-17), and since step 2 the change log's two. Changing what
 // either offers is a change to these lists.
 const CHAT_TOOLS = [
-  "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "household", "place", "connections", "meals", "piano",
+  "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
   "show_shelves", "show_ways", "find_item", "quote_transcript", "show_claims", "search_library", "browse_category", "quote_book", "propose_claim",
   "recent_changes", "undo_change",
   "home_cards", "add_home_card", "remove_home_card", "check_home_item",
+  "excerpt", "draft_course", "courses",
+  "lenses", "lens", "apply_lens",
 ];
 const MCP_TOOLS = [
-  "reflect_guide", "household_plan", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
+  "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
   "add_courses", "add_credential", "rate_subject", "add_input", "add_item", "add_lesson", "mark_subject", "ideas", "keep_idea",
   "recent_changes", "undo_change",
   "home_cards", "add_home_card", "remove_home_card", "check_home_item",
+  "excerpt", "draft_course", "courses",
+  "lenses", "lens", "apply_lens",
 ];
 
 const view: LearnView = { known: [], shown: [], vouched: [], suggested: [], books: [] };
@@ -56,7 +60,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "home_cards"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
@@ -64,6 +68,13 @@ describe("the action registry", () => {
     expect(tiers).toEqual({ home_cards: "read", add_home_card: "own", remove_home_card: "own", check_home_item: "own" });
     for (const id of Object.keys(tiers)) expect(actionById(id)?.on).toEqual(["chat", "mcp"]);
     expect(actionById("add_home_card")?.description).toMatch(/never name one you do not have/);
+  });
+
+  it("offers the budget's actions on both surfaces, reading as read and changing the person's own records", () => {
+    expect(["budget", "set_budget", "budget_step"].map((id) => [id, actionById(id)?.tier, actionById(id)?.on])).toEqual([
+      ["budget", "read", ["chat", "mcp"]], ["set_budget", "own", ["chat", "mcp"]], ["budget_step", "own", ["chat", "mcp"]],
+    ]);
+    for (const id of ["budget", "set_budget", "budget_step"]) expect(actionById(id)!.description).toContain("not a licensed financial advisor");
   });
 
   it("lists every action some surface offers", () => {

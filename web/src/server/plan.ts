@@ -1,6 +1,7 @@
 import { counts } from "@reflect/core/household";
 import { incomeSummary, ventureProfit, type RecordFacts } from "@reflect/core/life";
-import { buildPlan, COST_KEYS, planPart, type CostKey, type Plan, type StepFacts } from "@reflect/core/plan";
+import { buildPlan, COST_KEYS, type CostKey, type Plan, type StepFacts } from "@reflect/core/plan";
+import { budgetFrom, planPartWith, type Budget } from "@reflect/core/budget";
 import { FOOD_LEVELS, type FoodLevel } from "@reflect/core/plan-data";
 import { householdOf } from "./household-store";
 import { lifeRecords, type LifeRecord } from "./life-store";
@@ -11,7 +12,7 @@ import { lifeRecords, type LifeRecord } from "./life-store";
 const NEED_KEYS: readonly CostKey[] = ["shelter", "food", "water", "transport", "safety"];
 const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 /** The step record's field that holds each cost (two are renamed: `children` and `food` there name the household and the plan level). */
-const STEP_FIELD: Record<CostKey, string> = { shelter: "shelter", food: "food-cost", water: "water", transport: "transport", safety: "safety", children: "children-cost", health: "health", learning: "learning", giving: "giving", other: "other" };
+export const STEP_FIELD: Record<CostKey, string> = { shelter: "shelter", food: "food-cost", water: "water", transport: "transport", safety: "safety", children: "children-cost", health: "health", learning: "learning", giving: "giving", other: "other" };
 
 export function stepFacts(r: LifeRecord): StepFacts {
   const b = r.body;
@@ -34,8 +35,8 @@ export function stepFacts(r: LifeRecord): StepFacts {
   };
 }
 
-/** The plan, with the step records it was built from. */
-export async function planOf(userId: string): Promise<{ plan: Plan; steps: LifeRecord[] }> {
+/** The plan, with the step records it was built from and the monthly budget (the hidden Home `budget` record). */
+export async function planOf(userId: string): Promise<{ plan: Plan; steps: LifeRecord[]; budget: Budget; budgetId: string | null }> {
   const [home, work, ventures, household] = await Promise.all([lifeRecords(userId, "home").catch(() => []), lifeRecords(userId, "work").catch(() => []), lifeRecords(userId, "ventures").catch(() => []), householdOf(userId).catch(() => null)]);
   const needs = NEED_KEYS.map((key) => {
     const r = home.find((x) => x.kind === key);
@@ -48,10 +49,12 @@ export async function planOf(userId: string): Promise<{ plan: Plan; steps: LifeR
   // Who lives in the household now, when it is set up (Settings, Household), sets Already's adults and children.
   const people = household && household.members.length ? { ...counts(household.members, new Date().getUTCFullYear()), married: household.members.some((m) => m.relation === "spouse") } : {};
   const plan = buildPlan({ needs, income: income.year + profit, floor: income.need, ...people }, steps.map(stepFacts));
-  return { plan, steps };
+  const b = home.find((r) => r.kind === "budget");
+  return { plan, steps, budget: budgetFrom(b?.body), budgetId: b?.id ?? null };
 }
 
-/** One part of the person's plan by its path (`PLAN_PATHS`), or null. */
+/** One part of the person's plan or budget by its path (`PLAN_AND_BUDGET_PATHS`), or null. */
 export async function planPartOf(userId: string, path: string): Promise<unknown> {
-  return planPart((await planOf(userId)).plan, path);
+  const { plan, budget } = await planOf(userId);
+  return planPartWith(plan, budget, path);
 }

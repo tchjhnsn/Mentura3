@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GROUPS, type Line, type Stage } from "@reflect/core/plan";
+import { budgetView, type TileBudget } from "@reflect/core/budget";
+import { SparklesIcon } from "lucide-react";
+import { DashCard, DashHead } from "@/components/dash";
+import { hrefOf, MINE } from "../home-tiles";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -32,6 +36,15 @@ function Row({ label, value, note, quiet }: { label: string; value: string; note
   );
 }
 
+/** One tile's allotment against what the plan says it costs, opening the tile. */
+function BudgetCard({ t }: { t: TileBudget }) {
+  const tile = MINE.find((x) => x.id === t.tile);
+  const href = (tile && hrefOf(tile)) ?? "/";
+  const cost = t.covered ? "Covered by others" : t.cost === null ? "No cost in the plan" : `${money(t.cost)} in the plan`;
+  const sub = t.status === "over" ? `${cost}, ${money(-t.gap!)} over` : cost;
+  return <DashCard href={href} title={t.label} value={t.allot === null ? <span className="text-muted-foreground font-normal">Not allotted</span> : `${money(t.allot)} a month`} sub={sub} tone={t.status === "over" ? "warn" : undefined} />;
+}
+
 /**
  * The income plan (doc "Already and Not yet design guide", Income plan): what must be earned a year to live as the
  * chosen step would have you live, every cost under it with where its figure came from, and the floor beside it.
@@ -39,10 +52,11 @@ function Row({ label, value, note, quiet }: { label: string; value: string; note
 export default async function PlanPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const want = (await searchParams).step;
   const user = await requireUser();
-  const { plan } = await planOf(user.id);
+  const { plan, budget } = await planOf(user.id);
   const stages: Stage[] = [plan.already, ...plan.steps];
   const s = stages.find((x) => x.id === want) ?? plan.next ?? plan.already;
   const change = s.id === "already" ? "/group/household" : `/plan/steps/${s.id}`;
+  const b = budgetView(plan, budget, s);
   return (
     <main className={PAGE}>
       <ThingHeader back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Income plan" />
@@ -76,6 +90,18 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
               </section>
             );
           })}
+
+          <section aria-label="Budget" className="grid gap-3">
+            <DashHead title="Budget">
+              <Link href={`/chat?q=${encodeURIComponent("Help me set my monthly budget for each tile.")}`} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><SparklesIcon className="size-4" />Ask Reflect</Link>
+            </DashHead>
+            <p className="text-muted-foreground -mt-2 text-sm">
+              {money(b.allotted)} a month allotted of {money(b.takeHome)} after taxes; {b.leftToAllot >= 0 ? `${money(b.leftToAllot)} left to allot` : `${money(-b.leftToAllot)} more allotted than comes in`}.
+            </p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {b.tiles.map((t) => <BudgetCard key={t.tile} t={t} />)}
+            </div>
+          </section>
 
           <section aria-labelledby="g-in" className="grid gap-1">
             <h2 id="g-in" className="font-semibold">Coming in and covered</h2>
