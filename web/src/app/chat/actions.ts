@@ -7,6 +7,7 @@ import { addBook } from "@/server/learn-store";
 import { keepClaim } from "@/server/claims-store";
 import { addItem } from "@/server/ways-store";
 import { approveChange, declineChange, undoChange } from "@/server/actions/run";
+import { planCard } from "./spec";
 
 /** Add to my shelves, from a library card in the chat. The person tapped it; the entry is cleaned again. */
 export async function addBookFromChat(entryJson: string): Promise<void> {
@@ -61,11 +62,16 @@ export async function undoFromChat(changeId: string): Promise<void> {
   revalidatePath("/", "layout");
 }
 
-/** Keep or Send, from an Approval card: runs the held change as this person. approveChange checks it is theirs, still held and under 7 days old, and runs it once. */
-export async function approveFromChat(changeId: string): Promise<void> {
+/**
+ * Keep or Send, from an Approval card: runs the held change as this person. approveChange checks it is theirs, still
+ * held and under 7 days old, and runs it once. When it was a step of a plan, the plan goes on, and its Plan card's
+ * props come back so the card can show how far it got.
+ */
+export async function approveFromChat(changeId: string): Promise<ReturnType<typeof planCard> | null> {
   const user = await requireUser();
-  await approveChange({ userId: user.id }, String(changeId));
+  const r = await approveChange({ userId: user.id }, String(changeId));
   revalidatePath("/", "layout");
+  return r.plan ? planCard(r.plan) : null;
 }
 
 /** Decline, from an Approval card: the held change never runs. */

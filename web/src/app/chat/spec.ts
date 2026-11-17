@@ -23,7 +23,31 @@ export type Piece =
   /** Undo for a change the chat just made in the person's own records (the change log's id). */
   | { kind: "undo"; change: string; title: string }
   /** A shared or outside change held for the person's tap: Keep for shared, Send for outside (the change log's id). */
-  | { kind: "approval"; change: string; title: string; preview: string; tier: "shared" | "outside" };
+  | { kind: "approval"; change: string; title: string; preview: string; tier: "shared" | "outside" }
+  /** A plan of several actions (server/actions/workflows.ts), with each step's status. */
+  | ({ kind: "plan" } & PlanShown);
+
+/** A plan as the Plan card takes it: the plan's and each step's status, as server/actions/workflows.ts names them. */
+export type PlanShown = {
+  title: string;
+  status: "running" | "waiting" | "done" | "failed";
+  steps: { title: string; status: "not_started" | "done" | "waiting" | "declined" | "failed" }[];
+  note: string | null;
+};
+
+const PLAN_STATUS = { running: "Running", waiting: "Waiting for your tap", done: "Done", failed: "Stopped" } as const;
+const STEP_STATUS = { not_started: "Not started", done: "Done", waiting: "Waiting for your tap", declined: "Declined", failed: "Failed" } as const;
+const yours = (t: string) => t.replace(/the person's/g, "your");
+
+/** The Plan card's props: the plan's title and status, each step's title and status in standard words. */
+export function planCard(p: PlanShown) {
+  return {
+    title: p.title,
+    status: PLAN_STATUS[p.status],
+    steps: p.steps.map((s) => ({ title: yours(s.title), status: STEP_STATUS[s.status] })),
+    note: p.note,
+  };
+}
 
 const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 /** The budget card's props: tiles with an allotment or a cost, each as a share of the largest figure shown. */
@@ -76,6 +100,7 @@ export function buildSpec(pieces: readonly Piece[]): Spec | null {
     else if (p.kind === "lifeline") add({ type: "Lifeline", props: {} });
     else if (p.kind === "undo") add({ type: "UndoChange", props: { change: p.change, text: `Done: ${p.title.charAt(0).toLowerCase()}${p.title.slice(1).replace(/the person's/g, "your")}.` } });
     else if (p.kind === "approval") add({ type: "Approval", props: approvalCard(p) });
+    else if (p.kind === "plan") add({ type: "Plan", props: planCard(p) });
     else if (p.kind === "quote") add({ type: "Quote", props: { text: p.text, cite: p.cite, href: p.href } });
     else if (p.kind === "course") add({ type: "Course", props: { title: p.title, goal: p.goal, units: p.units, href: p.href } });
     else if (p.kind === "budget") add({ type: "Budget", props: budgetCard(p.view, p.href) });
