@@ -58,7 +58,7 @@ export async function HomeSpace({ userId, records, acts, today }: { userId: stri
         <dl className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl border p-4"><dt className="text-muted-foreground text-xs">You pay a month</dt><dd className="mt-1 text-2xl font-semibold">{cost.pay !== null ? money(cost.pay) : "Not known"}</dd><dd className="text-muted-foreground mt-1 text-xs">{cost.pay !== null ? `${money(cost.pay * 12)} a year` : "Give what a need costs to see it."}</dd></div>
           <div className="rounded-xl border p-4"><dt className="text-muted-foreground text-xs">Covered by others</dt><dd className="mt-1 text-base font-medium">{cost.covered.length ? cost.covered.map((n) => `${n.label} by ${BY[n.byId!] ?? n.by}`).join(", ") : "None recorded"}</dd></div>
-          <div className="rounded-xl border p-4"><dt className="text-muted-foreground text-xs">In Work</dt><dd className="mt-1 text-sm"><Link href="/life/work#now" className="font-medium underline underline-offset-2">See what is left to earn</Link> and the work that covers it.</dd></div>
+          <div className="rounded-xl border p-4"><dt className="text-muted-foreground text-xs">In Work</dt><dd className="mt-1 text-sm"><Link href="/life/work/season" className="font-medium underline underline-offset-2">See what is left to earn</Link> and the work that covers it.</dd></div>
         </dl>
       </section>
 

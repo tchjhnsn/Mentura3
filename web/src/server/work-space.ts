@@ -1,6 +1,7 @@
 import { kinSpace } from "@reflect/core/tile-spaces";
 import { incomeSummary, kindOf, type RecordFacts } from "@reflect/core/life";
 import { forLater, forNow, needsNow, parseRef, stemsOf, toEarn, type Job, type Suggestion } from "@reflect/core/work-browse";
+import { roleById, type Role } from "@reflect/core/formation";
 import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "./life-store";
 import { jobByCode, jobs } from "./work-catalog";
 import { getWork } from "./work-store";
@@ -13,10 +14,12 @@ import { learningMinutes, listItems, type LearnItem } from "./ways-store";
 const NEEDS = ["food", "water", "shelter", "transport", "safety"] as const;
 export const WANTED_KINDS = new Set(["inspiration", "imagined"]);
 
-export type Wanted = { record: LifeRecord; title: string; job: Job | null; entries: number; lastEntry: string | null; learning: string[]; talked: number };
+export type Wanted = { record: LifeRecord; title: string; job: Job | null; role: Role | null; main: boolean; entries: number; lastEntry: string | null; learning: string[]; talked: number };
 export type Entry = { id: string; title: string; day: string; toward: string; towardId: string };
 export type Workspace = {
   wanted: Wanted[];
+  /** The main aim: the one starred, else the newest. */
+  main: Wanted | null;
   need: { pay: number | null; from: "home" | "household" | null; covered: { label: string; by: string; cost: number | null }[]; unknown: string[] };
   income: { year: number; unknown: number };
   left: number | null;
@@ -31,6 +34,12 @@ export type Workspace = {
 
 const learningIds = (r: LifeRecord) => (typeof r.body.learning === "string" && r.body.learning ? r.body.learning.split(",") : []);
 const titleOfWanted = (r: LifeRecord) => String(r.kind === "imagined" ? r.body.name ?? "" : r.body.title ?? "");
+
+/** The broad role a wanted record names, when it is a role aim. */
+export const roleOf = (r: LifeRecord): Role | null => (r.body.type === "role" && typeof r.body.role === "string" ? roleById(r.body.role) ?? null : null);
+
+/** The main aim among the aims: the one starred, else the first (the newest). */
+export const mainOf = <T extends { record: LifeRecord }>(aims: readonly T[]): T | null => aims.find((w) => w.record.body.main === "1") ?? aims[0] ?? null;
 
 /** The jobs a wanted record points at: a job itself. */
 export const jobOf = (r: LifeRecord): Job | null => {
@@ -49,8 +58,11 @@ export async function workspace(userId: string, today = new Date().toISOString()
   const wantedRecords = work.filter((r) => WANTED_KINDS.has(r.kind) && r.state !== "let-go").reverse();
   const wanted: Wanted[] = wantedRecords.map((r) => {
     const mine = byRecord.get(r.id) ?? [];
-    return { record: r, title: titleOfWanted(r), job: jobOf(r), entries: mine.length, lastEntry: mine[0]?.day ?? null, learning: learningIds(r), talked: acts.filter((a) => a.record === r.id && a.kind === "talked").length };
+    return { record: r, title: titleOfWanted(r), job: jobOf(r), role: roleOf(r), main: false, entries: mine.length, lastEntry: mine[0]?.day ?? null, learning: learningIds(r), talked: acts.filter((a) => a.record === r.id && a.kind === "talked").length };
   });
+
+  const top = mainOf(wanted);
+  if (top) top.main = true;
 
   const n = needsNow(home.filter((r) => (NEEDS as readonly string[]).includes(r.kind)).map((r) => ({
     label: kindOf("home", r.kind)?.label ?? r.kind,
@@ -82,6 +94,7 @@ export async function workspace(userId: string, today = new Date().toISOString()
 
   return {
     wanted,
+    main: top,
     need: { pay, from, covered: n.covered, unknown: n.unknown },
     income: { year: inc.year, unknown: inc.unknown },
     left,

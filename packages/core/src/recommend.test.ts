@@ -36,6 +36,12 @@ describe("recommend", () => {
     expect(picks[0]!.collection?.id).toBe("teaching");
     expect(picks[0]!.reason).toBe("For your aim: Teacher");
   });
+  it("serves the main aim before the others", () => {
+    const picks = recommend({ ...none, aims: ["Farmer", "Teacher"] });
+    expect(picks[0]!.reason).toBe("For your aim: Farmer");
+    const flipped = recommend({ ...none, aims: ["Teacher", "Farmer"] });
+    expect(flipped[0]!.reason).toBe("For your aim: Teacher");
+  });
   it("leaves out what is finished, kept or disliked", () => {
     const teaching = COLLECTIONS.find((c) => c.id === "teaching")!;
     const [a, b, c] = teaching.items;

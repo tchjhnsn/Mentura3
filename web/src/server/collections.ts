@@ -7,10 +7,12 @@ import type { LearnItem } from "./ways-store";
 // Collections as Scholē shows them: what the person is working toward (from Work), which items they already have,
 // and each item's art and length from the audiobook catalog.
 
-/** What the person wants in Work (jobs, careers and imagined work they kept), newest first: the answers to "What are you working toward?". */
+/** What the person wants in Work (jobs, careers, roles and imagined work they kept), the main aim first, then newest first: the answers to "What are you working toward?". */
 export async function aimsOf(userId: string): Promise<string[]> {
   const work = await lifeRecords(userId, "work").catch(() => []);
-  const titles = work.filter((r) => WANTED_KINDS.has(r.kind) && r.state !== "let-go").reverse()
+  const aims = work.filter((r) => WANTED_KINDS.has(r.kind) && r.state !== "let-go").reverse();
+  // The main aim first (starred, else the newest), so the ranker serves it before the others.
+  const titles = [...aims.filter((r) => r.body.main === "1"), ...aims.filter((r) => r.body.main !== "1")]
     .map((r) => String(r.kind === "imagined" ? r.body.name ?? "" : r.body.title ?? "").trim()).filter(Boolean);
   return [...new Set(titles)];
 }
