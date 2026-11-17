@@ -8,7 +8,7 @@ import { householdOf } from "@/server/household-store";
 import { placeRecord } from "@/server/public-data";
 import { requireUser } from "@/server/session";
 import { inviteAction, startHouseholdAction } from "./actions";
-import { ActionRow, COLUMN, Group, Initials, Row } from "./list";
+import { ActionRow, COLUMN, Group, Initials, Row } from "@/components/list-rows";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
