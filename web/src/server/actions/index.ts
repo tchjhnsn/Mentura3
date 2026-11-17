@@ -8,6 +8,7 @@ import { addEvent, addEventsAction, calendar } from "./calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "./schole";
 import { addBookAction, addBookSubjects, addCoursesAction, addCredentialAction, addInputAction, addItemAction, addLesson, learning, markSubjectAction, rateSubjectAction, recallCheck, setBookStatusAction } from "./learning";
 import { ideas, keepIdeaAction, proposeClaim, showClaims } from "./ideas";
+import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCardAction } from "./home-cards";
 
 export type { Action, ActionContext, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -20,6 +21,7 @@ export const ACTIONS: readonly Action[] = [
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
   practiceDialectic, showShelves, showWays, findItem, quoteTranscript, showClaims, searchLibrary, browseCategory, quoteBook, proposeClaim,
+  homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
 ];
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id);

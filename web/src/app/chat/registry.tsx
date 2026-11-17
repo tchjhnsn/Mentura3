@@ -3,7 +3,7 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, HouseIcon } from "lucide-react";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,6 +105,18 @@ export const { registry } = defineRegistry(catalog, {
         </div>
         <Button asChild variant="ghost" size="sm" className="shrink-0">
           <Link href={props.href}>Open in calendar<ArrowRightIcon /></Link>
+        </Button>
+      </div>
+    ),
+    HomeCard: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
+        <div className="min-w-0">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs"><HouseIcon className="size-3" />On Home · {props.tile} · {props.until}</div>
+          <div className="truncate text-sm font-medium">{props.title}</div>
+          {props.lines.map((l, i) => <div key={i} className="text-muted-foreground line-clamp-2 text-xs">{l}</div>)}
+        </div>
+        <Button asChild variant="ghost" size="sm" className="shrink-0">
+          <Link href="/">Open Home<ArrowRightIcon /></Link>
         </Button>
       </div>
     ),

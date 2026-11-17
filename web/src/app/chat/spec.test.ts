@@ -37,6 +37,11 @@ describe("chat cards", () => {
 });
 
 describe("calendar cards", () => {
+  it("shows a Home card with its tile, lines and last day", () => {
+    const spec = buildSpec([{ kind: "home_card", title: "Word of the day", tile: "learn", lines: ["laconic: using few words"], until: "2026-12-16" }])!;
+    expect(spec.elements.e0).toEqual({ type: "HomeCard", props: { title: "Word of the day", tile: "learn", lines: ["laconic: using few words"], until: "Until Wednesday, December 16" } });
+  });
+
   it("shows an added event with its day, time, tile and the calendar at its day", () => {
     const spec = buildSpec([{ kind: "event", title: "Dinner with Sam", day: "2026-11-20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" }])!;
     expect(spec.elements.e0).toEqual({ type: "CalendarEvent", props: { title: "Dinner with Sam", day: "Friday, November 20", when: "19:00–21:00", tile: "Friends", href: "/calendar?day=2026-11-20" } });
