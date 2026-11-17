@@ -11,7 +11,7 @@ export type Act = {
   /** An ISO timestamp, or a date (YYYY-MM-DD) when the record keeps only the day. */
   at: string;
   /** Learn, or one of the apps in `./life` (Work, Home, Body, Friends, Mate, Kin, Polis, Legacy). */
-  app: "learn" | "work" | "home" | "body" | "friends" | "mate" | "kin" | "polis" | "legacy";
+  app: "learn" | "work" | "home" | "body" | "friends" | "mate" | "kin" | "polis" | "ventures" | "legacy";
   kind: ActKind;
   /** What the act was on: a book's title, a claim's text, a subject's name. */
   object: string;

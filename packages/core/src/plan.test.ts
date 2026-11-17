@@ -11,6 +11,16 @@ describe("household plan", () => {
     expect(foodEstimate("thrifty", 2, 2)).toBeGreaterThan(foodEstimate("thrifty", 2, 0));
   });
 
+  it("files jointly only with a spouse when the household says who lives there", () => {
+    const withParent = buildPlan({ ...now, adults: 2, children: 0, married: false }, []);
+    expect(withParent.already.tax?.filing).toBe("single");
+    expect(tileFact(withParent.already, "mate")).toBeNull();
+    const withSpouse = buildPlan({ ...now, adults: 2, children: 0, married: true }, []);
+    expect(withSpouse.already.tax?.filing).toBe("joint");
+    expect(tileFact(withSpouse.already, "mate")).toBe("Married");
+    expect(buildPlan({ ...now, adults: 2 }, []).already.tax?.filing).toBe("joint");
+  });
+
   it("grosses up for federal and payroll tax", () => {
     const g = grossFor(30_000, "single");
     const t = taxOn(g, "single");

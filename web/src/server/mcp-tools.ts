@@ -19,6 +19,8 @@ import { addItem, addItemSubjects, changeItem, listItems } from "./ways-store";
 import { MEDIA, WAYS, placeOf } from "@reflect/core/ways";
 import { PLAN_PATHS } from "@reflect/core/plan";
 import { planPartOf } from "./plan";
+import { HOUSEHOLD_PATHS } from "@reflect/core/household";
+import { householdPartOf } from "./household-store";
 
 export const GUIDE = [
   "Reflect keeps a person's journal, what they learn, their own ideas and the plan for what survives them. You help them write and keep things; you never decide for them.",
@@ -119,6 +121,13 @@ export function reflectServer(userId: string): McpServer {
     inputSchema: z.object({ path: z.string().max(200).default("") }),
     annotations: { readOnlyHint: true },
   }, async ({ path }) => text((await planPartOf(userId, path)) ?? "No such part of the plan."));
+
+  server.registerTool("household", {
+    title: "Read one part of the household",
+    description: `Who lives in the person's household: members, how they are related, ages, who is a dependent, and whether it is a family household. Fetch only the part asked about. Paths: ${HOUSEHOLD_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text((await householdPartOf(userId, path)) ?? "No such part of the household."));
 
   server.registerTool("list_entries", {
     title: "List journal entries",

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarIcon, FolderIcon, PlusIcon } from "lucide-react";
+import { CalendarIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
@@ -85,6 +85,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
           </Button>
           <Button asChild variant="ghost" size="icon" aria-label="Your journal" title="Journal">
             <Link href="/journal"><FolderIcon /></Link>
+          </Button>
+          <Button asChild variant="ghost" size="icon" aria-label="Settings" title="Settings">
+            <Link href="/settings"><UserIcon /></Link>
           </Button>
         </div>
       </header>

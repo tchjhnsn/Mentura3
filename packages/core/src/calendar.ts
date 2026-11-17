@@ -5,7 +5,7 @@
 
 export const CAL_TILES = [
   { id: "learn", label: "Scholē" }, { id: "work", label: "Work" }, { id: "home", label: "Home" }, { id: "body", label: "Body" },
-  { id: "friends", label: "Friends" }, { id: "mate", label: "Mate" }, { id: "kin", label: "Kin" }, { id: "polis", label: "Polis" }, { id: "legacy", label: "Legacy" },
+  { id: "friends", label: "Friends" }, { id: "mate", label: "Mate" }, { id: "kin", label: "Kin" }, { id: "polis", label: "Polis" }, { id: "ventures", label: "Ventures" }, { id: "legacy", label: "Legacy" },
 ] as const;
 export type CalTile = (typeof CAL_TILES)[number]["id"];
 export const isCalTile = (v: unknown): v is CalTile => CAL_TILES.some((t) => t.id === v);

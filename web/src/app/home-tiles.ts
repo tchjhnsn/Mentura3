@@ -30,10 +30,11 @@ export const GLYPHS: Record<string, string> = {
   home: "M50 16 L90 48 L80 48 L80 86 L20 86 L20 48 L10 48 Z M66 22 h10 v18 l-10 -8z",
   budget: "M34 12 h32 v8 h-32z M30 24 h40 Q80 30 80 50 L80 80 Q80 88 72 88 L28 88 Q20 88 20 80 L20 50 Q20 30 30 24 Z",
   children: "M36 16 A10 10 0 1 1 35.99 16 Z M20 86 L22 44 Q36 38 50 44 L52 86 Z M70 42 A8 8 0 1 1 69.99 42 Z M58 86 L60 62 Q70 58 80 62 L82 86 Z",
+  ventures: "M12 18 h76 l6 22 h-88z M18 46 h64 v40 h-64z M30 54 h14 v14 h-14z M54 58 h16 v28 h-16z",
   village: "M10 54 L28 36 L46 54 L46 86 L10 86 Z M54 46 L72 20 L90 46 L90 86 L54 86 Z",
 };
 
-export type App = "learn" | "work" | "body" | "home" | "friends" | "mate" | "kin" | "polis" | "legacy" | "journal" | "marriage" | "household" | "children" | "village";
+export type App = "learn" | "work" | "body" | "home" | "friends" | "mate" | "kin" | "polis" | "ventures" | "legacy" | "journal" | "marriage" | "household" | "children" | "village";
 export type Tile = { id: string; label: string; app: App };
 
 export const MINE: readonly Tile[] = [
@@ -52,6 +53,7 @@ export const MINE: readonly Tile[] = [
   { id: "mate", label: "Mate", app: "mate" },
   { id: "kin", label: "Kin", app: "kin" },
   { id: "polis", label: "Polis", app: "polis" },
+  { id: "ventures", label: "Ventures", app: "ventures" },
   // Journal is a tool, and Ideas, Legacy and the log are lenses over tiles and tools, not tiles (Torian, 2026-11-14 17:52Z, confirmed 17:56Z).
 ];
 

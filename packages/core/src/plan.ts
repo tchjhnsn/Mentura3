@@ -11,7 +11,7 @@ export type GroupId = "person" | "household" | "village";
 export const GROUPS: readonly { id: GroupId; label: string; tiles: readonly string[] }[] = [
   { id: "person", label: "The person", tiles: ["learn", "work", "health", "fitness"] },
   { id: "household", label: "The household", tiles: ["income", "shelter", "food", "water", "transport", "safety", "mate", "kin"] },
-  { id: "village", label: "The village and polis", tiles: ["friends", "standing", "polis"] },
+  { id: "village", label: "The village and polis", tiles: ["friends", "standing", "polis", "ventures"] },
 ];
 
 export type CostKey = "shelter" | "food" | "water" | "transport" | "safety" | "children" | "health" | "learning" | "giving" | "other";
@@ -44,6 +44,8 @@ export type Stage = {
   where: string | null;
   adults: number;
   children: number;
+  /** Married, from the household's members (a spouse); null when not known, and then two adults or more file jointly. */
+  married: boolean | null;
   food: FoodLevel;
   lines: Line[];
   /** What the lines cost a year, before taxes; null when no line has a figure. */
@@ -65,6 +67,8 @@ export type NowFacts = {
   income: number;
   adults?: number;
   children?: number;
+  /** A spouse lives in the household (Settings, Household); other adults, such as a parent, do not make a joint return. */
+  married?: boolean;
   food?: FoodLevel | null;
   where?: string | null;
   /** A livable wage the person entered for their intended household, a year. */
@@ -117,7 +121,7 @@ function finish(s: Omit<Stage, "costs" | "tax" | "toEarn" | "leftToEarn" | "unkn
   const paid = s.lines.filter((l) => l.from !== "covered");
   const known = paid.filter((l) => l.year !== null);
   const costs = known.length ? known.reduce((a, l) => a + l.year!, 0) : null;
-  const filing = s.adults >= 2 ? "joint" : "single";
+  const filing = (s.married ?? s.adults >= 2) ? "joint" : "single";
   const toEarn = costs === null ? null : grossFor(costs, filing);
   const t = toEarn === null ? null : taxOn(toEarn, filing);
   return {
@@ -138,7 +142,7 @@ export function alreadyStage(now: NowFacts): Stage {
     if (c.key === "food") return lineOf("food", foodEstimate(food, adults, children), "estimate", { source: FOOD_PLANS.source, note: `${FOOD_PLANS.levels[food].label} plan for ${adults + children}` });
     return lineOf(c.key, null, null);
   });
-  return finish({ id: "already", name: "Already", order: 0, year: null, where: now.where ?? null, adults, children, food, lines, income: Math.round(now.income) });
+  return finish({ id: "already", name: "Already", order: 0, year: null, where: now.where ?? null, adults, children, married: now.married ?? null, food, lines, income: Math.round(now.income) });
 }
 
 /** A step: the stage before it, changed by what the step sets. Food is estimated again when the household changes and the person gave no figure. */
@@ -151,7 +155,7 @@ export function stepStage(before: Stage, step: StepFacts): Stage {
     if (b.from === "covered") return { ...b };
     return lineOf(b.key, b.month, b.month === null ? null : "carried");
   });
-  return finish({ id: step.id, name: step.name, order: step.order, year: step.year, where: step.where ?? before.where, adults, children, food, lines, income: before.income });
+  return finish({ id: step.id, name: step.name, order: step.order, year: step.year, where: step.where ?? before.where, adults, children, married: before.married === true ? true : null, food, lines, income: before.income });
 }
 
 /** The whole plan: Already, then each step in order, each built on the one before. */
@@ -175,7 +179,7 @@ export function tileFact(s: Stage, tile: string): string | null {
   const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
   if (tile === "income") return s.id === "already" ? `${money(s.income)} a year` : s.toEarn !== null ? `${money(s.toEarn)} needed` : null;
   if (tile === "kin") return s.children ? `${s.children} ${s.children === 1 ? "child" : "children"}` : null;
-  if (tile === "mate") return s.adults >= 2 ? `${s.adults} adults` : null;
+  if (tile === "mate") return s.married ? "Married" : s.married === false ? null : s.adults >= 2 ? `${s.adults} adults` : null;
   const l = s.lines.find((x) => x.tile === tile && x.key !== "other");
   if (!l || l.month === null) return null;
   return l.from === "covered" ? `Covered by ${l.by}` : `${money(l.month)} a month`;
