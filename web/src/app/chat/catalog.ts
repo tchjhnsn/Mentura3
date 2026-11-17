@@ -17,7 +17,10 @@ export const catalog = defineCatalog(schema, {
     BrowseLink: { props: z.object({ href: z.string().regex(/^\/schole\/browse(\?[^\s]*)?$/), label: z.string() }), description: "A link to the same list of books on Scholē's Browse page" },
     Quote: { props: z.object({ text: z.string(), cite: z.string(), href: z.string().regex(/^\/(?!\/)[^\s]*$/) }), description: "Words from a book the person reads in Reflect, cited to its author, book and chapter, opening the reader at them" },
     CalendarEvent: { props: z.object({ title: z.string(), day: z.string(), when: z.string(), tile: z.string(), href: z.string().regex(/^\/calendar\?day=\d{4}-\d{2}-\d{2}$/) }), description: "An event added to the person's calendar, opening the calendar at its day" },
+    UndoChange: { props: z.object({ change: z.string().uuid(), text: z.string() }), description: "A change the chat just made in the person's own records, with Undo (change is the change log's id)" },
+    HomeCard: { props: z.object({ title: z.string(), tile: z.string(), lines: z.array(z.string()), until: z.string() }), description: "A card placed on the person's Home screen for a time, opening Home" },
     Note: { props: z.object({ text: z.string() }), description: "A short line from Reflect, such as nothing found" },
+    Lifeline: { props: z.object({}), description: "The 988 Suicide and Crisis Lifeline: call, text or chat, shown in place of an answer when a message shows a crisis signal" },
   },
   // No json-render actions: a card's one tap calls Reflect's server action itself (registry.tsx).
   actions: {},

@@ -3,11 +3,12 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { addBookFromChat, keepClaimFromChat, addItemFromChat } from "./actions";
+import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat } from "./actions";
 import { catalog } from "./catalog";
 
 function Tap({ label, doneText, already, run }: { label: string; doneText: string; already?: boolean; run: () => Promise<void> }) {
@@ -108,6 +109,35 @@ export const { registry } = defineRegistry(catalog, {
         </Button>
       </div>
     ),
+    UndoChange: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 px-1">
+        <span className="text-muted-foreground text-xs">{props.text}</span>
+        <Tap label="Undo" doneText="Undone" run={() => undoFromChat(props.change)} />
+      </div>
+    ),
+    HomeCard: ({ props }) => (
+      <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-xs">
+        <div className="min-w-0">
+          <div className="text-muted-foreground flex items-center gap-1 text-xs"><HouseIcon className="size-3" />On Home · {props.tile} · {props.until}</div>
+          <div className="truncate text-sm font-medium">{props.title}</div>
+          {props.lines.map((l, i) => <div key={i} className="text-muted-foreground line-clamp-2 text-xs">{l}</div>)}
+        </div>
+        <Button asChild variant="ghost" size="sm" className="shrink-0">
+          <Link href="/">Open Home<ArrowRightIcon /></Link>
+        </Button>
+      </div>
+    ),
     Note: ({ props }) => <p className="text-muted-foreground text-sm">{props.text}</p>,
+    Lifeline: () => (
+      <div className="rounded-lg border bg-card p-4 shadow-xs">
+        <div className="font-medium">{LIFELINE.name}</div>
+        <p className="text-muted-foreground mt-1 mb-3 text-sm">Free and confidential, any time, in the US.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild size="sm"><a href={LIFELINE.call}><PhoneIcon />Call 988</a></Button>
+          <Button asChild size="sm" variant="outline"><a href={LIFELINE.text}><MessageSquareIcon />Text 988</a></Button>
+          <Button asChild size="sm" variant="outline"><a href={LIFELINE.chat} target="_blank" rel="noreferrer"><MessageCircleIcon />Chat at 988lifeline.org</a></Button>
+        </div>
+      </div>
+    ),
   },
 });
