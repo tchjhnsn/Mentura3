@@ -14,6 +14,7 @@ import { restoreLifeAction } from "../actions";
 import { WorkHeader, type WorkTab } from "../work/parts";
 import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
+import { TileConnections } from "../tile-connections";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -97,6 +98,7 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
       <div className="mt-4 grid max-w-4xl gap-6">
         <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>
         {kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+        <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}
       </div>
     </main>

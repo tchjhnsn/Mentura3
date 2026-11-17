@@ -6,6 +6,7 @@ import { PAGE } from "@/components/page-header";
 import { db } from "@/db/pool";
 import { householdOf } from "@/server/household-store";
 import { placeRecord } from "@/server/public-data";
+import { connections } from "@/server/connections-store";
 import { requireUser } from "@/server/session";
 import { inviteAction, startHouseholdAction } from "./actions";
 import { ActionRow, COLUMN, Group, Initials, Row } from "@/components/list-rows";
@@ -17,11 +18,12 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const user = await requireUser();
   const [who, h] = await Promise.all([db().query(`SELECT name, email FROM "user" WHERE id = $1`, [user.id]).then((r) => r.rows[0] as { name?: string; email?: string } | undefined), householdOf(user.id)]);
-  const place = await placeRecord(user.id);
+  const [place, links] = await Promise.all([placeRecord(user.id), connections(user.id)]);
+  const linked = links.filter((l) => l.state === "connected").length;
   const name = who?.name || "You";
   return (
     <main className={PAGE}>
-      <ThingHeader back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Settings" />
+      <ThingHeader search={false} back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Settings" />
       <div className={COLUMN}>
         <h1 id="page-title" className="text-center text-xl font-semibold tracking-tight">Settings</h1>
 
@@ -39,7 +41,7 @@ export default async function SettingsPage() {
         <Group title="Your life" id="life">
           <Row href="/settings/household" icon={<HomeIcon />} label="Household" value={h ? `${ARRANGEMENT_LABEL[arrangement(h.members)]}, ${h.members.length}` : "Not set up"} />
           <Row href="/settings/place" icon={<MapPinIcon />} label="Where you live" value={place?.county ? `${place.county}, ${place.state}` : "Not set"} />
-          <Row href="/settings/connections" icon={<PlugIcon />} label="Connections" value="None yet" />
+          <Row href="/settings/connections" icon={<PlugIcon />} label="Connections" value={linked ? `${linked} connected` : "None yet"} />
         </Group>
 
         <Group title="Account" id="account">

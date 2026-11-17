@@ -13,7 +13,7 @@ export default async function PrivacyPage() {
   await requireUser();
   return (
     <main className={PAGE}>
-      <ThingHeader back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Privacy" />
+      <ThingHeader search={false} back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Privacy" />
       <div className={COLUMN}>
         <h1 id="page-title" className="text-center text-xl font-semibold tracking-tight">Privacy</h1>
         <Group title="Your records" id="records">

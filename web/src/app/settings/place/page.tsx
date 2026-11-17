@@ -23,7 +23,7 @@ export default async function PlacePage({ searchParams }: { searchParams: Promis
   const body = { county: p?.county ?? "", state: p?.state ?? "" };
   return (
     <main className={PAGE}>
-      <ThingHeader back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Where you live" />
+      <ThingHeader search={false} back="/settings" backLabel="Settings" crumbs={[{ label: "Settings", href: "/settings" }]} title="Where you live" />
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">Where you live</h1>

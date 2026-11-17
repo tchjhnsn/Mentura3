@@ -85,7 +85,7 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
  * Once the page's title (the element with id `page-title`) has scrolled away, it shows the thing's name and its
  * main action instead.
  */
-export function ThingHeader({ back, backLabel = "Back", crumbs, title, action }: { back: string; backLabel?: string; crumbs: Crumb[]; title: string; action?: ReactNode }) {
+export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, search = true }: { back: string; backLabel?: string; crumbs: Crumb[]; title: string; action?: ReactNode; /** Settings pages leave search out (2026-11-17). */ search?: boolean }) {
   const [past, setPast] = useState(false);
   useEffect(() => {
     const el = document.getElementById("page-title");
@@ -101,7 +101,7 @@ export function ThingHeader({ back, backLabel = "Back", crumbs, title, action }:
         {past ? <p className="min-w-0 truncate font-semibold">{title}</p> : <Crumbs crumbs={crumbs} />}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {past && action ? <div className="flex items-center gap-2 [&_form]:flex [&_form]:gap-2">{action}</div> : null}
-          <SearchButton />
+          {search ? <SearchButton /> : null}
         </div>
       </div>
     </header>
