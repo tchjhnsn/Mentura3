@@ -9,13 +9,13 @@ import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "@/server/l
 import { Acts, RecordCard, RecordForm, States } from "../record";
 import { Summary } from "../summary";
 import { BodySpace } from "../body-space";
-import { FriendsSpace, KinSpace, MateSpace, PolisSpace } from "../tile-spaces";
 import { restoreLifeAction } from "../actions";
 import { WorkHeader, type WorkTab } from "../work/parts";
 import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
 import { TileConnections } from "../tile-connections";
 import { NeedSpace } from "../need-space";
+import { FitnessDash, FriendsDash, HealthDash, KinDash, MateDash, PolisDash, StandingDash, VenturesDash } from "../dashboards";
 
 export const dynamic = "force-dynamic";
 /** The tiles an app's workspace speaks for, where they are not its own id. */
@@ -64,10 +64,11 @@ function KindView({ app, kind, records, acts, back }: { app: LifeAppId; kind: Ki
 function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   switch (app) {
     case "body": return <BodySpace userId={userId} records={records} acts={acts} today={today} />;
-    case "friends": return <FriendsSpace userId={userId} records={records} acts={acts} today={today} />;
-    case "mate": return <MateSpace userId={userId} records={records} today={today} />;
-    case "kin": return <KinSpace userId={userId} records={records} acts={acts} today={today} />;
-    case "polis": return <PolisSpace userId={userId} records={records} today={today} />;
+    case "friends": return <FriendsDash userId={userId} records={records} acts={acts} today={today} />;
+    case "mate": return <MateDash userId={userId} records={records} today={today} />;
+    case "kin": return <KinDash userId={userId} records={records} acts={acts} today={today} />;
+    case "polis": return <PolisDash userId={userId} records={records} today={today} />;
+    case "ventures": return <VenturesDash userId={userId} records={records} acts={acts} today={today} />;
     default: return <Summary app={app} records={records} acts={acts} today={today} />;
   }
 }
@@ -96,6 +97,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   // A part that is its own tile on the home screen (Food, Shelter, Income) carries the tile's name and goes back home.
   // Home's needs (Food, Water, Shelter, Transport, Safety) open their own workspace, without a form.
   const need = app === "home" && kind?.one && kind.standard && !kind.hidden;
+  // Health and Fitness open to their dashboards (doc "Tile designs"); ?all=1 shows the records behind them.
+  const dash = !one(sp.all) && ((app === "body" && (kind?.id === "health" || kind?.id === "fitness")) || (app === "polis" && kind?.id === "standing")) ? kind!.id : null;
   const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
@@ -105,9 +108,9 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>
         </form>
       ) : null}
-      <div className="mt-4 grid max-w-4xl gap-6">
-        {need ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
-        {need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+      <div className="mt-4 grid max-w-4xl grid-cols-1 gap-6">
+        {need || dash || (!kind && ["friends", "kin", "mate", "polis", "ventures"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
+        {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "standing" ? <StandingDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
         <TileAdventures userId={user.id} tiles={tile ? [tile] : APP_TILES[app] ?? [app]} />
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}
