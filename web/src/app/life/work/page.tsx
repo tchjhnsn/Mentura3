@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { workspace, type Wanted } from "@/server/work-space";
+import { admiredOf } from "@/server/admired";
+import { exemplarById, ROLES, traitById } from "@reflect/core/formation";
 import { CREDIT } from "@/server/work-catalog";
 import LifeAppPage from "../[app]/page";
 import { Credit, WorkHeader } from "./parts";
@@ -67,7 +69,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
   if (k === "inspired") redirect("/life/work");
   if (k) return LifeAppPage({ params: Promise.resolve({ app: "work" }), searchParams: Promise.resolve(sp) });
   const user = await requireUser();
-  const s = await workspace(user.id);
+  const [s, admired] = await Promise.all([workspace(user.id), admiredOf(user.id)]);
   const needNote = s.need.from === "home" ? "What your needs from Home cost you a year" : s.need.from === "household" ? "What your intended household needs a year" : null;
   return (
     <main className={PAGE}>
@@ -87,6 +89,52 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             <Button type="submit" variant="outline" size="icon" className="size-9 rounded-full" aria-label="Add it" title="Add it"><PlusIcon /></Button>
             <Link href="/life/work?k=imagined" className="text-muted-foreground hover:text-foreground text-sm underline-offset-2 hover:underline">Imagine work that does not exist yet</Link>
           </form>
+        </section>
+
+        <section id="people" className="grid scroll-mt-20 gap-3">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight">People who inspire you</h2>
+            <p className="text-muted-foreground text-sm">For a broad role like founder: choose the people you want to be like and the traits of theirs to build. Scholē suggests what teaches them.</p>
+          </div>
+          {admired.length ? (
+            <ul className={GRID}>
+              {admired.map((a) => {
+                const e = exemplarById(a.exemplar)!;
+                return (
+                  <li key={a.exemplar}>
+                    <Link href={`/life/work/people/${a.exemplar}`} className="bg-card hover:bg-accent flex h-full flex-col gap-2 rounded-xl border p-4 shadow-xs transition">
+                      <span className="text-muted-foreground text-xs">{ROLES.filter((r) => r.exemplars.includes(a.exemplar)).map((r) => r.name).join(", ")}</span>
+                      <span className="font-medium leading-snug">{e.name}</span>
+                      <span className="text-muted-foreground mt-auto text-xs">Building {a.traits.map((t) => traitById(t)!.name.toLowerCase()).join(", ")}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+          {ROLES.map((r) => {
+            const left = r.exemplars.filter((x) => !admired.some((a) => a.exemplar === x));
+            if (!left.length) return null;
+            return (
+              <div key={r.id} className="grid gap-2">
+                <h3 className="text-sm font-medium">{r.plural}</h3>
+                <ul className="-mx-1 flex snap-x gap-3 overflow-x-auto px-1 pb-1 [&>li]:w-60 [&>li]:shrink-0 [&>li]:snap-start">
+                  {left.map((x) => {
+                    const e = exemplarById(x)!;
+                    return (
+                      <li key={x}>
+                        <Link href={`/life/work/people/${x}`} className="hover:bg-accent flex h-full flex-col gap-1.5 rounded-xl border p-4 transition">
+                          <span className="font-medium leading-snug">{e.name}</span>
+                          <span className="text-muted-foreground line-clamp-2 text-sm">{e.what}</span>
+                          <span className="text-muted-foreground mt-auto text-xs">{e.traits.map((t) => traitById(t.trait)!.name).join(", ")}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </section>
 
         <section id="now" className="grid scroll-mt-20 gap-3">
