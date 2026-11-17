@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { placeRecord, waterSystems } from "@/server/public-data";
 import { requireUser } from "@/server/session";
 import { chooseWaterAction, savePlaceAction } from "../actions";
-import { COLUMN, Group, Row } from "../list";
+import { COLUMN, Group, Row } from "@/components/list-rows";
 
 export const metadata: Metadata = { title: "Where you live" };
 export const dynamic = "force-dynamic";

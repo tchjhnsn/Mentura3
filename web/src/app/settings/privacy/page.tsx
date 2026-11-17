@@ -3,7 +3,7 @@ import { DownloadIcon } from "lucide-react";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { requireUser } from "@/server/session";
-import { COLUMN, Group } from "../list";
+import { COLUMN, Group } from "@/components/list-rows";
 
 export const metadata: Metadata = { title: "Privacy" };
 export const dynamic = "force-dynamic";

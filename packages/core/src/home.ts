@@ -31,7 +31,7 @@ const labelOf = (l: readonly { id: string; label: string }[], v: unknown) => l.f
  * of its standard are in place and which are not. A need never stated has every part missing.
  */
 export function homeNeeds(records: readonly (RecordFacts & { id?: string })[], acts: readonly ActFacts[] = [], today?: string): NeedView[] {
-  return appOf("home").kinds.filter((k) => k.one).map((k) => {
+  return appOf("home").kinds.filter((k) => k.one && !k.hidden).map((k) => {
     const r = records.find((x) => x.kind === k.id);
     const b = r?.body ?? {};
     const checks = k.fields.filter((f) => f.kind === "check");

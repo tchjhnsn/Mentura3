@@ -23,6 +23,8 @@ import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "./household-store";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { placeFacts } from "./public-data";
+import { MEALS_PATHS } from "@reflect/core/meals";
+import { mealsPartOf } from "./meals-store";
 
 export const GUIDE = [
   "Reflect keeps a person's journal, what they learn, their own ideas and the plan for what survives them. You help them write and keep things; you never decide for them.",
@@ -140,6 +142,13 @@ export function reflectServer(userId: string): McpServer {
     const p = await placeFacts(userId);
     return text(p.set ? (placePart(p, path) ?? "No such part, or the source could not be read.") : "The person has not said where they live.");
   });
+
+  server.registerTool("meals", {
+    title: "Read one part of meal planning",
+    description: `The person's meals and their ingredients, this week's meals by day, and the shopping list scaled to the household. Fetch only the part asked about. Paths: ${MEALS_PATHS}.`,
+    inputSchema: z.object({ path: z.string().max(200).default("") }),
+    annotations: { readOnlyHint: true },
+  }, async ({ path }) => text((await mealsPartOf(userId, path)) ?? "No such part of the meals."));
 
   server.registerTool("list_entries", {
     title: "List journal entries",

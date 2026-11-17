@@ -8,7 +8,7 @@ import { householdOf, openInvites } from "@/server/household-store";
 import { requireUser } from "@/server/session";
 import { inviteAction, leaveHouseholdAction, revokeInviteAction, startHouseholdAction } from "../actions";
 import { CopyLink } from "../copy-link";
-import { ActionRow, COLUMN, Group, Initials, Row } from "../list";
+import { ActionRow, COLUMN, Group, Initials, Row } from "@/components/list-rows";
 
 export const metadata: Metadata = { title: "Household" };
 export const dynamic = "force-dynamic";

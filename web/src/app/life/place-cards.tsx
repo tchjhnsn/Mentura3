@@ -64,3 +64,13 @@ export async function WaterCard({ userId }: { userId: string }) {
     </Frame>
   );
 }
+
+/** The way from the Food part to meal planning. */
+export function MealsLink() {
+  return (
+    <Link href="/meals" className="bg-card hover:bg-accent flex min-h-14 items-center gap-4 rounded-2xl border px-4 py-3 transition">
+      <span className="grid flex-1"><span className="text-base">Meals</span><span className="text-muted-foreground text-sm">Plan the week&apos;s meals and make the shopping list</span></span>
+      <ChevronRightIcon aria-hidden="true" className="text-muted-foreground size-4" />
+    </Link>
+  );
+}

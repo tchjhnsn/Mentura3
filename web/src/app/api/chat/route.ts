@@ -6,6 +6,8 @@ import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "@/server/household-store";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { placeFacts } from "@/server/public-data";
+import { MEALS_PATHS } from "@reflect/core/meals";
+import { mealsPartOf } from "@/server/meals-store";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { z } from "zod";
@@ -136,6 +138,14 @@ export async function POST(req: Request) {
               if (!p.set) return "The person has not said where they live. They can set it at Settings, Where you live.";
               const part = placePart(p, path);
               return part === null ? "No such part, or the source could not be read. Do not guess." : JSON.stringify(part);
+            },
+          }),
+          meals: tool({
+            description: `Fetch one part of the person's meal planning: their meals and ingredients, this week's meals by day, and the shopping list scaled to the household. Fetch the smallest part that answers. Paths: ${MEALS_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'week' or 'list'") }),
+            execute: async ({ path }) => {
+              const part = await mealsPartOf(user.id, path);
+              return part === null ? "No such part of the meals. Do not guess." : JSON.stringify(part);
             },
           }),
           show_shelves: tool({

@@ -195,6 +195,18 @@ export const APPS: readonly LifeApp[] = [
       need("transport", "Transport", "How you get to work and essentials, and what it costs.", { text: "Reliable access to work and essentials at a cost you can keep up.", source: "Domain design" }, [["reliable", "Reliable every day"], ["backup", "A second way when the first fails"]]),
       need("safety", "Safety", "Physical safety at home and away, an emergency fund and preparedness.", { text: "An emergency kit and plan, an emergency fund, and important documents kept safe.", source: "Ready.gov" }, [["kit", "An emergency kit"], ["plan", "A plan the household knows"], ["fund", "An emergency fund"], ["documents", "Important documents kept safe"]]),
       {
+        // A meal the person makes, their own recipe (`@reflect/core/meals`). Planned on days as calendar events that
+        // point at it; its ingredients make the week's shopping list. Kept from Meals (/meals).
+        id: "meal", label: "Meal", plural: "Meals", title: "name", hidden: true,
+        intro: "A meal you make: how many it serves and what goes in it, one ingredient a line.",
+        fields: [
+          { key: "name", label: "Meal", kind: "text", hint: "Chili" },
+          { key: "serves", label: "Serves", kind: "number", hint: "4" },
+          { key: "ingredients", label: "Ingredients, one a line", kind: "long", hint: "2 cups rice" },
+          { key: "method", label: "How to make it", kind: "long" },
+        ],
+      },
+      {
         // Where the household lives, for public data about the place (`@reflect/core/public-data`): FEMA's risk index
         // for the county and EPA's record of the water system. Set at Settings, Where you live.
         id: "place", label: "Where you live", plural: "Where you live", title: "county", one: true, hidden: true,
