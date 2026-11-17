@@ -2,7 +2,7 @@
 // examples/chat): AI SDK streaming, tools first, cards streamed as json-render spec parts. One difference
 // on purpose: the model never writes a spec. Each tool fetches the person's records and Reflect builds the
 // card (../../chat/spec.ts), so a card can only show what the app holds.
-import { adventuresPart } from "@/server/adventures";
+import { adventuresPart, planAdventure } from "@/server/adventures";
 import { HOUSEHOLD_PATHS } from "@reflect/core/household";
 import { householdPartOf } from "@/server/household-store";
 import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
@@ -114,9 +114,26 @@ export async function POST(req: Request) {
           }),
           // The Adventures lens (2026-11-17): what the person wants to do, across the tiles each touches.
           adventures: tool({
-            description: "Fetch the person's adventures (camping, a league, travel, learning piano...): each with the tiles it touches, who it is with, and whether it is done. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
+            description: "Fetch the person's adventures (camping, a league, travel, a game night...): each with the tiles it touches, who it is with, and whether it is done. Paths: '' (all), 'not-yet', 'already', a tile id such as 'friends', or an adventure id.",
             inputSchema: z.object({ path: z.string().max(200).default("") }),
             execute: async ({ path }) => adventuresPart(user.id, path),
+          }),
+          plan_adventure: tool({
+            description: "Draft a plan for one of the person's adventures, or a new one: the place, dates, a day-by-day plan of stops (with coordinates when known, so they show on the map), a packing checklist and a budget. It is saved as a draft the person keeps or changes on the adventure's page. Give links only to real pages; never invent coordinates.",
+            inputSchema: z.object({
+              id: z.string().max(60).optional().describe("The adventure's id, to plan one that exists"),
+              name: z.string().max(140).optional().describe("Its name, to start a new one (or find one by name)"),
+              place: z.string().max(200).optional().describe("Where, as a place name OpenStreetMap can find"),
+              start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+              budget: z.number().min(0).max(1e7).optional().describe("Total cost in dollars"),
+              days: z.array(z.object({ day: z.string().optional().describe("YYYY-MM-DD"), title: z.string().max(100).optional(), stops: z.array(z.object({ time: z.string().optional().describe("HH:MM"), title: z.string().max(140), note: z.string().max(300).optional(), link: z.string().max(500).optional().describe("https link out, such as the trail on AllTrails or the campsite on Recreation.gov"), lat: z.number().optional(), lon: z.number().optional() })).max(12) })).max(14).optional(),
+              checklist: z.array(z.string().max(140)).max(60).optional().describe("What to pack or do before"),
+            }),
+            execute: async (d) => {
+              const r = await planAdventure(user.id, d);
+              show({ kind: "quote", text: [r.adventure.place, r.adventure.start, `${r.adventure.plan.length} days planned`].filter(Boolean).join(" · "), cite: `Adventure: ${r.adventure.name}`, href: r.href });
+              return `Saved as a draft on ${r.href}. The person keeps or changes it there.`;
+            },
           }),
           // The household plan is a tree of small parts (doc "Already and Not yet design guide"): fetch only the one asked about.
           household_plan: tool({

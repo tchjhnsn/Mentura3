@@ -36,6 +36,7 @@
     "cn": "^0.5.2",
     "fflate": "0.8.2",
     "lucide-react": "^1.72.0",
+    "maplibre-gl": "^5.24.1",
     "nanoid": "^6.0.2",
     "next": "16.4.5",
     "radix-ui": "^1.8.1",
