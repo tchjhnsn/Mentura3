@@ -15,6 +15,7 @@ import { WorkHeader, type WorkTab } from "../work/parts";
 import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
 import { TileConnections } from "../tile-connections";
+import { NeedSpace } from "../need-space";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -88,6 +89,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const removed = one(sp.removed);
   const today = new Date().toISOString().slice(0, 10);
   // A part that is its own tile on the home screen (Food, Shelter, Income) carries the tile's name and goes back home.
+  // Home's needs (Food, Water, Shelter, Transport, Safety) open their own workspace, without a form.
+  const need = app === "home" && kind?.one && kind.standard && !kind.hidden;
   const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
@@ -98,8 +101,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
         </form>
       ) : null}
       <div className="mt-4 grid max-w-4xl gap-6">
-        <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>
-        {kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+        {need ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
+        {need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}
       </div>

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { kindOf } from "@reflect/core/life";
 import { requireUser } from "@/server/session";
-import { addLifeRecord, keepLifeAct, lifeRecords, lifeRecord, removeLifeRecord, restoreLifeRecord, saveLifeRecord, setLifeState } from "@/server/life-store";
+import { addLifeRecord, keepLifeAct, lifeRecords, lifeRecord, removeLifeRecord, restoreLifeRecord, saveLifeRecord, setLifeField, setLifeState } from "@/server/life-store";
 
 /** The form's fields; a field sent more than once (the origins marked) is kept as its values joined by commas. */
 function fields(form: FormData): Record<string, string> {
@@ -74,4 +74,43 @@ export async function restoreLifeAction(id: string, to: string): Promise<void> {
   await restoreLifeRecord(user.id, id);
   revalidatePath("/", "layout");
   redirect(to.startsWith("/life/") ? to : "/");
+}
+
+const toTile = (to: string) => (to.startsWith("/life/") ? to : "/");
+
+/** Sets one fact of a need from a tap (a choice, or a standard part met or not), then goes back to the tile. */
+export async function setFieldAction(app: string, kind: string, key: string, value: string | boolean | null, to: string): Promise<void> {
+  const user = await requireUser();
+  await setLifeField(user.id, app, kind, key, value);
+  revalidatePath("/", "layout");
+  redirect(toTile(to));
+}
+
+/** Sets one amount of a need (what it costs a month, gallons stored) from its own page. An empty amount clears it. */
+export async function setAmountAction(app: string, kind: string, key: string, to: string, form: FormData): Promise<void> {
+  const user = await requireUser();
+  const raw = String(form.get("amount") ?? "").replace(/[$,\s]/g, "");
+  const n = raw ? Number(raw) : null;
+  if (n !== null && (!Number.isFinite(n) || n < 0)) redirect(toTile(to));
+  await setLifeField(user.id, app, kind, key, n === null ? null : String(n));
+  revalidatePath("/", "layout");
+  redirect(toTile(to));
+}
+
+/** Adds a way of getting around from one tap. */
+export async function addWayAction(how: string): Promise<void> {
+  const user = await requireUser();
+  await addLifeRecord(user.id, "home", "way", { how });
+  revalidatePath("/", "layout");
+  redirect("/life/home?k=transport");
+}
+
+/** Keeps "checked the standard" today on a need, keeping the record first when there is none. */
+export async function checkedTodayAction(kind: string): Promise<void> {
+  const user = await requireUser();
+  let r = (await lifeRecords(user.id, "home")).find((x) => x.kind === kind);
+  if (!r) { await addLifeRecord(user.id, "home", kind, {}); r = (await lifeRecords(user.id, "home")).find((x) => x.kind === kind); }
+  await keepLifeAct(user.id, r!.id, { kind: "checked", day: new Date().toISOString().slice(0, 10) });
+  revalidatePath("/", "layout");
+  redirect(`/life/home?k=${kind}`);
 }

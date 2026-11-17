@@ -61,6 +61,22 @@ export async function saveLifeRecord(userId: string, id: string, raw: Record<str
   await db().query("UPDATE life_record SET body_ct = $3, updated_at = now() WHERE id = $1 AND user_id = $2", [id, userId, seal(userId, JSON.stringify(body))]);
 }
 
+/**
+ * Sets one field of a kind kept once (Food's cost, Water's gallons), keeping the rest; the record is kept first when
+ * there is none. A value of null clears the field. This is how a tile changes one fact without a form.
+ */
+export async function setLifeField(userId: string, app: string, kind: string, key: string, value: string | number | boolean | null): Promise<void> {
+  if (!isLifeApp(app)) throw new Error("No such app.");
+  const k = kindOf(app, kind);
+  if (!k?.one || !k.fields.some((f) => f.key === key)) throw new Error("No such field.");
+  const r = (await lifeRecords(userId, app)).find((x) => x.kind === kind);
+  const body: Record<string, unknown> = { ...(r?.body ?? {}) };
+  if (value === null || value === false) delete body[key];
+  else body[key] = value;
+  if (r) await saveLifeRecord(userId, r.id, body);
+  else await addLifeRecord(userId, app, kind, body);
+}
+
 /** Sets a record's state, keeping the change. Setting the state it is in keeps nothing. */
 export async function setLifeState(userId: string, id: string, state: string): Promise<void> {
   const r = await lifeRecord(userId, id);

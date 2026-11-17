@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { homeCost, homeNeeds } from "./home";
+import { homeCost, homeNeeds, housingShare, markedByReflect, waterDays } from "./home";
 import type { RecordFacts } from "./life";
 
 describe("home", () => {
@@ -26,5 +26,21 @@ describe("home", () => {
   it("comes back when its check lapses", () => {
     const n = homeNeeds([{ id: "w", kind: "water", state: null, body: { cycle: "every-6-months" } }], [{ kind: "checked", record: "w", day: "2026-04-01", minutes: null, amount: null }], "2026-11-14");
     expect(n.find((x) => x.id === "water")).toMatchObject({ cycle: "Every 6 months", checked: "2026-04-01", due: "2026-09-30", lapsed: true });
+  });
+});
+
+
+describe("figures Reflect works out for a need", () => {
+  it("gives housing's share, days of water, and the standard parts it can mark", () => {
+    expect(housingShare(800, 33_280)).toBe(29);
+    expect(housingShare(null, 33_280)).toBeNull();
+    expect(housingShare(800, 0)).toBeNull();
+    expect(waterDays(10, 3)).toBe(3);
+    expect(waterDays(null, 3)).toBeNull();
+    expect(markedByReflect("shelter", { share: 29 })).toEqual({ thirty: true });
+    expect(markedByReflect("shelter", { share: 31 })).toEqual({ thirty: false });
+    expect(markedByReflect("water", { days: 5 })).toEqual({ stored: true, "two-weeks": false });
+    expect(markedByReflect("transport", { ways: 2 })).toEqual({ backup: true });
+    expect(markedByReflect("food", {})).toEqual({});
   });
 });
