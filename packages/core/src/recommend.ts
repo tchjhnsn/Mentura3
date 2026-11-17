@@ -47,7 +47,8 @@ type Reason = { points: number; line: string };
  * playlist follows each one the person already knows. Things with no reason are left out: with no signals at all the
  * list is empty and the page shows the editors' rows instead.
  */
-export function recommend(s: Signals, all: readonly Collection[] = COLLECTIONS, max = 24): Pick[] {
+export function recommend(signals: Signals, all: readonly Collection[] = COLLECTIONS, max = 24): Pick[] {
+  const s = sameThing(signals, all);
   const follows = s.follows.map((f) => f.trim().toLowerCase()).filter(Boolean);
   const traits = traitsWanted(s.admired);
   const best = new Map<string, Pick>();
@@ -99,6 +100,20 @@ export function recommend(s: Signals, all: readonly Collection[] = COLLECTIONS, 
 }
 
 /**
+ * The same recording can sit in several playlists under different titles; a mark on it in one counts in all. Each
+ * set also gets the collection key of every item it names.
+ */
+function sameThing(s: Signals, all: readonly Collection[]): Signals {
+  const items = all.flatMap((c) => c.items);
+  const expand = (set: ReadonlySet<string>) => {
+    const out = new Set(set);
+    for (const i of items) if (hasAny(set, i)) out.add(itemKey(i));
+    return out;
+  };
+  return { ...s, kept: expand(s.kept), finished: expand(s.finished), liked: expand(s.liked), disliked: expand(s.disliked) };
+}
+
+/**
  * One from a playlist the person already knows for every one from a new playlist, so the list never narrows to what
  * they began, nor leaves it. Either side runs on alone when the other runs out.
  */
@@ -120,7 +135,8 @@ function mix(ranked: readonly Pick[], s: Signals): Pick[] {
  */
 export function rerank(next: readonly CollectionItem[], s: Signals): { item: CollectionItem; reason: string | null }[] {
   const picks = new Map(recommend(s, COLLECTIONS, 500).map((p) => [itemKey(p.item), p]));
-  const kept = next.filter((i) => !hasAny(s.disliked, i));
+  const disliked = sameThing(s, COLLECTIONS).disliked;
+  const kept = next.filter((i) => !hasAny(disliked, i));
   const [first, ...rest] = kept;
   if (!first) return [];
   return [{ item: first, reason: null }, ...rest
