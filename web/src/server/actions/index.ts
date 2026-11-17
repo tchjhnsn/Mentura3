@@ -14,6 +14,7 @@ import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCard
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
 import { applyLens, lensAction, lensesAction } from "./lenses";
+import { plansAction, startPlan } from "./workflows";
 
 export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -25,7 +26,7 @@ export const ACTIONS: readonly Action[] = [
   listEntriesAction, writeEntry, getEntry, keepLegacyPlan, legacyStatusAction,
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
-  recentChanges, undoChangeAction, pendingChangesAction,
+  recentChanges, undoChangeAction, pendingChangesAction, startPlan, plansAction,
   practiceDialectic, showShelves, showWays, findItem, quoteTranscript, showClaims, searchLibrary, browseCategory, quoteBook, proposeClaim,
   homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
   excerptAction, draftCourseAction, coursesAction,

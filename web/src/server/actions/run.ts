@@ -7,6 +7,7 @@ import { postgresChanges } from "../action-change-store";
 import type { Action, ActionContext, ChangeLog, LoggedChange, Source } from "./types";
 import { actionById } from "./index";
 import { HOLD_DAYS, UNDO_DAYS } from "./limits";
+import { resumeAfterApproval, stopAfterDecline, type PlanView } from "./workflows";
 
 export { HOLD_DAYS, UNDO_DAYS };
 
@@ -14,8 +15,12 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const changesOf = (ctx: ActionContext): ChangeLog => ctx.changes ?? postgresChanges;
 
-/** Whether a run waits for the person: a shared or outside action asked for by a model, from the chat or over MCP. */
-export const holds = (tier: Tier, source: Source) => (tier === "shared" || tier === "outside") && (source === "chat" || source === "mcp");
+/**
+ * Whether a run waits for the person: a shared or outside action asked for by a model, from the chat or over MCP, or
+ * run as a step of a plan (./workflows.ts) that was not started from a page. A plan step with no origin holds.
+ */
+export const holds = (tier: Tier, source: Source, origin?: Source) =>
+  (tier === "shared" || tier === "outside") && (source === "chat" || source === "mcp" || (source === "workflow" && origin !== "page"));
 
 /** What runAction did: ran (with the change id, or null for a read or a log that failed), or held it unrun. */
 export type Ran<R> = { held: false; result: R; changeId: string | null } | { held: true; changeId: string; preview: string };
@@ -33,10 +38,11 @@ export function plainPreview(title: string, input: unknown): string {
  * a run fails, the change has still happened, so the result is returned with no change id rather than an error; when
  * keeping a hold fails, nothing has happened, so the error is thrown.
  */
-export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, ctx: ActionContext, input: z.output<S>, source: Source): Promise<Ran<R>> {
+export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, given: ActionContext, input: z.output<S>, source: Source): Promise<Ran<R>> {
   if (a.tier === "never") throw new Error(`${a.title} is never run for a model.`);
+  const ctx: ActionContext = { ...given, origin: given.origin ?? source };
   if (a.tier === "read") return { held: false, result: await a.run(ctx, input), changeId: null };
-  if (holds(a.tier, source)) {
+  if (holds(a.tier, source, ctx.origin)) {
     const preview = a.preview ? await a.preview(ctx, input) : plainPreview(a.title, input);
     const changeId = await changesOf(ctx).hold({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: input ?? {}, preview });
     return { held: true, changeId, preview };
@@ -93,7 +99,7 @@ async function heldOf(ctx: ActionContext, id: string): Promise<LoggedChange> {
  * held to done in one step, so a second tap (or a second tab) is refused. If the run fails it goes back to held.
  * Refuses another person's change, one already made or declined, and one older than 7 days.
  */
-export async function approveChange(ctx: ActionContext, id: string): Promise<{ approved: string; title: string; result: unknown }> {
+export async function approveChange(ctx: ActionContext, id: string): Promise<{ approved: string; title: string; result: unknown; plan?: PlanView }> {
   const log = changesOf(ctx);
   const c = await heldOf(ctx, id);
   const a = actionById(c.actionId);
@@ -116,14 +122,19 @@ export async function approveChange(ctx: ActionContext, id: string): Promise<{ a
   } catch (err) {
     console.error(`reflect: could not log ${a.id}: ${(err as Error).message}`);
   }
-  return { approved: id, title: a.title, result };
+  // A held step of a plan: the plan goes on from the next step. The change has happened whatever the plan does next.
+  const plan = c.source === "workflow" ? await resumeAfterApproval(ctx, id).catch((err: Error) => (console.error(`reflect: could not resume a plan: ${err.message}`), null)) : null;
+  return { approved: id, title: a.title, result, ...(plan ? { plan } : {}) };
 }
 
 /** Decline a held change: it never runs. Only the person who owns it, and only while it is held. */
 export async function declineChange(ctx: ActionContext, id: string): Promise<{ declined: string; title: string }> {
   const c = await heldOf(ctx, id);
   if (!(await changesOf(ctx).decline(ctx.userId, id))) throw new Error("That change is no longer waiting.");
-  return { declined: id, title: actionById(c.actionId)?.title ?? c.actionId };
+  const title = actionById(c.actionId)?.title ?? c.actionId;
+  // A declined step stops its plan: nothing after it runs.
+  if (c.source === "workflow") await stopAfterDecline(ctx, id, title).catch((err: Error) => console.error(`reflect: could not stop a plan: ${err.message}`));
+  return { declined: id, title };
 }
 
 /** One held change as the surfaces show it. */

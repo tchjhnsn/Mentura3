@@ -41,4 +41,17 @@ describe("chat cards render", () => {
     expect(html).toContain(">Decline<");
     expect(html).not.toContain(">Keep<");
   });
+
+  it("renders a Plan card with each step's status", () => {
+    const spec = buildSpec([{ kind: "plan", title: "Three things", status: "failed", note: "Stopped: you declined step 2.", steps: [{ title: "One", status: "done" }, { title: "Two", status: "declined" }, { title: "Three", status: "not_started" }] }])!;
+    const html = renderToStaticMarkup(
+      <JSONUIProvider registry={registry}>
+        <Renderer spec={spec} registry={registry} />
+      </JSONUIProvider>,
+    );
+    expect(html).toContain("Plan · Stopped");
+    expect(html).toContain("Declined");
+    expect(html).toContain("Not started");
+    expect(html).toContain("Stopped: you declined step 2.");
+  });
 });

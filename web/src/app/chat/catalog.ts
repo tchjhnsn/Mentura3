@@ -19,6 +19,15 @@ export const catalog = defineCatalog(schema, {
     Course: { props: z.object({ title: z.string(), goal: z.string(), units: z.string(), href: z.string().regex(/^\/(?!\/)[^\s]*$/) }), description: "A course drafted in Scholē, opening its course page" },
     CalendarEvent: { props: z.object({ title: z.string(), day: z.string(), when: z.string(), tile: z.string(), href: z.string().regex(/^\/calendar\?day=\d{4}-\d{2}-\d{2}$/) }), description: "An event added to the person's calendar, opening the calendar at its day" },
     UndoChange: { props: z.object({ change: z.string().uuid(), text: z.string() }), description: "A change the chat just made in the person's own records, with Undo (change is the change log's id)" },
+    Plan: {
+      props: z.object({
+        title: z.string(),
+        status: z.enum(["Running", "Waiting for your tap", "Done", "Stopped"]),
+        steps: z.array(z.object({ title: z.string(), status: z.enum(["Not started", "Done", "Waiting for your tap", "Declined", "Failed"]) })),
+        note: z.string().nullable(),
+      }),
+      description: "A plan of several actions run one after another, each step done, waiting for the person's tap, or not started",
+    },
     Approval: { props: z.object({ change: z.string().uuid(), title: z.string(), preview: z.string(), tap: z.enum(["Keep", "Send"]) }), description: "A shared change (Keep) or one that leaves Reflect (Send), held until the person taps, showing exactly what will happen, with Decline (change is the change log's id)" },
     HomeCard: { props: z.object({ title: z.string(), tile: z.string(), lines: z.array(z.string()), until: z.string() }), description: "A card placed on the person's Home screen for a time, opening Home" },
     Budget: {

@@ -15,6 +15,7 @@ import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { coursesAction, draftCourseAction, excerptAction } from "@/server/actions/courses";
 import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
+import { plansAction, startPlan, type PlanView } from "@/server/actions/workflows";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -75,6 +76,17 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   // A lens's ideas as a card, each citation opening its passage in Reflect.
   type LensOut = { name: string; living: boolean; person: string | null; works: string[]; ideas: { text: string; cites: { label: string; href: string }[] }[] };
   const lensCard = (l: LensOut) => show({ kind: "lens", name: l.name, works: l.works, living: l.living, href: l.person, ideas: l.ideas.map((i) => ({ text: i.text, cites: i.cites.map((c) => ({ label: c.label, href: c.href })) })) });
+
+  // A plan as a Plan card, with the held step's Approval card while it waits, and what the model reads back.
+  const planSaid = (p: PlanView) => {
+    show({ kind: "plan", title: p.title, status: p.status, steps: p.steps.map((s) => ({ title: s.title, status: s.status })), note: p.note });
+    if (p.waiting) show({ kind: "approval", ...p.waiting });
+    const steps = p.steps.map((s, i) => `${i + 1}. ${s.title} (${s.action}): ${s.status.replace("_", " ")}${s.change ? `, change ${s.change}` : ""}${s.note ? `, ${s.note}` : ""}`).join("; ");
+    const state = p.status === "waiting" && p.waiting
+      ? `Waiting: step ${p.steps.findIndex((s) => s.status === "waiting") + 1} waits for the person to tap ${p.waiting.tier === "outside" ? "Send" : "Keep"} on the card (change ${p.waiting.change}), for ${HOLD_DAYS} days; the plan goes on by itself after the tap. Do not say the waiting or later steps are done.`
+      : p.status === "done" ? "Done: every step ran." : p.status === "failed" ? `Stopped. ${p.note ?? ""}` : "Running.";
+    return `Plan ${p.id}, ${p.title}. ${state} Steps: ${steps}.`;
+  };
 
   return Object.fromEntries([
     use(practiceDialectic, (r) => {
@@ -183,6 +195,8 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       for (const p of list) show({ kind: "approval", change: p.id, title: p.title, preview: p.preview, tier: p.tier === "outside" ? "outside" : "shared" });
       return list.length ? `Shown with Keep or Send: ${JSON.stringify(list.map((p) => ({ id: p.id, title: p.title, source: p.source, until: p.until })))}. Only the person can tap them.` : "Nothing is waiting for the person.";
     }),
+    use(startPlan, (p) => planSaid(p)),
+    use(plansAction, (list) => (list.length ? list.map(planSaid).join("\n") : "No plans are running or waiting.")),
     use(homeCardsAction, (r) => JSON.stringify(r).slice(0, 12000)),
     use(addHomeCardAction, (c) => card(c, "Placed on Home")),
     use(removeHomeCardAction, () => "Removed from Home."),
