@@ -17,7 +17,8 @@ import { ShowView } from "../../podcasts/show-view";
 import { CourseView } from "../../courses/course-view";
 import Link from "next/link";
 import { BookmarkIcon, CheckIcon, ChevronRightIcon } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { instrumentByUrl, instrumentHref } from "@reflect/core/instruments";
 import { embedOf } from "@reflect/core/media";
 import { WAYS, mediumOf, placeOf } from "@reflect/core/ways";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,9 @@ export default async function ItemPage({ params }: { params: Promise<{ id: strin
   const user = await requireUser();
   const item = await getItem(user.id, (await params).id);
   if (!item) notFound();
+  // A course on an instrument is kept here but lives on its own course page, with its practice.
+  const instrument = item.medium === "course" ? instrumentByUrl(item.url) : undefined;
+  if (instrument) redirect(instrumentHref(instrument));
   const [view, ideas] = await Promise.all([learnView(user.id), listIdeas(user.id).catch((): IdeaOut[] => [])]);
   // An item merged from an older input keeps its id, so an idea may name it either way.
   const bearing = [...new Map([...ideasNaming(ideas, `item:${item.id}`, item.title), ...ideasNaming(ideas, `input:${item.id}`, item.title)].map((b) => [b.idea.id, b])).values()];

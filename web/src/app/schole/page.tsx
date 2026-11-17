@@ -3,13 +3,14 @@ import { TileAdventures } from "@/app/adventures/in-tile";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { mediumOf } from "@reflect/core/ways";
+import { PIANO, instrumentByUrl, instrumentHref } from "@reflect/core/instruments";
 import { coverUrl } from "@reflect/core/openlibrary";
 import { COLLECTIONS, itemHref, itemKey, nextInCollection, suggestCollections, type Collection, type CollectionItem } from "@reflect/core/collections";
 import { addDays, isRecordEvent, occurrences } from "@reflect/core/calendar";
 import { Button } from "@/components/ui/button";
 import { PAGE } from "@/components/page-header";
 import { Suspense } from "react";
-import { ChevronRightIcon, PlusIcon } from "lucide-react";
+import { ChevronRightIcon, PianoIcon, PlusIcon } from "lucide-react";
 import { Head, SPACE } from "@/app/life/space";
 import { calendar } from "@/server/calendar-store";
 import { artOf, haveKeys } from "@/server/collections";
@@ -142,6 +143,20 @@ function WorkingToward({ aims, aim }: { aims: string[]; aim: string | null }) {
   );
 }
 
+/** Learn an instrument: the piano course, where practice lives, in one line with its icon. */
+function LearnInstrument() {
+  return (
+    <Link href={instrumentHref(PIANO)} className="hover:bg-muted/60 -mx-2 flex items-center gap-3 rounded-lg p-2">
+      <span className="bg-muted flex size-11 shrink-0 items-center justify-center rounded-lg"><PianoIcon className="size-5" /></span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">Learn the piano</span>
+        <span className="text-muted-foreground block truncate text-[13px]">A course · {PIANO.pieces.length} pieces to listen to and practise</span>
+      </span>
+      <ChevronRightIcon className="text-muted-foreground size-4 shrink-0" />
+    </Link>
+  );
+}
+
 /** The next thing in a collection the person began, when nothing of it is under way: the one suggestion Home makes once it is in use. */
 function NextUp({ picks }: { picks: { c: Collection; next: CollectionItem }[] }) {
   if (!picks.length) return null;
@@ -203,10 +218,11 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   });
   const itemCard = (i: (typeof items)[number]): Card => {
     const kind = mediumOf(i.medium).label;
+    const instrument = i.medium === "course" ? instrumentByUrl(i.url) : undefined;
     return {
-      key: i.id, href: `/schole/items/${i.id}`, kind, title: i.title, by: i.by, image: i.image,
+      key: i.id, href: instrument ? instrumentHref(instrument) : `/schole/items/${i.id}`, kind, title: i.title, by: i.by, image: i.image,
       share: i.parts && i.part ? Math.min(1, i.part / i.parts) : null,
-      where: i.parts && i.part ? `${i.medium === "course" ? "Lecture" : "Part"} ${i.part} of ${i.parts}` : null,
+      where: i.parts && i.part ? `${instrument ? "Piece" : i.medium === "course" ? "Lecture" : "Part"} ${i.part} of ${i.parts}` : null,
     };
   };
   const doing = items.filter((i) => i.status === "doing");
@@ -242,6 +258,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
           <Suspense fallback={null}><TileAdventures userId={user.id} tiles={["learn"]} /></Suspense>
           <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
           <p><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Browse everything<ChevronRightIcon className="size-4" /></Link></p>
+          <LearnInstrument />
         </div>
       </main>
     );
@@ -280,6 +297,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
             <CollectionCard c={firstPick.collection} reason={firstPick.reason} className="max-w-sm" />
           </section>
         ) : null}
+        {!items.some((i) => i.status === "doing" && instrumentByUrl(i.url)) ? <LearnInstrument /> : null}
         <p className="border-t pt-6"><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Find something new<ChevronRightIcon className="size-4" /></Link></p>
       </div>
     </main>

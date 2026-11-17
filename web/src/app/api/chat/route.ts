@@ -9,6 +9,8 @@ import { PLACE_PATHS, placePart } from "@reflect/core/public-data";
 import { placeFacts } from "@/server/public-data";
 import { MEALS_PATHS } from "@reflect/core/meals";
 import { mealsPartOf } from "@/server/meals-store";
+import { INSTRUMENT_PATHS, PIANO } from "@reflect/core/instruments";
+import { instrumentPartOf } from "@/server/instruments";
 import { CONNECTIONS_PATHS } from "@reflect/core/connectors";
 import { connectionsPartOf } from "@/server/connections-store";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, tool, type UIMessage } from "ai";
@@ -180,6 +182,14 @@ export async function POST(req: Request) {
             execute: async ({ path }) => {
               const part = await mealsPartOf(user.id, path);
               return part === null ? "No such part of the meals. Do not guess." : JSON.stringify(part);
+            },
+          }),
+          piano: tool({
+            description: `Fetch one part of the person's piano course in Scholē: the piece to practise today with its recording and score, the graded pieces and which are learned, and minutes practised a day. Never log practice: the person logs it on the course page (/schole/courses/piano). Paths: ${INSTRUMENT_PATHS}.`,
+            inputSchema: z.object({ path: z.string().max(200).default("").describe("Such as 'pieces' or 'practice'") }),
+            execute: async ({ path }) => {
+              const part = await instrumentPartOf(user.id, PIANO, path);
+              return part === null ? "No such part of the piano course. Do not guess." : JSON.stringify(part);
             },
           }),
           show_shelves: tool({
