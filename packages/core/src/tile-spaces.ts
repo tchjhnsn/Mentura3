@@ -83,3 +83,84 @@ export function polisSpace(records: readonly Rec[], today: string) {
     serving: records.filter((r) => r.kind === "standing" && r.state === "serving").map((r) => ({ id: r.id, role: str(r.body.role) ?? "A role", where: str(r.body.body) })),
   };
 }
+
+/**
+ * The core estate planning documents, in the order the standard checklists put them (American Bar Association, "Estate
+ * Planning"; Nolo, "Estate Planning Basics"): a will, guardians for minor children (named in the will), a durable power
+ * of attorney for finances, an advance health care directive (living will and health care proxy), beneficiary
+ * designations on accounts and policies, and life insurance. `id` is the Plan kind's choice in `./life`.
+ */
+export const LEGACY_DOCS = [
+  { id: "will", label: "Will", what: "Last will and testament: who receives what, and who is executor" },
+  { id: "guardians-for-children", label: "Guardians for children", what: "Who raises your children under 18, named in your will" },
+  { id: "power-of-attorney", label: "Power of attorney", what: "Durable power of attorney: who acts for you if you cannot" },
+  { id: "end-of-life-wishes", label: "End-of-life wishes", what: "Advance directive: living will and health care proxy" },
+  { id: "beneficiaries", label: "Beneficiaries", what: "Beneficiary designations on retirement accounts and policies" },
+  { id: "life-insurance", label: "Life insurance", what: "A policy that provides for those who depend on you" },
+] as const;
+export type LegacyDocId = (typeof LEGACY_DOCS)[number]["id"];
+
+/** A life event the standard checklists say to review a plan after: a child born. Dated by day, or by year only. */
+export type LifeEvent = { what: string; day?: string; year?: number };
+type Member = { name: string; relation: string; born?: number };
+const CHILD = /\b(son|daughter|child|stepson|stepdaughter)\b/i;
+
+/**
+ * The children the person has stated, from Kin (a relation such as "Son", with the day born) and the household
+ * (a son or daughter or a foster child, with the year born): how many are under 18, and each birth as a life event.
+ * Nothing is guessed: a child with no birth day or year is counted as under 18 only when the household marks them a dependent.
+ */
+export function childrenOf(kin: readonly Rec[], members: readonly (Member & { dependent?: boolean })[], today: string): { minors: number; events: LifeEvent[] } {
+  const year = Number(today.slice(0, 4));
+  const fromKin = kin.filter((r) => r.kind === "relative" && r.state !== "died" && CHILD.test(str(r.body.relation) ?? "")).map((r) => ({ name: str(r.body.name) ?? "A child", born: str(r.body.born) }));
+  const names = new Set(fromKin.map((k) => k.name.toLowerCase()));
+  const fromHome = members.filter((m) => (m.relation === "child" || m.relation === "foster") && !names.has(m.name.toLowerCase()));
+  const minors = fromKin.filter((k) => k.born && daysBetween(k.born, today) < 18 * 365.25).length + fromHome.filter((m) => (m.born ? year - m.born < 18 : m.dependent === true)).length;
+  const events: LifeEvent[] = [
+    ...fromKin.filter((k) => k.born).map((k) => ({ what: `${k.name} was born`, day: k.born! })),
+    ...fromHome.filter((m) => m.born).map((m) => ({ what: `${m.name} was born`, year: m.born! })),
+  ];
+  return { minors, events };
+}
+
+/**
+ * Legacy's workspace (estate planning): each core document, in place when a Plan for it is Planned or Kept current;
+ * who is named and where it is kept; and review due when it was last reviewed over a year ago or a life event came
+ * after the last review (a document with no review date is never called due: nothing is guessed). Guardians count
+ * among the core documents only when the person has a child under 18 or has kept a plan for them. Then the other
+ * plans, the vaults, the bucket list and letters (who they are to, never their words).
+ */
+export function legacySpace(records: readonly Rec[], acts: readonly ActFacts[], today: string, life: { minors: number; events: readonly LifeEvent[] } = { minors: 0, events: [] }) {
+  const plans = records.filter((r) => r.kind === "plan").map((r) => {
+    const set = str(r.body.reviewed);
+    const act = lastOf(acts, r.id, ["reviewed"]);
+    const reviewed = [set, act].filter((d): d is string => d !== null).sort().at(-1) ?? null;
+    const inPlace = r.state === "planned" || r.state === "current";
+    const event = reviewed ? life.events.filter((e) => (e.day ? e.day > reviewed : e.year !== undefined && e.year > Number(reviewed.slice(0, 4)))).sort((a, b) => (b.day ?? `${b.year}`).localeCompare(a.day ?? `${a.year}`))[0] ?? null : null;
+    const old = reviewed !== null && daysBetween(reviewed, today) > 365;
+    const review = inPlace && (old || event !== null) ? (event ? `${event.what} since it was reviewed` : "Last reviewed over a year ago") : null;
+    return { id: r.id, name: str(r.body.name), state: r.state, inPlace, who: str(r.body.who), where: str(r.body.where), reviewed, review };
+  });
+  const best = (id: string) => plans.filter((p) => p.name === id).sort((a, b) => Number(b.inPlace) - Number(a.inPlace) || (b.reviewed ?? "").localeCompare(a.reviewed ?? ""))[0] ?? null;
+  const docs = LEGACY_DOCS.map((d) => {
+    const p = best(d.id);
+    const status: "in-place" | "not-yet" | "review" = !p?.inPlace ? "not-yet" : p.review ? "review" : "in-place";
+    return { ...d, record: p?.id ?? null, status, who: p?.who ?? null, where: p?.where ?? null, reviewed: p?.reviewed ?? null, review: p?.review ?? null, core: d.id !== "guardians-for-children" || life.minors > 0 || p !== null };
+  });
+  const core = docs.filter((d) => d.core);
+  const vault = records.find((r) => r.kind === "vault");
+  const wishes = records.filter((r) => r.kind === "wish").map((r) => ({ id: r.id, what: str(r.body.what) ?? "A wish", state: r.state }));
+  return {
+    docs, done: core.filter((d) => d.status !== "not-yet").length, of: core.length,
+    /** The first core document not in place, in the checklist's order. */
+    next: core.find((d) => d.status === "not-yet") ?? null,
+    /** The first core document in place whose review is due. */
+    due: core.find((d) => d.status === "review") ?? null,
+    /** Plans for something else ("Other"), or kept with no document named. */
+    others: plans.filter((p) => !LEGACY_DOCS.some((d) => d.id === p.name)).map(({ id, state, who, where, inPlace }) => ({ id, state, who, where, inPlace })),
+    vault: vault ? { id: vault.id, to: str(vault.body.to) } : null,
+    wishes: { open: wishes.filter((w) => w.state !== "done"), done: wishes.filter((w) => w.state === "done").length },
+    letters: records.filter((r) => r.kind === "letter").map((r) => ({ id: r.id, to: str(r.body.to) ?? "Someone" })),
+    kept: records.some((r) => r.kind === "plan"),
+  };
+}

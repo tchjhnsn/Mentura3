@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { TileAdventures } from "@/app/adventures/in-tile";
 import { notFound, redirect } from "next/navigation";
-import { TILE_KIND, appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
+import { TILE_KIND, appOf, isLifeApp, kindOf, type Body, type Kind, type LifeAppId } from "@reflect/core/life";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
@@ -15,7 +15,7 @@ import { TileHeader } from "../tile-header";
 import { MealsLink, RiskCard, WaterCard } from "../place-cards";
 import { TileConnections } from "../tile-connections";
 import { NeedSpace } from "../need-space";
-import { FitnessDash, FriendsDash, HealthDash, KinDash, MateDash, PolisDash, StandingDash, VenturesDash } from "../dashboards";
+import { FitnessDash, FriendsDash, HealthDash, KinDash, LegacyDash, MateDash, PolisDash, StandingDash, VenturesDash } from "../dashboards";
 
 export const dynamic = "force-dynamic";
 /** The tiles an app's workspace speaks for, where they are not its own id. */
@@ -33,7 +33,7 @@ function Standard({ kind }: { kind: Kind }) {
 }
 
 /** One kind of record in an app: the one record when the kind is kept once, else the list and a way to add one. */
-function KindView({ app, kind, records, acts, back }: { app: LifeAppId; kind: Kind; records: LifeRecord[]; acts: LifeAct[]; back: string }) {
+function KindView({ app, kind, records, acts, back, prefill }: { app: LifeAppId; kind: Kind; records: LifeRecord[]; acts: LifeAct[]; back: string; /** Choices carried in the address (?k=plan&name=will), so a dashboard's add opens with them chosen. */ prefill?: Body }) {
   const mine = records.filter((r) => r.kind === kind.id);
   if (kind.one) {
     const r = mine[0];
@@ -52,15 +52,15 @@ function KindView({ app, kind, records, acts, back }: { app: LifeAppId; kind: Ki
           {mine.map((r) => { const last = acts.find((a) => a.record === r.id); return <RecordCard key={r.id} app={app} kind={kind} record={r} {...(last ? { last } : {})} />; })}
         </ul>
       ) : <p className="text-muted-foreground text-sm">No {kind.plural.toLowerCase()} kept yet.</p>}
-      <details className="rounded-xl border p-4" open={!mine.length}>
+      <details className="rounded-xl border p-4" open={!mine.length || Boolean(prefill && Object.keys(prefill).length)}>
         <summary className="cursor-pointer font-medium">Add {kind.label.toLowerCase()}</summary>
-        <div className="mt-4"><RecordForm app={app} kind={kind} back={back} /></div>
+        <div className="mt-4"><RecordForm app={app} kind={kind} back={back} {...(prefill ? { initial: prefill } : {})} /></div>
       </details>
     </div>
   );
 }
 
-/** A tile's first view: the person's own workspace for it, or where they stand where a tile has none yet (Legacy). */
+/** A tile's first view: the person's own workspace for it, or where they stand where a tile has none yet. */
 function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   switch (app) {
     case "body": return <BodySpace userId={userId} records={records} acts={acts} today={today} />;
@@ -69,6 +69,7 @@ function Overview({ app, userId, records, acts, today }: { app: LifeAppId; userI
     case "kin": return <KinDash userId={userId} records={records} acts={acts} today={today} />;
     case "polis": return <PolisDash userId={userId} records={records} today={today} />;
     case "ventures": return <VenturesDash userId={userId} records={records} acts={acts} today={today} />;
+    case "legacy": return <LegacyDash userId={userId} records={records} acts={acts} today={today} />;
     default: return <Summary app={app} records={records} acts={acts} today={today} />;
   }
 }
@@ -109,8 +110,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
         </form>
       ) : null}
       <div className="mt-4 grid max-w-4xl grid-cols-1 gap-6">
-        {need || dash || (!kind && ["friends", "kin", "mate", "polis", "ventures"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
-        {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "standing" ? <StandingDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
+        {need || dash || (!kind && ["friends", "kin", "mate", "polis", "ventures", "legacy"].includes(app)) ? null : <p className="text-muted-foreground text-sm">{kind ? kind.intro : a.intro}</p>}
+        {dash === "health" ? <HealthDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "fitness" ? <FitnessDash userId={user.id} records={records} acts={mine} today={today} /> : dash === "standing" ? <StandingDash userId={user.id} records={records} acts={mine} today={today} /> : need ? <NeedSpace userId={user.id} kind={kind!} /> : kind ? <>{app === "work" && kind.id === "income" ? <Summary app={app} records={records} acts={mine} today={today} /> : null}<Standard kind={kind} />{app === "home" && kind.id === "safety" ? <RiskCard userId={user.id} /> : null}{app === "home" && kind.id === "water" ? <WaterCard userId={user.id} /> : null}{app === "home" && kind.id === "food" ? <MealsLink /> : null}<KindView app={app} kind={kind} records={records} acts={mine} back={back} prefill={Object.fromEntries(kind.fields.filter((f) => f.kind === "choice" && f.options?.some((o) => o.id === one(sp[f.key]))).map((f) => [f.key, one(sp[f.key])]))} /></> : <Overview app={app} userId={user.id} records={records} acts={mine} today={today} />}
         <TileAdventures userId={user.id} tiles={tile ? [tile] : APP_TILES[app] ?? [app]} />
         <TileConnections userId={user.id} app={app} kind={kind?.id ?? null} />
         {!kind ? <p className="text-muted-foreground text-xs">Everything here is what you state. What you do is kept in your log; reflect on it in your journal.</p> : null}
