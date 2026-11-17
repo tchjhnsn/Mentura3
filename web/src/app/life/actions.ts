@@ -114,3 +114,12 @@ export async function checkedTodayAction(kind: string): Promise<void> {
   revalidatePath("/", "layout");
   redirect(`/life/home?k=${kind}`);
 }
+
+/** Sets one fact in words or a day (a doctor's name, the last checkup) from its own page. Empty clears it. */
+export async function setWordsAction(app: string, kind: string, key: string, to: string, form: FormData): Promise<void> {
+  const user = await requireUser();
+  const v = String(form.get("value") ?? "").trim();
+  await setLifeField(user.id, app, kind, key, v || null);
+  revalidatePath("/", "layout");
+  redirect(toTile(to));
+}
