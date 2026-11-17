@@ -11,6 +11,7 @@ import { piano } from "./actions/schole";
 import { coursesAction, draftCourseAction, excerptAction } from "./actions/courses";
 import { budget, budgetStep, setBudget } from "./actions/budget";
 import { GUIDE } from "./actions/journal";
+import { messagesAction, sendMessageAction } from "./actions/messages";
 import { HOLD_DAYS, runAction } from "./actions/run";
 import { siteUrl } from "./site";
 
@@ -38,6 +39,8 @@ const REPLIES = new Map<string, (r: unknown) => unknown>([
   reply(excerptAction, (r) => (r.held ? { ...r, passages: withLinks(r.passages) } : r.reason)),
   reply(draftCourseAction, (r) => (r.ok ? { ...r, link: `${siteUrl()}${r.href}` } : { kept: false, errors: r.errors })),
   reply(coursesAction, (r) => withLinks(r)),
+  reply(messagesAction, (r) => (r.kind === "threads" ? withLinks(r.threads) : { ...r, link: `${siteUrl()}${r.href}` })),
+  reply(sendMessageAction, (r) => ({ ...r, link: `${siteUrl()}${r.href}` })),
 ]);
 
 /** One MCP server for one signed-in person. */

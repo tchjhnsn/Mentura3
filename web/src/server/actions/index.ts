@@ -14,6 +14,7 @@ import { addHomeCardAction, checkHomeItemAction, homeCardsAction, removeHomeCard
 import { coursesAction, draftCourseAction, excerptAction } from "./courses";
 import { budget, budgetStep, setBudget } from "./budget";
 import { applyLens, lensAction, lensesAction } from "./lenses";
+import { messagesAction, sendMessageAction } from "./messages";
 
 export type { Action, ActionContext, ChangeLog, LoggedChange, Source, Surface } from "./types";
 export { describeFor, inputFor } from "./types";
@@ -30,6 +31,7 @@ export const ACTIONS: readonly Action[] = [
   homeCardsAction, addHomeCardAction, removeHomeCardAction, checkHomeItemAction,
   excerptAction, draftCourseAction, coursesAction,
   lensesAction, lensAction, applyLens,
+  messagesAction, sendMessageAction,
 ];
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id);
