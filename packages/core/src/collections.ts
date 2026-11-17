@@ -21,6 +21,7 @@ import { ART_DEBATE_PLAYLISTS, MACHINE_DEBATE_PLAYLISTS } from "./start-debates"
 import { RENAISSANCE_PLAYLISTS } from "./start-renaissance";
 import { ENLIGHTENMENT_PLAYLISTS } from "./start-enlightenment";
 import { FOUNDING_PLAYLISTS } from "./start-founding";
+import { FORMATION_PLAYLISTS } from "./start-formation";
 
 /** The media a find in a collection may be: the ones Scholē's find page plays, shows or reads. */
 export type FindMedium = "film" | "lecture" | "debate" | "discussion" | "music" | "art" | "theatre" | "game";
@@ -202,7 +203,7 @@ const BASE: readonly Collection[] = [
   },
 ];
 
-export const COLLECTIONS: readonly Collection[] = [...BASE, ...MEDIEVAL_PLAYLISTS, ...RENAISSANCE_PLAYLISTS, ...ENLIGHTENMENT_PLAYLISTS, ...FOUNDING_PLAYLISTS, ...DIALECTIC_PLAYLISTS, ...ARGUMENT_PLAYLISTS, ...ART_DEBATE_PLAYLISTS, ...MACHINE_DEBATE_PLAYLISTS];
+export const COLLECTIONS: readonly Collection[] = [...BASE, ...MEDIEVAL_PLAYLISTS, ...RENAISSANCE_PLAYLISTS, ...ENLIGHTENMENT_PLAYLISTS, ...FOUNDING_PLAYLISTS, ...DIALECTIC_PLAYLISTS, ...ARGUMENT_PLAYLISTS, ...ART_DEBATE_PLAYLISTS, ...MACHINE_DEBATE_PLAYLISTS, ...FORMATION_PLAYLISTS];
 
 export const collectionById = (id: string): Collection | undefined => COLLECTIONS.find((c) => c.id === id);
 

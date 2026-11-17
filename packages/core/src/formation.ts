@@ -14,7 +14,8 @@ import type { CollectionItem } from "./collections";
 type Book = CollectionItem & { kind: "audiobook" };
 const ab = (id: string, title: string, by: string, why: string): Book => ({ kind: "audiobook", id, title, by, why });
 
-export type TraitId = "focus" | "frugality" | "industry" | "order" | "perseverance" | "courage" | "service" | "integrity" | "self-command";
+export type TraitId = "focus" | "frugality" | "industry" | "order" | "perseverance" | "courage" | "service" | "integrity" | "self-command"
+  | "simplicity" | "dignity-of-labour" | "household" | "habits" | "study" | "will" | "friendship";
 
 export type Trait = {
   id: TraitId;
@@ -26,15 +27,22 @@ export type Trait = {
 };
 
 export const TRAITS: readonly Trait[] = [
-  { id: "focus", name: "Focus on one thing", about: "Choosing one line of work and mastering it rather than scattering effort.", playlists: ["making-a-living", "stoics"] },
-  { id: "frugality", name: "Frugality", about: "Wasting nothing, and knowing where every dollar goes.", playlists: ["making-a-living", "founding"] },
-  { id: "industry", name: "Industry", about: "Working thoroughly and without wasting time.", playlists: ["making-a-living", "greeks"] },
+  { id: "focus", name: "Focus on one thing", about: "Choosing one line of work and mastering it rather than scattering effort.", playlists: ["founders-own-words", "making-a-living", "stoics"] },
+  { id: "frugality", name: "Frugality", about: "Wasting nothing, and knowing where every dollar goes.", playlists: ["founders-own-words", "making-a-living", "founding"] },
+  { id: "industry", name: "Industry", about: "Working thoroughly and without wasting time.", playlists: ["founders-own-words", "household-and-land", "making-a-living"] },
   { id: "order", name: "Order", about: "A place for everything and a time for each part of the work.", playlists: ["making-a-living", "stoics"] },
   { id: "perseverance", name: "Perseverance", about: "Staying on the right path until it succeeds.", playlists: ["stoics", "making-a-living"] },
   { id: "courage", name: "Courage in failure", about: "Not fearing failure, and beginning again more wisely.", playlists: ["stoics", "socrates"] },
-  { id: "service", name: "Service before profit", about: "Serving people well first, with profit as the reward of the service.", playlists: ["making-a-living", "founding"] },
+  { id: "service", name: "Service before profit", about: "Serving people well first, with profit as the reward of the service.", playlists: ["founders-own-words", "making-a-living", "founding"] },
   { id: "integrity", name: "Integrity", about: "Honest dealing, and wronging no one.", playlists: ["greeks", "founding"] },
   { id: "self-command", name: "Self-command", about: "Governing one's temper and passions.", playlists: ["stoics", "greeks"] },
+  { id: "simplicity", name: "Simplicity", about: "Keeping life to what is essential, so there is time for what matters.", playlists: ["household-and-land", "stoics"] },
+  { id: "dignity-of-labour", name: "Dignity of labour", about: "Honouring work with the hands as much as any other.", playlists: ["household-and-land", "founders-own-words"] },
+  { id: "household", name: "Keeping a household", about: "Running a home as its leader, so the family can flourish in it.", playlists: ["household-and-land", "raising-children"] },
+  { id: "habits", name: "Forming good habits", about: "Training good habits early, so that doing right becomes easy.", playlists: ["raising-children", "manners-and-character"] },
+  { id: "study", name: "Study and preparation", about: "Thinking ahead of the game by studying it closely.", playlists: ["athletes-own-words", "making-a-living"] },
+  { id: "will", name: "Will-power", about: "Strengthening the will by steady, regular effort.", playlists: ["athletes-own-words", "stoics"] },
+  { id: "friendship", name: "Friendship", about: "Choosing good friends and being a good one.", playlists: ["friendship", "manners-and-character"] },
 ];
 
 export const traitById = (id: string): Trait | undefined => TRAITS.find((t) => t.id === id);
@@ -109,6 +117,63 @@ export const EXEMPLARS: readonly Exemplar[] = [
       { trait: "self-command", quote: "Of my grandfather Verus I have learned to be gentle and meek, and to refrain from all anger and passion.", where: "Book I, 1" },
     ],
   },
+  {
+    id: "booker-t-washington", name: "Booker T. Washington", what: "Born enslaved; founded Tuskegee Institute and taught there for thirty-four years.",
+    book: ab("2632", "Up from Slavery", "Booker T. Washington", "His own story, from a slave cabin to Tuskegee."), gutenberg: 2376,
+    traits: [
+      { trait: "perseverance", quote: "I have learned that success is to be measured not so much by the position that one has reached in life as by the obstacles which he has overcome while trying to succeed.", where: "chapter II, Boyhood Days" },
+      { trait: "dignity-of-labour", quote: "No race can prosper till it learns that there is as much dignity in tilling a field as in writing a poem.", where: "chapter XIV, The Atlanta Exposition Address" },
+    ],
+  },
+  {
+    id: "hesiod", name: "Hesiod", what: "Greek poet and farmer of Boeotia, about 700 BC, who wrote the year's work in verse.",
+    book: ab("10196", "Works and Days", "Hesiod", "His advice to his brother on work, the seasons and the farm."), gutenberg: 348,
+    traits: [
+      { trait: "industry", quote: "Work is no disgrace: it is idleness which is a disgrace.", where: "Works and Days, in Evelyn-White's translation" },
+    ],
+  },
+  {
+    id: "henry-david-thoreau", name: "Henry David Thoreau", what: "Built a cabin by Walden Pond and lived there two years, then wrote Walden.",
+    book: ab("549", "Walden", "Henry David Thoreau", "Two years in a cabin he built himself."), gutenberg: 205,
+    traits: [
+      { trait: "simplicity", quote: "Simplicity, simplicity, simplicity! I say, let your affairs be as two or three, and not a hundred or a thousand.", where: "Where I Lived, and What I Lived For" },
+    ],
+  },
+  {
+    id: "isabella-beeton", name: "Isabella Beeton", what: "Wrote the Book of Household Management (1861), the guide that ran Victorian homes.",
+    book: ab("1319", "Book of Household Management", "Mrs. Isabella Beeton", "Its first chapter is on the mistress of the house."), gutenberg: 10136,
+    traits: [
+      { trait: "household", quote: "As with the commander of an army, or the leader of any enterprise, so is it with the mistress of a house. Her spirit will be seen through the whole establishment.", where: "chapter I, The Mistress" },
+    ],
+  },
+  {
+    id: "charlotte-mason", name: "Charlotte Mason", what: "Educator who taught mothers and governesses to give children a living education.",
+    book: ab("11200", "Home Education", "Charlotte Mason", "Her lectures to mothers on children under nine."), gutenberg: 71087,
+    traits: [
+      { trait: "habits", quote: "The mother who takes pains to endow her children with good habits secures for herself smooth and easy days; while she who lets their habits take care of themselves has a weary life of endless friction with the children.", where: "part IV, 'Habit is ten natures'" },
+    ],
+  },
+  {
+    id: "christy-mathewson", name: "Christy Mathewson", what: "Pitcher for the New York Giants, one of the first five players in the Baseball Hall of Fame.",
+    book: ab("7974", "Pitching in a Pinch", "Christy Mathewson", "Baseball from the inside, by its great pitcher."), gutenberg: 33291,
+    traits: [
+      { trait: "study", quote: "That is why so few men without brains last in the Big Leagues nowadays.", where: "chapter VII, Honest and Dishonest Sign Stealing" },
+    ],
+  },
+  {
+    id: "eugen-sandow", name: "Eugen Sandow", what: "Strongman who began modern physical culture and bodybuilding.",
+    book: ab("17483", "Strength and How to Obtain It", "Eugen Sandow", "His book of exercises and why they matter."), gutenberg: 65987,
+    traits: [
+      { trait: "will", quote: "Will-power is a mighty factor--perhaps the mightiest--in all that goes to make up the sum of human success or failure.", where: "chapter I, Concerning Physical Culture" },
+    ],
+  },
+  {
+    id: "cicero", name: "Cicero", what: "Roman statesman, orator and philosopher; consul in 63 BC.",
+    book: ab("13377", "Treatises on Friendship and Old Age", "Marcus Tullius Cicero", "His dialogue on friendship, spoken by Laelius."), gutenberg: 2808, page: "/schole/people/cicero",
+    traits: [
+      { trait: "friendship", quote: "But I must at the very beginning lay down this principle--friendship can only exist between good men.", where: "On Friendship" },
+    ],
+  },
 ];
 
 export const exemplarById = (id: string): Exemplar | undefined => EXEMPLARS.find((e) => e.id === id);
@@ -117,8 +182,12 @@ export type Role = { id: string; name: string; plural: string; about: string; ex
 
 /** Broad roles, each named by the people who did it. A specific job comes from Work's catalogue instead. */
 export const ROLES: readonly Role[] = [
-  { id: "founder", name: "Founder", plural: "Founders", about: "Someone who builds an enterprise that lasts.", exemplars: ["benjamin-franklin", "andrew-carnegie", "john-d-rockefeller", "henry-ford", "p-t-barnum"] },
-  { id: "statesman", name: "Statesman", plural: "Statesmen", about: "Someone who governs well and serves the city.", exemplars: ["marcus-aurelius", "benjamin-franklin"] },
+  { id: "founder", name: "Founder", plural: "Founders", about: "Someone who builds an enterprise that lasts.", exemplars: ["benjamin-franklin", "andrew-carnegie", "john-d-rockefeller", "henry-ford", "booker-t-washington", "p-t-barnum"] },
+  { id: "statesman", name: "Statesman", plural: "Statesmen", about: "Someone who governs well and serves the city.", exemplars: ["marcus-aurelius", "cicero", "benjamin-franklin"] },
+  { id: "teacher", name: "Teacher", plural: "Teachers", about: "Someone who forms the young.", exemplars: ["booker-t-washington", "charlotte-mason"] },
+  { id: "homemaker", name: "Mother and homemaker", plural: "Mothers and homemakers", about: "Someone who raises children and keeps a home.", exemplars: ["charlotte-mason", "isabella-beeton"] },
+  { id: "farmer", name: "Farmer and homesteader", plural: "Farmers and homesteaders", about: "Someone who lives from the land.", exemplars: ["hesiod", "henry-david-thoreau", "booker-t-washington"] },
+  { id: "athlete", name: "Athlete", plural: "Athletes", about: "Someone who trains body and will to compete.", exemplars: ["christy-mathewson", "eugen-sandow"] },
 ];
 
 export const roleById = (id: string): Role | undefined => ROLES.find((r) => r.id === id);
