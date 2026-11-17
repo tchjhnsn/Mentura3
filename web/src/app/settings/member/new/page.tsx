@@ -13,7 +13,7 @@ export default async function NewMemberPage() {
   await requireUser();
   return (
     <main className={PAGE}>
-      <ThingHeader back="/settings?tab=household" backLabel="Household" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Household", href: "/settings?tab=household" }]} title="Add someone" />
+      <ThingHeader back="/settings/household" backLabel="Household" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Household", href: "/settings/household" }]} title="Add someone" />
       <div className="mt-4 grid max-w-2xl gap-4">
         <h1 id="page-title" className="text-lg font-semibold tracking-tight">Add someone without a login</h1>
         <p className="text-muted-foreground text-sm">You keep their record. If they make an account later, you can send them a link to claim it.</p>

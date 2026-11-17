@@ -8,7 +8,7 @@ import { acceptInvite, addMember, createInvite, ensureHousehold, leaveHousehold,
 // Settings, Household (doc "Tiles and their connections"): members join by invite and keep their own login; a member
 // without a login is added and kept by another member.
 
-const HOUSEHOLD = "/settings?tab=household";
+const HOUSEHOLD = "/settings/household";
 function fields(form: FormData): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, v] of form.entries()) if (!k.startsWith("$")) out[k] = String(v);
@@ -53,7 +53,7 @@ export async function leaveHouseholdAction(): Promise<void> {
 export async function inviteAction(memberId?: string): Promise<void> {
   const user = await requireUser();
   const token = await createInvite(user.id, memberId);
-  done(`${HOUSEHOLD}&link=${encodeURIComponent(token)}`);
+  done(`${HOUSEHOLD}?link=${encodeURIComponent(token)}`);
 }
 
 export async function revokeInviteAction(id: string): Promise<void> {
