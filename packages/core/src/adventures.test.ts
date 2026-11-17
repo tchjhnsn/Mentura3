@@ -47,8 +47,8 @@ describe("adventures", () => {
   it("puts the soonest adventure ahead next, else the newest not done", () => {
     const a = (id: string, start?: string, state = "not-yet") => adventureOf({ id, state, body: { name: id, start } });
     const all = [a("later", "2026-12-20"), a("soon", "2026-11-20"), a("past", "2026-10-01"), a("done", "2026-11-18", "done")];
-    expect(daysUntil(all[1], "2026-11-17")).toBe(3);
-    expect(daysUntil(all[2], "2026-11-17")).toBeNull();
+    expect(daysUntil(all[1]!, "2026-11-17")).toBe(3);
+    expect(daysUntil(all[2]!, "2026-11-17")).toBeNull();
     expect(nextUp(all, "2026-11-17")?.id).toBe("soon");
     expect(nextUp([a("x"), a("y")], "2026-11-17")?.id).toBe("x");
   });
