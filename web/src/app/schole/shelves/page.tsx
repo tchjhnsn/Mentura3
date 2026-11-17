@@ -36,7 +36,7 @@ const BOOK = "M8 4 h84 v92 h-84 z";
 const SUBJ = "M50 4 A46 46 0 1 1 49.99 4 Z";
 const STATUS = [["want", "Want to read"], ["reading", "Reading"], ["read", "Read"]] as const;
 const STANCE_LABEL: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
-const TONE: Record<ShelfTone, string> = { known: "fill-foreground", learning: "fill-neutral-400", registered: "fill-neutral-200" };
+const TONE: Record<ShelfTone, string> = { known: "fill-foreground", learning: "fill-tone-thought", registered: "fill-tone-unstated" };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const Note = ({ children }: { children: ReactNode }) => <p className="text-muted-foreground text-sm">{children}</p>;
 
