@@ -23,7 +23,7 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
   const canEdit = m.you || m.keptBy === user.id || admin;
   return (
     <main className={PAGE}>
-      <ThingHeader back="/settings?tab=household" backLabel="Household" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Household", href: "/settings?tab=household" }]} title={m.name} />
+      <ThingHeader back="/settings/household" backLabel="Household" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Household", href: "/settings/household" }]} title={m.name} />
       <div className="mt-4 grid max-w-2xl gap-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid">
