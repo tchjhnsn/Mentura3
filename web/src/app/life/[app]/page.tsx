@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
+import { TILE_KIND, appOf, isLifeApp, kindOf, type Kind, type LifeAppId } from "@reflect/core/life";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
@@ -87,9 +87,11 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const back = `/life/${app}${kind ? `?k=${kind.id}` : ""}`;
   const removed = one(sp.removed);
   const today = new Date().toISOString().slice(0, 10);
+  // A part that is its own tile on the home screen (Food, Shelter, Income) carries the tile's name and goes back home.
+  const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
-      {app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
+      {tile && tile !== "work" ? <TileHeader tile={app} label={kind!.plural} /> : app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
       {removed ? (
         <form action={restoreLifeAction.bind(null, removed, back)} className="bg-muted mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>
