@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COLLECTIONS, itemKey } from "./collections.ts";
-import { EXEMPLARS, ROLES, TRAITS, traitsWanted } from "./formation.ts";
+import { EXEMPLARS, exemplarForPage, keptQualities, ROLES, suggestedQualities, TRAITS, traitsWanted } from "./formation.ts";
 import { recommend, rerank, type Signals } from "./recommend.ts";
 
 const none: Signals = { aims: [], admired: [], follows: [], kept: new Set(), finished: new Set(), liked: new Set(), disliked: new Set() };
@@ -16,6 +16,27 @@ describe("formation", () => {
   it("keeps only traits the admired person names", () => {
     const got = traitsWanted([{ exemplar: "andrew-carnegie", traits: ["focus", "frugality"] }]);
     expect(got.map((g) => g.trait.id)).toEqual(["focus"]);
+  });
+});
+
+describe("qualities", () => {
+  it("keeps each quality once, with everyone it was seen in", () => {
+    const got = keptQualities([{ exemplar: "benjamin-franklin", traits: ["frugality", "industry"] }, { exemplar: "andrew-carnegie", traits: ["focus"] }, { exemplar: "booker-t-washington", traits: ["perseverance"] }]);
+    expect(got.map((q) => q.trait.id)).toEqual(["frugality", "industry", "focus", "perseverance"]);
+    const both = keptQualities([{ exemplar: "booker-t-washington", traits: ["perseverance"] }, { exemplar: "booker-t-washington", traits: ["perseverance"] }]);
+    expect(both[0]!.from.length).toBe(1);
+  });
+  it("suggests what the authors of finished books name, less what is kept", () => {
+    const franklin = EXEMPLARS.find((e) => e.id === "benjamin-franklin")!;
+    const got = suggestedQualities([{ exemplar: "benjamin-franklin", traits: ["frugality"] }], new Set([franklin.book.id]));
+    expect(got.length).toBe(franklin.traits.length - 1);
+    expect(got.some((q) => q.trait.id === "frugality")).toBe(false);
+    expect(suggestedQualities([], new Set())).toEqual([]);
+  });
+  it("finds a person by their page name", () => {
+    expect(exemplarForPage("benjamin-franklin")?.id).toBe("benjamin-franklin");
+    expect(exemplarForPage("Andrew Carnegie")?.id).toBe("andrew-carnegie");
+    expect(exemplarForPage("Nobody")).toBeUndefined();
   });
 });
 

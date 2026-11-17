@@ -1,4 +1,5 @@
 import { ForYouRows } from "./for-you";
+import { Lives } from "./lives";
 import Link from "next/link";
 import { wayLesson } from "@reflect/core/way-lessons";
 import { WayLessonCard } from "../way-lesson";
@@ -180,7 +181,7 @@ export async function MediaBrowse({ userId, m, way, q }: { userId: string; m: Me
           {wayLesson(way) ? <WayLessonCard l={wayLesson(way)!} /> : null}
           <DiscoverRows userId={userId} way={way} />
         </div>
-      ) : <div className="space-y-10"><WayRows userId={userId} /><ForYouRows userId={userId} /></div>;
+      ) : <div className="space-y-10"><WayRows userId={userId} /><Lives /><ForYouRows userId={userId} /></div>;
     }
   } else {
     const lists = listFinds(m);

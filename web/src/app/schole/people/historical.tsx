@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { exemplarForPage } from "@reflect/core/formation";
+import { QualitiesInTheirWords } from "./qualities";
 import { COLLECTIONS, itemHref } from "@reflect/core/collections";
 import { articleSlug } from "@reflect/core/articles";
 import { cite, eraOf, hasWorks, peopleOf, peopleOfEra, personHref, relationsOf, startOf, tabLabel, tabsOf, type Tab } from "@reflect/core/historical-people";
@@ -367,6 +369,7 @@ export async function HistoricalPerson({ x, userId, asked }: { x: Person; userId
   const startWork = start.work ? workById(start.work) : undefined;
   const startHref = startWork ? `/schole/audiobooks/${startWork.audiobooks[0]}` : start.item ? itemHref(start.item) : null;
   const following = follows.some((f) => f.name.toLowerCase() === x.name.toLowerCase());
+  const exemplar = exemplarForPage(x.id) ?? exemplarForPage(x.name);
   return (
     <main className={PAGE}>
       <ThingHeader back="/schole/people/history" crumbs={[LEARN, { label: "Browse", href: "/schole/browse" }, { label: "People in history", href: "/schole/people/history" }]} title={x.name} />
@@ -394,6 +397,7 @@ export async function HistoricalPerson({ x, userId, asked }: { x: Person; userId
         <Tabs x={x} on={on} />
         <div className="space-y-8">
           {on === "works" ? <WorksTab x={x} have={have} /> : null}
+          {on === "works" && exemplar ? <QualitiesInTheirWords e={exemplar} userId={userId} back={`/schole/people/${x.id}`} /> : null}
           {on === "music" ? <MusicTab x={x} have={have} faces={faces} /> : null}
           {on === "theatre" ? <TheatreTab x={x} faces={faces} /> : null}
           {on === "people" ? <PeopleTab x={x} faces={faces} others={otherFaces} /> : null}

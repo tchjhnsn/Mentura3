@@ -5,7 +5,6 @@ import { PenLineIcon, StarIcon } from "lucide-react";
 import { kindOf, titleOf } from "@reflect/core/life";
 import { itemHref } from "@reflect/core/collections";
 import { recommend } from "@reflect/core/recommend";
-import { exemplarById, traitById } from "@reflect/core/formation";
 import { MEDIA } from "@reflect/core/ways";
 import { parseRef, refHref, stemsOf, tasksTouched } from "@reflect/core/work-browse";
 import { ThingHeader } from "@/components/headers";
@@ -15,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { lifeActs, lifeRecord } from "@/server/life-store";
-import { admiredOf } from "@/server/admired";
 import { signalsOf } from "@/server/recommend";
 import { listItems } from "@/server/ways-store";
 import { getWork } from "@/server/work-store";
@@ -30,11 +28,10 @@ import { Steps } from "../steps";
 export const metadata: Metadata = { title: "Work" };
 export const dynamic = "force-dynamic";
 const MEDIUM: Record<string, string> = Object.fromEntries(MEDIA.map((m) => [m.id, m.label]));
-const initials = (name: string) => name.split(/\s+/).filter((w) => /^[A-Z]/.test(w)).map((w) => w[0]).slice(0, 2).join("");
 
 /**
- * An aim (doc "Work design guide", Aim page): the aim and its one act, writing toward it; for a role, the people who
- * did it well and the traits of theirs being built; the path toward it; what was written toward it; and, at the foot,
+ * An aim (doc "Work design guide", Aim page): the aim and its one act, writing toward it; for a role, a link to its
+ * people in Scholē's Lives (doc "Qualities design guide"); the path toward it; what was written toward it; and, at the foot,
  * the facts about the work and letting it go. Other Work records open as any record does.
  */
 export default async function AimPage({ params }: { params: Promise<{ id: string }> }) {
@@ -51,13 +48,12 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
   const ref = typeof record.body.ref === "string" ? parseRef(record.body.ref) : null;
   const letGo = record.state === "let-go";
 
-  const [s, signals, acts, items, admiredAll] = await Promise.all([workspace(user.id), signalsOf(user.id), lifeActs(user.id, id), listItems(user.id), admiredOf(user.id)]);
+  const [s, signals, acts, items] = await Promise.all([workspace(user.id), signalsOf(user.id), lifeActs(user.id, id), listItems(user.id)]);
   const isMain = !letGo && mainOf(s.wanted)?.record.id === id;
   const entries = (await Promise.all(acts.filter((a) => a.kind === "wrote" && a.note).map(async (a) => ({ a, w: await getWork(user.id, a.note!) })))).filter((x) => x.w);
   const talked = acts.filter((a) => a.kind === "talked");
-  const admired = role ? admiredAll.filter((a) => role.exemplars.includes(a.exemplar)) : [];
-  // Only what serves this aim: its playlists, the traits of its people, and their books; not what the person's other marks suggest.
-  const learn = recommend({ ...signals, aims: [title], admired }, undefined, 40).filter((p) => /^(For |Where )/.test(p.reason)).slice(0, 5);
+  // Only what serves this aim: its playlists, the traits of its people, and not what the person's other marks suggest.
+  const learn = recommend({ ...signals, aims: [title] }, undefined, 40).filter((p) => /^(For |Where )/.test(p.reason)).slice(0, 5);
   const chosen = new Set(typeof record.body.learning === "string" && record.body.learning ? record.body.learning.split(",") : []);
   const offered = items.filter((i) => chosen.has(i.id) || i.status !== "done" || i.subjects.length);
   const learning = items.filter((i) => chosen.has(i.id) || i.status === "doing" || i.status === "want");
@@ -67,42 +63,9 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
   const states = (kind.states ?? []).filter((x) => x.id !== "let-go");
   const draws = typeof record.body.draws === "string" ? record.body.draws : "";
 
-  const people = role || admired.length ? (
-    <section aria-labelledby="people" className="grid content-start gap-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="people" className="text-lg font-semibold tracking-tight">People and traits</h2>
-        <Link href={`/life/work/people${role ? `#${role.id}` : ""}`} className="text-muted-foreground hover:text-foreground text-sm">{admired.length ? "Change" : "Choose"}</Link>
-      </div>
-      {admired.length ? (
-        <>
-          <ul className="flex flex-wrap gap-4">
-            {admired.map((a) => {
-              const e = exemplarById(a.exemplar)!;
-              return (
-                <li key={a.exemplar}>
-                  <Link href={`/life/work/people/${a.exemplar}`} className="group grid w-20 justify-items-center gap-1 text-center">
-                    <span aria-hidden className="bg-muted group-hover:bg-accent flex size-14 items-center justify-center rounded-full border text-sm font-semibold">{initials(e.name)}</span>
-                    <span className="text-xs leading-tight">{e.name}</span>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-          <ul className="grid gap-3">
-            {admired.flatMap((a) => {
-              const e = exemplarById(a.exemplar)!;
-              return e.traits.filter((t) => a.traits.includes(t.trait)).map((t) => (
-                <li key={`${a.exemplar}:${t.trait}`} className="grid gap-0.5">
-                  <span className="text-sm font-medium">{traitById(t.trait)!.name}</span>
-                  <q className="text-muted-foreground text-sm">{t.quote}</q>
-                  <span className="text-muted-foreground text-xs">{e.name}, {e.book.title}, {t.where}</span>
-                </li>
-              ));
-            })}
-          </ul>
-        </>
-      ) : <p className="text-muted-foreground text-sm">{role ? <>Choose the {role.plural.toLowerCase()} you want to be like, and the traits of theirs to build.</> : null}</p>}
-    </section>
+  // A role is a bundle of qualities: its people and their qualities are in Scholē's Lives (doc "Qualities design guide").
+  const people = role ? (
+    <p className="text-sm"><Link href={`/schole/browse#lives-${role.id}`} className="text-muted-foreground hover:text-foreground underline underline-offset-2">{role.plural} in Scholē, and the qualities they name</Link></p>
   ) : null;
 
   return (
@@ -137,13 +100,13 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
               </div>
             ) : null}
             {draws ? <p className="text-muted-foreground max-w-2xl text-sm">{draws}</p> : null}
+            {people}
           </div>
           {letGo ? null : <form action={writeTowardAction.bind(null, id)}><Button type="submit"><PenLineIcon />Write toward it</Button></form>}
         </div>
 
-        <div className={cn("grid gap-8", people && "lg:grid-cols-[minmax(0,1fr)_20rem]")}>
+        <div className="grid max-w-4xl gap-8">
           <div className="grid content-start gap-8">
-            {people ? <div className="lg:hidden">{people}</div> : null}
 
             <section aria-labelledby="path" className="grid gap-3">
               <h2 id="path" className="text-lg font-semibold tracking-tight">The path</h2>
@@ -165,7 +128,6 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
                   </form>
                 )}
               </div>
-              {!role && !admired.length ? <p className="text-sm"><Link href="/life/work/people" className="text-muted-foreground hover:text-foreground underline underline-offset-2">Add people who did something like it</Link></p> : null}
             </section>
 
             <section aria-labelledby="entries" className="grid gap-2">
@@ -177,7 +139,6 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
               ) : <p className="text-muted-foreground text-sm">Nothing written yet.</p>}
             </section>
           </div>
-          {people ? <aside className="hidden lg:block">{people}</aside> : null}
         </div>
 
         <div className="grid gap-3 border-t pt-4">
