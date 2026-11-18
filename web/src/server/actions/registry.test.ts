@@ -3,6 +3,7 @@ import { TIERS } from "@reflect/core/actions";
 import { ACTIONS, actionById, actionsOn } from "./index";
 import { reflectServer } from "../mcp-tools";
 import { chatTools } from "@/app/api/chat/tools";
+import { META_TOOLS } from "@/app/api/chat/act";
 import type { LearnView } from "../learn-store";
 
 // The tools each surface offered before the registry (2026-11-17), since step 2 the change log's two, and since step 4
@@ -10,7 +11,8 @@ import type { LearnView } from "../learn-store";
 const PAGE = [
   "life", "quick_log", "add_record", "change_record", "set_record_state", "set_record_field", "log_act", "remove_record", "restore_record", "change_event", "remove_event", "restore_event", "add_meal", "plan_meal", "unplan_meal", "plan_week", "start_meal_plan", "add_to_basket", "keep_recipe", "set_receipt", "start_work", "save_work", "file_work", "belief_from_work", "send_to_learn", "mark_belief", "place_subject", "place_belief", "compile_edition", "toggle_quality", "take_off_quality", "write_quality", "write_toward", "main_aim", "adventure_to_calendar", "keep_library_book", "keep_claim", "set_stance", "take_up_item", "change_item", "remove_item", "restore_item", "set_book_way", "keep_excerpt", "revise_excerpt", "remove_excerpt", "set_finished", "order_want", "set_reading_goal", "set_unit_done", "add_item_note", "remove_item_note", "add_session", "remove_session", "add_item_subjects", "remove_item_subject", "set_reaction", "favorite_episode", "follow_list", "keep_reason", "highlights_to_journal", "follow_topic", "follow_person", "make_playlist", "save_playlist", "log_practice", "learned_piece",
 ];
-const CHAT_TOOLS = [
+// The chat offers its own tools directly and reaches every other chat action through find_actions and act.
+const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
   "show_shelves", "show_ways", "find_item", "quote_transcript", "show_claims", "search_library", "browse_category", "quote_book", "propose_claim",
   "recent_changes", "undo_change", "pending_changes", "start_plan", "plans",
@@ -18,10 +20,8 @@ const CHAT_TOOLS = [
   "excerpt", "draft_course", "courses",
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
-  // Page acts the chat did not offer before step 4, then the page acts themselves, in registry order.
-  "set_book_status", "add_item",
-  ...PAGE,
 ];
+const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...PAGE];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
@@ -53,9 +53,14 @@ describe("the action registry", () => {
 
   it("builds the chat's tools from registry entries, exactly today's set", () => {
     const names = chatNames();
-    for (const n of names) expect(actionById(n)?.on).toContain("chat");
-    expect(names).toEqual(CHAT_TOOLS);
+    for (const n of names.filter((n) => !META_TOOLS.includes(n as (typeof META_TOOLS)[number]))) expect(actionById(n)?.on).toContain("chat");
+    expect(names).toEqual([...CHAT_DIRECT, ...META_TOOLS]);
     expect(actionsOn("chat").map((a) => a.id).sort()).toEqual([...CHAT_TOOLS].sort());
+  });
+
+  it("reaches every chat action without its own tool through act", () => {
+    const act = chatTools({ userId: "u", view, claims: [], items: [], show: () => undefined }).act as unknown as { inputSchema: { shape: { action: { options: string[] } } } };
+    expect(act.inputSchema.shape.action.options).toEqual(CHAT_TOOLS.filter((n) => !CHAT_DIRECT.includes(n)));
   });
 
   it("registers MCP's tools from registry entries, exactly today's set and order", () => {

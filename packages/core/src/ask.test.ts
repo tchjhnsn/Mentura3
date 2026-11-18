@@ -20,6 +20,9 @@ describe("ask", () => {
     expect(ASK_SYSTEM).toContain("never answer from memory");
     expect(ASK_SYSTEM).toContain("never say you recorded");
     expect(ASK_SYSTEM).toContain("add_event(title, day");
+    expect(ASK_SYSTEM).toContain("Above all you are someone to talk with");
+    expect(ASK_SYSTEM).toContain("never end your turn with only a card");
+    expect(ASK_SYSTEM).toContain("find_actions(query) then act(action, input)");
     expect(learnSummary({ books: [{ title: "Romans", status: "reading" }], subjects: ["The Bible"], claims: [{ text: "Marriage is a covenant", stance: "belief" }] })).toBe(
       "LEARN\nBooks: Romans (reading)\nSubjects: The Bible\nClaims: Marriage is a covenant (belief)",
     );
