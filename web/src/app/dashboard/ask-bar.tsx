@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Answer, CARRY_KEY, MODEL_KEY } from "@/app/chat/chat";
 import { wordsOf } from "@/app/chat/message-tools";
+import { MicButton } from "./mic-button";
 
 const today = () => {
   const d = new Date();
@@ -82,6 +83,7 @@ export function AskBar({ suggestions }: { suggestions: string[] }) {
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
       <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="bg-card focus-within:ring-ring/50 flex items-center gap-2 rounded-2xl border p-2 pl-4 shadow-xs focus-within:ring-[3px]">
         <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder={messages.length ? "Ask a follow-up" : "Ask Reflect or tell it what to do"} aria-label="Ask Reflect" aria-keyshortcuts="Meta+K Control+K /" className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent py-2 text-base outline-none" />
+        <MicButton onText={setQ} />
         {mac !== null && !q && !busy ? (
           <kbd className="text-muted-foreground bg-muted hidden shrink-0 rounded-md border px-1.5 py-0.5 font-sans text-xs lg:inline-block" aria-hidden="true">{mac ? "⌘K" : "Ctrl K"}</kbd>
         ) : null}
