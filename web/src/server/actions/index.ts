@@ -29,6 +29,8 @@ import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
 import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
+import { dashboardAction, setDashboardCardAction } from "./dashboard";
+import { dashboardToday, setMorningBriefAction } from "./dashboard-today";
 import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
@@ -77,6 +79,7 @@ export const ACTIONS: readonly Action[] = [
   socialsAction, addSocialAction, removeSocialAction, confirmSocialAction,
   eventsAction, eventAction,
   importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
+  dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
   ...PAGE_ACTIONS,
 ];
 

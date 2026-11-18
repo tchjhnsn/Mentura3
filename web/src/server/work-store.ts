@@ -48,6 +48,17 @@ export async function listWorks(userId: string): Promise<Work[]> {
   return rows.map((r) => toWork(userId, r));
 }
 
+/** The work saved last, with only its title opened (the dashboard's Journal card shows no text beyond the title). */
+export async function lastWork(userId: string): Promise<{ id: string; kind: WorkKind; title: string; savedAt: string } | null> {
+  const r = (await db().query(
+    `SELECT w.id, w.kind, v.title_ct, v.created_at AS saved_at FROM work w
+       JOIN LATERAL (SELECT title_ct, created_at FROM work_version WHERE work_id = w.id ORDER BY seq DESC LIMIT 1) v ON true
+     WHERE w.user_id = $1 ORDER BY v.created_at DESC LIMIT 1`,
+    [userId],
+  )).rows[0] as { id: string; kind: string; title_ct: string; saved_at: Date } | undefined;
+  return r ? { id: r.id, kind: isWorkKind(r.kind) ? r.kind : "entry", title: open(userId, r.title_ct), savedAt: r.saved_at.toISOString() } : null;
+}
+
 export async function getWork(userId: string, id: string): Promise<Work | null> {
   if (!isId(id)) return null;
   const r = (await db().query(`${LATEST} WHERE w.user_id = $1 AND w.id = $2`, [userId, id])).rows[0] as Row | undefined;

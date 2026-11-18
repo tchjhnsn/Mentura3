@@ -161,7 +161,7 @@ describe("running an action through the change log", () => {
     expect(ACTIONS.filter((a) => a.undo).map((a) => a.id)).toEqual([
       "plan_adventure", "add_event", "add_events", "set_book_status", "add_item", "remove_home_card", "check_home_item",
       // The page acts (Ask Reflect plan, step 4) whose change can be put back.
-      "write_venture_file", "connect_with", "set_friend_kind", "set_profile", "set_section_audience", "add_social", "remove_social", "confirm_social", "import_linkedin", "add_record", "change_record", "set_record_state", "set_record_field", "remove_record", "restore_record", "change_event", "remove_event", "restore_event",
+      "write_venture_file", "connect_with", "set_friend_kind", "set_profile", "set_section_audience", "add_social", "remove_social", "confirm_social", "import_linkedin", "set_dashboard_card", "set_morning_brief", "add_record", "change_record", "set_record_state", "set_record_field", "remove_record", "restore_record", "change_event", "remove_event", "restore_event",
       "add_meal", "plan_meal", "unplan_meal", "plan_week", "start_meal_plan", "add_to_basket", "keep_recipe", "set_receipt", "save_work", "file_work",
       "toggle_quality", "take_off_quality", "main_aim", "adventure_to_calendar", "start_naive_venture", "ask_to_build", "answer_build_request", "going_to_event", "host_event", "set_event_part", "set_handle", "set_name", "set_default_audience", "take_up_item", "remove_item", "restore_item", "keep_excerpt", "order_want",
       "set_reading_goal", "set_unit_done", "add_item_note", "set_reaction", "favorite_episode", "follow_list", "follow_topic", "follow_person", "save_playlist", "learned_piece",

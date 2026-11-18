@@ -86,3 +86,10 @@ describe("life apps", () => {
     expect(acts.map(actText)).toEqual(["Kept Sam in Friends", "Sam: Close friend", "Spent time with Sam"]);
   });
 });
+
+describe("home cards", () => {
+  it("are a kind of the home app, where the home cards store keeps them", () => {
+    expect(kindOf("home", "card")?.hidden).toBe(true);
+    expect(kindOf("legacy", "card")).toBeNull();
+  });
+});
