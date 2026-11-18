@@ -46,7 +46,7 @@ export default async function SettingsPage() {
         <Group title="Your life" id="life">
           <Row href="/settings/household" icon={<HomeIcon />} label="Household" value={h ? `${ARRANGEMENT_LABEL[arrangement(h.members)]}, ${h.members.length}` : "Not set up"} />
           <Row href="/settings/place" icon={<MapPinIcon />} label="Where you live" value={place?.county ? `${place.county}, ${place.state}` : "Not set"} />
-          <Row href="/settings/connections" icon={<PlugIcon />} label="Connections" value={linked ? `${linked} connected` : "None yet"} />
+          <Row href="/marketplace?view=yours" icon={<PlugIcon />} label="Connections and skills" value={linked ? `${linked} connected` : "None yet"} />
         </Group>
 
         <Group title="Look" id="look">

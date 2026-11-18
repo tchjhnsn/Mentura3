@@ -4,7 +4,7 @@
 // calendars, Instacart) stay in `connectors.ts`. This file is the catalog and the pure rules; signing in and calling
 // tools are on the server (web/src/server/mcp-connections.ts).
 
-export type MarketCategory = "build" | "email" | "work" | "money" | "design" | "data";
+export type MarketCategory = "build" | "email" | "work" | "money" | "design" | "data" | "life";
 
 export const MARKET_CATEGORIES: readonly { id: MarketCategory; label: string }[] = [
   { id: "build", label: "Build and host" },
@@ -13,6 +13,7 @@ export const MARKET_CATEGORIES: readonly { id: MarketCategory; label: string }[]
   { id: "money", label: "Money" },
   { id: "design", label: "Design" },
   { id: "data", label: "Data" },
+  { id: "life", label: "Home and life" },
 ];
 
 /**
@@ -34,7 +35,7 @@ export type MarketConnector = {
   auth: MarketAuth;
   /** For "oauth-app": the variables holding Reflect's client id and secret for this server, by name. */
   clientEnv?: readonly [string, string];
-  /** One line on what connecting lets Reflect do. */
+  /** One line on what you can do with it, verb first. */
   line: string;
   /** What Reflect does with it, in the person's words. */
   does: readonly string[];
@@ -52,27 +53,27 @@ export const USE_LABEL: Record<MarketUse, string> = {
 export const MARKET: readonly MarketConnector[] = [
   {
     id: "github", name: "GitHub", by: "GitHub", category: "build", url: "https://api.githubcopilot.com/mcp/", auth: "oauth-app", clientEnv: ["GITHUB_MCP_CLIENT_ID", "GITHUB_MCP_CLIENT_SECRET"],
-    line: "Your repositories, issues and pull requests.",
+    line: "Push your site, read issues and open pull requests.",
     does: ["Push your site to a repository of yours", "Read and open issues and pull requests when you ask"],
     uses: ["site-push"], docs: "https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp-in-your-ide/set-up-the-github-mcp-server",
   },
   {
     id: "vercel", name: "Vercel", by: "Vercel", category: "build", url: "https://mcp.vercel.com", auth: "oauth",
-    line: "Your Vercel projects, deployments and domains.",
+    line: "Deploy sites and read builds, logs and domains.",
     does: ["Deploy your exported site", "Check a domain and read your deployments when you ask"],
     uses: ["site-deploy"], docs: "https://vercel.com/docs/mcp/vercel-mcp",
   },
   {
     id: "cloudflare", name: "Cloudflare", by: "Cloudflare", category: "build", url: "https://mcp.cloudflare.com/mcp", auth: "oauth",
-    line: "Your Cloudflare account: DNS, Workers and more.", does: ["Add the DNS record for your own domain when you ask"], docs: "https://developers.cloudflare.com/agents/model-context-protocol/",
+    line: "Manage DNS, Workers and your domains.", does: ["Add the DNS record for your own domain when you ask"], docs: "https://developers.cloudflare.com/agents/model-context-protocol/",
   },
   {
     id: "supabase", name: "Supabase", by: "Supabase", category: "data", url: "https://mcp.supabase.com/mcp", auth: "oauth",
-    line: "Your Supabase projects and databases.", does: ["Read your projects and tables when you ask"], docs: "https://supabase.com/docs/guides/getting-started/mcp",
+    line: "Query your projects, tables and logs.", does: ["Read your projects and tables when you ask"], docs: "https://supabase.com/docs/guides/getting-started/mcp",
   },
   {
     id: "neon", name: "Neon", by: "Neon", category: "data", url: "https://mcp.neon.tech/mcp", auth: "oauth",
-    line: "Your Neon Postgres projects.", does: ["Read your projects and run queries when you ask"], docs: "https://neon.com/docs/ai/neon-mcp-server",
+    line: "Run queries and manage your Postgres projects.", does: ["Read your projects and run queries when you ask"], docs: "https://neon.com/docs/ai/neon-mcp-server",
   },
   {
     id: "resend", name: "Resend", by: "Resend", category: "email", url: "https://mcp.resend.com/mcp", auth: "oauth",
@@ -81,36 +82,36 @@ export const MARKET: readonly MarketConnector[] = [
   },
   {
     id: "gmail", name: "Gmail", by: "Google", category: "email", url: "https://gmailmcp.googleapis.com/mcp/v1", auth: "oauth-app", clientEnv: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-    line: "Your Gmail. In preview at Google.", does: ["Send your site's emails from your Gmail", "Draft an email when you ask"],
+    line: "Send, draft and search your email. In preview at Google.", does: ["Send your site's emails from your Gmail", "Draft an email when you ask"],
     uses: ["site-email"], docs: "https://developers.google.com/workspace/gmail",
   },
   {
     id: "notion", name: "Notion", by: "Notion", category: "work", url: "https://mcp.notion.com/mcp", auth: "oauth",
-    line: "Your Notion pages and databases.", does: ["Read and add pages when you ask"], docs: "https://developers.notion.com/docs/mcp",
+    line: "Search, read and add pages and databases.", does: ["Read and add pages when you ask"], docs: "https://developers.notion.com/docs/mcp",
   },
   {
     id: "linear", name: "Linear", by: "Linear", category: "work", url: "https://mcp.linear.app/mcp", auth: "oauth",
-    line: "Your Linear issues and projects.", does: ["Read and open issues when you ask"], docs: "https://linear.app/docs/mcp",
+    line: "Read, open and update issues and projects.", does: ["Read and open issues when you ask"], docs: "https://linear.app/docs/mcp",
   },
   {
     id: "sentry", name: "Sentry", by: "Sentry", category: "build", url: "https://mcp.sentry.dev/mcp", auth: "oauth",
-    line: "Errors from your apps.", does: ["Read your issues and errors when you ask"], docs: "https://docs.sentry.io/product/sentry-mcp/",
+    line: "Find and explain errors in your apps.", does: ["Read your issues and errors when you ask"], docs: "https://docs.sentry.io/product/sentry-mcp/",
   },
   {
     id: "stripe", name: "Stripe", by: "Stripe", category: "money", url: "https://mcp.stripe.com", auth: "oauth",
-    line: "Your Stripe account: customers, payments, links.", does: ["Read your balance and payments when you ask", "Make a payment link when you tap Send"], docs: "https://docs.stripe.com/mcp",
+    line: "Read payments and balance, and make payment links.", does: ["Read your balance and payments when you ask", "Make a payment link when you tap Send"], docs: "https://docs.stripe.com/mcp",
   },
   {
     id: "canva", name: "Canva", by: "Canva", category: "design", url: "https://mcp.canva.com/mcp", auth: "oauth",
-    line: "Your Canva designs.", does: ["Find and make designs when you ask"], docs: "https://www.canva.dev/docs/connect/canva-mcp-server-setup/",
+    line: "Find, create and export designs.", does: ["Find and make designs when you ask"], docs: "https://www.canva.dev/docs/connect/canva-mcp-server-setup/",
   },
   {
     id: "figma", name: "Figma", by: "Figma", category: "design", url: "https://mcp.figma.com/mcp", auth: "oauth",
-    line: "Your Figma files.", does: ["Read a design when you ask"], docs: "https://help.figma.com/hc/en-us/articles/32132100833559",
+    line: "Read designs and turn them into code.", does: ["Read a design when you ask"], docs: "https://help.figma.com/hc/en-us/articles/32132100833559",
   },
   {
     id: "huggingface", name: "Hugging Face", by: "Hugging Face", category: "data", url: "https://huggingface.co/mcp", auth: "oauth",
-    line: "Models, datasets and Spaces.", does: ["Search models and papers when you ask"], docs: "https://huggingface.co/settings/mcp",
+    line: "Search models, datasets, papers and Spaces.", does: ["Search models and papers when you ask"], docs: "https://huggingface.co/settings/mcp",
   },
 ];
 

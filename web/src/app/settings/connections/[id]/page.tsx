@@ -52,7 +52,7 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
   const synced = twoWay && held ? { ...held, calendar: twoWay.calendar, disconnect: twoWay.disconnect } : null;
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back="/settings/connections" backLabel="Connections" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Connections", href: "/settings/connections" }]} title={c.name} />
+      <ThingHeader search={false} back="/marketplace" backLabel="Marketplace" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Marketplace", href: "/marketplace" }]} title={c.name} />
       <div className={COLUMN}>
         <div className="grid justify-items-center gap-3 text-center">
           <Initials name={c.by.split(" ")[0]!} size="size-16 text-xl" />
