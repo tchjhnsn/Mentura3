@@ -37,3 +37,25 @@ describe("the connector marketplace", () => {
     expect(emailArgs({ name: "x", inputSchema: { properties: { recipient: {}, title: {}, body: {} } } }, { to: "a@b.co", subject: "S", text: "T" })).toEqual({ recipient: "a@b.co", title: "S", body: "T" });
   });
 });
+
+describe("plugins", () => {
+  it("bundles catalog connectors with a skill", async () => {
+    const { PLUGINS, marketById: byId } = await import("./marketplace");
+    expect(new Set(PLUGINS.map((p) => p.id)).size).toBe(PLUGINS.length);
+    for (const p of PLUGINS) {
+      expect(p.connectors.length).toBeGreaterThan(0);
+      for (const c of p.connectors) expect(byId(c), `${p.id} names ${c}`).toBeTruthy();
+      expect(p.skill.length).toBeGreaterThan(80);
+    }
+  });
+  it("works once any connector is connected, and says so in the skills block", async () => {
+    const { pluginById, pluginReady, pluginSkills } = await import("./marketplace");
+    const p = pluginById("site-launch")!;
+    expect(pluginReady(p, new Set(["cloudflare"]))).toEqual({ connected: ["cloudflare"], works: true });
+    expect(pluginReady(p, new Set())).toEqual({ connected: [], works: false });
+    expect(pluginSkills([], new Set())).toBe("");
+    const text = pluginSkills([p], new Set());
+    expect(text).toContain("Launch your site (not working yet: connect Vercel or Cloudflare at /marketplace)");
+    expect(pluginSkills([p], new Set(["vercel"]))).toContain("- Launch your site: When the person");
+  });
+});

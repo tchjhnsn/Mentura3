@@ -217,6 +217,8 @@ const EXCLUDED: Record<string, string> = {
   "settings/site/actions.ts#pushSiteAction": "Pushes the person's site to their own GitHub through their GitHub connector, an outside service; it stays a tap on the page.",
   "settings/site/actions.ts#linkRepoAction": "Reads the person's own repository through their GitHub connector to link their self-hosted site; a tap on the Your own site on GitHub page.",
   "settings/site/actions.ts#unlinkRepoAction": "Stops committing posts to the person's linked repository; a setting tapped on the Your own site on GitHub page.",
+  "marketplace/actions.ts#addPluginAction": "Adds a plugin, whose skill then shapes every answer of Ask Reflect; the person chooses it on the plugin's page, never a model.",
+  "marketplace/actions.ts#removePluginAction": "Removes a plugin the person added; a tap on the plugin's page, beside Add, so a model never changes its own instructions.",
   "settings/site/actions.ts#deploySiteAction": "Deploys the person's site to their own Vercel through their Vercel connector, an outside service; it stays a tap on the page.",
   "journal/w/[id]/publish-actions.ts#publishWorkAction": PUBLISH,
   "journal/w/[id]/publish-actions.ts#unpublishWorkAction": PUBLISH,

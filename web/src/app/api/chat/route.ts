@@ -6,6 +6,7 @@
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, stepCountIs, streamText, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { ASK_SYSTEM, learnSummary } from "@reflect/core/ask";
+import { pluginSystem } from "@/server/plugins";
 import { acceptLocalDate, clean } from "@reflect/core/journal";
 import { chatPart, isChatId } from "@reflect/core/chat-journal";
 import { isoDate } from "@reflect/core/person";
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
   if (last?.role === "user") await keep("you", messageText(last));
   if (crisis || !model) return crisisResponse((text) => keep("reflect", text));
 
-  const [view, claims, items] = await Promise.all([learnView(user.id), listClaims(user.id).catch((): ClaimOut[] | null => null), listItems(user.id).catch((): LearnItem[] => [])]);
+  const [view, claims, items, plugins] = await Promise.all([learnView(user.id), listClaims(user.id).catch((): ClaimOut[] | null => null), listItems(user.id).catch((): LearnItem[] => []), pluginSystem(user.id).catch(() => "")]);
   const summary = learnSummary({
     books: view.books.map((b) => ({ title: b.title, status: b.status })),
     subjects: [...new Set(view.books.flatMap((b) => b.subjects.map((s) => s.name)).concat(view.known.map((s) => s.name)))],
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
       const cited = new Set<string>();
       const result = streamText({
         model,
-        system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}`,
+        system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}${plugins ? `\n\n${plugins}` : ""}`,
         messages: await convertToModelMessages(messages),
         stopWhen: stepCountIs(MAX_STEPS),
         prepareStep: ({ stepNumber }) => (stepNumber >= MAX_STEPS - 1 ? { toolChoice: "none" } : undefined),
