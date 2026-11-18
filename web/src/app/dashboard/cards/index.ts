@@ -12,6 +12,9 @@ import { ScholeCard } from "./schole";
 import { JournalCard } from "./journal";
 import { FoodCard } from "./food";
 import { SpendingCard } from "./spending";
+import { HealthCard } from "./health";
+import { WeatherCard } from "./weather";
+import { PeopleToSeeCard } from "./people-to-see";
 import { WeekCard } from "./week";
 import { ApprovalsCard } from "./approvals";
 
@@ -31,8 +34,11 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "venture", title: "Venture", column: "main", Card: VentureCard },
   { id: "week", title: "This week", column: "main", Card: WeekCard },
   { id: "money", title: "Money", column: "side", skeleton: "stat", Card: MoneyCard },
-  { id: "events", title: "Events", column: "side", Card: EventsCard },
   { id: "spending", title: "Spending", column: "side", Card: SpendingCard },
   { id: "food", title: "Food", column: "side", Card: FoodCard },
+  { id: "events", title: "Events for you", column: "side", Card: EventsCard },
   { id: "chats", title: "Recent chats", column: "side", Card: ChatsCard },
+  { id: "weather", title: "Weather and when to leave", column: "side", Card: WeatherCard },
+  { id: "people-to-see", title: "People to see", column: "main", Card: PeopleToSeeCard },
+  { id: "health", title: "Health and fitness", column: "side", Card: HealthCard },
 ];
