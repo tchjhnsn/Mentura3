@@ -5,6 +5,7 @@ import { childrenOf, friendsSpace, kinSpace, legacySpace, mateSpace, polisSpace 
 import { lifeRecords, type LifeAct, type LifeRecord } from "@/server/life-store";
 import { householdOf } from "@/server/household-store";
 import { threadsOf } from "@/server/messages-store";
+import { incomingBuildRequests } from "@/server/build-store";
 import { Bars, DashCard, DashHead, Face, Hero, Ring } from "@/components/dash";
 import { QuickLog } from "@/components/quick-log";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { logFitnessAction, logFriendAction, logHealthAction, logTimeAction } from "./dash-actions";
 import { Upcoming } from "./upcoming";
 import { ConnectRequests } from "./connect-requests";
+import { BuildRequests } from "./build-people";
 
 const DAY = 86400_000;
 const dayBefore = (today: string, n: number) => new Date(Date.parse(`${today}T00:00:00Z`) - n * DAY).toISOString().slice(0, 10);
@@ -499,6 +501,8 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
   const month = dayBefore(today, 29);
   const time = live.reduce((n, r) => n + minutesSince(acts, r.id, month), 0);
   const name = (r: LifeRecord) => String(r.body.name || "A venture");
+  // Requests to build (Events and connections, 2026-11-18): only when someone asked.
+  const requests = await incomingBuildRequests(userId);
   return (
     <div className="grid grid-cols-1 gap-8">
       <Hero>
@@ -521,6 +525,12 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
           </div>
         ) : null}
       </Hero>
+      {requests.length ? (
+        <section className="grid gap-3">
+          <DashHead title="Asked to build" />
+          <BuildRequests requests={requests} />
+        </section>
+      ) : null}
       {live.length ? (
         <section className="grid gap-3">
           <DashHead title="Your ventures"><Link href="/life/ventures?k=venture" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>
