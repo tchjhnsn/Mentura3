@@ -14,6 +14,13 @@ export async function ventureFiles(userId: string, ventureId: string): Promise<V
   return r.rows.map((x) => ({ path: x.path as string, body: typeof x.body === "string" ? open(userId, x.body) : "" }));
 }
 
+/** How many files a venture keeps, without opening them. */
+export async function ventureFileCount(userId: string, ventureId: string): Promise<number> {
+  if (!UUID.test(ventureId)) return 0;
+  const r = await db().query("SELECT count(*)::int AS n FROM venture_file WHERE user_id = $1 AND venture_id = $2", [userId, ventureId]);
+  return (r.rows[0]?.n as number | undefined) ?? 0;
+}
+
 /** Keeps these files, replacing any already kept at the same paths, in one transaction. */
 export async function putVentureFiles(userId: string, ventureId: string, files: readonly VentureFile[]): Promise<void> {
   if (!UUID.test(ventureId)) throw new Error("No such venture.");
