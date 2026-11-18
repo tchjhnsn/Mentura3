@@ -15,6 +15,7 @@ import { requireUser } from "@/server/session";
 import { austinLocal, canPublish, DRAFT_TITLE, eventById, isEventPart, isGoing, isPast, knownGoing, personOf, tagLine, type EventPart } from "@/server/events-store";
 import { cancelEventAction, goingAction, publishEventAction, setPartAction } from "../actions";
 import { Avatar, Cover, timeSpan } from "../parts";
+import { CheckInButton } from "../check-in-button";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -123,8 +124,9 @@ export default async function EventPage({ params, searchParams }: { params: Prom
               canPublish(e) ? <form action={publishEventAction.bind(null, id)} className="shrink-0"><Button type="submit">Publish</Button></form>
                 : <Button disabled className="shrink-0" title="Name it and pick its start first">Publish</Button>
             ) : null}
-            {/* Check in (events-connect) */}
           </div>
+          {/* Check in: shows only while a hosted event runs, to someone who said Going or the host (events-connect). */}
+          <div className="flex empty:hidden"><CheckInButton eventId={e.id} /></div>
           {whenOf(e) ? <p className="flex items-center gap-2"><CalendarIcon className="text-muted-foreground size-4 shrink-0" />{whenOf(e)}</p> : null}
           {where ? <p className="flex items-start gap-2"><MapPinIcon className="text-muted-foreground mt-1 size-4 shrink-0" /><span className="min-w-0">{where}{e.address ? <> · <a href={mapHref(e.address)} target="_blank" rel="noreferrer" className="text-muted-foreground text-sm underline underline-offset-2">Map</a></> : null}</span></p> : null}
           {tagLine(e) ? <p className="text-muted-foreground text-sm">{tagLine(e)}</p> : null}
