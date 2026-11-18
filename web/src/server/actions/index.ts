@@ -32,6 +32,7 @@ import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./acco
 import { dashboardAction, setDashboardCardAction } from "./dashboard";
 import { dashboardToday, setMorningBriefAction } from "./dashboard-today";
 import { setSiteTemplateAction, siteAction } from "./site";
+import { connectorActAction, connectorReadAction, connectorsAction } from "./marketplace";
 import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
@@ -82,6 +83,7 @@ export const ACTIONS: readonly Action[] = [
   importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
   siteAction, setSiteTemplateAction,
+  connectorsAction, connectorReadAction, connectorActAction,
   ...PAGE_ACTIONS,
 ];
 

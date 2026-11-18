@@ -13,12 +13,14 @@ import { publishWorkAction, republishAction, unpublishWorkAction, type Published
  * The Publish sheet (doc "Personal site and blog design guide", page 3): a preview of the post, its address on the
  * site, and one filled button. A published work shows Update post and Unpublish. The journal itself never leaves.
  */
-export function PublishButton({ workId, siteBase, initial, read, save }: {
+export function PublishButton({ workId, siteBase, initial, read, save, mail }: {
   workId: string;
   siteBase: string;
   initial: Published | null;
   read: () => { title: string; body: string };
   save: () => Promise<void>;
+  /** How the site sends email (the person's email connector, or Reflect), and how many confirmed subscribers it has. */
+  mail: { via: string | null; subscribers: number };
 }) {
   const [open, setOpen] = useState(false);
   const [post, setPost] = useState<Published | null>(initial);
@@ -29,6 +31,9 @@ export function PublishButton({ workId, siteBase, initial, read, save }: {
   const [error, setError] = useState<string | null>(null);
   const [undo, setUndo] = useState<{ postId: string; post: Published } | null>(null);
   const [pending, start] = useTransition();
+  const [email, setEmail] = useState(false);
+  const [emailed, setEmailed] = useState<number | null>(null);
+  const canMail = !!mail.via && mail.subscribers > 0;
 
   const show = () => {
     const d = read();
@@ -43,9 +48,11 @@ export function PublishButton({ workId, siteBase, initial, read, save }: {
     start(async () => {
       setError(null);
       await save();
-      const r = await publishWorkAction(workId, edited || post ? slug || null : null);
+      const r = await publishWorkAction(workId, edited || post ? slug || null : null, canMail && email);
       if ("error" in r) return setError(r.error);
       setPost(r);
+      setEmailed(canMail && email ? (r.emailed ?? 0) : null);
+      setEmail(false);
       setSlug(r.slug);
     });
   const unpublish = () =>
@@ -93,15 +100,19 @@ export function PublishButton({ workId, siteBase, initial, read, save }: {
               />
             </span>
           </label>
-          <div className="flex items-center justify-between gap-3 opacity-60" aria-disabled>
+          <div className={cn("flex items-center justify-between gap-3", !canMail && "opacity-60")}>
             <span className="grid">
               <span className="text-sm font-medium">Email it to subscribers</span>
-              <span className="text-muted-foreground text-xs">Sending email is not set up yet.</span>
+              <span className="text-muted-foreground text-xs">
+                {!mail.via ? <>Connect an email account in the <Link href="/marketplace?c=email" className="underline underline-offset-2">marketplace</Link> first.</> : mail.subscribers ? `${mail.subscribers} ${mail.subscribers === 1 ? "subscriber" : "subscribers"}, sent through ${mail.via}.` : "No subscribers yet."}
+              </span>
             </span>
-            <span role="switch" aria-checked={false} aria-label="Email it to subscribers" className="bg-muted inline-flex h-6 w-10 shrink-0 items-center rounded-full border p-0.5">
+            <button type="button" role="switch" aria-checked={email} aria-label="Email it to subscribers" disabled={!canMail} onClick={() => setEmail((v) => !v)}
+              className={cn("inline-flex h-6 w-10 shrink-0 items-center rounded-full border p-0.5 transition", email ? "bg-primary justify-end" : "bg-muted")}>
               <span className="bg-background size-4 rounded-full shadow" />
-            </span>
+            </button>
           </div>
+          {emailed !== null ? <p className="text-sm" role="status">Emailed to {emailed} {emailed === 1 ? "subscriber" : "subscribers"}.</p> : null}
           {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
           {undo ? (
             <p className="text-sm" role="status">

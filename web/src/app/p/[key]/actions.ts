@@ -10,7 +10,7 @@ import { profileHref, setSectionAudienceAction } from "@/server/actions/profiles
 import { cleanEmail } from "@reflect/core/site";
 import { profilePage } from "@/server/profile-store";
 import { subscribe } from "@/server/site-store";
-import { sendMail } from "@/server/mail";
+import { sendSiteMail } from "@/server/site-connectors";
 import { siteUrl } from "@/server/site";
 
 // A profile's acts (doc "Profiles and accounts design guide", 2026-11-18): Connect from someone's profile, and the
@@ -51,10 +51,10 @@ export async function subscribeToSite(ownerId: string, email: string): Promise<{
   const r = await subscribe(p.id, clean);
   if (r.confirmed) return { sent: false, confirmed: true };
   const base = `${siteUrl()}${profileHref(p)}`;
-  const sent = await sendMail(
-    clean,
-    `Confirm your subscription to ${p.name}`,
-    `You asked to get ${p.name}'s writing by email.\n\nConfirm: ${base}/subscribe?t=${r.token}\n\nIf this was not you, ignore this email and nothing happens.\n\nLeave any time: ${base}/subscribe?t=${r.token}&leave=1\n`,
-  );
+  const sent = !!(await sendSiteMail(p.id, {
+    to: clean,
+    subject: `Confirm your subscription to ${p.name}`,
+    text: `You asked to get ${p.name}'s writing by email.\n\nConfirm: ${base}/subscribe?t=${r.token}\n\nIf this was not you, ignore this email and nothing happens.\n\nLeave any time: ${base}/subscribe?t=${r.token}&leave=1\n`,
+  }));
   return { sent, confirmed: false };
 }

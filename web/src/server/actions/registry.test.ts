@@ -29,6 +29,8 @@ const LINKEDIN = ["import_linkedin", "linkedin_matches", "linkedin_connections",
 const DASHBOARD = ["dashboard", "set_dashboard_card", "dashboard_today", "set_morning_brief"];
 // The person's own site (Personal site and blog, 2026-11-18): read it; change its template. Publishing is a tap only.
 const SITE = ["site", "set_site_template"];
+// The marketplace (2026-11-18): the person's connectors, a tool that only reads, and one that waits for Send.
+const MARKETPLACE = ["connectors", "connector_read", "connector_act"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
 const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
@@ -39,7 +41,7 @@ const CHAT_DIRECT = [
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
 ];
-const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PROFILES, ...SOCIALS, ...EVENTS, ...LINKEDIN, ...DASHBOARD, ...SITE, ...PAGE];
+const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PROFILES, ...SOCIALS, ...EVENTS, ...LINKEDIN, ...DASHBOARD, ...SITE, ...MARKETPLACE, ...PAGE];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
@@ -58,6 +60,7 @@ const MCP_TOOLS = [
   ...LINKEDIN,
   ...DASHBOARD,
   ...SITE,
+  ...MARKETPLACE,
   ...PAGE,
 ];
 
@@ -101,7 +104,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "life"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "connectors", "connector_read", "life"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {

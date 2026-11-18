@@ -8,6 +8,8 @@ import { requireUser } from "@/server/session";
 import { fromPage } from "@/server/actions/page";
 import { setSiteTemplateAction } from "@/server/actions/site";
 import { markDomainChecked, setDomain, siteOf } from "@/server/site-store";
+import { siteProject } from "@/server/site-export";
+import { pushWithGithubConnector } from "@/server/site-connectors";
 
 // Settings, Your site (doc "Personal site and blog design guide", page 4). The template runs the registry's entry;
 // the domain's steps check public DNS and the host, so they are taps on this page only (page-actions.test.ts).
@@ -83,4 +85,17 @@ export async function checkDomainAction(): Promise<void> {
   await markDomainChecked(user.id);
   revalidatePath("/settings/site");
   back("step=3");
+}
+
+/** Push the site to the person's GitHub through their GitHub connector, then show the Deploy button. */
+export async function pushSiteAction(): Promise<void> {
+  const user = await requireUser();
+  let repo = "";
+  try {
+    const { name, files } = await siteProject(user.id);
+    repo = await pushWithGithubConnector(user.id, name, files, "My site and blog, exported from Reflect");
+  } catch (e) {
+    redirect(`/settings/site/export?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not push.")}`);
+  }
+  redirect(`/settings/site/export?pushed=${encodeURIComponent(repo)}`);
 }

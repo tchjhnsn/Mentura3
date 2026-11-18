@@ -8,6 +8,8 @@ import { COLUMN } from "@/components/list-rows";
 import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { canPushToGithub } from "@/server/github-push";
+import { connectedTo } from "@/server/mcp-connections";
+import { pushSiteAction } from "../actions";
 import { siteProject } from "@/server/site-export";
 
 export const metadata: Metadata = { title: "Push to GitHub" };
@@ -22,6 +24,7 @@ export default async function ExportSite({ searchParams }: { searchParams: Promi
   const error = one(sp.error);
   const { name, files } = await siteProject(user.id);
   const posts = Object.keys(files).filter((f) => f.startsWith("content/posts/")).length;
+  const [github] = await Promise.all([connectedTo(user.id, "github").catch(() => null)]);
   const ready = canPushToGithub();
   return (
     <main className={PAGE}>
@@ -38,20 +41,19 @@ export default async function ExportSite({ searchParams }: { searchParams: Promi
           <div className="grid gap-3">
             <a href={pushed} className="bg-card flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm hover:bg-accent"><CheckIcon className="text-primary size-5" /><span className="truncate">{pushed.replace("https://", "")}</span></a>
             <Button asChild size="lg" className="w-full"><a href={deployUrl(pushed, name)} target="_blank" rel="noreferrer">Deploy on Vercel</a></Button>
-            <Button asChild variant="ghost"><Link href="/api/site/github/start">Push again</Link></Button>
+            {github ? <form action={pushSiteAction}><Button type="submit" variant="ghost" className="w-full">Push again</Button></form> : <Button asChild variant="ghost"><Link href="/api/site/github/start">Push again</Link></Button>}
           </div>
+        ) : github ? (
+          <form action={pushSiteAction}><Button type="submit" size="lg" className="w-full"><GitBranchIcon />Push with your GitHub</Button></form>
         ) : ready ? (
           <Button asChild size="lg" className="w-full"><a href="/api/site/github/start"><GitBranchIcon />Sign in to GitHub and push</a></Button>
         ) : (
-          <div className="bg-muted/50 grid gap-1 rounded-2xl border p-4 text-sm">
-            <p className="font-medium">Pushing to GitHub is not set up on this Reflect yet.</p>
-            <p className="text-muted-foreground">It needs a GitHub app for Reflect (GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET). Until then, download the zip and push it yourself.</p>
-          </div>
+          <Button asChild size="lg" className="w-full"><Link href="/marketplace/github"><GitBranchIcon />Connect GitHub</Link></Button>
         )}
         {error ? <p className="text-destructive text-center text-sm" role="alert">{error === "github" ? "Pushing to GitHub is not set up yet." : error === "github-state" ? "That sign-in did not match. Try again." : error}</p> : null}
 
         <Button asChild variant="outline"><a href="/api/site/export" download><DownloadIcon />Download as a zip</a></Button>
-        <p className="text-muted-foreground text-center text-xs">Only what you set for Everyone goes in, never your journal. Reflect keeps no GitHub token after the push.</p>
+        <p className="text-muted-foreground text-center text-xs">Only what you set for Everyone goes in, never your journal. Your GitHub sign-in stays sealed with your key; disconnect it in the marketplace.</p>
       </div>
     </main>
   );
