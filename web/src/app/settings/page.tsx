@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { HomeIcon, IdCardIcon, MapPinIcon, PaletteIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
+import { HomeIcon, IdCardIcon, LayoutDashboardIcon, MapPinIcon, PaletteIcon, PlugIcon, ShieldIcon, UserPlusIcon } from "lucide-react";
 import { BACKGROUNDS, LOOK_COOKIE, lookOf, seasonalTheme, THEMES } from "@/lib/themes";
 import { ARRANGEMENT_LABEL, arrangement } from "@reflect/core/household";
 import { ThingHeader } from "@/components/headers";
@@ -51,6 +51,7 @@ export default async function SettingsPage() {
 
         <Group title="Look" id="look">
           <Row href="/settings/appearance" icon={<PaletteIcon />} label="Appearance" value={lookValue} />
+          <Row href="/settings/dashboard" icon={<LayoutDashboardIcon />} label="Dashboard" value="Morning brief" />
         </Group>
 
         <Group title="Account" id="account">
