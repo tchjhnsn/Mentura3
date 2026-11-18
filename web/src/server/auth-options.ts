@@ -18,6 +18,14 @@ export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(data
     baseURL: site.baseURL,
     trustedOrigins: site.trustedOrigins,
     emailAndPassword: { enabled: true, minPasswordLength: 10 },
+    // Continue with Google (doc "Profiles and accounts design guide", 2026-11-18), only once the deployment holds
+    // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (by name). Google never makes a new account, since sign-up asks the
+    // person to confirm they are 18 or older (./adult.ts); a signed-in person links it to their account
+    // (Settings, Account, Sign-in), and from then on it signs them in.
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? { socialProviders: { google: { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET, disableSignUp: true } } }
+      : {}),
+    account: { accountLinking: { enabled: true, trustedProviders: ["google"], allowDifferentEmails: true } },
     // 18 or older (./adult.ts): a sign-up without the person's confirmation is refused.
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
