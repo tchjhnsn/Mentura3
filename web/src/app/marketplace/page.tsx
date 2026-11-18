@@ -194,7 +194,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
                 <summary className="text-muted-foreground hover:text-foreground cursor-pointer text-sm">Not available yet ({notYet.length})</summary>
                 <ul className="mt-3 grid gap-2 sm:grid-cols-2">
                   {notYet.map((c) => (
-                    <li key={c.id}><Link href={`/settings/connections/${c.id}`} className="hover:bg-accent flex items-center gap-3 rounded-xl border px-3 py-2 text-sm"><Logo id={c.id} name={c.by} size="size-8" glyph="size-4" /><span className="grid"><span>{c.name}</span><span className="text-muted-foreground text-xs">{c.by}</span></span></Link></li>
+                    <li key={c.id}><Link href={`/settings/connections/${c.id}`} className="hover:bg-accent flex items-center gap-3 rounded-xl border px-3 py-2 text-sm"><Logo id={c.id} name={c.by} size="size-8" glyph="size-5" /><span className="grid"><span>{c.name}</span><span className="text-muted-foreground text-xs">{c.by}</span></span></Link></li>
                   ))}
                 </ul>
               </details>
@@ -219,7 +219,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
                         <Link href={`/marketplace/plugins/${p.id}`} className="font-semibold after:absolute after:inset-0 after:rounded-2xl">{p.name}</Link>
                         <span className="text-muted-foreground line-clamp-2 text-sm">{p.line}</span>
                         <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                          {p.connectors.map((c) => <Logo key={c} id={c} name={marketById(c)?.name ?? c} size="size-4 rounded" glyph="size-2.5" />)}
+                          {p.connectors.map((c) => <Logo key={c} id={c} name={marketById(c)?.name ?? c} size="size-4 rounded" glyph="size-3" />)}
                           <span className="ml-1">{works ? "Ready" : `Uses ${p.connectors.map((c) => marketById(c)?.name ?? c).join(" or ")}`}</span>
                         </span>
                       </span>

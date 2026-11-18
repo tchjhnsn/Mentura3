@@ -1,3 +1,4 @@
+import { Logo } from "../logos";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { connectionsOf, toolsOf } from "@/server/mcp-connections";
 import { connectAction, disconnectAction } from "../actions";
-import { Mark } from "../parts";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -46,7 +46,7 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
       <ThingHeader back="/marketplace" backLabel="Marketplace" crumbs={[{ label: "Marketplace", href: "/marketplace" }]} title={name} />
       <div className="mx-auto mt-6 grid w-full max-w-2xl gap-8 pb-16">
         <section className="flex flex-wrap items-start gap-4">
-          <Mark id={id} name={name} size="size-16 text-2xl" />
+          <Logo id={id} name={name} size="size-16" glyph="size-9" />
           <div className="grid min-w-0 flex-1 gap-1">
             <h1 id="page-title" className="text-3xl font-bold tracking-tight">{name}</h1>
             <p className="text-muted-foreground text-sm">{cat ? `By ${cat.by}` : mine!.serverUrl}</p>
