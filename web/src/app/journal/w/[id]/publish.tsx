@@ -33,6 +33,7 @@ export function PublishButton({ workId, siteBase, initial, read, save, mail }: {
   const [pending, start] = useTransition();
   const [email, setEmail] = useState(false);
   const [emailed, setEmailed] = useState<number | null>(null);
+  const [repoNote, setRepoNote] = useState<{ ok: boolean; text: string } | null>(null);
   const canMail = !!mail.via && mail.subscribers > 0;
 
   const show = () => {
@@ -42,6 +43,7 @@ export function PublishButton({ workId, siteBase, initial, read, save, mail }: {
     setEdited(false);
     setError(null);
     setUndo(null);
+    setRepoNote(null);
     setOpen(true);
   };
   const publish = () =>
@@ -52,6 +54,7 @@ export function PublishButton({ workId, siteBase, initial, read, save, mail }: {
       if ("error" in r) return setError(r.error);
       setPost(r);
       setEmailed(canMail && email ? (r.emailed ?? 0) : null);
+      setRepoNote(r.repoError ? { ok: false, text: `Not written to your repository: ${r.repoError}` } : r.repo ? { ok: true, text: `Committed to your repository at ${r.repo}. Your host deploys it.` } : null);
       setEmail(false);
       setSlug(r.slug);
     });
@@ -113,6 +116,7 @@ export function PublishButton({ workId, siteBase, initial, read, save, mail }: {
             </button>
           </div>
           {emailed !== null ? <p className="text-sm" role="status">Emailed to {emailed} {emailed === 1 ? "subscriber" : "subscribers"}.</p> : null}
+          {repoNote ? <p className={cn("text-sm", !repoNote.ok && "text-destructive")} role="status">{repoNote.text}</p> : null}
           {error ? <p className="text-destructive text-sm" role="alert">{error}</p> : null}
           {undo ? (
             <p className="text-sm" role="status">
