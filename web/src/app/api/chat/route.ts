@@ -28,12 +28,12 @@ const MAX_STEPS = 6;
 export async function POST(req: Request) {
   const user = await currentUser();
   if (!user) return Response.json({ error: "sign in first" }, { status: 401 });
-  const body = (await req.json().catch(() => null)) as { id?: unknown; localDate?: unknown; messages?: UIMessage[] } | null;
+  const body = (await req.json().catch(() => null)) as { id?: unknown; localDate?: unknown; model?: unknown; messages?: UIMessage[] } | null;
   const messages = Array.isArray(body?.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
   if (!messages.length) return Response.json({ error: "messages are required" }, { status: 400 });
   // Crisis protocol (SB 243): a sign of suicide or self-harm gets the 988 Lifeline, never coaching, and needs no model.
   const crisis = inCrisis(messages);
-  const model = chatModel();
+  const model = chatModel(process.env, typeof body?.model === "string" ? body.model : undefined);
   if (!model && !crisis) return Response.json({ error: "no model is set up" }, { status: 503 });
   // The chat is kept in the journal as one entry (its id is the chat's id), one part per message.
   const day = typeof body?.localDate === "string" ? isoDate(body.localDate) : null;
@@ -62,7 +62,14 @@ export async function POST(req: Request) {
         pieces.push(p);
         const spec = buildSpec(pieces);
         if (spec) writer.write({ type: SPEC_DATA_PART_TYPE, id: "cards", data: { type: "flat", spec } });
+        // The passages a card cites, as the answer's sources (AI Elements' Sources), each once.
+        for (const src of citedBy(p)) {
+          if (cited.has(src.url)) continue;
+          cited.add(src.url);
+          writer.write({ type: "source-url", sourceId: `s${cited.size}`, url: src.url, title: src.title });
+        }
       };
+      const cited = new Set<string>();
       const result = streamText({
         model,
         system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}`,
@@ -72,9 +79,18 @@ export async function POST(req: Request) {
         onFinish: async ({ steps }) => keep("reflect", steps.map((st) => st.text).filter(Boolean).join("\n\n")),
         tools: chatTools({ userId: user.id, ...(day ? { today: day } : {}), view, claims, items, show }),
       });
-      writer.merge(result.toUIMessageStream());
+      // Reasoning streams as its own parts (AI Elements' Reasoning), and the finished answer carries the tokens it
+      // used, for the context meter.
+      writer.merge(result.toUIMessageStream({ sendReasoning: true, messageMetadata: ({ part }) => (part.type === "finish" ? { usage: part.totalUsage } : undefined) }));
     },
     onError: () => "The model is not reachable right now. Your apps are all still there.",
   });
   return createUIMessageStreamResponse({ stream });
+}
+
+/** The passages a card points at in Reflect: a lens's citations and a quote's source. */
+export function citedBy(p: Piece): { url: string; title: string }[] {
+  if (p.kind === "lens") return p.ideas.flatMap((i) => i.cites.map((c) => ({ url: c.href, title: c.label })));
+  if (p.kind === "quote" && p.href) return [{ url: p.href, title: p.cite }];
+  return [];
 }

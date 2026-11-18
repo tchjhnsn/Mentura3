@@ -28,28 +28,29 @@ describe("chat cards render", () => {
     expect(html).toContain("held by Aristotle");
   });
 
-  it("renders an Approval card with the preview, its one button and Decline", () => {
+  it("renders an Approval as a Confirmation with the preview, its one button and Decline", () => {
     const spec = buildSpec([{ kind: "approval", change: "00000000-0000-4000-8000-000000000001", title: "Keep the legacy release plan", preview: "Cy receives:\nLetter: Dear Cy.", tier: "outside" }])!;
     const html = renderToStaticMarkup(
       <JSONUIProvider registry={registry}>
         <Renderer spec={spec} registry={registry} />
       </JSONUIProvider>,
     );
-    expect(html).toContain("Waiting for you");
+    expect(html).toContain("Keep the legacy release plan");
     expect(html).toContain("Letter: Dear Cy.");
     expect(html).toContain(">Send<");
     expect(html).toContain(">Decline<");
     expect(html).not.toContain(">Keep<");
   });
 
-  it("renders a Plan card with each step's status", () => {
+  it("renders a Plan as a Trace with how far it got and each step's status", () => {
     const spec = buildSpec([{ kind: "plan", title: "Three things", status: "failed", note: "Stopped: you declined step 2.", steps: [{ title: "One", status: "done" }, { title: "Two", status: "declined" }, { title: "Three", status: "not_started" }] }])!;
     const html = renderToStaticMarkup(
       <JSONUIProvider registry={registry}>
         <Renderer spec={spec} registry={registry} />
       </JSONUIProvider>,
     );
-    expect(html).toContain("Plan · Stopped");
+    expect(html).toContain("Plan: Three things");
+    expect(html).toContain("Stopped · 1 of 3 done");
     expect(html).toContain("Declined");
     expect(html).toContain("Not started");
     expect(html).toContain("Stopped: you declined step 2.");

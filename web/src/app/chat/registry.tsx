@@ -3,32 +3,74 @@
 // The same cards as ../../chat/registry.tsx, drawn with shadcn instead of the app's own CSS.
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRightIcon, CalendarIcon, ListChecksIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
+import { ArrowRightIcon, CalendarIcon, CircleCheckIcon, CircleDotIcon, CircleIcon, CircleXIcon, ListTodoIcon, RouteIcon, SendIcon, ShieldCheckIcon, GraduationCapIcon, HouseIcon, MessageCircleIcon, MessageSquareIcon, PhoneIcon } from "lucide-react";
 import { LIFELINE } from "@reflect/core/crisis";
 import { defineRegistry } from "@json-render/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
+import { Trace, TraceCollapsible, TraceCollapsibleContent, TraceCollapsibleTrigger, TraceDescription, TraceIcon, TraceLine, TraceTitle } from "@/components/ui/trace";
+import { InlineCitation } from "./elements";
 import { addBookFromChat, keepClaimFromChat, addItemFromChat, undoFromChat, approveFromChat, declineFromChat } from "./actions";
 import { catalog } from "./catalog";
 import type { planCard } from "./spec";
 
 type PlanProps = ReturnType<typeof planCard>;
 
-/** A plan of several actions (Ask Reflect plan, step 9): each step with Done, Waiting for your tap or Not started. */
+/** A plan of several actions (Ask Reflect plan, step 9), as AI Elements' Plan: a Trace line with how far it has
+ * got, opening to each step's line (done, waiting for your tap, not started, declined or failed). */
 export function Plan({ title, status, steps, note }: PlanProps) {
+  const done = steps.filter((s) => s.status === "Done").length;
+  const lineStatus = (st: string) => (st === "Failed" ? "error" : st === "Waiting for your tap" ? "running" : st === "Not started" ? "pending" : undefined);
   return (
-    <div className="rounded-lg border bg-card p-4 shadow-xs">
-      <div className="text-muted-foreground flex items-center gap-1 text-xs"><ListChecksIcon className="size-3" />Plan · {status}</div>
-      <div className="mt-1 font-medium">{title}</div>
-      <ol className="mt-2 grid gap-1">
-        {steps.map((s, i) => (
-          <li key={i} className="flex items-center justify-between gap-3 text-sm">
-            <span className="min-w-0 truncate">{i + 1}. {s.title}</span>
-            <Badge variant={s.status === "Done" ? "secondary" : s.status === "Not started" ? "outline" : s.status === "Waiting for your tap" ? "default" : "destructive"} className="shrink-0">{s.status}</Badge>
-          </li>
-        ))}
-      </ol>
-      {note ? <p className="text-muted-foreground mt-2 text-xs">{note}</p> : null}
+    <Trace>
+      <TraceCollapsible defaultOpen>
+        <TraceCollapsibleTrigger>
+          <TraceLine status={status === "Stopped" ? "error" : status === "Done" ? undefined : "running"}>
+            <TraceIcon><RouteIcon /></TraceIcon>
+            <TraceTitle>Plan: {title}</TraceTitle>
+            <TraceDescription>{status === "Done" ? "Done" : `${status === "Stopped" ? "Stopped · " : ""}${done} of ${steps.length} done`}</TraceDescription>
+          </TraceLine>
+        </TraceCollapsibleTrigger>
+        <TraceCollapsibleContent>
+          <Trace>
+            {steps.map((s, i) => (
+              <TraceLine key={i} status={lineStatus(s.status)}>
+                <TraceIcon>{s.status === "Done" ? <CircleCheckIcon /> : s.status === "Failed" || s.status === "Declined" ? <CircleXIcon /> : s.status === "Waiting for your tap" ? <CircleDotIcon /> : <CircleIcon />}</TraceIcon>
+                <TraceTitle>{s.title}</TraceTitle>
+                {s.status !== "Done" ? <TraceDescription>{s.status}</TraceDescription> : null}
+              </TraceLine>
+            ))}
+          </Trace>
+          {note ? <p className="text-muted-foreground mt-1 text-xs">{note}</p> : null}
+        </TraceCollapsibleContent>
+      </TraceCollapsible>
+    </Trace>
+  );
+}
+
+/** What waits at the top of Ask, as AI Elements' Queue: what is waiting for the person's tap, and the plans
+ * still running, each folded under its count. */
+export function Queue({ pending, plans }: { pending: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from: string }[]; plans: PlanProps[] }) {
+  if (!pending.length && !plans.length) return null;
+  return (
+    <div className="flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
+      {pending.length ? (
+        <Trace>
+          <TraceCollapsible defaultOpen>
+            <TraceCollapsibleTrigger>
+              <TraceLine>
+                <TraceIcon><ListTodoIcon /></TraceIcon>
+                <TraceTitle>{pending.length} waiting for you</TraceTitle>
+              </TraceLine>
+            </TraceCollapsibleTrigger>
+            <TraceCollapsibleContent className="flex flex-col gap-2">
+              {pending.map((p) => <Approval key={p.change} {...p} />)}
+            </TraceCollapsibleContent>
+          </TraceCollapsible>
+        </Trace>
+      ) : null}
+      {plans.map((p, i) => <Plan key={i} {...p} />)}
     </div>
   );
 }
@@ -62,6 +104,8 @@ function Tap({ label, doneText, already, run }: { label: string; doneText: strin
  * A held change (Ask Reflect plan, step 3): exactly what will happen, one button for its tier (Keep for a shared
  * record, Send for one that leaves Reflect) and Decline as a small secondary. Nothing happens until a tap.
  */
+/** A held change (shared or outside tier), as AI Elements' Confirmation: what it would do, with the tap that
+ * does it and Decline. A step of a plan shows the plan as it stands after the tap. */
 export function Approval({ change, title, preview, tap, from }: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from?: string }) {
   const [state, setState] = useState<"idle" | "busy" | "kept" | "declined" | "failed">("idle");
   // When the change was a step of a plan, the plan as it stands after the tap.
@@ -76,20 +120,26 @@ export function Approval({ change, title, preview, tap, from }: { change: string
     }
   };
   return (
-    <div className="rounded-lg border bg-card p-4 shadow-xs">
-      <div className="text-muted-foreground text-xs">{["Waiting for you", from].filter(Boolean).join(" · ")}</div>
-      <div className="mt-1 font-medium">{title}</div>
-      <p className="text-muted-foreground mt-1 mb-3 whitespace-pre-line text-sm">{preview}</p>
-      {state === "kept" ? <Badge variant="secondary">{tap === "Send" ? "Sent" : "Kept"}</Badge>
-        : state === "declined" ? <Badge variant="outline">Declined</Badge>
-        : (
-          <div className="flex items-center gap-2">
-            <Button size="sm" disabled={state === "busy"} onClick={act(async () => setPlan(await approveFromChat(change)), "kept")}>{tap}</Button>
-            <Button size="sm" variant="ghost" disabled={state === "busy"} onClick={act(() => declineFromChat(change), "declined")}>Decline</Button>
-            {state === "failed" ? <span className="text-destructive text-xs">Didn't go through.</span> : null}
-          </div>
-        )}
-      {plan ? <div className="mt-3"><Plan {...plan} /></div> : null}
+    <div className="flex flex-col gap-2">
+      <Item variant="outline" size="sm" className="items-start">
+        <ItemMedia variant="icon">{tap === "Send" ? <SendIcon /> : <ShieldCheckIcon />}</ItemMedia>
+        <ItemContent>
+          <ItemTitle>{title}</ItemTitle>
+          <ItemDescription className="line-clamp-none whitespace-pre-line">{[preview, from ? `Asked for ${from}` : ""].filter(Boolean).join("\n")}</ItemDescription>
+          {state === "failed" ? <span className="text-destructive text-xs">Didn't go through.</span> : null}
+        </ItemContent>
+        <ItemActions>
+          {state === "kept" ? <Badge variant="secondary">{tap === "Send" ? "Sent" : "Kept"}</Badge>
+            : state === "declined" ? <Badge variant="outline">Declined</Badge>
+            : (
+              <>
+                <Button size="sm" variant="outline" disabled={state === "busy"} onClick={act(() => declineFromChat(change), "declined")}>Decline</Button>
+                <Button size="sm" disabled={state === "busy"} onClick={act(async () => setPlan(await approveFromChat(change)), "kept")}>{tap}</Button>
+              </>
+            )}
+        </ItemActions>
+      </Item>
+      {plan ? <Plan {...plan} /> : null}
     </div>
   );
 }
@@ -219,8 +269,8 @@ export const { registry } = defineRegistry(catalog, {
           {props.ideas.map((i) => (
             <li key={i.text} className="py-2">
               <p className="text-sm">{i.text}</p>
-              <p className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 text-xs">
-                {i.cites.map((c) => <Link key={c.href} href={c.href} className="underline-offset-4 hover:underline">{c.label}</Link>)}
+              <p className="mt-1 flex flex-wrap gap-1">
+                {i.cites.map((c) => <InlineCitation key={c.href} label={c.label} href={c.href} />)}
               </p>
             </li>
           ))}
