@@ -7,6 +7,7 @@ import { CHAT_PROMPT, readChatPart } from "@reflect/core/chat-journal";
 import { GROUPS } from "@reflect/core/plan";
 import { listEntries } from "@/server/journal-store";
 import { currentUser } from "@/server/session";
+import { selfOf } from "@/server/profile-store";
 import { cookies } from "next/headers";
 import { LOOK_COOKIE, lookOf, themeOf, themeVars } from "@/lib/themes";
 import { GLYPHS, hrefOf, MINE } from "./home-tiles";
@@ -24,6 +25,8 @@ const GROUPED: SidebarGroup[] = GROUPS.map((g) => ({ label: g.label, tiles: g.ti
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await currentUser().catch(() => null);
   const chats = user ? (await listEntries(user.id, 40).catch(() => [])).filter((e) => e.promptId === CHAT_PROMPT).slice(0, 5).map((c) => ({ id: c.id, title: c.parts.map((p) => readChatPart(p.text)).find((m) => m.who === "you")?.text ?? "A chat" })) : [];
+  // Their face at the foot of the sidebar opens their own profile (Profiles, 2026-11-18).
+  const me = user ? await selfOf(user.id).catch(() => ({ name: "You", href: `/p/${encodeURIComponent(user.id)}` })) : null;
   // The person's theme and background (src/lib/themes.ts), painted by the server so the first frame is already theirs.
   const look = lookOf((await cookies()).get(LOOK_COOKIE)?.value);
   const theme = themeOf(look.theme, new Date().toISOString().slice(0, 10));
@@ -34,7 +37,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
-        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats}>{children}</SidebarProvider> : children}</TooltipProvider>
+        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me}>{children}</SidebarProvider> : children}</TooltipProvider>
       </body>
     </html>
   );

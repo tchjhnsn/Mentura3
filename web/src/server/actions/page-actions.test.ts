@@ -44,6 +44,9 @@ const ROUTED: Record<string, string[]> = {
   "events/connect-actions.ts#connectBackAction": ["connect_with"],
   "events/connect-actions.ts#setFriendKindFromPage": ["set_friend_kind"],
   "events/connect-actions.ts#saveProfileAction": ["set_profile"],
+  // Profiles: Connect from a profile, and who sees each part
+  "p/[key]/actions.ts#connectFromProfile": ["connect_with"],
+  "p/[key]/actions.ts#setAudienceFromProfile": ["set_section_audience"],
   // Settings, Account (Profiles and accounts, 2026-11-18)
   "settings/account/actions.ts#saveHandleAction": ["set_handle"],
   "settings/account/actions.ts#saveNameAction": ["set_name"],

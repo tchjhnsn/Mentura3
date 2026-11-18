@@ -88,6 +88,13 @@ export async function viewerOf(ownerId: string, viewerId: string | null): Promis
   return r.rows.length ? "met" : "signed-in";
 }
 
+/** The person's name and profile address, for their face in the sidebar. */
+export async function selfOf(userId: string): Promise<{ name: string; href: string }> {
+  const r = await db().query(`SELECT u.name, p.handle FROM "user" u LEFT JOIN member_profile p ON p.user_id = u.id WHERE u.id = $1`, [userId]);
+  const x = r.rows[0];
+  return { name: nameOr(x?.name), href: `/p/${encodeURIComponent(x?.handle ?? userId)}` };
+}
+
 /** Sets who sees one section; null puts it back to the profile's default. Returns what it was (null for the default). */
 export async function setSectionAudience(userId: string, section: SectionId, audience: Audience | null): Promise<Audience | null> {
   const s = await profileSettings(userId);
@@ -343,7 +350,7 @@ export async function profilePage(ownerId: string, viewerId: string | null): Pro
     viewer,
     socials,
     building: ventures ? ventures.filter((r) => r.kind === "venture" && r.state !== "closed").map((r) => ({ id: r.id, name: String(r.body.name ?? "Venture"), what: typeof r.body.what === "string" && r.body.what.trim() ? r.body.what.trim() : null })) : null,
-    wantsBuilders: s.builds,
+    wantsBuilders: ventures ? s.builds : false,
     qualities: traits,
     experience,
     events,

@@ -17,6 +17,8 @@ const VENTURES = ["venture_files", "draft_naive_venture", "write_venture_file"];
 const BUILD = ["people_to_build_with"];
 // Connections made at events (2026-11-18): requests and people met, Connect, the kind of a friendship, what people see.
 const CONNECT = ["connect_requests", "connect_with", "set_friend_kind", "profile", "set_profile"];
+// Profiles (2026-11-18): read a profile as the asker may see it; who sees each part.
+const PROFILES = ["profile_page", "set_section_audience"];
 // Socials (Profiles and accounts, 2026-11-18): the profile's links, adding, removing and confirming one by link-back.
 const SOCIALS = ["socials", "add_social", "remove_social", "confirm_social"];
 // Events (2026-11-18): read the upcoming events and one event; Going, hosting and a hosted event's parts are page acts (in PAGE).
@@ -33,7 +35,7 @@ const CHAT_DIRECT = [
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
 ];
-const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...SOCIALS, ...EVENTS, ...LINKEDIN, ...PAGE];
+const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PROFILES, ...SOCIALS, ...EVENTS, ...LINKEDIN, ...PAGE];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
@@ -46,6 +48,7 @@ const MCP_TOOLS = [
   ...VENTURES,
   ...BUILD,
   ...CONNECT,
+  ...PROFILES,
   ...SOCIALS,
   ...EVENTS,
   ...LINKEDIN,
@@ -92,7 +95,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "life"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "life"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {

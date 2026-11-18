@@ -6,7 +6,7 @@
 import { z } from "zod";
 import { FRIEND_KINDS, cleanInterests, isFriendKind } from "@reflect/core/events";
 import { hereState } from "../connect";
-import { checkedIn, connect, friendsMet, incomingRequests, isCheckedIn, profileOf, recentCheckins, saveProfile, setFriendKind, withdrawRequest, type Met, type Profile } from "../connect-store";
+import { checkedIn, connect, friendsMet, incomingRequests, isCheckedIn, metWith, profileOf, recentCheckins, saveProfile, setFriendKind, withdrawRequest, type Met, type Profile } from "../connect-store";
 import { action, type ActionContext, type LoggedChange } from "./types";
 
 const eventHref = (id: string) => `/events/${id}`;
@@ -29,7 +29,11 @@ export const connectRequestsAction = action({
   },
 });
 
-/** Who a Connect can reach: someone with an open request to the person, or someone checked in to the same running event. */
+/**
+ * Who a Connect can reach: someone with an open request to the person, someone checked in to the same running event,
+ * or, by id only (Connect on their profile, /p/<handle>), someone the person has met: checked in to one event together
+ * at any time, or connected.
+ */
 export async function reachable(userId: string, to: string): Promise<{ id: string; name: string; eventId: string | null }> {
   const want = to.trim().toLowerCase();
   const fits = (p: { id: string; name: string }) => p.id === to || p.name.toLowerCase() === want;
@@ -41,14 +45,18 @@ export async function reachable(userId: string, to: string): Promise<{ id: strin
     for (const p of await checkedIn(e.id)) if (p.id !== userId && fits(p) && !found.some((f) => f.id === p.id)) found.push({ id: p.id, name: p.name, eventId: e.id });
   }
   if (found.length > 1 || asked.length > 1) throw new Error(`More than one person here is called ${to}. Use the Connect button under their face.`);
-  if (!found.length) throw new Error("Connect reaches people checked in to the same event as you while it runs, and anyone who asked to connect with you.");
+  if (!found.length) {
+    const met = to !== userId ? await metWith(userId, to) : null;
+    if (met) return { id: to, name: met.name, eventId: met.eventId };
+    throw new Error("Connect reaches people checked in to the same event as you while it runs, people you've met, and anyone who asked to connect with you.");
+  }
   return found[0]!;
 }
 
 export const connectWithAction = action({
   id: "connect_with",
   title: "Connect with someone met at an event",
-  description: "Tap Connect for the person: with someone checked in to the same event as them while it runs, or back to someone who asked to connect with them (see connect_requests). Connect is mutual: until the other person taps too it is only a request, which shows to them in their requests and lapses after 7 days; once both tap, they are friends in Reflect with the event where they met. Only when the person asks. Undo takes back a request not yet answered.",
+  description: "Tap Connect for the person: with someone checked in to the same event as them while it runs, back to someone who asked to connect with them (see connect_requests), or, by their id, with someone they have met (checked in to one event together; see profile_page). Connect is mutual: until the other person taps too it is only a request, which shows to them in their requests and lapses after 7 days; once both tap, they are friends in Reflect with the event where they met. Only when the person asks. Undo takes back a request not yet answered.",
   tier: "own",
   on: ["chat", "mcp"],
   input: z.object({ to: z.string().min(1).max(200).describe("The other person's name as shown at the event, or their id") }),
