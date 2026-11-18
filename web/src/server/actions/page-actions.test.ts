@@ -77,6 +77,7 @@ const ROUTED: Record<string, string[]> = {
   "life/work/space-actions.ts#learningTowardAction": ["change_record"],
   "life/work/space-actions.ts#hoursAction": ["add_record", "change_record"],
   "life/work/space-actions.ts#mainAction": ["main_aim"],
+  "life/venture-actions.ts#startNaiveAction": ["start_naive_venture"],
   // Meals
   "meals/actions.ts#addMealAction": ["add_meal"],
   "meals/actions.ts#saveMealAction": ["change_record"],
