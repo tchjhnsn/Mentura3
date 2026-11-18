@@ -17,8 +17,8 @@ const VENTURES = ["venture_files", "draft_naive_venture", "write_venture_file"];
 const BUILD = ["people_to_build_with"];
 // Connections made at events (2026-11-18): requests and people met, Connect, the kind of a friendship, what people see.
 const CONNECT = ["connect_requests", "connect_with", "set_friend_kind", "profile", "set_profile"];
-// Profiles (2026-11-18): read a profile as the asker may see it; who sees each part, and the whole.
-const PROFILES = ["profile_page", "set_section_audience", "set_default_audience"];
+// Profiles (2026-11-18): read a profile as the asker may see it; who sees each part.
+const PROFILES = ["profile_page", "set_section_audience"];
 // Events (2026-11-18): read the upcoming events and one event; Going, hosting and a hosted event's parts are page acts (in PAGE).
 const EVENTS = ["events", "event"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.

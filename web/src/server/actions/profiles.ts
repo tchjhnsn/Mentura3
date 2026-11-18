@@ -3,7 +3,7 @@
 // MCP run the same entries. Who may see what is decided in profilePage (../profile-store.ts); emails are never read.
 import { z } from "zod";
 import { AUDIENCES, SECTIONS, isAudience, isSection, type Audience } from "@reflect/core/profile";
-import { ownerOf, profilePage, profileSettings, setDefaultAudience, setSectionAudience, type ProfilePage } from "../profile-store";
+import { ownerOf, profilePage, profileSettings, setSectionAudience, type ProfilePage } from "../profile-store";
 import { action } from "./types";
 
 /** A profile's address: its handle once it has one, else the person's id. */
@@ -54,25 +54,5 @@ export const setSectionAudienceAction = action({
     const b = c.before as { section?: unknown; audience?: unknown } | null;
     if (!isSection(b?.section)) throw new Error("This change cannot be undone.");
     await setSectionAudience(userId, b.section, isAudience(b.audience) ? b.audience : null);
-  },
-});
-
-export const setDefaultAudienceAction = action({
-  id: "set_default_audience",
-  title: "Set who sees the profile",
-  description: "Set who sees the parts of the person's own profile that have no audience of their own: everyone, met (people they've met: connected, or checked in to the same event; the default) or me (only them). Their name, face and line always show. Only when the person asks. Undo puts back what it was.",
-  tier: "own",
-  on: ["chat", "mcp"],
-  input: z.object({ audience: AUDIENCE }),
-  before: async ({ userId }) => ({ audience: (await profileSettings(userId)).audience }),
-  run: async ({ userId }, { audience }) => {
-    await setDefaultAudience(userId, audience);
-    return { audience, label: audienceLabel(audience) };
-  },
-  change: (_r, _i, before) => ({ before }),
-  undo: async ({ userId }, c) => {
-    const b = c.before as { audience?: unknown } | null;
-    if (!isAudience(b?.audience)) throw new Error("This change cannot be undone.");
-    await setDefaultAudience(userId, b.audience);
   },
 });
