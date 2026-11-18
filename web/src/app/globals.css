@@ -2,6 +2,7 @@
    `shadcn init` writes it, which is the Reflect theme. Other themes and backgrounds (2026-11-17) change colors only. */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
 @source "../components";
 
 @custom-variant dark (&:is(.dark *));
