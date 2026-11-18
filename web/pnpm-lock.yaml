@@ -108,7 +108,7 @@ importers:
         specifier: ^4.6.0
         version: 4.6.0
       simple-icons:
-        specifier: ^15.22.0
+        specifier: 15.22.0
         version: 15.22.0
       streamdown:
         specifier: ^2.7.1
