@@ -24,6 +24,7 @@ import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } fro
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
 import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
+import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction } from "./socials";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
 import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
@@ -71,6 +72,7 @@ export const ACTIONS: readonly Action[] = [
   ventureFilesAction, draftNaiveVenture, writeVentureFile,
   peopleToBuildWithAction,
   connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
+  socialsAction, addSocialAction, removeSocialAction, confirmSocialAction,
   eventsAction, eventAction,
   importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   ...PAGE_ACTIONS,
