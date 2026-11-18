@@ -1,3 +1,4 @@
+import { Logo } from "../../logos";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -69,7 +70,7 @@ export default async function PluginPage({ params, searchParams }: { params: Pro
               return (
                 <li key={id}>
                   <Link href={`/marketplace/${id}`} className="hover:bg-accent flex min-h-14 items-center gap-3 px-4 py-2">
-                    <Mark id={id} name={c.name} size="size-8 text-sm" />
+                    <Logo id={id} name={c.name} size="size-8" glyph="size-5" />
                     <span className="grid flex-1"><span>{c.name}</span><span className="text-muted-foreground text-sm">{c.line}</span></span>
                     <span className={isOn ? "text-primary inline-flex items-center gap-1 text-sm" : "text-muted-foreground text-sm"}>{isOn ? <><CheckIcon className="size-4" />Connected</> : "Connect"}</span>
                     <ChevronRightIcon className="text-muted-foreground size-4" />

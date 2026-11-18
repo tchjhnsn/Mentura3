@@ -1,3 +1,4 @@
+import { Logo } from "@/app/marketplace/logos";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,7 +8,7 @@ import { connectorOf, stateWord, tileHref, tileLabel } from "@reflect/core/conne
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
-import { ActionRow, COLUMN, Group, InfoRow, Initials, Row } from "@/components/list-rows";
+import { ActionRow, COLUMN, Group, InfoRow, Row } from "@/components/list-rows";
 import { feeds } from "@/server/calendar-feeds";
 import { connections } from "@/server/connections-store";
 import { googleState } from "@/server/google-calendar";
@@ -55,7 +56,7 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
       <ThingHeader search={false} back="/marketplace" backLabel="Marketplace" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Marketplace", href: "/marketplace" }]} title={c.name} />
       <div className={COLUMN}>
         <div className="grid justify-items-center gap-3 text-center">
-          <Initials name={c.by.split(" ")[0]!} size="size-16 text-xl" />
+          <Logo id={c.id} name={c.by} size="size-16" glyph="size-9" />
           <div className="grid gap-1">
             <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{c.name}</h1>
             <p className="text-muted-foreground text-sm">{c.by}</p>
