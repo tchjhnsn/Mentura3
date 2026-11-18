@@ -86,6 +86,38 @@ export const MARKET: readonly MarketConnector[] = [
     uses: ["site-email"], docs: "https://developers.google.com/workspace/gmail",
   },
   {
+    id: "google-drive", name: "Google Drive", by: "Google", category: "work", url: "https://drivemcp.googleapis.com/mcp/v1", auth: "oauth-app", clientEnv: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    line: "Find, read and add files in your Drive.", does: ["Find and read a file when you ask", "Save a file to your Drive when you tap Send"], docs: "https://developers.google.com/workspace/guides/configure-mcp-servers",
+  },
+  {
+    id: "google-docs", name: "Google Docs", by: "Google", category: "work", url: "https://docsmcp.googleapis.com/mcp/v1", auth: "oauth-app", clientEnv: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    line: "Read and write your documents.", does: ["Read a document when you ask", "Write one when you tap Send"], docs: "https://developers.google.com/workspace/guides/configure-mcp-servers",
+  },
+  {
+    id: "google-sheets", name: "Google Sheets", by: "Google", category: "work", url: "https://sheetsmcp.googleapis.com/mcp/v1", auth: "oauth-app", clientEnv: ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+    line: "Read and update your spreadsheets.", does: ["Read a sheet when you ask", "Add rows when you tap Send"], docs: "https://developers.google.com/workspace/guides/configure-mcp-servers",
+  },
+  {
+    id: "slack", name: "Slack", by: "Slack", category: "work", url: "https://mcp.slack.com/mcp", auth: "oauth-app", clientEnv: ["SLACK_MCP_CLIENT_ID", "SLACK_MCP_CLIENT_SECRET"],
+    line: "Search channels and send messages.", does: ["Search your messages when you ask", "Send a message when you tap Send"], docs: "https://docs.slack.dev/ai/mcp-server",
+  },
+  {
+    id: "atlassian", name: "Atlassian", by: "Atlassian", category: "work", url: "https://mcp.atlassian.com/v1/mcp/authv2", auth: "oauth",
+    line: "Read and update Jira issues and Confluence pages.", does: ["Read issues and pages when you ask", "Open an issue or write a page when you tap Send"], docs: "https://support.atlassian.com/atlassian-rovo-mcp-server/docs/getting-started-with-the-atlassian-remote-mcp-server/",
+  },
+  {
+    id: "monday", name: "monday.com", by: "monday.com", category: "work", url: "https://mcp.monday.com/mcp", auth: "oauth",
+    line: "Read and update your boards and items.", does: ["Read your boards when you ask", "Add or change an item when you tap Send"], docs: "https://developer.monday.com/apps/docs/mondaycom-mcp-integration",
+  },
+  {
+    id: "intercom", name: "Intercom", by: "Intercom", category: "work", url: "https://mcp.intercom.com/mcp", auth: "oauth",
+    line: "Search conversations and contacts.", does: ["Read your customers' conversations when you ask"], docs: "https://developers.intercom.com/docs/guides/mcp",
+  },
+  {
+    id: "zapier", name: "Zapier", by: "Zapier", category: "build", url: "https://mcp.zapier.com/api/mcp/mcp", auth: "oauth",
+    line: "Run actions in thousands of apps you set up in Zapier.", does: ["Run an action you set up in Zapier when you tap Send"], docs: "https://zapier.com/mcp",
+  },
+  {
     id: "notion", name: "Notion", by: "Notion", category: "work", url: "https://mcp.notion.com/mcp", auth: "oauth",
     line: "Search, read and add pages and databases.", does: ["Read and add pages when you ask"], docs: "https://developers.notion.com/docs/mcp",
   },
