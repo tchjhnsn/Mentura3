@@ -91,7 +91,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
             );
           })}
 
-          <section aria-label="Budget" className="grid gap-3">
+          <section id="budget" aria-label="Budget" className="grid scroll-mt-6 gap-3">
             <DashHead title="Budget">
               <Link href={`/chat?q=${encodeURIComponent("Help me set my monthly budget for each tile.")}`} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><SparklesIcon className="size-4" />Ask Reflect</Link>
             </DashHead>

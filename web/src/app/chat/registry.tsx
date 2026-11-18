@@ -106,7 +106,7 @@ function Tap({ label, doneText, already, run }: { label: string; doneText: strin
  */
 /** A held change (shared or outside tier), as AI Elements' Confirmation: what it would do, with the tap that
  * does it and Decline. A step of a plan shows the plan as it stands after the tap. */
-export function Approval({ change, title, preview, tap, from }: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from?: string }) {
+export function Approval({ change, title, preview, tap, from, quiet }: { change: string; title: string; preview: string; tap: "Keep" | "Send"; from?: string; quiet?: boolean }) {
   const [state, setState] = useState<"idle" | "busy" | "kept" | "declined" | "failed">("idle");
   // When the change was a step of a plan, the plan as it stands after the tap.
   const [plan, setPlan] = useState<PlanProps | null>(null);
@@ -134,7 +134,8 @@ export function Approval({ change, title, preview, tap, from }: { change: string
             : (
               <>
                 <Button size="sm" variant="outline" disabled={state === "busy"} onClick={act(() => declineFromChat(change), "declined")}>Decline</Button>
-                <Button size="sm" disabled={state === "busy"} onClick={act(async () => setPlan(await approveFromChat(change)), "kept")}>{tap}</Button>
+                {/* quiet: a page whose one filled button is elsewhere (the dashboard's ask bar) draws the tap unfilled. */}
+                <Button size="sm" variant={quiet ? "secondary" : "default"} disabled={state === "busy"} onClick={act(async () => setPlan(await approveFromChat(change)), "kept")}>{tap}</Button>
               </>
             )}
         </ItemActions>

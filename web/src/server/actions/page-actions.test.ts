@@ -193,6 +193,7 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 
 /** Page server actions that are not registry entries, each with its reason. */
 const EXCLUDED: Record<string, string> = {
+  "dashboard/actions.ts#refreshBriefAction": "Writes the dashboard's morning brief again with a model from the person's own records and keeps it for the day; it changes no record, and the chat answers the same question from its own reads.",
   "events/actions.ts#publishEventAction": "Publishing a hosted event makes it public and makes the door token shown once as the host's check-in QR: a tap on the event's page only, never offered to a model.",
   "events/actions.ts#cancelEventAction": "Cancelling a hosted event reaches everyone who said Going: the outside tier, which waits for the person's tap, so it stays a tap on the event's page.",
   "journal/actions.ts#importWorkAction": IMPORT,

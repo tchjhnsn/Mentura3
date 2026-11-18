@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { fromPage } from "@/server/actions/page";
-import { setMorningBriefAction } from "@/server/actions/dashboard";
+import { setMorningBriefAction } from "@/server/actions/dashboard-today";
 import { requireUser } from "@/server/session";
 
 /** Turns the morning brief on or off through its registry entry, so the change is logged and can be undone. */

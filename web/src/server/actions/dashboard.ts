@@ -1,33 +1,58 @@
-// The dashboard over the chat and MCP (dashboard, 2026-11-18): the same facts /dashboard shows, as JSON, and the
-// morning brief's opt-in, which Settings, Dashboard runs too so the change is in the change log and can be undone.
+// The dashboard's layout as actions (Dashboard, 2026-11-18): Ask Reflect reads which cards the dashboard (/dashboard)
+// shows and adds, moves, sizes or hides one, so "hide Events" or "put Money at the top" works. The layout is kept in
+// ../dashboard-layout.ts (migration 0055); Undo puts back the layout as it was before.
 import { z } from "zod";
-import { todayFacts } from "../dashboard-today";
-import { setMorningBrief } from "../dashboard-event-store";
+import { CARD_SIZES, arrange, dashCards, layoutOf, orderOf, putLayout, readLayout, setLayout, type DashLayout } from "../dashboard-layout";
 import { action } from "./types";
 
-export const dashboardToday = action({
-  id: "dashboard_today",
-  title: "Read the dashboard",
-  description:
-    "What the person's dashboard shows now, as facts: the next calendar item and the rest of today and tomorrow, the people waiting on them (connect requests and messages they have not answered), what is left to allot in their monthly budget, the next event they are going to and a few nearby, and the cards Ask Reflect placed for today. Use it for 'what's on my day' or a morning summary.",
+/** The dashboard as the model reads it: every card with whether it shows, where and its size. */
+async function cardsOut(layout: DashLayout) {
+  const cards = await dashCards();
+  const shown = arrange(cards, layout);
+  const at = new Map(shown.map((c, i) => [c.id, i]));
+  return orderOf(cards.map((c) => c.id), layout).map((id) => {
+    const c = cards.find((x) => x.id === id)!;
+    return { id, title: c.title, column: c.column, shown: at.has(id), position: at.get(id) ?? null, size: layout.sizes[id] ?? "medium" };
+  });
+}
+
+export const dashboardAction = action({
+  id: "dashboard",
+  title: "Read the dashboard's cards",
+  description: "List every card the person's dashboard (/dashboard) can show, in their order: each card's id, title, whether it is shown or hidden, its position among the shown cards (from 0, top first) and its size. Call it before set_dashboard_card to find a card's id from its title.",
   tier: "read",
   on: ["chat", "mcp"],
   input: z.object({}),
-  run: async ({ userId, now }) => todayFacts(userId, now ?? new Date()),
+  run: async ({ userId }) => ({ href: "/dashboard", cards: await cardsOut(await layoutOf(userId)) }),
 });
 
-export const setMorningBriefAction = action({
-  id: "set_morning_brief",
-  title: "Turn the morning brief on or off",
-  description: "Turn the person's morning brief on or off: a short message each morning with their next item, the people waiting on them and their money left. Sending it by email or notification is not built yet, so turning it on only keeps their choice. Only when the person asks.",
+const to = z.union([
+  z.enum(["top", "bottom"]),
+  z.number().int().min(0).max(99),
+  z.object({ before: z.string().max(60) }),
+  z.object({ after: z.string().max(60) }),
+]);
+
+export const setDashboardCardAction = action({
+  id: "set_dashboard_card",
+  title: "Change the dashboard",
+  description: `Show, hide, move or size cards on the person's dashboard (/dashboard), by card id from dashboard. Give a card's id with hidden true to hide it or false to show it; to to move it ("top", "bottom", a position from 0, or { before: id } / { after: id }); size (${CARD_SIZES.join(", ")}, or null for its default). Several changes apply in order. Only the cards dashboard lists exist; you cannot make a new one. Only when the person asked.`,
   tier: "own",
   on: ["chat", "mcp"],
-  input: z.object({ on: z.boolean() }),
-  run: async ({ userId }, { on }) => ({ on, was: await setMorningBrief(userId, on), href: "/settings/dashboard" }),
-  change: (r) => ({ before: { on: r.was }, after: { on: r.on } }),
-  undo: async ({ userId }, c) => {
-    const b = c.before as { on?: unknown } | null;
-    if (typeof b?.on !== "boolean") throw new Error("This change cannot be undone.");
-    await setMorningBrief(userId, b.on);
+  input: z.object({
+    changes: z.array(z.object({
+      id: z.string().max(60).describe("A card id from dashboard, such as 'events'"),
+      hidden: z.boolean().optional(),
+      to: to.optional(),
+      size: z.enum(CARD_SIZES).nullable().optional(),
+    })).min(1).max(20),
+  }),
+  // The layout before, so Undo can put it back.
+  before: async ({ userId }) => layoutOf(userId),
+  run: async ({ userId }, { changes }) => {
+    const { after } = await setLayout(userId, changes);
+    return { href: "/dashboard", cards: await cardsOut(after) };
   },
+  change: (r, _i, before) => ({ before, after: { href: r.href } }),
+  undo: async ({ userId }, c) => putLayout(userId, readLayout(c.before)),
 });
