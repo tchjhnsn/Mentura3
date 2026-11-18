@@ -47,6 +47,7 @@ const ROUTED: Record<string, string[]> = {
   // Profiles: Connect from a profile, and who sees each part
   "p/[key]/actions.ts#connectFromProfile": ["connect_with"],
   "p/[key]/actions.ts#setAudienceFromProfile": ["set_section_audience"],
+  "settings/site/actions.ts#setTemplateFromSettings": ["set_site_template"],
   // Settings, Account (Profiles and accounts, 2026-11-18)
   "settings/account/actions.ts#saveHandleAction": ["set_handle"],
   "settings/account/actions.ts#saveNameAction": ["set_name"],
@@ -206,6 +207,13 @@ const EXCLUDED: Record<string, string> = {
   "schole/actions.ts#importKindleAction": IMPORT,
   "schole/actions.ts#importItemsAction": "Keeps the candidates the person ticked from a file import; part of the import, which reaches Reflect only from the page.",
   "meals/actions.ts#instacartAction": "Sends the shopping list to Instacart and opens its checkout: an outside service where the person pays, so it stays a tap on the page.",
+  "p/[key]/actions.ts#subscribeToSite": "A visitor asks for someone's writing by email on that person's site; it is the visitor's act on someone else's page and changes no record of the person asking, so no model is offered it.",
+  "settings/site/actions.ts#saveDomainAction": "Your own domain's steps: they save a domain name, check public DNS and add it to the host, outside services read from this page only, so they stay taps on Settings.",
+  "settings/site/actions.ts#removeDomainAction": "Your own domain's steps: they save a domain name, check public DNS and add it to the host, outside services read from this page only, so they stay taps on Settings.",
+  "settings/site/actions.ts#checkDomainAction": "Your own domain's steps: they save a domain name, check public DNS and add it to the host, outside services read from this page only, so they stay taps on Settings.",
+  "journal/w/[id]/publish-actions.ts#publishWorkAction": PUBLISH,
+  "journal/w/[id]/publish-actions.ts#unpublishWorkAction": PUBLISH,
+  "journal/w/[id]/publish-actions.ts#republishAction": PUBLISH,
   "schole/actions.ts#publishQuoteAction": PUBLISH,
   "schole/actions.ts#unpublishQuoteAction": PUBLISH,
   "schole/actions.ts#publishLessonAction": PUBLISH,
