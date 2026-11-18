@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GlobeIcon, StoreIcon } from "lucide-react";
+import { GlobeIcon, PuzzleIcon, StoreIcon } from "lucide-react";
 import { CONNECTORS, GROUPS, GROUP_LABEL, PUBLIC_SOURCES } from "@reflect/core/connectors";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -12,6 +12,7 @@ import { mcpResource } from "@/server/site";
 import { disconnectAssistantAction } from "./actions";
 import { requireUser } from "@/server/session";
 import { connectionsOf } from "@/server/mcp-connections";
+import { pluginsOf } from "@/server/plugins";
 import { Mark } from "@/app/marketplace/parts";
 
 export const metadata: Metadata = { title: "Connections" };
@@ -24,7 +25,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function ConnectionsPage() {
   const user = await requireUser();
-  const [states, assistants, market] = await Promise.all([connections(user.id), connectedAssistants(auth, user.id), connectionsOf(user.id).catch(() => [])]);
+  const [states, assistants, market, plugins] = await Promise.all([connections(user.id), connectedAssistants(auth, user.id), connectionsOf(user.id).catch(() => []), pluginsOf(user.id).catch(() => [])]);
   const linked = market.filter((m) => m.status === "connected");
   const of = new Map(states.map((s) => [s.id, s]));
   const connected = CONNECTORS.filter((c) => of.get(c.id)?.state === "connected");
@@ -40,6 +41,7 @@ export default async function ConnectionsPage() {
         </Group>
         <Group title="From the marketplace" id="market">
           {linked.map((m) => <Row key={m.id} href={`/marketplace/${encodeURIComponent(m.connector)}`} icon={<Mark id={m.connector} name={m.name} size="size-6 text-[11px]" />} label={m.name} value="Connected" />)}
+          <Row href="/marketplace?tab=plugins" icon={<PuzzleIcon />} label="Plugins" value={plugins.length ? `${plugins.length} added` : undefined} sub={plugins.length ? undefined : "Skills for Ask Reflect"} />
           <Row href="/marketplace" icon={<StoreIcon />} label="Browse the marketplace" sub="GitHub, Vercel, Resend, Gmail and more" />
         </Group>
         {GROUPS.map((g) => {

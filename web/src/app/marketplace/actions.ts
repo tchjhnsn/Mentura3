@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { cleanServerUrl } from "@reflect/core/marketplace";
 import { requireUser } from "@/server/session";
 import { disconnect, startConnect } from "@/server/mcp-connections";
+import { addPlugin, removePlugin } from "@/server/plugins";
 
 // The marketplace's acts (2026-11-18). Connecting is a sign-in in the person's own browser at the service, and
 // disconnecting clears that sign-in, so both stay taps on the connector's page (page-actions.test.ts says why).
@@ -46,4 +47,20 @@ export async function disconnectAction(id: string, back: string): Promise<void> 
   revalidatePath("/marketplace");
   revalidatePath("/settings/connections");
   redirect(back.startsWith("/") && !back.startsWith("//") ? back : "/marketplace");
+}
+
+/** Add a plugin: its skill joins Ask Reflect's instructions. */
+export async function addPluginAction(id: string): Promise<void> {
+  const user = await requireUser();
+  await addPlugin(user.id, String(id));
+  revalidatePath("/marketplace");
+  redirect(`/marketplace/plugins/${encodeURIComponent(id)}?added=1`);
+}
+
+/** Remove a plugin; its connectors stay connected. */
+export async function removePluginAction(id: string): Promise<void> {
+  const user = await requireUser();
+  await removePlugin(user.id, String(id));
+  revalidatePath("/marketplace");
+  redirect(`/marketplace/plugins/${encodeURIComponent(id)}`);
 }
