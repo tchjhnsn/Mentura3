@@ -78,6 +78,8 @@ const ROUTED: Record<string, string[]> = {
   "life/work/space-actions.ts#hoursAction": ["add_record", "change_record"],
   "life/work/space-actions.ts#mainAction": ["main_aim"],
   "life/venture-actions.ts#startNaiveAction": ["start_naive_venture"],
+  "life/build-actions.ts#askToBuildFromPage": ["ask_to_build"],
+  "life/build-actions.ts#answerBuildFromPage": ["answer_build_request"],
   // Events
   "events/actions.ts#newEventAction": ["host_event"],
   "events/actions.ts#goingAction": ["going_to_event"],
