@@ -24,6 +24,15 @@ export async function profileSettings(userId: string): Promise<ProfileSettings> 
 
 const ensureRow = (userId: string) => db().query("INSERT INTO member_profile (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING", [userId]);
 
+/** Whether someone else has the handle, or had it in the last 30 days. */
+export async function handleTaken(handle: string, userId: string): Promise<boolean> {
+  const r = await db().query(
+    "SELECT 1 FROM member_profile WHERE handle = $1 AND user_id <> $2 UNION SELECT 1 FROM handle_redirect WHERE handle = $1 AND user_id <> $2 AND until > now()",
+    [handle, userId],
+  );
+  return r.rows.length > 0;
+}
+
 /** Sets the person's handle (null clears it). The old one sends people to them for 30 days. Returns the old handle. */
 export async function setHandle(userId: string, raw: string | null): Promise<string | null> {
   const handle = raw === null ? null : cleanHandle(raw);
@@ -33,13 +42,7 @@ export async function setHandle(userId: string, raw: string | null): Promise<str
   }
   const before = (await profileSettings(userId)).handle;
   if (before === handle) return before;
-  if (handle) {
-    const taken = await db().query(
-      "SELECT 1 FROM member_profile WHERE handle = $1 AND user_id <> $2 UNION SELECT 1 FROM handle_redirect WHERE handle = $1 AND user_id <> $2 AND until > now()",
-      [handle, userId],
-    );
-    if (taken.rows.length) throw new Error("That handle is taken.");
-  }
+  if (handle && (await handleTaken(handle, userId))) throw new Error("That handle is taken.");
   await ensureRow(userId);
   await db().query("UPDATE member_profile SET handle = $2, updated_at = now() WHERE user_id = $1", [userId, handle]);
   if (handle) await db().query("DELETE FROM handle_redirect WHERE handle = $1", [handle]);

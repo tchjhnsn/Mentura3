@@ -47,6 +47,10 @@ const ROUTED: Record<string, string[]> = {
   // Profiles: Connect from a profile, and who sees each part
   "p/[key]/actions.ts#connectFromProfile": ["connect_with"],
   "p/[key]/actions.ts#setAudienceFromProfile": ["set_section_audience"],
+  // Settings, Account (Profiles and accounts, 2026-11-18)
+  "settings/account/actions.ts#saveHandleAction": ["set_handle"],
+  "settings/account/actions.ts#saveNameAction": ["set_name"],
+  "settings/account/actions.ts#chooseAudienceAction": ["set_default_audience"],
   // Socials (Profiles and accounts, 2026-11-18)
   "settings/profile/socials/actions.ts#addSocialFromPage": ["add_social", "remove_social"],
   "settings/profile/socials/actions.ts#removeSocialFromPage": ["remove_social"],
