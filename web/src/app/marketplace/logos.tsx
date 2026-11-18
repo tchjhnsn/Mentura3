@@ -1,6 +1,6 @@
 // Connector logos from Simple Icons (CC0, simpleicons.org): each brand's own mark in its own color, drawn white on
 // that color. A connector without one keeps its initial on a color from its id (`Mark`).
-import { siCanva, siCloudflare, siFigma, siGithub, siGmail, siGooglecalendar, siHuggingface, siInstacart, siLinear, siNotion, siResend, siSentry, siStripe, siSupabase, siVercel } from "simple-icons";
+import { siAtlassian, siGoogledocs, siGoogledrive, siGooglesheets, siIntercom, siSlack, siZapier, siCanva, siCloudflare, siFigma, siGithub, siGmail, siGooglecalendar, siHuggingface, siInstacart, siLinear, siNotion, siResend, siSentry, siStripe, siSupabase, siVercel } from "simple-icons";
 import { cn } from "@/lib/utils";
 import { Mark } from "./parts";
 
@@ -8,6 +8,7 @@ type Icon = { path: string; hex: string; title: string };
 const ICONS: Record<string, Icon> = {
   github: siGithub, vercel: siVercel, cloudflare: siCloudflare, supabase: siSupabase, resend: siResend, gmail: siGmail, notion: siNotion, linear: siLinear,
   sentry: siSentry, stripe: siStripe, canva: siCanva, figma: siFigma, huggingface: siHuggingface, instacart: siInstacart, "google-calendar": siGooglecalendar,
+  atlassian: siAtlassian, "google-drive": siGoogledrive, "google-docs": siGoogledocs, "google-sheets": siGooglesheets, intercom: siIntercom, slack: siSlack, zapier: siZapier,
 };
 
 /** A connector's logo tile: the brand's mark when Simple Icons has it, else its initial. */
