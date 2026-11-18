@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { knownGoing, nextGoing, upcomingEvents } from "@/server/events-store";
+import { knownGoing, upcomingEvents } from "@/server/events-store";
+import { goingNext } from "../data";
 import { lifeRecords } from "@/server/life-store";
 import { profileSettings } from "@/server/profile-store";
 import { followedTopics } from "@/server/topics";
@@ -18,7 +19,7 @@ const Faces = ({ people }: { people: readonly KnownPerson[] }) =>
  */
 export async function EventsCard({ ctx }: { ctx: Ctx }) {
   const [going, upcoming, profile, topics, ventures] = await Promise.all([
-    safe(nextGoing(ctx.userId), null).then((n) => (n && pickEvents([n], ctx.now, 1)[0] ? n : null)),
+    safe(goingNext(ctx.userId), null).then((n) => (n && pickEvents([n], ctx.now, 1)[0] ? n : null)),
     safe(upcomingEvents({ from: ctx.now, limit: 80 }), []),
     safe(profileSettings(ctx.userId), null),
     safe(followedTopics(ctx.userId), []),

@@ -8,7 +8,10 @@ import { runAction } from "./run";
  * Run an entry for the signed-in person from a page. The input is checked against the entry's schema first; what is
  * wrong with it comes back as a plain error, as the stores' own errors do.
  */
-export async function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: string, input: z.input<S>): Promise<R> {
+export function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: string, input: z.input<S>): Promise<R>;
+/** The same, with the change log's id of the run, for a page that offers Undo (the dashboard's toast). */
+export function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: string, input: z.input<S>, opts: { change: true }): Promise<{ result: R; changeId: string | null }>;
+export async function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: string, input: z.input<S>, opts?: { change: true }): Promise<R | { result: R; changeId: string | null }> {
   let parsed = input as unknown;
   if (a.input) {
     const r = a.input.safeParse(input);
@@ -20,5 +23,5 @@ export async function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: 
   }
   const ran = await runAction(a, { userId }, parsed as z.output<S>, "page");
   if (ran.held) throw new Error("That waits for a tap on its card in Ask.");
-  return ran.result;
+  return opts?.change ? { result: ran.result, changeId: ran.changeId } : ran.result;
 }

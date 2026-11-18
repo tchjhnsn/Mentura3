@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { planOf } from "@/server/plan";
+import { planFor } from "../data";
 import { budgetView } from "@reflect/core/budget";
 import { money, Section, type Ctx } from "../parts";
 
@@ -13,7 +13,7 @@ export const BUDGET_ASK = `/chat?q=${encodeURIComponent("Help me set my monthly 
  * person to set a budget instead, opening the income plan's Budget section (allotments are set there with Ask Reflect).
  */
 export async function MoneyCard({ ctx }: { ctx: Ctx }) {
-  const { plan, budget } = await planOf(ctx.userId);
+  const { plan, budget } = await planFor(ctx.userId);
   const v = budgetView(plan, budget);
   if (v.allotted === 0) {
     return (
