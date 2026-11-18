@@ -2,9 +2,10 @@ import { gateway } from "@ai-sdk/gateway";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
 
-/** The chat's model on Vercel AI Gateway unless REFLECT_CHAT_MODEL names another: Claude Haiku 5.5, which holds a
- * conversation and chooses tools well, at the price gpt-oss-120b had ($0.10 in and $0.50 out per million tokens). */
-export const CHAT_MODEL = "anthropic/claude-haiku-5.5";
+/** The chat's model on Vercel AI Gateway unless REFLECT_CHAT_MODEL names another. gpt-oss-120b is open to the
+ * gateway's free tier; Anthropic's models (anthropic/claude-haiku-5.5, anthropic/claude-sonnet-5.5) are refused there
+ * until the team buys AI Gateway credits, so set REFLECT_CHAT_MODEL to one of them only after that. */
+export const CHAT_MODEL = "openai/gpt-oss-120b";
 
 /**
  * The chat's model: CHAT_MODEL through Vercel AI Gateway when deployed (it signs in with the deployment's OIDC

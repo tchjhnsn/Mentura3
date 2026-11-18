@@ -69,7 +69,7 @@ export type Waiting = { change: string; title: string; preview: string; tap: "Ke
 export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[] } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
   const [id] = useState(() => crypto.randomUUID());
-  const { messages, sendMessage, status } = useChat({ id, transport });
+  const { messages, sendMessage, status, error, regenerate } = useChat({ id, transport });
   return (
     <div className="mx-auto flex h-screen max-w-3xl flex-col p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -94,6 +94,12 @@ export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?
               </Message>
             ))
           )}
+          {error ? (
+            <div role="alert" className="text-muted-foreground flex items-center gap-3 text-sm">
+              <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
+              <button type="button" className="text-foreground underline underline-offset-4" onClick={() => void regenerate()}>Try again</button>
+            </div>
+          ) : null}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
