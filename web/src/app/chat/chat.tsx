@@ -39,9 +39,26 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 const STARTERS = ["Help me think through a decision", "What should I read next?", "What's on my calendar this week?"];
-const MODEL_KEY = "reflect.ask.model";
+export const MODEL_KEY = "reflect.ask.model";
+/** Where a page that asked inline (the dashboard's ask bar) leaves its conversation for "Continue in chat": { id, messages }. */
+export const CARRY_KEY = "reflect.ask.carry";
 
-function Answer({ message, streaming }: { message: UIMessage; streaming: boolean }) {
+/** The conversation another page left for this chat id, or null. Read once and removed. */
+function carried(id: string): UIMessage[] | null {
+  try {
+    const raw = sessionStorage.getItem(CARRY_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw) as { id?: unknown; messages?: unknown };
+    if (v.id !== id || !Array.isArray(v.messages)) return null;
+    sessionStorage.removeItem(CARRY_KEY);
+    return v.messages as UIMessage[];
+  } catch {
+    return null;
+  }
+}
+
+/** One answer of Ask Reflect: its steps, cards (with Approval and Undo), words and sources. The dashboard's ask bar draws answers with it too. */
+export function Answer({ message, streaming }: { message: UIMessage; streaming: boolean }) {
   const { spec } = useJsonRenderMessage(message.parts);
   const reply = message.parts.filter((p) => p.type === "text" && p.text.trim());
   const hasCards = Boolean(spec) && message.parts.some((p) => p.type === SPEC_DATA_PART_TYPE);
@@ -62,9 +79,10 @@ function Answer({ message, streaming }: { message: UIMessage; streaming: boolean
 /** A held change shown at the top of Ask, with where it was asked for. */
 export type Waiting = { change: string; title: string; preview: string; tap: "Keep" | "Send"; from: string };
 
-export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[] } = {}) {
-  // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
-  const [id] = React.useState(() => crypto.randomUUID());
+export function Chat({ ask, pending = [], plans = [], chatId, initial }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[]; chatId?: string; initial?: UIMessage[] } = {}) {
+  // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history. A chat
+  // continued from another page (the dashboard) keeps that page's id, so it stays one conversation in the history.
+  const [id] = React.useState(() => chatId ?? crypto.randomUUID());
   const [model, setModel] = React.useState("default");
   React.useEffect(() => {
     try {
@@ -78,7 +96,14 @@ export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?
   modelRef.current = model;
   // The device's date goes with each message, so the journal entry this chat is kept in has the person's day.
   const [transport] = React.useState(() => new DefaultChatTransport({ api: "/api/chat", body: () => ({ localDate: today(), model: modelRef.current }) }));
-  const { messages, sendMessage, setMessages, status, error, regenerate, stop } = useChat({ id, transport });
+  const { messages, sendMessage, setMessages, status, error, regenerate, stop } = useChat({ id, transport, ...(initial?.length ? { messages: initial } : {}) });
+  // The whole conversation as the other page had it (cards and steps too), when it left one; otherwise `initial`, its
+  // words as the chat history keeps them.
+  React.useEffect(() => {
+    if (!chatId) return;
+    const left = carried(chatId);
+    if (left?.length) setMessages(left);
+  }, [chatId, setMessages]);
   const [draft, setDraft] = React.useState("");
   const form = React.useRef<HTMLFormElement>(null);
   const input = React.useRef<HTMLTextAreaElement>(null);
