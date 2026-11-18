@@ -139,3 +139,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
   --primary: oklch(0.9 0 0); --primary-foreground: oklch(0.205 0 0); --secondary: oklch(0.269 0 0); --secondary-foreground: oklch(0.9 0 0); --muted: oklch(0.269 0 0); --muted-foreground: oklch(0.68 0 0);
   --accent: oklch(0.269 0 0); --accent-foreground: oklch(0.9 0 0); --border: oklch(1 0 0 / 12%); --input: oklch(1 0 0 / 15%); --ring: oklch(0.556 0 0);
 }
+
+/* A published post (src/app/p/[key]/[slug]): the journal's book face at 18px in a 680px column. */
+.writing.post-body { font-size: 1.125rem; }
+.writing.post-body h2 { scroll-margin-top: 4.5rem; }
