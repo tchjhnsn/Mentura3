@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { nextGoing, upcomingEvents } from "@/server/events-store";
+import { pickEvents } from "../lists";
 import { Empty, eventWhen, safe, Section, type Ctx } from "../parts";
 
-/** Events: the next one you're going to and three in Austin. */
+/** Events: the next one you're going to and three in Austin, upcoming first and none that began more than a day ago. */
 export async function EventsCard({ ctx }: { ctx: Ctx }) {
-  const [going, nearby] = await Promise.all([safe(nextGoing(ctx.userId), null), safe(upcomingEvents({ from: ctx.now, limit: 4 }), [])]);
-  const events = nearby.filter((e) => e.id !== going?.id).slice(0, 3);
+  const [next, nearby] = await Promise.all([safe(nextGoing(ctx.userId), null), safe(upcomingEvents({ from: ctx.now, limit: 40 }), [])]);
+  const going = next && pickEvents([next], ctx.now, 1)[0] ? next : null;
+  const events = pickEvents(nearby.filter((e) => e.id !== going?.id), ctx.now, 3);
   return (
     <Section title="Events" href="/events" more="Events">
       <ul className="grid grid-cols-[minmax(0,1fr)] gap-1">
