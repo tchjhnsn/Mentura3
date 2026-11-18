@@ -17,7 +17,10 @@ import { currentUser } from "@/server/session";
 import { incomingRequests, requestedTo } from "@/server/connect-store";
 import { ownerOf, profilePage, type Experience, type ProfilePage } from "@/server/profile-store";
 import { profileHref } from "@/server/actions/profiles";
+import { postsOf, siteOf, type Post } from "@/server/site-store";
 import { connectFromProfile, setAudienceFromProfile } from "./actions";
+import { SubscribeButton } from "./subscribe";
+import { SiteFooter, WritingList } from "./site-parts";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -25,7 +28,8 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const owner = await ownerOf((await params).key).catch(() => null);
   const p = owner ? await profilePage(owner.id, null).catch(() => null) : null;
-  return { title: p?.name ?? "Profile" };
+  if (!p) return { title: "Profile" };
+  return { title: p.name, description: p.line ?? undefined, alternates: { types: { "application/rss+xml": `${profileHref(p)}/feed.xml` } } };
 }
 
 /** Where the owner adds to an empty part, and the one line it shows. */
@@ -73,21 +77,32 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
   const href = profileHref(p);
   const editing = isOwner && !preview;
   const error = one(sp.error) || null;
+  // The profile is the person's site (doc "Personal site and blog design guide", 2026-11-18): their writing comes
+  // first, and once there is any, Subscribe is the one filled act for everyone else.
+  const [site, posts] = await Promise.all([siteOf(owner.id).catch(() => ({ template: "plain" as const })), postsOf(owner.id, 20).catch((): Post[] => [])]);
+  const template = site.template;
+  const subscribe = !isOwner && posts.length ? <SubscribeButton ownerId={p.id} name={p.name} className="flex-1 sm:flex-none" /> : null;
+  const quiet = subscribe ? "outline" : "default";
 
   // The main act: Edit on your own page; Sign in to connect signed out; In Friends once connected; Connect for someone
   // you've met or who asked you; Requested after the tap; nothing for anyone else.
   let act: ReactNode = null;
   let bar = false;
   if (isOwner) act = <Button asChild variant="outline"><Link href="/settings/profile"><PencilIcon />Edit</Link></Button>;
-  else if (!user) { act = <Button asChild className="w-full sm:w-auto"><Link href={`/sign-in?next=${encodeURIComponent(href)}`}>Sign in to connect</Link></Button>; bar = true; }
-  else if (p.connected) { act = <Button asChild variant="outline" className="w-full sm:w-auto"><Link href={`/life/friends/messages/${encodeURIComponent(p.id)}`}><UsersIcon />In Friends</Link></Button>; bar = true; }
+  else if (!user) { act = <Button asChild variant={quiet} className="flex-1 sm:flex-none"><Link href={`/sign-in?next=${encodeURIComponent(href)}`}>Sign in to connect</Link></Button>; bar = true; }
+  else if (p.connected) { act = <Button asChild variant="outline" className="flex-1 sm:flex-none"><Link href={`/life/friends/messages/${encodeURIComponent(p.id)}`}><UsersIcon />In Friends</Link></Button>; bar = true; }
   else {
     const [asked, requested] = await Promise.all([incomingRequests(user.id).then((r) => r.some((q) => q.from.id === p.id)), requestedTo(user.id, p.id)]);
-    if (requested) { act = <Button variant="outline" disabled className="w-full sm:w-auto">Requested</Button>; bar = true; }
+    if (requested) { act = <Button variant="outline" disabled className="flex-1 sm:flex-none">Requested</Button>; bar = true; }
     else if (p.viewer === "met" || asked) {
-      act = <form action={connectFromProfile.bind(null, p.id, href)} className="w-full sm:w-auto"><Button type="submit" className="w-full sm:w-auto">Connect</Button></form>;
+      act = <form action={connectFromProfile.bind(null, p.id, href)} className="flex flex-1 sm:flex-none"><Button type="submit" variant={quiet} className="w-full">Connect</Button></form>;
       bar = true;
     }
+  }
+
+  if (subscribe) {
+    act = <>{act}{subscribe}</>;
+    bar = true;
   }
 
   const section = (id: SectionId, has: boolean, body: ReactNode) => {
@@ -106,9 +121,24 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
 
   const positions = (p.experience ?? []).filter((e) => e.kind === "position");
   const schools = (p.experience ?? []).filter((e) => e.kind === "school");
+  const notebook = template === "notebook";
+  const shown = notebook ? posts.slice(0, 10) : posts.slice(0, 3);
+  const writing = posts.length || editing ? (
+    <Section key="writing" title="Writing" tools={editing ? <Button asChild variant="ghost" size="icon" className="size-8" aria-label="Your site's settings"><Link href="/settings/site"><PencilIcon /></Link></Button> : undefined}>
+      {posts.length ? (
+        <div className="grid gap-3">
+          <WritingList posts={shown} href={href} serif={notebook} />
+          {posts.length > shown.length ? <Link href={`${href}/writing`} className="text-sm font-medium hover:underline">All writing</Link> : null}
+        </div>
+      ) : (
+        <EmptyLine line="Publish an essay, letter, plan or memoir from your journal." href="/journal" label="Go to your journal" />
+      )}
+    </Section>
+  ) : null;
+  const building = section("building", p.building !== null && (p.building.length > 0 || p.wantsBuilders), <Building p={p} owner={isOwner} />);
   const main = [
+    ...(template === "builder" ? [building, writing] : [writing, building]),
     section("socials", !!p.socials?.length, <Socials p={p} />),
-    section("building", p.building !== null && (p.building.length > 0 || p.wantsBuilders), <Building p={p} owner={isOwner} />),
     section("qualities", !!p.qualities?.length, <Chips items={(p.qualities ?? []).map((q) => q.label)} />),
     section("experience", !!p.experience?.length, <div className="grid gap-4"><ExperienceList rows={positions} />{schools.length ? <ExperienceList rows={schools} /> : null}</div>),
   ].filter(Boolean);
@@ -134,7 +164,7 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
 
   return (
     <main className={cn(PAGE, bar && "pb-24 sm:pb-6")}>
-      <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? act : undefined} />
+      <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
 
       {isOwner ? (
         <div className="bg-muted text-muted-foreground mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
@@ -151,11 +181,11 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
       <section aria-label="Who" className="mt-6 flex items-start gap-4">
         <Face name={p.name} size={80} />
         <div className="min-w-0 flex-1 pt-1">
-          <h1 id="page-title" className="text-3xl font-bold tracking-tight break-words">{p.name}</h1>
+          <h1 id="page-title" className={cn("text-3xl font-bold tracking-tight break-words", notebook && "font-serif")}>{p.name}</h1>
           {p.handle ? <p className="text-muted-foreground text-sm">@{p.handle}</p> : null}
           {p.line ? <p className="mt-2 max-w-prose">{p.line}</p> : editing ? <EmptyLine line="Add one line about you." href="/settings/profile" label="Add your line" /> : null}
         </div>
-        {act ? <div className={cn("shrink-0", bar && "hidden sm:block")}>{act}</div> : null}
+        {act ? <div className={cn("flex shrink-0 gap-2", bar && "hidden sm:flex")}>{act}</div> : null}
       </section>
 
       {error ? <p className="text-destructive mt-4 text-sm">{error}</p> : null}
@@ -165,7 +195,9 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
         {side.length ? <aside className="md:bg-muted/40 grid content-start gap-6 border-t pt-6 md:rounded-xl md:border-t-0 md:p-5">{side}</aside> : null}
       </div>
 
-      {bar && act ? <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 flex border-t px-4 py-3 backdrop-blur sm:hidden">{act}</div> : null}
+      <SiteFooter href={href} />
+
+      {bar && act ? <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t px-4 py-3 backdrop-blur sm:hidden">{act}</div> : null}
     </main>
   );
 }
