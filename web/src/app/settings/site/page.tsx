@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, MailIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, MailIcon, SendIcon } from "lucide-react";
 import { TEMPLATES, type TemplateId } from "@reflect/core/site";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { profileSettings } from "@/server/profile-store";
 import { postsOf, siteOf, subscribersOf } from "@/server/site-store";
+import { siteCanSend } from "@/server/site-connectors";
 import { profileHref } from "@/server/actions/profiles";
 import { CopyLink } from "../copy-link";
 import { setTemplateFromSettings } from "./actions";
@@ -32,7 +33,7 @@ function Thumb({ id }: { id: TemplateId }) {
 /** Settings, Your site (doc "Personal site and blog design guide", page 4): template, address, export and subscribers. */
 export default async function SiteSettings() {
   const user = await requireUser();
-  const [settings, site, posts, subs] = await Promise.all([profileSettings(user.id), siteOf(user.id), postsOf(user.id), subscribersOf(user.id)]);
+  const [settings, site, posts, subs, mail] = await Promise.all([profileSettings(user.id), siteOf(user.id), postsOf(user.id), subscribersOf(user.id), siteCanSend(user.id).catch(() => ({ via: null }))]);
   const href = profileHref({ id: user.id, handle: settings.handle });
   return (
     <main className={PAGE}>
@@ -83,6 +84,7 @@ export default async function SiteSettings() {
             <span className="flex-1">{subs.confirmed.length} {subs.confirmed.length === 1 ? "subscriber" : "subscribers"}</span>
             {subs.waiting ? <span className="text-muted-foreground text-sm">{subs.waiting} not confirmed</span> : null}
           </li>
+          <Row href="/marketplace?c=email" icon={<SendIcon />} label={mail.via ? `Emails go out through ${mail.via}` : "Connect an email account"} sub={mail.via ? undefined : "Gmail or Resend, to send confirmations and new posts"} />
           {subs.confirmed.length ? (
             <li>
               <a href="/api/site/subscribers" download className="hover:bg-accent text-primary flex min-h-14 items-center gap-4 px-4 py-3 transition">

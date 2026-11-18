@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GlobeIcon } from "lucide-react";
+import { GlobeIcon, StoreIcon } from "lucide-react";
 import { CONNECTORS, GROUPS, GROUP_LABEL, PUBLIC_SOURCES } from "@reflect/core/connectors";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -11,6 +11,8 @@ import { connections } from "@/server/connections-store";
 import { mcpResource } from "@/server/site";
 import { disconnectAssistantAction } from "./actions";
 import { requireUser } from "@/server/session";
+import { connectionsOf } from "@/server/mcp-connections";
+import { Mark } from "@/app/marketplace/parts";
 
 export const metadata: Metadata = { title: "Connections" };
 export const dynamic = "force-dynamic";
@@ -22,7 +24,8 @@ export const dynamic = "force-dynamic";
  */
 export default async function ConnectionsPage() {
   const user = await requireUser();
-  const [states, assistants] = await Promise.all([connections(user.id), connectedAssistants(auth, user.id)]);
+  const [states, assistants, market] = await Promise.all([connections(user.id), connectedAssistants(auth, user.id), connectionsOf(user.id).catch(() => [])]);
+  const linked = market.filter((m) => m.status === "connected");
   const of = new Map(states.map((s) => [s.id, s]));
   const connected = CONNECTORS.filter((c) => of.get(c.id)?.state === "connected");
   // Within a group, what can be connected comes before what cannot.
@@ -34,6 +37,10 @@ export default async function ConnectionsPage() {
         <h1 id="page-title" className="text-center text-xl font-semibold tracking-tight">Connections</h1>
         <Group title="Your accounts" id="yours">
           {connected.length ? connected.map((c) => <ConnectorRow key={c.id} c={c} s={of.get(c.id)} />) : <li className="text-muted-foreground px-4 py-4 text-sm">Nothing connected yet. Connect here or from a tile.</li>}
+        </Group>
+        <Group title="From the marketplace" id="market">
+          {linked.map((m) => <Row key={m.id} href={`/marketplace/${encodeURIComponent(m.connector)}`} icon={<Mark id={m.connector} name={m.name} size="size-6 text-[11px]" />} label={m.name} value="Connected" />)}
+          <Row href="/marketplace" icon={<StoreIcon />} label="Browse the marketplace" sub="GitHub, Vercel, Resend, Gmail and more" />
         </Group>
         {GROUPS.map((g) => {
           const rest = CONNECTORS.filter((c) => c.group === g && of.get(c.id)?.state !== "connected").sort((a, b) => rank(a.id) - rank(b.id));
