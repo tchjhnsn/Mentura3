@@ -30,7 +30,7 @@ const DASHBOARD = ["dashboard", "set_dashboard_card", "dashboard_today", "set_mo
 // The person's own site (Personal site and blog, 2026-11-18): read it; change its template. Publishing is a tap only.
 const SITE = ["site", "set_site_template"];
 // The marketplace (2026-11-18): the person's connectors, a tool that only reads, and one that waits for Send.
-const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "site_edit"];
+const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "site_edit", "plugins"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
 const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
@@ -104,7 +104,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "connectors", "connector_read", "site_files", "life"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "connectors", "connector_read", "site_files", "plugins", "life"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {

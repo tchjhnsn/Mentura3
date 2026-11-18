@@ -171,3 +171,79 @@ export function emailArgs(tool: ToolLike, mail: { to: string; subject: string; t
   const missing = (tool.inputSchema?.required ?? []).filter((r) => !(r in args));
   return missing.length ? null : args;
 }
+
+// Plugins (Torian, 2026-11-18 21:11Z, "Skills first, apps later"): a plugin bundles connectors from the catalog with a
+// skill, instructions Ask Reflect follows while the plugin is added, as Claude's plugins bundle skills and MCP servers.
+// Apps (plugins with their own pages, made by others) are not built.
+
+export type MarketPlugin = {
+  id: string;
+  name: string;
+  /** Who made it: Reflect for every plugin in this catalog. */
+  by: string;
+  category: MarketCategory;
+  /** One line on what adding it does. */
+  line: string;
+  /** Catalog connectors it works through; it works once any one of them is connected. */
+  connectors: readonly string[];
+  /** What Ask Reflect does with it, in the person's words. */
+  does: readonly string[];
+  /** The skill: instructions Ask Reflect follows while the plugin is added. */
+  skill: string;
+};
+
+export const PLUGINS: readonly MarketPlugin[] = [
+  {
+    id: "own-site", name: "Your own site", by: "Reflect", category: "build", connectors: ["github"],
+    line: "Work on the site you host yourself from Ask Reflect.",
+    does: ["Read your site's files and explain them", "Change a page, a style or a post when you ask, after you tap Send"],
+    skill: "When the person asks about or wants to change the site they host themselves, read it with site_files (start at the top folder, then the file). Make the smallest change that does what they asked, keep the site's own style and conventions, and write it with site_edit with the file's whole new text and a plain commit message; it waits for their Send. Posts are published from the journal with Publish, not written here. If no repository is linked, point them to Settings, Your site, Your own site on GitHub (/settings/site/repo).",
+  },
+  {
+    id: "site-launch", name: "Launch your site", by: "Reflect", category: "build", connectors: ["vercel", "cloudflare"],
+    line: "Deploy your site, check its builds and point your domain at it.",
+    does: ["Deploy your exported site to your Vercel", "Read a failed build's logs and say what broke", "Add your domain's DNS record when you ask"],
+    skill: "When the person asks to put their site online or why it is down, use their Vercel connector through connectors and connector_read: list their projects and deployments and read a failed build's logs before explaining what broke in plain words. Deploying is a tap on Host it yourself (/settings/site/export). Changing DNS or anything else in their account goes through connector_act and waits for Send.",
+  },
+  {
+    id: "newsletter", name: "Newsletter", by: "Reflect", category: "email", connectors: ["resend", "gmail"],
+    line: "Send your posts to your subscribers from your own address.",
+    does: ["Email a new post to your subscribers when you publish", "Draft a note to your subscribers when you ask"],
+    skill: "When the person wants to write to their site's subscribers, draft the email in their voice from what they have published (site), short and plain, and send it through their email connector with connector_act, which waits for Send. Sending a post happens with Email it to subscribers on Publish. Never email anyone who has not subscribed.",
+  },
+  {
+    id: "venture-tracker", name: "Venture tracker", by: "Reflect", category: "work", connectors: ["linear", "notion"],
+    line: "Turn what you decide in Ventures into issues and pages.",
+    does: ["Open an issue or a page from a decision or an idea when you ask", "Read what is open before you plan your week"],
+    skill: "When the person asks to track work from their ventures or ideas, read what is already open in their Linear or Notion with connector_read before adding anything, so nothing is doubled. Write each issue or page with a title they would recognise and the reason in one line, through connector_act, which waits for Send. Never copy journal text into another service unless they ask for that text.",
+  },
+  {
+    id: "money-in", name: "Money in", by: "Reflect", category: "money", connectors: ["stripe"],
+    line: "See what your work earns next to your budget.",
+    does: ["Read your Stripe balance and payments into your plan when you ask", "Make a payment link after you tap Send"],
+    skill: "When the person asks what their work earns, read their Stripe balance and recent payments with connector_read and set them beside their budget and income plan (budget, life) in plain numbers, saying the dates covered. Making a payment link or anything that charges or refunds goes through connector_act, waits for Send, and is never done unasked.",
+  },
+  {
+    id: "design-help", name: "Design help", by: "Reflect", category: "design", connectors: ["figma", "canva"],
+    line: "Bring your designs into what you are making.",
+    does: ["Read a Figma design when you ask", "Find or start a Canva design for a post or an event"],
+    skill: "When the person asks about a design, read it through their Figma or Canva connector with connector_read and describe what matters for their task. Making or changing a design goes through connector_act and waits for Send.",
+  },
+];
+
+export const pluginById = (id: string) => PLUGINS.find((p) => p.id === id);
+
+/** The plugin's connectors that are connected, and whether it can work (any one is). */
+export function pluginReady(p: MarketPlugin, connected: ReadonlySet<string>): { connected: string[]; works: boolean } {
+  const on = p.connectors.filter((c) => connected.has(c));
+  return { connected: on, works: on.length > 0 };
+}
+
+/** The skills of the added plugins as one block for Ask Reflect's instructions; "" when none are added. */
+export function pluginSkills(added: readonly MarketPlugin[], connected: ReadonlySet<string>): string {
+  const lines = added.map((p) => {
+    const r = pluginReady(p, connected);
+    return `- ${p.name}${r.works ? "" : ` (not working yet: connect ${p.connectors.map((c) => marketById(c)?.name ?? c).join(" or ")} at /marketplace)`}: ${p.skill}`;
+  });
+  return lines.length ? `Plugins the person added from the marketplace. Follow each one's skill when the request is about it:\n${lines.join("\n")}` : "";
+}

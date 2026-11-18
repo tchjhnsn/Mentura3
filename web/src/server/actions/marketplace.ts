@@ -5,6 +5,8 @@ import { z } from "zod";
 import { connectionsOf, callTool, toolsOf } from "../mcp-connections";
 import { browseRepo, writeRepoFile } from "../site-repo";
 import { siteOf } from "../site-store";
+import { connectedIds, pluginsOf } from "../plugins";
+import { pluginReady } from "@reflect/core/marketplace";
 import { action, type ActionContext } from "./types";
 
 const find = async (userId: string, name: string) => {
@@ -107,4 +109,17 @@ export const siteEditAction = action({
   preview: async ({ userId }, { path, content, message }) => `${(await siteOf(userId)).repo?.repo ?? "Your site"}: commit "${message}" writing ${path} (${content.length} characters)`,
   run: async ({ userId }, { path, content, message }) => writeRepoFile(userId, path.replace(/^\/+/, ""), content, message),
   change: (r) => ({ after: { repo: r.repo, path: r.path } }),
+});
+
+export const pluginsAction = action({
+  id: "plugins",
+  title: "Read the person's plugins",
+  description: "List the plugins the person added from the marketplace (/marketplace?tab=plugins), each with its skill: instructions to follow when a request is about it, and whether its connectors are connected. MCP clients should read it at the start of a session.",
+  tier: "read",
+  on: ["chat", "mcp"],
+  input: z.object({}),
+  run: async ({ userId }) => {
+    const [added, on] = await Promise.all([pluginsOf(userId), connectedIds(userId)]);
+    return { href: "/marketplace?tab=plugins", plugins: added.map((p) => ({ id: p.id, name: p.name, skill: p.skill, works: pluginReady(p, on).works, connectors: p.connectors })) };
+  },
 });
