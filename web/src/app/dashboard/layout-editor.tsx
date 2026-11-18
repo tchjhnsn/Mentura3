@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useRef, useState, useTransition, 
 import { EyeIcon, EyeOffIcon, GripVerticalIcon, RectangleHorizontalIcon, Settings2Icon, SquareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { CardSize } from "@/server/dashboard-layout";
+import type { CardSize } from "./urgency";
 import { saveLayoutAction } from "./actions";
 import { useDashToast } from "./instant";
 import { moveTo } from "./urgency";

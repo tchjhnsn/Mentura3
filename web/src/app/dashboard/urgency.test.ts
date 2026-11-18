@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanLayout, EMPTY_LAYOUT } from "@/server/dashboard-layout";
-import { arrange, hoursSince, minutesBetween, movable, moveTo, nextDay, overdueScore, soonScore, waitingScore } from "./urgency";
+import { arrange, cleanLayout, EMPTY_LAYOUT, hoursSince, minutesBetween, movable, moveTo, nextDay, overdueScore, soonScore, waitingScore } from "./urgency";
 
 const defs = [
   { id: "today", column: "main" as const },

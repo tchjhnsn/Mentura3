@@ -304,6 +304,19 @@ export const APPS: readonly LifeApp[] = [
         fields: BUDGET_FIELDS,
       },
       {
+        // A card on Home for a time (`./home-cards.ts`), placed by Ask Reflect: the whole card is kept as JSON in
+        // `card`, with its title and days beside it. It has no states or acts, so the log does not list it.
+        id: "card", label: "Home card", plural: "Home cards", title: "title", hidden: true,
+        intro: "A small card on Home for a time, such as a word a day or a checklist.",
+        fields: [
+          { key: "title", label: "Title", kind: "text" },
+          { key: "tile", label: "Tile", kind: "text", internal: true },
+          { key: "start", label: "Starts", kind: "day" },
+          { key: "end", label: "Ends", kind: "day" },
+          { key: "card", label: "Card", kind: "long", internal: true },
+        ],
+      },
+      {
         id: "firearm", label: "Firearm", plural: "Firearms", title: "name",
         intro: "Each firearm you own: training, safe storage (especially with children in the home) and permits, which state law sets.",
         fields: [
@@ -548,19 +561,6 @@ export const APPS: readonly LifeApp[] = [
         ],
         states: [{ id: "unplanned", label: "Unplanned" }, { id: "planned", label: "Planned", active: true }, { id: "current", label: "Kept current" }],
         acts: [{ id: "reviewed", label: "Reviewed", done: "Reviewed" }],
-      },
-      {
-        // A card on Home for a time (`./home-cards.ts`), placed by Ask Reflect: the whole card is kept as JSON in
-        // `card`, with its title and days beside it. It has no states or acts, so the log does not list it.
-        id: "card", label: "Home card", plural: "Home cards", title: "title", hidden: true,
-        intro: "A small card on Home for a time, such as a word a day or a checklist.",
-        fields: [
-          { key: "title", label: "Title", kind: "text" },
-          { key: "tile", label: "Tile", kind: "text", internal: true },
-          { key: "start", label: "Starts", kind: "day" },
-          { key: "end", label: "Ends", kind: "day" },
-          { key: "card", label: "Card", kind: "long", internal: true },
-        ],
       },
       {
         // The Adventures lens (`./adventures.ts`, decided 2026-11-17 11:02Z): kept here, with the things to do before

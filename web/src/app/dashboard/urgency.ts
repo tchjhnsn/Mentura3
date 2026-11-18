@@ -1,6 +1,41 @@
 // How soon each dashboard card needs the person, as a score from 0 (nothing pressing) to 100 (now). Pure, so it is
 // tested on its own (urgency.test.ts); each card's `urgency(ctx)` in cards/index.ts reads its data and calls these.
-import type { CardSize, DashLayout } from "@/server/dashboard-layout";
+import type { DashLayout as StoredLayout } from "@/server/dashboard-layout";
+
+// The layout as Edit dashboard works on it: the person's order, hidden cards and each card's width on a wide screen.
+// It is kept in the dashboard's layout store (../../server/dashboard-layout.ts, `sizes` small, medium or large), where
+// wide is large and normal is medium; `toEdit` and `fromEdit` turn one into the other.
+export type CardSize = "normal" | "wide";
+export type DashLayout = { order: string[]; hidden: string[]; size: Record<string, CardSize> };
+export const EMPTY_LAYOUT: DashLayout = { order: [], hidden: [], size: {} };
+const CARD_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const MAX_CARDS = 60;
+const ids = (v: unknown): string[] =>
+  Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === "string" && CARD_ID.test(x)))].slice(0, MAX_CARDS) : [];
+
+/** A layout as a page sent it, made safe: card ids only, each once, sizes normal or wide. */
+export function cleanLayout(raw: unknown): DashLayout {
+  const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const size: Record<string, CardSize> = {};
+  if (o.size && typeof o.size === "object") {
+    for (const [k, v] of Object.entries(o.size as Record<string, unknown>).slice(0, MAX_CARDS)) if (CARD_ID.test(k) && (v === "normal" || v === "wide")) size[k] = v;
+  }
+  return { order: ids(o.order), hidden: ids(o.hidden), size };
+}
+
+/** The stored layout as Edit dashboard reads it: large is wide, small and medium are normal, unset stays unset. */
+export function toEdit(l: StoredLayout): DashLayout {
+  const size: Record<string, CardSize> = {};
+  for (const [k, v] of Object.entries(l.sizes)) size[k] = v === "large" ? "wide" : "normal";
+  return { order: [...l.order], hidden: [...l.hidden], size };
+}
+
+/** An edited layout to store, keeping a stored small card small while it stays normal. */
+export function fromEdit(e: DashLayout, was: StoredLayout): StoredLayout {
+  const sizes: StoredLayout["sizes"] = {};
+  for (const [k, v] of Object.entries(e.size)) sizes[k] = v === "wide" ? "large" : was.sizes[k] === "small" ? "small" : "medium";
+  return { order: [...e.order], hidden: [...e.hidden], sizes };
+}
 
 /** Minutes from one clock time to another on the same day, both HH:MM; negative when `to` has passed. */
 export function minutesBetween(from: string, to: string): number {

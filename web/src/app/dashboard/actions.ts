@@ -8,8 +8,10 @@ import { connectWithAction } from "@/server/actions/connections";
 import { undoChangeAction } from "@/server/actions/changes";
 import { eventOf } from "@/server/calendar-store";
 import { declineRequest } from "@/server/connect-store";
-import { cleanLayout, setLayout } from "@/server/dashboard-layout";
-import { movable, nextDay } from "./urgency";
+import { layoutOf, putLayout } from "@/server/dashboard-layout";
+import { briefOf, type Brief } from "@/server/dashboard-brief";
+import { cleanLayout, fromEdit, movable, nextDay } from "./urgency";
+import { dayIn } from "./parts";
 
 // The dashboard's own taps. Each returns what happened instead of redirecting, so the card can update in place and
 // the toast can offer Undo with the change's id. Moving, connecting and Undo run the registry's entries (fromPage).
@@ -76,10 +78,16 @@ export async function undoFromDashboard(changeId: string): Promise<Done> {
 export async function saveLayoutAction(raw: unknown): Promise<Done> {
   const user = await requireUser();
   try {
-    await setLayout(user.id, cleanLayout(raw));
+    await putLayout(user.id, fromEdit(cleanLayout(raw), await layoutOf(user.id)));
     revalidatePath("/dashboard");
     return { ok: true, text: "Dashboard saved", changeId: null };
   } catch (err) {
     return failed(err, "Could not save the dashboard.");
   }
+}
+
+/** The brief's Refresh: writes today's brief again from the person's records and keeps it. */
+export async function refreshBriefAction(): Promise<Brief> {
+  const user = await requireUser();
+  return briefOf(user.id, dayIn(new Date()), { fresh: true });
 }
