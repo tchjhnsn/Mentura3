@@ -15,6 +15,8 @@ const PAGE = [
 const VENTURES = ["venture_files", "draft_naive_venture", "write_venture_file"];
 // People to build with (Events and connections, 2026-11-18): reading who to ask; asking and answering are page acts (in PAGE).
 const BUILD = ["people_to_build_with"];
+// Connections made at events (2026-11-18): requests and people met, Connect, the kind of a friendship, what people see.
+const CONNECT = ["connect_requests", "connect_with", "set_friend_kind", "profile", "set_profile"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
 const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
@@ -25,7 +27,7 @@ const CHAT_DIRECT = [
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
 ];
-const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...PAGE];
+const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PAGE];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
@@ -37,6 +39,7 @@ const MCP_TOOLS = [
   "messages", "send_message",
   ...VENTURES,
   ...BUILD,
+  ...CONNECT,
   ...PAGE,
 ];
 
@@ -80,7 +83,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "life"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "life"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
