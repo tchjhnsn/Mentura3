@@ -27,6 +27,7 @@ import { connectRequestsAction, connectWithAction, profileAction, setFriendKindA
 import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction } from "./socials";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
+import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
   keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
@@ -71,6 +72,7 @@ export const ACTIONS: readonly Action[] = [
   connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
   socialsAction, addSocialAction, removeSocialAction, confirmSocialAction,
   eventsAction, eventAction,
+  importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   ...PAGE_ACTIONS,
 ];
 
