@@ -33,12 +33,28 @@ export function Empty({ children }: { children: ReactNode }) {
   return <p className="text-muted-foreground text-sm">{children}</p>;
 }
 
-/** A card's place-holder while its data loads. */
-export function CardSkeleton() {
+/** The rough shape of a card, so its place-holder looks like what loads into it. */
+export type SkeletonShape = "hero" | "faces" | "stat" | "rows";
+
+const Bar = ({ className }: { className: string }) => <div className={cn("bg-muted animate-pulse rounded", className)} />;
+
+/** A card's place-holder while its data loads, shaped like the card: a big card with rows, faces, a figure, or rows. */
+export function CardSkeleton({ shape = "rows" }: { shape?: SkeletonShape }) {
   return (
     <div className="grid gap-3" aria-hidden="true">
-      <div className="bg-muted h-5 w-24 animate-pulse rounded" />
-      <div className="bg-muted h-20 animate-pulse rounded-xl" />
+      <div className="flex items-baseline justify-between"><Bar className="h-5 w-24" /><Bar className="h-4 w-14" /></div>
+      {shape === "hero" ? (
+        <>
+          <div className="bg-muted/60 grid animate-pulse gap-2 rounded-xl border p-4"><Bar className="h-4 w-28" /><Bar className="h-6 w-3/5" /></div>
+          {[0, 1, 2].map((i) => <div key={i} className="grid grid-cols-[6rem_1fr] gap-3 px-2 py-1.5"><Bar className="h-4 w-14" /><Bar className="h-4 w-4/5" /></div>)}
+        </>
+      ) : shape === "faces" ? (
+        [0, 1].map((i) => <div key={i} className="flex items-center gap-3 px-2 py-2"><div className="bg-muted size-10 shrink-0 animate-pulse rounded-full" /><div className="grid flex-1 gap-1.5"><Bar className="h-4 w-32" /><Bar className="h-3 w-3/4" /></div></div>)
+      ) : shape === "stat" ? (
+        <div className="grid gap-2 rounded-xl border p-4"><Bar className="h-4 w-36" /><Bar className="h-7 w-24" /><Bar className="h-4 w-48" /></div>
+      ) : (
+        [0, 1, 2].map((i) => <div key={i} className="grid gap-1.5 px-2 py-1.5"><Bar className="h-4 w-4/5" /><Bar className="h-3 w-2/5" /></div>)
+      )}
     </div>
   );
 }

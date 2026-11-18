@@ -4,6 +4,7 @@ import { lifeRecords } from "@/server/life-store";
 import { profileSettings } from "@/server/profile-store";
 import { followedTopics } from "@/server/topics";
 import { Avatar } from "@/app/events/parts";
+import { pickEvents } from "../lists";
 import { eventWhen, safe, Section, type Ctx } from "../parts";
 import { interestTerms, rankEvents, whyLine, type KnownPerson } from "../rank-events";
 
@@ -17,13 +18,13 @@ const Faces = ({ people }: { people: readonly KnownPerson[] }) =>
  */
 export async function EventsCard({ ctx }: { ctx: Ctx }) {
   const [going, upcoming, profile, topics, ventures] = await Promise.all([
-    safe(nextGoing(ctx.userId), null),
+    safe(nextGoing(ctx.userId), null).then((n) => (n && pickEvents([n], ctx.now, 1)[0] ? n : null)),
     safe(upcomingEvents({ from: ctx.now, limit: 80 }), []),
     safe(profileSettings(ctx.userId), null),
     safe(followedTopics(ctx.userId), []),
     safe(lifeRecords(ctx.userId, "ventures"), []),
   ]);
-  const pool = upcoming.filter((e) => e.id !== going?.id);
+  const pool = pickEvents(upcoming.filter((e) => e.id !== going?.id), ctx.now, 80);
   const known = await safe(knownGoing(ctx.userId, [...pool.map((e) => e.id), ...(going ? [going.id] : [])]), new Map<string, KnownPerson[]>());
   const terms = interestTerms([
     ...(profile?.interests ?? []),
