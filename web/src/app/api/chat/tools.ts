@@ -24,6 +24,7 @@ import type { ClaimOut } from "@/server/claims-store";
 import { mediumOf } from "@reflect/core/ways";
 import type { CatalogEntry } from "@reflect/core/openlibrary";
 import type { Piece } from "../../chat/spec";
+import { actTools } from "./act";
 
 /** What one chat request has already read, and where its cards go. */
 export type ChatDeps = { userId: string; today?: string; view: LearnView; claims: ClaimOut[] | null; items: LearnItem[]; show: (p: Piece) => void };
@@ -34,25 +35,22 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   // One registry action as a chat tool: the registry's id, description and input; the chat's own reply. It runs
   // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card. A
   // shared or outside action does not run: it shows an Approval card (Keep or Send) and the model is told it waits.
+  const exec = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown) => async (input: z.output<S>) => {
+    const ran = await runAction(a, ctx, input, "chat");
+    if (ran.held) {
+      const tap = a.tier === "outside" ? "Send" : "Keep";
+      show({ kind: "approval", change: ran.changeId, title: a.title, preview: ran.preview, tier: a.tier === "outside" ? "outside" : "shared" });
+      return `Not done yet: it waits for the person to tap ${tap} on the card (change ${ran.changeId}), for ${HOLD_DAYS} days. Do not say it is done.`;
+    }
+    const { result, changeId } = ran;
+    const said = say(result, input);
+    if (!changeId || a.tier !== "own" || !a.undo) return said;
+    show({ kind: "undo", change: changeId, title: a.title });
+    return typeof said === "string" ? `${said} Change ${changeId}: the person can tap Undo, or ask you (undo_change).` : said;
+  };
   const use = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown): [string, Tool] => [
     a.id,
-    tool({
-      description: describeFor(a as Action, "chat"),
-      inputSchema: a.input as z.ZodType<z.output<S>>,
-      execute: async (input: z.output<S>) => {
-        const ran = await runAction(a, ctx, input, "chat");
-        if (ran.held) {
-          const tap = a.tier === "outside" ? "Send" : "Keep";
-          show({ kind: "approval", change: ran.changeId, title: a.title, preview: ran.preview, tier: a.tier === "outside" ? "outside" : "shared" });
-          return `Not done yet: it waits for the person to tap ${tap} on the card (change ${ran.changeId}), for ${HOLD_DAYS} days. Do not say it is done.`;
-        }
-        const { result, changeId } = ran;
-        const said = say(result, input);
-        if (!changeId || a.tier !== "own" || !a.undo) return said;
-        show({ kind: "undo", change: changeId, title: a.title });
-        return typeof said === "string" ? `${said} Change ${changeId}: the person can tap Undo, or ask you (undo_change).` : said;
-      },
-    }) as Tool,
+    tool({ description: describeFor(a as Action, "chat"), inputSchema: a.input as z.ZodType<z.output<S>>, execute: exec(a, say) }) as Tool,
   ];
 
   const library = (r: { label: string; href: string; books: CatalogEntry[] | null }) => {
@@ -240,6 +238,9 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
     }),
     use(sendMessageAction, (r) => `Sent to ${r.to}. It cannot be taken back. The conversation is at ${r.href}.`),
   ];
+  // Every other chat action (most are the page acts) is reached through find_actions and act, so the model sees about
+  // forty tools at once instead of a hundred, chooses better and talks more.
   const ids = new Set(named.map(([id]) => id));
-  return Object.fromEntries([...named, ...actionsOn("chat").filter((a) => !ids.has(a.id)).map((a) => use(a, plain))]);
+  const rest = actionsOn("chat").filter((a) => !ids.has(a.id));
+  return Object.fromEntries([...named, ...actTools(rest, (a) => exec(a, plain))]);
 }
