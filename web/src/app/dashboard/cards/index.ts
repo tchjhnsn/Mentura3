@@ -6,6 +6,9 @@ import { AskCardsCard } from "./ask-cards";
 import { MoneyCard } from "./money";
 import { EventsCard } from "./events";
 import { ChatsCard } from "./chats";
+import { HealthCard } from "./health";
+import { WeatherCard } from "./weather";
+import { PeopleToSeeCard } from "./people-to-see";
 import { WeekCard } from "./week";
 import { ApprovalsCard } from "./approvals";
 
@@ -21,6 +24,9 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "ask-cards", title: "From Ask Reflect", column: "main", Card: AskCardsCard },
   { id: "week", title: "This week", column: "main", Card: WeekCard },
   { id: "money", title: "Money", column: "side", skeleton: "stat", Card: MoneyCard },
-  { id: "events", title: "Events", column: "side", Card: EventsCard },
+  { id: "events", title: "Events for you", column: "side", Card: EventsCard },
   { id: "chats", title: "Recent chats", column: "side", Card: ChatsCard },
+  { id: "weather", title: "Weather and when to leave", column: "side", Card: WeatherCard },
+  { id: "people-to-see", title: "People to see", column: "main", Card: PeopleToSeeCard },
+  { id: "health", title: "Health and fitness", column: "side", Card: HealthCard },
 ];
