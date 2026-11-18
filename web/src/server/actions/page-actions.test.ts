@@ -44,6 +44,9 @@ const ROUTED: Record<string, string[]> = {
   "events/connect-actions.ts#connectBackAction": ["connect_with"],
   "events/connect-actions.ts#setFriendKindFromPage": ["set_friend_kind"],
   "events/connect-actions.ts#saveProfileAction": ["set_profile"],
+  // Profiles: Connect from a profile, and who sees each part
+  "p/[key]/actions.ts#connectFromProfile": ["connect_with"],
+  "p/[key]/actions.ts#setAudienceFromProfile": ["set_section_audience"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],

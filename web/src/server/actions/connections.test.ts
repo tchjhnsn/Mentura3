@@ -9,6 +9,7 @@ const state = {
   incoming: [] as { id: string; from: { id: string; name: string }; event: { id: string; title: string; startsAt: string | null } | null; at: string }[],
   connected: [] as [string, string, string | null][],
   withdrawn: [] as string[],
+  met: new Map<string, { name: string; eventId: string | null }>(),
   profile: { line: null as string | null, interests: [] as string[], builds: false },
 };
 const people: Record<string, string> = { me: "Me", ann: "Ann Lee", bo: "Bo" };
@@ -18,6 +19,7 @@ vi.mock("../connect-store", () => ({
   checkedIn: async (e: string) => (state.checkins.get(e) ?? []).map((id) => ({ id, name: people[id]!, line: null, interests: [], builds: false })),
   incomingRequests: async () => state.incoming,
   connect: async (from: string, to: string, ev: string | null) => (state.connected.push([from, to, ev]), { state: "requested", requestId: "q1" }),
+  metWith: async (_u: string, o: string) => state.met.get(o) ?? null,
   withdrawRequest: async (_u: string, id: string) => (state.withdrawn.push(id), true),
   friendsMet: async () => [],
   setFriendKind: async () => null,
@@ -35,6 +37,7 @@ describe("connect_with", () => {
     state.incoming = [];
     state.connected = [];
     state.withdrawn = [];
+    state.met = new Map();
   });
 
   it("reaches someone checked in to the same running event, by name, with that event", async () => {
@@ -55,6 +58,14 @@ describe("connect_with", () => {
   it("connects back to someone who asked, after the event, at the event they asked from", async () => {
     state.incoming = [{ id: "q0", from: { id: "bo", name: "Bo" }, event: { id: "e2", title: "Earlier", startsAt: null }, at: "" }];
     await connectWithAction.run(ctx, { to: "bo" });
+    expect(state.connected).toEqual([["me", "bo", "e2"]]);
+  });
+
+  it("reaches someone met at an earlier event by id only (Connect on a profile), at that event", async () => {
+    state.met.set("bo", { name: "Bo", eventId: "e2" });
+    await expect(connectWithAction.run(ctx, { to: "Bo" })).rejects.toThrow("people you've met");
+    const r = await connectWithAction.run(ctx, { to: "bo" });
+    expect(r).toMatchObject({ to: "Bo", state: "requested", href: "/events/e2/here" });
     expect(state.connected).toEqual([["me", "bo", "e2"]]);
   });
 

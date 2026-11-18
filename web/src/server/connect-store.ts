@@ -96,6 +96,24 @@ export async function userByPersonalHash(hash: string): Promise<{ id: string; na
   return x ? { id: x.id, name: nameOr(x.name) } : null;
 }
 
+/**
+ * Whether two people have met: connected, or checked in to one event together. The event is the latest one they were
+ * both checked in to (else where they connected), or null. Null when they have not met, or the other is no one.
+ */
+export async function metWith(userId: string, otherId: string): Promise<{ name: string; eventId: string | null } | null> {
+  const u = await db().query(`SELECT name FROM "user" WHERE id = $1`, [otherId]);
+  if (!u.rows[0]) return null;
+  const name = nameOr(u.rows[0].name);
+  const r = await db().query(
+    `SELECT a.event_id FROM event_checkin a JOIN event_checkin b ON b.event_id = a.event_id JOIN event e ON e.id = a.event_id
+     WHERE a.user_id = $1 AND b.user_id = $2 ORDER BY e.starts_at DESC NULLS LAST LIMIT 1`,
+    [userId, otherId],
+  );
+  if (r.rows[0]) return { name, eventId: r.rows[0].event_id };
+  const f = await db().query("SELECT met_event FROM friend_link WHERE (user_a, user_b) = (LEAST($1, $2), GREATEST($1, $2))", [userId, otherId]);
+  return f.rows[0] ? { name, eventId: f.rows[0].met_event ?? null } : null;
+}
+
 /** ConnectTx over one Postgres client inside a transaction. */
 function clientTx(c: PoolClient): ConnectTx {
   const open = (x: Record<string, unknown>): OpenRequest => ({ id: x.id as string, from: x.from_user as string, to: x.to_user as string, eventId: (x.event_id as string | null) ?? null });
@@ -165,6 +183,12 @@ export async function incomingRequests(userId: string): Promise<Incoming[]> {
     [userId],
   );
   return r.rows.map((x) => ({ id: x.id, from: { id: x.from_user, name: nameOr(x.name) }, event: x.event_id ? { id: x.event_id, title: x.title, startsAt: iso(x.starts_at) } : null, at: iso(x.created_at)! }));
+}
+
+/** Whether the person has an open request to another, not yet answered or lapsed: what a profile's Connect shows as Requested. */
+export async function requestedTo(userId: string, otherId: string): Promise<boolean> {
+  const r = await db().query("SELECT 1 FROM connect_request WHERE from_user = $1 AND to_user = $2 AND accepted_at IS NULL AND declined_at IS NULL AND expires_at > now()", [userId, otherId]);
+  return r.rows.length > 0;
 }
 
 /** The person's open requests at one event, by who they are to: what the Connect buttons show as Requested. */

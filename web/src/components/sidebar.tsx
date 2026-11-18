@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Face } from "./dash";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -23,7 +24,7 @@ const Ctx = createContext<State | null>(null);
  * phone it covers the page with a light dim behind; a tap outside, Esc or opening another page closes it. At 1600 px
  * and wider, where the margin holds it, it can be pinned open, remembered in this browser only.
  */
-export function SidebarProvider({ groups, chats, children }: { groups: SidebarGroup[]; chats: SidebarChat[]; children: ReactNode }) {
+export function SidebarProvider({ groups, chats, me, children }: { groups: SidebarGroup[]; chats: SidebarChat[]; /** The person's name and profile, for their face at the foot. */ me?: { name: string; href: string } | null; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
   const path = usePathname();
@@ -91,7 +92,8 @@ export function SidebarProvider({ groups, chats, children }: { groups: SidebarGr
           ) : null}
         </div>
 
-        <div className="border-t p-3">
+        <div className="grid gap-0.5 border-t p-3">
+          {me ? <Link href={me.href} className={ROW} title="Your profile"><Face name={me.name} size={24} /><span className="truncate">{me.name}</span></Link> : null}
           <Link href="/settings" className={ROW}><SettingsIcon className="text-muted-foreground size-4" />Settings</Link>
         </div>
       </nav>
