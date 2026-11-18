@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { logFitnessAction, logFriendAction, logHealthAction, logTimeAction } from "./dash-actions";
 import { Upcoming } from "./upcoming";
+import { ConnectRequests } from "./connect-requests";
 
 const DAY = 86400_000;
 const dayBefore = (today: string, n: number) => new Date(Date.parse(`${today}T00:00:00Z`) - n * DAY).toISOString().slice(0, 10);
@@ -206,6 +207,8 @@ export async function FriendsDash({ userId, records, acts, today }: { userId: st
           <Button asChild variant="outline" className="justify-self-start"><Link href="/life/friends?k=friend"><PlusIcon />Add a friend</Link></Button>
         )}
       </Hero>
+
+      <ConnectRequests userId={userId} />
 
       <section className="grid gap-3">
         <DashHead title="Messages" href="/life/friends/messages" more={threads.length ? "See all" : "Open"} />

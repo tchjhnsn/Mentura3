@@ -23,6 +23,7 @@ import { beliefFromWorkAction, compileEditionAction, fileWorkAction, markBeliefA
 import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } from "./work-life";
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
+import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
   keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
@@ -62,6 +63,7 @@ export const ACTIONS: readonly Action[] = [
   lensesAction, lensAction, applyLens,
   messagesAction, sendMessageAction,
   ventureFilesAction, draftNaiveVenture, writeVentureFile,
+  connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
   ...PAGE_ACTIONS,
 ];
 

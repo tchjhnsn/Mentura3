@@ -9,6 +9,7 @@ import { requireUser } from "@/server/session";
 import { conversation } from "@/server/messages-store";
 import { TileHeader } from "../../../tile-header";
 import { sendMessageFromPage } from "../../../messages-actions";
+import { FriendMet } from "../../../friend-met";
 import { when } from "../when";
 
 export const metadata: Metadata = { title: "Messages" };
@@ -31,6 +32,7 @@ export default async function ConversationPage({ params, searchParams }: { param
       <TileHeader tile="friends" label="Friends" part="Messages" workspace="/life/friends/messages" />
       <div className="mx-auto mt-4 grid w-full max-w-xl gap-4 pb-12">
         <h1 id="page-title" className="text-center text-xl font-semibold tracking-tight">{c.with.name}</h1>
+        <FriendMet userId={user.id} friendId={c.with.id} />
         {c.messages.length ? (
           <ol className="grid gap-2" aria-label={`Messages with ${c.with.name}`}>
             {c.messages.map((m) => (
