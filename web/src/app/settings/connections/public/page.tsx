@@ -14,7 +14,7 @@ export default async function PublicDataPage() {
   await requireUser();
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back="/settings/connections" backLabel="Connections" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Connections", href: "/settings/connections" }]} title="Public data" />
+      <ThingHeader search={false} back="/marketplace?view=yours" backLabel="Marketplace" crumbs={[{ label: "Settings", href: "/settings" }, { label: "Marketplace", href: "/marketplace?view=yours" }]} title="Public data" />
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">Public data</h1>

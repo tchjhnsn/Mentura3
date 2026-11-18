@@ -6,6 +6,7 @@ import { cleanServerUrl } from "@reflect/core/marketplace";
 import { requireUser } from "@/server/session";
 import { disconnect, startConnect } from "@/server/mcp-connections";
 import { addPlugin, removePlugin } from "@/server/plugins";
+import { removeSkill, saveSkill, setSkillEnabled } from "@/server/skills";
 
 // The marketplace's acts (2026-11-18). Connecting is a sign-in in the person's own browser at the service, and
 // disconnecting clears that sign-in, so both stay taps on the connector's page (page-actions.test.ts says why).
@@ -45,7 +46,6 @@ export async function disconnectAction(id: string, back: string): Promise<void> 
   const user = await requireUser();
   await disconnect(user.id, String(id));
   revalidatePath("/marketplace");
-  revalidatePath("/settings/connections");
   redirect(back.startsWith("/") && !back.startsWith("//") ? back : "/marketplace");
 }
 
@@ -63,4 +63,32 @@ export async function removePluginAction(id: string): Promise<void> {
   await removePlugin(user.id, String(id));
   revalidatePath("/marketplace");
   redirect(`/marketplace/plugins/${encodeURIComponent(id)}`);
+}
+
+/** Write a skill, or save changes to one. */
+export async function saveSkillAction(id: string | null, form: FormData): Promise<void> {
+  const user = await requireUser();
+  let saved = "";
+  try {
+    saved = await saveSkill(user.id, id ? String(id) : null, { name: form.get("name"), description: form.get("description"), instructions: form.get("instructions") });
+  } catch (e) {
+    fail(id ? `/marketplace/skills/${encodeURIComponent(id)}` : "/marketplace/skills/new", e);
+  }
+  revalidatePath("/marketplace");
+  redirect(`/marketplace/skills/${saved}?saved=1`);
+}
+
+/** Turn a skill on or off. */
+export async function toggleSkillAction(id: string, enabled: boolean): Promise<void> {
+  const user = await requireUser();
+  await setSkillEnabled(user.id, String(id), !!enabled);
+  revalidatePath("/marketplace");
+}
+
+/** Remove a skill. */
+export async function removeSkillAction(id: string): Promise<void> {
+  const user = await requireUser();
+  await removeSkill(user.id, String(id));
+  revalidatePath("/marketplace");
+  redirect("/marketplace?tab=skills");
 }

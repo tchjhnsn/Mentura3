@@ -18,7 +18,7 @@ export async function TileConnections({ userId, app, kind }: { userId: string; a
     <Group title="Connections" id="connections">
       {[...list].sort((a, b) => rank(a.id) - rank(b.id)).map((c) => <ConnectorRow key={c.id} c={c} s={of.get(c.id)} />)}
       <li>
-        <Link href="/settings/connections" className="text-muted-foreground hover:bg-accent flex min-h-11 items-center gap-4 px-4 py-2 text-sm transition">
+        <Link href="/marketplace" className="text-muted-foreground hover:bg-accent flex min-h-11 items-center gap-4 px-4 py-2 text-sm transition">
           <span className="flex-1">All connections</span>
           <ChevronRightIcon aria-hidden="true" className="size-4" />
         </Link>
