@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
-import { COLUMN } from "@/components/list-rows";
+import { AtSignIcon } from "lucide-react";
+import { COLUMN, Group, Row } from "@/components/list-rows";
 import { Face } from "@/components/dash";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,9 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
           {error ? <p className="text-destructive text-sm">{error}</p> : one(sp.saved) ? <p className="text-muted-foreground text-sm">Saved.</p> : null}
           <Button type="submit" className="justify-self-start">Save</Button>
         </form>
+        <Group>
+          <Row href="/settings/profile/socials" icon={<AtSignIcon />} label="Socials" />
+        </Group>
         <p className="text-muted-foreground text-center text-xs">Only people checked in to the same event see this, and only while it runs. Your email is never shown.</p>
       </div>
     </main>

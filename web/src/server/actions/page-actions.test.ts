@@ -44,6 +44,10 @@ const ROUTED: Record<string, string[]> = {
   "events/connect-actions.ts#connectBackAction": ["connect_with"],
   "events/connect-actions.ts#setFriendKindFromPage": ["set_friend_kind"],
   "events/connect-actions.ts#saveProfileAction": ["set_profile"],
+  // Socials (Profiles and accounts, 2026-11-18)
+  "settings/profile/socials/actions.ts#addSocialFromPage": ["add_social", "remove_social"],
+  "settings/profile/socials/actions.ts#removeSocialFromPage": ["remove_social"],
+  "settings/profile/socials/actions.ts#confirmSocialFromPage": ["confirm_social"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],
