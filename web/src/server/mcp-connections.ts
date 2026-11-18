@@ -197,3 +197,15 @@ export async function callTool(userId: string, id: string, name: string, args: R
     return { text, structured: r.structuredContent ?? null };
   });
 }
+
+/** Calls one tool and returns every text it gave: text blocks and the text of embedded resources (a file's contents). */
+export async function callToolTexts(userId: string, id: string, name: string, args: Record<string, unknown>): Promise<{ texts: string[]; resources: string[]; structured: unknown }> {
+  return withClient(userId, id, async (c) => {
+    const r = await c.callTool({ name, arguments: args });
+    const blocks = (r.content ?? []) as { type: string; text?: string; resource?: { text?: string } }[];
+    const texts = blocks.filter((b) => b.type === "text").map((b) => b.text ?? "");
+    const resources = blocks.filter((b) => b.type === "resource" && typeof b.resource?.text === "string").map((b) => b.resource!.text!);
+    if (r.isError) throw new Error(texts.join("\n").slice(0, 2000) || `${name} failed.`);
+    return { texts, resources, structured: r.structuredContent ?? null };
+  });
+}

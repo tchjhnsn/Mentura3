@@ -7,9 +7,10 @@ import { CNAME_TARGET, cleanDomain, isTemplate } from "@reflect/core/site";
 import { requireUser } from "@/server/session";
 import { fromPage } from "@/server/actions/page";
 import { setSiteTemplateAction } from "@/server/actions/site";
-import { markDomainChecked, setDomain, siteOf } from "@/server/site-store";
+import { markDomainChecked, setDomain, setSiteRepo, siteOf } from "@/server/site-store";
+import { inspectRepo } from "@/server/site-repo";
 import { siteProject } from "@/server/site-export";
-import { pushWithGithubConnector } from "@/server/site-connectors";
+import { deployWithVercelConnector, pushWithGithubConnector } from "@/server/site-connectors";
 
 // Settings, Your site (doc "Personal site and blog design guide", page 4). The template runs the registry's entry;
 // the domain's steps check public DNS and the host, so they are taps on this page only (page-actions.test.ts).
@@ -98,4 +99,39 @@ export async function pushSiteAction(): Promise<void> {
     redirect(`/settings/site/export?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not push.")}`);
   }
   redirect(`/settings/site/export?pushed=${encodeURIComponent(repo)}`);
+}
+
+export async function deploySiteAction(): Promise<void> {
+  const user = await requireUser();
+  let url = "";
+  try {
+    const { name, files } = await siteProject(user.id);
+    url = await deployWithVercelConnector(user.id, name, files);
+  } catch (e) {
+    redirect(`/settings/site/export?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not deploy.")}`);
+  }
+  redirect(`/settings/site/export?deployed=${encodeURIComponent(url)}`);
+}
+
+// Your own site on GitHub (Torian, 2026-11-18 20:47Z): linking reads the repository through the person's GitHub
+// connector to find its branch and posts folder; from then on Publish commits posts there.
+
+/** Link the site to a repository of the person's (owner/name). */
+export async function linkRepoAction(form: FormData): Promise<void> {
+  const user = await requireUser();
+  try {
+    await setSiteRepo(user.id, await inspectRepo(user.id, String(form.get("repo") ?? "")));
+  } catch (e) {
+    redirect(`/settings/site/repo?error=${encodeURIComponent(e instanceof Error ? e.message.slice(0, 200) : "Could not read that repository.")}`);
+  }
+  revalidatePath("/settings/site");
+  redirect("/settings/site/repo?linked=1");
+}
+
+/** Stop committing posts to the linked repository. What is already there stays. */
+export async function unlinkRepoAction(): Promise<void> {
+  const user = await requireUser();
+  await setSiteRepo(user.id, null);
+  revalidatePath("/settings/site");
+  redirect("/settings/site/repo");
 }
