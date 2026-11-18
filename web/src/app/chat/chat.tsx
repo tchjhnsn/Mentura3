@@ -1,65 +1,60 @@
 "use client";
 
-// The chat with AI Elements (shadcn): Conversation, Message, Tool, Suggestion and Prompt Input, over the
-// same /api/chat and the same cards. Torian chose this look over the mono one (2026-11-12).
+// Ask, built as shadcn/ui's AI Elements say (ui.shadcn.com/docs/ai-elements): Chat on Message Scroller, Message
+// with Bubble, Prompt Input on Input Group with the Model Selector and Context, Suggestion for starters, and each
+// answer's steps as Reasoning, Chain of Thought, Tool, Task and Stack Trace lines (./elements.tsx), its Sources,
+// and a Checkpoint between turns. Cards (json-render) and held changes (Confirmation, Plan, Queue) are in
+// ./registry.tsx. Same /api/chat as before.
+import * as React from "react";
 import { Suspense } from "react";
-import { BackButton } from "@/components/back-button";
-import { SidebarButton } from "@/components/sidebar";
-import { useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type ToolUIPart, type UIMessage } from "ai";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { JSONUIProvider, Renderer, useJsonRenderMessage } from "@json-render/react";
-import { Conversation, ConversationContent, ConversationEmptyState, ConversationScrollButton } from "@/components/ai-elements/conversation";
-import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSpeechButton, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
-import { AnswerTools, AskedTools } from "./message-tools";
-import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
-import { Tool, ToolHeader } from "@/components/ai-elements/tool";
-import { Approval, Plan, registry } from "./registry";
+import { ArrowUpIcon, MessageCircleIcon, SquareIcon } from "lucide-react";
+import { BackButton } from "@/components/back-button";
+import { SidebarButton } from "@/components/sidebar";
+import { MessageResponse } from "@/components/ai-elements/message";
+import { PromptInputSpeechButton } from "@/components/ai-elements/prompt-input";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
+import { Button } from "@/components/ui/button";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupTextarea } from "@/components/ui/input-group";
+import { Message, MessageContent, MessageFooter } from "@/components/ui/message";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerItem,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
+import { Checkpoint, ContextMeter, ModelMenu, Sources, Steps, stepsOf } from "./elements";
+import { AnswerTools, AskedTools, wordsOf } from "./message-tools";
+import { Queue, registry } from "./registry";
 import type { planCard } from "./spec";
 
 const today = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
-// The device's date goes with each message, so the journal entry this chat is kept in has the person's day.
-const transport = new DefaultChatTransport({ api: "/api/chat", body: () => ({ localDate: today() }) });
-const TITLE: Record<string, string> = {
-  show_shelves: "Looked at your shelves",
-  show_claims: "Looked at your claims",
-  search_library: "Searched the library",
-  browse_category: "Browsed a category of the library",
-  propose_claim: "Proposed a claim",
-};
 const STARTERS = ["Help me think through a decision", "What should I read next?", "What's on my calendar this week?"];
+const MODEL_KEY = "reflect.ask.model";
 
-function Answer({ message }: { message: UIMessage }) {
+function Answer({ message, streaming }: { message: UIMessage; streaming: boolean }) {
   const { spec } = useJsonRenderMessage(message.parts);
-  let cardsShown = false;
+  const reply = message.parts.filter((p) => p.type === "text" && p.text.trim());
+  const hasCards = Boolean(spec) && message.parts.some((p) => p.type === SPEC_DATA_PART_TYPE);
   return (
     <>
-      {message.parts.map((part, i) => {
-        if (part.type === "text" && part.text.trim()) return <MessageResponse key={i}>{part.text}</MessageResponse>;
-        if (part.type.startsWith("tool-")) {
-          const t = part as ToolUIPart;
-          if (t.state === "output-error") return null;
-          return (
-            <Tool key={i}>
-              <ToolHeader type={t.type} state={t.state} title={TITLE[t.type.slice(5)] ?? t.type.slice(5)} />
-            </Tool>
-          );
-        }
-        if (part.type === SPEC_DATA_PART_TYPE && spec && !cardsShown) {
-          cardsShown = true;
-          return (
-            <JSONUIProvider key={i} registry={registry}>
-              <Renderer spec={spec} registry={registry} />
-            </JSONUIProvider>
-          );
-        }
-        return null;
-      })}
+      <Steps steps={stepsOf(message)} streaming={streaming} />
+      {hasCards && spec ? (
+        <JSONUIProvider registry={registry}>
+          <Renderer spec={spec} registry={registry} />
+        </JSONUIProvider>
+      ) : null}
+      {reply.map((p, i) => (p.type === "text" ? <MessageResponse key={i}>{p.text}</MessageResponse> : null))}
+      <Sources message={message} />
     </>
   );
 }
@@ -69,74 +64,146 @@ export type Waiting = { change: string; title: string; preview: string; tap: "Ke
 
 export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[] } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
-  const [id] = useState(() => crypto.randomUUID());
-  const { messages, sendMessage, status, error, regenerate, stop } = useChat({ id, transport });
-  const input = useRef<HTMLTextAreaElement>(null);
+  const [id] = React.useState(() => crypto.randomUUID());
+  const [model, setModel] = React.useState("default");
+  React.useEffect(() => {
+    try {
+      const saved = localStorage.getItem(MODEL_KEY);
+      if (saved) setModel(saved);
+    } catch {
+      // No storage (a private window): the default model.
+    }
+  }, []);
+  const modelRef = React.useRef(model);
+  modelRef.current = model;
+  // The device's date goes with each message, so the journal entry this chat is kept in has the person's day.
+  const [transport] = React.useState(() => new DefaultChatTransport({ api: "/api/chat", body: () => ({ localDate: today(), model: modelRef.current }) }));
+  const { messages, sendMessage, setMessages, status, error, regenerate, stop } = useChat({ id, transport });
+  const [draft, setDraft] = React.useState("");
+  const form = React.useRef<HTMLFormElement>(null);
+  const input = React.useRef<HTMLTextAreaElement>(null);
   const busy = status === "submitted" || status === "streaming";
   const lastAnswer = [...messages].reverse().find((m) => m.role === "assistant")?.id;
+  const pick = (m: string) => {
+    setModel(m);
+    try {
+      localStorage.setItem(MODEL_KEY, m);
+    } catch {
+      // Kept for this visit only.
+    }
+  };
+  const send = (words: string) => {
+    if (!words.trim() || busy) return;
+    void sendMessage({ text: words.trim() });
+    setDraft("");
+  };
+
   return (
-    <div className="mx-auto flex h-screen max-w-3xl flex-col p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
-        <span className="text-sm font-medium">Ask</span>
-        <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
-      </div>
-      {pending.length || plans.length ? (
-        <div className="mb-4 flex max-h-[40vh] flex-col gap-2 overflow-y-auto">
-          {plans.map((p, i) => <Plan key={i} {...p} />)}
-          {pending.map((p) => <Approval key={p.change} {...p} />)}
+    <MessageScrollerProvider>
+      <div className="mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6">
+        <div className="flex items-center justify-between">
+          <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
+          <span className="text-sm font-medium">Ask</span>
+          <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
         </div>
-      ) : null}
-      <Conversation className="flex-1">
-        <ConversationContent>
+        <Queue pending={pending} plans={plans} />
+        <div className="min-h-0 flex-1">
           {messages.length === 0 ? (
-            <ConversationEmptyState title="What's on your mind?" description="Talk something through, or ask about anything in Reflect. This chat is kept in your chat history; nothing changes in your apps unless you say so." />
+            <Empty className="h-full">
+              <EmptyHeader>
+                <EmptyMedia variant="icon"><MessageCircleIcon /></EmptyMedia>
+                <EmptyTitle>What's on your mind?</EmptyTitle>
+                <EmptyDescription>Talk something through, or ask about anything in Reflect. This chat is kept in your chat history; nothing changes in your apps unless you say so.</EmptyDescription>
+              </EmptyHeader>
+              {/* Suggestion: one tap sends it. */}
+              <div className="flex flex-wrap justify-center gap-2">
+                {(ask ? [ask, ...STARTERS] : STARTERS).map((s) => (
+                  <Button key={s} variant="outline" size="sm" className="rounded-full" onClick={() => send(s)}>{s}</Button>
+                ))}
+              </div>
+            </Empty>
           ) : (
-            messages.map((m) => (
-              <Message key={m.id} from={m.role}>
-                <MessageContent>{m.role === "user" ? m.parts.map((p, i) => (p.type === "text" ? <span key={i} className="whitespace-pre-wrap">{p.text}</span> : null)) : <Answer message={m} />}</MessageContent>
-                {m.role === "user" ? (
-                  <AskedTools message={m} busy={busy} onEdit={(text) => void sendMessage({ text, messageId: m.id })} />
-                ) : (
-                  <AnswerTools message={m} latest={m.id === lastAnswer} busy={busy} onRetry={() => void regenerate()} />
-                )}
-              </Message>
-            ))
+            <MessageScroller>
+              <MessageScrollerViewport>
+                <MessageScrollerContent aria-busy={busy} className="gap-6 py-2">
+                  {messages.map((m, i) => {
+                    if (m.role === "user") {
+                      return (
+                        <MessageScrollerItem key={m.id} messageId={m.id} scrollAnchor>
+                          <Message align="end" className="group">
+                            <MessageContent>
+                              <Bubble align="end" variant="muted">
+                                <BubbleContent className="whitespace-pre-wrap">{wordsOf(m)}</BubbleContent>
+                              </Bubble>
+                              <AskedTools message={m} busy={busy} onEdit={(words) => void sendMessage({ text: words, messageId: m.id })} />
+                            </MessageContent>
+                          </Message>
+                        </MessageScrollerItem>
+                      );
+                    }
+                    const latest = m.id === lastAnswer;
+                    return (
+                      <MessageScrollerItem key={m.id} messageId={m.id}>
+                        <Message className="group">
+                          <MessageContent className="gap-3">
+                            <Answer message={m} streaming={busy && latest} />
+                            <MessageFooter>
+                              <AnswerTools message={m} latest={latest} busy={busy} onRetry={() => void regenerate()} />
+                            </MessageFooter>
+                          </MessageContent>
+                        </Message>
+                        {!latest ? <Checkpoint disabled={busy} onRestore={() => setMessages(messages.slice(0, i + 1))} /> : null}
+                      </MessageScrollerItem>
+                    );
+                  })}
+                  {status === "submitted" ? <p role="status" className="text-muted-foreground shimmer text-sm">Thinking</p> : null}
+                  {error ? (
+                    <div role="alert" className="text-muted-foreground flex items-center gap-3 text-sm">
+                      <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
+                      <Button size="sm" variant="outline" onClick={() => void regenerate()}>Try again</Button>
+                    </div>
+                  ) : null}
+                </MessageScrollerContent>
+              </MessageScrollerViewport>
+              <MessageScrollerButton variant="outline" />
+            </MessageScroller>
           )}
-          {status === "submitted" ? (
-            <p role="status" className="text-muted-foreground animate-pulse text-sm">Thinking…</p>
-          ) : null}
-          {error ? (
-            <div role="alert" className="text-muted-foreground flex items-center gap-3 text-sm">
-              <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
-              <button type="button" className="text-foreground underline underline-offset-4" onClick={() => void regenerate()}>Try again</button>
-            </div>
-          ) : null}
-        </ConversationContent>
-        <ConversationScrollButton />
-      </Conversation>
-      {messages.length === 0 ? (
-        <Suggestions className="mb-3">
-          {(ask ? [ask, ...STARTERS] : STARTERS).map((s) => <Suggestion key={s} suggestion={s} onClick={(t) => void sendMessage({ text: t })} />)}
-        </Suggestions>
-      ) : null}
-      <PromptInput onSubmit={(m) => { if (busy) return; if (m.text?.trim()) void sendMessage({ text: m.text }); }}>
-        <PromptInputBody>
-          <PromptInputTextarea ref={input} placeholder="Say anything..." />
-        </PromptInputBody>
-        <PromptInputFooter>
-          <PromptInputTools>
-            <PromptInputSpeechButton textareaRef={input} aria-label="Speak instead of typing" />
-          </PromptInputTools>
-          <PromptInputSubmit
-            status={status === "error" ? "ready" : status}
-            aria-label={busy ? "Stop" : "Send"}
-            onClick={(e) => { if (busy) { e.preventDefault(); void stop(); } }}
-          />
-        </PromptInputFooter>
-      </PromptInput>
-      {/* AI disclosure (California SB 243, New York's AI companion law): always shown, beside the input. */}
-      <p className="text-muted-foreground mt-2 text-center text-xs">Ask Reflect is an AI and can be wrong.</p>
-    </div>
+        </div>
+        <form ref={form} onSubmit={(e) => { e.preventDefault(); send(draft); }}>
+          <InputGroup>
+            <InputGroupTextarea
+              ref={input}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Say anything..."
+              aria-label="Message"
+              className="min-h-14"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                  e.preventDefault();
+                  form.current?.requestSubmit();
+                }
+              }}
+            />
+            <InputGroupAddon align="block-end" className="pt-1">
+              <ModelMenu value={model} onChange={pick} />
+              <ContextMeter messages={messages} model={model} />
+              <PromptInputSpeechButton textareaRef={input} onTranscriptionChange={setDraft} aria-label="Speak instead of typing" />
+              {busy ? (
+                <InputGroupButton type="button" variant="default" size="icon-sm" className="ml-auto rounded-full" aria-label="Stop" onClick={() => void stop()}>
+                  <SquareIcon />
+                </InputGroupButton>
+              ) : (
+                <InputGroupButton type="submit" variant="default" size="icon-sm" className="ml-auto rounded-full" aria-label="Send" disabled={!draft.trim()}>
+                  <ArrowUpIcon />
+                </InputGroupButton>
+              )}
+            </InputGroupAddon>
+          </InputGroup>
+        </form>
+        {/* AI disclosure (California SB 243, New York's AI companion law): always shown, beside the input. */}
+        <p className="text-muted-foreground -mt-1 text-center text-xs">Ask Reflect is an AI and can be wrong.</p>
+      </div>
+    </MessageScrollerProvider>
   );
 }

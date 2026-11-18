@@ -1,6 +1,7 @@
 import { gateway } from "@ai-sdk/gateway";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
+import { CHAT_MODELS } from "@/lib/chat-models";
 
 /** The chat's model on Vercel AI Gateway unless REFLECT_CHAT_MODEL names another. gpt-oss-120b is open to the
  * gateway's free tier; Anthropic's models (anthropic/claude-haiku-5.5, anthropic/claude-sonnet-5.5) are refused there
@@ -11,11 +12,12 @@ export const CHAT_MODEL = "openai/gpt-oss-120b";
  * The chat's model: CHAT_MODEL through Vercel AI Gateway when deployed (it signs in with the deployment's OIDC
  * token), otherwise gpt-oss-120b on Ollama Cloud. Null when neither is set up.
  */
-export function chatModel(env: Record<string, string | undefined> = process.env): LanguageModel | null {
-  if (env.VERCEL || env.AI_GATEWAY_API_KEY) return gateway(env.REFLECT_CHAT_MODEL ?? CHAT_MODEL);
+export function chatModel(env: Record<string, string | undefined> = process.env, choice?: string): LanguageModel | null {
+  const picked = CHAT_MODELS.find((m) => m.id === choice && m.open);
+  if (env.VERCEL || env.AI_GATEWAY_API_KEY) return gateway(picked?.gateway ?? env.REFLECT_CHAT_MODEL ?? CHAT_MODEL);
   if (!env.OLLAMA_API_KEY) return null;
   const ollama = createOpenAICompatible({ name: "ollama", baseURL: `${env.OLLAMA_HOST ?? "https://ollama.com"}/v1`, apiKey: env.OLLAMA_API_KEY });
-  return ollama.chatModel(env.REFLECT_READER_MODEL ?? "gpt-oss:120b");
+  return ollama.chatModel(picked?.ollama ?? env.REFLECT_READER_MODEL ?? "gpt-oss:120b");
 }
 
 /**
