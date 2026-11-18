@@ -9,6 +9,7 @@ import { ChatsCard } from "./chats";
 import { HealthCard } from "./health";
 import { WeatherCard } from "./weather";
 import { PeopleToSeeCard } from "./people-to-see";
+import { WeekCard } from "./week";
 import { ApprovalsCard } from "./approvals";
 
 // Every card the dashboard can show, one file each in this folder (Torian, 2026-11-18). A card is an async server
@@ -21,6 +22,7 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "today", title: "Today", column: "main", skeleton: "hero", Card: TodayCard },
   { id: "people", title: "People", column: "main", skeleton: "faces", Card: PeopleCard },
   { id: "ask-cards", title: "From Ask Reflect", column: "main", Card: AskCardsCard },
+  { id: "week", title: "This week", column: "main", Card: WeekCard },
   { id: "money", title: "Money", column: "side", skeleton: "stat", Card: MoneyCard },
   { id: "events", title: "Events for you", column: "side", Card: EventsCard },
   { id: "chats", title: "Recent chats", column: "side", Card: ChatsCard },
