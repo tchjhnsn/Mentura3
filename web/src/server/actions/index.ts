@@ -27,6 +27,7 @@ import { connectRequestsAction, connectWithAction, profileAction, setFriendKindA
 import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction } from "./socials";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
+import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
 import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
@@ -44,6 +45,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
   goingToEvent, hostEvent, setEventPartAction,
+  setHandleAction, setNameAction, setDefaultAudienceAction,
   keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
   keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
   setUnitDoneAction, addItemNoteAction, removeItemNoteAction, addSessionAction, removeSessionAction, addItemSubjectsAction, removeItemSubjectAction,
