@@ -44,6 +44,10 @@ const ROUTED: Record<string, string[]> = {
   "events/connect-actions.ts#connectBackAction": ["connect_with"],
   "events/connect-actions.ts#setFriendKindFromPage": ["set_friend_kind"],
   "events/connect-actions.ts#saveProfileAction": ["set_profile"],
+  // Socials (Profiles and accounts, 2026-11-18)
+  "settings/profile/socials/actions.ts#addSocialFromPage": ["add_social", "remove_social"],
+  "settings/profile/socials/actions.ts#removeSocialFromPage": ["remove_social"],
+  "settings/profile/socials/actions.ts#confirmSocialFromPage": ["confirm_social"],
   // Settings, Profile, LinkedIn: keep an export, remove the connections
   "settings/profile/linkedin/actions.ts#keepLinkedinAction": ["import_linkedin"],
   "settings/profile/linkedin/actions.ts#removeLinkedinConnectionsFromPage": ["remove_linkedin_connections"],
