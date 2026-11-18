@@ -9,10 +9,12 @@ import type { LearnView } from "../learn-store";
 // The tools each surface offered before the registry (2026-11-17), since step 2 the change log's two, and since step 4
 // pending_changes (step 3), start_plan and plans (step 9), messages (step 10), and every page act (PAGE, in ./index.ts order). Changing what either offers is a change to these lists.
 const PAGE = [
-  "life", "quick_log", "add_record", "change_record", "set_record_state", "set_record_field", "log_act", "remove_record", "restore_record", "change_event", "remove_event", "restore_event", "add_meal", "plan_meal", "unplan_meal", "plan_week", "start_meal_plan", "add_to_basket", "keep_recipe", "set_receipt", "start_work", "save_work", "file_work", "belief_from_work", "send_to_learn", "mark_belief", "place_subject", "place_belief", "compile_edition", "toggle_quality", "take_off_quality", "write_quality", "write_toward", "main_aim", "adventure_to_calendar", "start_naive_venture", "keep_library_book", "keep_claim", "set_stance", "take_up_item", "change_item", "remove_item", "restore_item", "set_book_way", "keep_excerpt", "revise_excerpt", "remove_excerpt", "set_finished", "order_want", "set_reading_goal", "set_unit_done", "add_item_note", "remove_item_note", "add_session", "remove_session", "add_item_subjects", "remove_item_subject", "set_reaction", "favorite_episode", "follow_list", "keep_reason", "highlights_to_journal", "follow_topic", "follow_person", "make_playlist", "save_playlist", "log_practice", "learned_piece",
+  "life", "quick_log", "add_record", "change_record", "set_record_state", "set_record_field", "log_act", "remove_record", "restore_record", "change_event", "remove_event", "restore_event", "add_meal", "plan_meal", "unplan_meal", "plan_week", "start_meal_plan", "add_to_basket", "keep_recipe", "set_receipt", "start_work", "save_work", "file_work", "belief_from_work", "send_to_learn", "mark_belief", "place_subject", "place_belief", "compile_edition", "toggle_quality", "take_off_quality", "write_quality", "write_toward", "main_aim", "adventure_to_calendar", "start_naive_venture", "ask_to_build", "answer_build_request", "keep_library_book", "keep_claim", "set_stance", "take_up_item", "change_item", "remove_item", "restore_item", "set_book_way", "keep_excerpt", "revise_excerpt", "remove_excerpt", "set_finished", "order_want", "set_reading_goal", "set_unit_done", "add_item_note", "remove_item_note", "add_session", "remove_session", "add_item_subjects", "remove_item_subject", "set_reaction", "favorite_episode", "follow_list", "keep_reason", "highlights_to_journal", "follow_topic", "follow_person", "make_playlist", "save_playlist", "log_practice", "learned_piece",
 ];
 // A venture's files (2026-11-18): read, draft and write; starting one is a page act (in PAGE).
 const VENTURES = ["venture_files", "draft_naive_venture", "write_venture_file"];
+// People to build with (Events and connections, 2026-11-18): reading who to ask; asking and answering are page acts (in PAGE).
+const BUILD = ["people_to_build_with"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
 const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
@@ -23,7 +25,7 @@ const CHAT_DIRECT = [
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
 ];
-const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...PAGE];
+const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...PAGE];
 const MCP_TOOLS = [
   "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
@@ -34,6 +36,7 @@ const MCP_TOOLS = [
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
   ...VENTURES,
+  ...BUILD,
   ...PAGE,
 ];
 
@@ -77,7 +80,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "life"]);
+    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "life"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
