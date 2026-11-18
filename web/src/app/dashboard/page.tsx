@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { SidebarButton } from "@/components/sidebar";
 import { requireUser } from "@/server/session";
 import { selfOf } from "@/server/profile-store";
+import { suggestionsOf } from "@/server/dashboard-brief";
+import { BriefCard, BriefSkeleton } from "./brief-card";
 import { AskBar } from "./ask-bar";
 import { DASH_CARDS } from "./cards";
 import { CardSkeleton, dayIn, hourIn, longDay, safe, type Ctx } from "./parts";
@@ -19,11 +21,10 @@ export default async function Dashboard() {
   const user = await requireUser();
   const now = new Date();
   const ctx: Ctx = { userId: user.id, now, today: dayIn(now), tomorrow: dayIn(new Date(now.getTime() + 86400_000)) };
-  const me = await safe(selfOf(user.id), { name: "", href: "" });
+  const [me, suggestions] = await Promise.all([safe(selfOf(user.id), { name: "", href: "" }), suggestionsOf(user.id, ctx.today)]);
   const hour = hourIn(now);
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const first = me.name && me.name !== "Owner" ? me.name.split(" ")[0] : "";
-  const suggestions = ["What's on my day?", "How is my budget this month?", "Find an event this week", "What should I learn next?"];
   const column = (c: "main" | "side") => DASH_CARDS.filter((d) => d.column === c).map(({ id, Card }) => (
     <Suspense key={id} fallback={<CardSkeleton />}><Card ctx={ctx} /></Suspense>
   ));
@@ -37,6 +38,7 @@ export default async function Dashboard() {
 
       <section aria-label="Ask Reflect" className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">{greeting}{first ? `, ${first}` : ""}</h1>
+        <Suspense fallback={<BriefSkeleton />}><BriefCard ctx={ctx} /></Suspense>
         <AskBar suggestions={suggestions} />
       </section>
 

@@ -6,6 +6,7 @@ import { AskCardsCard } from "./ask-cards";
 import { MoneyCard } from "./money";
 import { EventsCard } from "./events";
 import { ChatsCard } from "./chats";
+import { WeekCard } from "./week";
 
 // Every card the dashboard can show, one file each in this folder (Torian, 2026-11-18). A card is an async server
 // component that fetches its own data, so each loads on its own behind a skeleton and a broken one leaves the rest.
@@ -16,6 +17,7 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "today", title: "Today", column: "main", Card: TodayCard },
   { id: "people", title: "People", column: "main", Card: PeopleCard },
   { id: "ask-cards", title: "From Ask Reflect", column: "main", Card: AskCardsCard },
+  { id: "week", title: "This week", column: "main", Card: WeekCard },
   { id: "money", title: "Money", column: "side", Card: MoneyCard },
   { id: "events", title: "Events", column: "side", Card: EventsCard },
   { id: "chats", title: "Recent chats", column: "side", Card: ChatsCard },
