@@ -78,3 +78,35 @@ export async function pushWithGithubConnector(userId: string, name: string, file
   });
   return `https://github.com/${login}/${name}`;
 }
+
+/**
+ * The file entries a deploy tool asks for, under the names its schema uses: the path under file, path or name, the text
+ * under data or content. Null when the schema names neither.
+ */
+export function deployFiles(tool: ToolLike, files: Record<string, string>): Record<string, unknown>[] | null {
+  const items = (tool.inputSchema?.properties?.files as { items?: { properties?: Record<string, unknown> } } | undefined)?.items?.properties;
+  const keys = Object.keys(items ?? {});
+  const pathKey = keys.length ? ["file", "path", "name"].find((k) => keys.includes(k)) : "file";
+  const dataKey = keys.length ? ["data", "content", "contents"].find((k) => keys.includes(k)) : "data";
+  if (!pathKey || !dataKey) return null;
+  return Object.entries(files).map(([path, text]) => ({ [pathKey]: path, [dataKey]: text }));
+}
+
+/**
+ * Deploys the site's files to the person's own Vercel through their Vercel connector, as a production deployment of a
+ * project named `name` (Vercel makes the project when missing). Returns the deployment's address.
+ */
+export async function deployWithVercelConnector(userId: string, name: string, files: Record<string, string>): Promise<string> {
+  const conn = await connectedTo(userId, "vercel");
+  if (!conn) throw new Error("Connect Vercel first.");
+  const tool = (await toolsOf(userId, conn.id)).find((t) => t.name === "deploy_to_vercel");
+  if (!tool) throw new Error("Your Vercel connector does not offer deploying files.");
+  const entries = deployFiles(tool, files);
+  if (!entries) throw new Error("Your Vercel connector asks for files in a way Reflect cannot fill.");
+  const r = await callTool(userId, conn.id, "deploy_to_vercel", { target: "production", name, files: entries });
+  const out = (r.structured as Record<string, unknown> | null) ?? json(r.text) ?? {};
+  const found = [out.url, out.inspectorUrl, (out.deployment as Record<string, unknown> | undefined)?.url].find((v) => typeof v === "string" && v) as string | undefined
+    ?? /https:\/\/[a-z0-9.-]+\.vercel\.app\S*/i.exec(r.text)?.[0] ?? (/\b[a-z0-9-]+\.vercel\.app\b/i.exec(r.text)?.[0] ?? null);
+  if (!found) return `https://vercel.com/dashboard`;
+  return found.startsWith("http") ? found : `https://${found}`;
+}

@@ -75,7 +75,7 @@ export default async function SiteSettings() {
               <span className="grid flex-1"><span>Download as a zip</span><span className="text-muted-foreground text-sm">A Next.js project with your posts as Markdown</span></span>
             </a>
           </li>
-          <Row href="/settings/site/export" icon={<GitBranchIcon />} label="Push to GitHub" sub="Then deploy it on Vercel" />
+          <Row href="/settings/site/export" icon={<GitBranchIcon />} label="Host it yourself" sub="Deploy to your Vercel or push to your GitHub" />
         </Group>
 
         <Group title="Subscribers" id="subscribers">
