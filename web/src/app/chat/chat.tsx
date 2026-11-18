@@ -5,14 +5,15 @@
 import { Suspense } from "react";
 import { BackButton } from "@/components/back-button";
 import { SidebarButton } from "@/components/sidebar";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type ToolUIPart, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { JSONUIProvider, Renderer, useJsonRenderMessage } from "@json-render/react";
 import { Conversation, ConversationContent, ConversationEmptyState, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
-import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
+import { PromptInput, PromptInputBody, PromptInputFooter, PromptInputSpeechButton, PromptInputSubmit, PromptInputTextarea, PromptInputTools } from "@/components/ai-elements/prompt-input";
+import { AnswerTools, AskedTools } from "./message-tools";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Tool, ToolHeader } from "@/components/ai-elements/tool";
 import { Approval, Plan, registry } from "./registry";
@@ -31,7 +32,7 @@ const TITLE: Record<string, string> = {
   browse_category: "Browsed a category of the library",
   propose_claim: "Proposed a claim",
 };
-const STARTERS = ["What's on my shelves?", "Find me a good introduction to Aristotle", "Show my claims"];
+const STARTERS = ["Help me think through a decision", "What should I read next?", "What's on my calendar this week?"];
 
 function Answer({ message }: { message: UIMessage }) {
   const { spec } = useJsonRenderMessage(message.parts);
@@ -69,7 +70,10 @@ export type Waiting = { change: string; title: string; preview: string; tap: "Ke
 export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[] } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history.
   const [id] = useState(() => crypto.randomUUID());
-  const { messages, sendMessage, status, error, regenerate } = useChat({ id, transport });
+  const { messages, sendMessage, status, error, regenerate, stop } = useChat({ id, transport });
+  const input = useRef<HTMLTextAreaElement>(null);
+  const busy = status === "submitted" || status === "streaming";
+  const lastAnswer = [...messages].reverse().find((m) => m.role === "assistant")?.id;
   return (
     <div className="mx-auto flex h-screen max-w-3xl flex-col p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -86,14 +90,22 @@ export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?
       <Conversation className="flex-1">
         <ConversationContent>
           {messages.length === 0 ? (
-            <ConversationEmptyState title="Ask about what you are learning" description="Your shelves, a book to find, a claim you hold. This chat is kept in your chat history; nothing goes into your apps unless you accept it." />
+            <ConversationEmptyState title="What's on your mind?" description="Talk something through, or ask about anything in Reflect. This chat is kept in your chat history; nothing changes in your apps unless you say so." />
           ) : (
             messages.map((m) => (
               <Message key={m.id} from={m.role}>
-                <MessageContent>{m.role === "user" ? m.parts.map((p, i) => (p.type === "text" ? <span key={i}>{p.text}</span> : null)) : <Answer message={m} />}</MessageContent>
+                <MessageContent>{m.role === "user" ? m.parts.map((p, i) => (p.type === "text" ? <span key={i} className="whitespace-pre-wrap">{p.text}</span> : null)) : <Answer message={m} />}</MessageContent>
+                {m.role === "user" ? (
+                  <AskedTools message={m} busy={busy} onEdit={(text) => void sendMessage({ text, messageId: m.id })} />
+                ) : (
+                  <AnswerTools message={m} latest={m.id === lastAnswer} busy={busy} onRetry={() => void regenerate()} />
+                )}
               </Message>
             ))
           )}
+          {status === "submitted" ? (
+            <p role="status" className="text-muted-foreground animate-pulse text-sm">Thinking…</p>
+          ) : null}
           {error ? (
             <div role="alert" className="text-muted-foreground flex items-center gap-3 text-sm">
               <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
@@ -108,13 +120,19 @@ export function Chat({ ask, pending = [], plans = [] }: { ask?: string; pending?
           {(ask ? [ask, ...STARTERS] : STARTERS).map((s) => <Suggestion key={s} suggestion={s} onClick={(t) => void sendMessage({ text: t })} />)}
         </Suggestions>
       ) : null}
-      <PromptInput onSubmit={(m) => { if (m.text?.trim()) void sendMessage({ text: m.text }); }}>
+      <PromptInput onSubmit={(m) => { if (busy) return; if (m.text?.trim()) void sendMessage({ text: m.text }); }}>
         <PromptInputBody>
-          <PromptInputTextarea placeholder="Say anything..." />
+          <PromptInputTextarea ref={input} placeholder="Say anything..." />
         </PromptInputBody>
         <PromptInputFooter>
-          <PromptInputTools />
-          <PromptInputSubmit status={status} />
+          <PromptInputTools>
+            <PromptInputSpeechButton textareaRef={input} aria-label="Speak instead of typing" />
+          </PromptInputTools>
+          <PromptInputSubmit
+            status={status === "error" ? "ready" : status}
+            aria-label={busy ? "Stop" : "Send"}
+            onClick={(e) => { if (busy) { e.preventDefault(); void stop(); } }}
+          />
         </PromptInputFooter>
       </PromptInput>
       {/* AI disclosure (California SB 243, New York's AI companion law): always shown, beside the input. */}
