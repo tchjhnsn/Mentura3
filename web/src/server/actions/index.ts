@@ -23,6 +23,9 @@ import { beliefFromWorkAction, compileEditionAction, fileWorkAction, markBeliefA
 import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } from "./work-life";
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
+import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
+import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
+import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
   keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
@@ -37,7 +40,8 @@ export const PAGE_ACTIONS: readonly Action[] = [
   startWork, saveWorkAction, fileWorkAction, beliefFromWorkAction, sendToLearnAction, markBeliefAction, placeSubjectAction, placeBeliefAction, compileEditionAction,
   toggleQuality, takeOffQuality, writeQuality, writeToward, mainAim,
   adventureToCalendar,
-  startNaiveVenture,
+  startNaiveVenture, askToBuildAction, answerBuildRequestAction,
+  goingToEvent, hostEvent, setEventPartAction,
   keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
   keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
   setUnitDoneAction, addItemNoteAction, removeItemNoteAction, addSessionAction, removeSessionAction, addItemSubjectsAction, removeItemSubjectAction,
@@ -62,6 +66,9 @@ export const ACTIONS: readonly Action[] = [
   lensesAction, lensAction, applyLens,
   messagesAction, sendMessageAction,
   ventureFilesAction, draftNaiveVenture, writeVentureFile,
+  peopleToBuildWithAction,
+  connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
+  eventsAction, eventAction,
   ...PAGE_ACTIONS,
 ];
 

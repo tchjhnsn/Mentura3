@@ -38,6 +38,12 @@ const ROUTED: Record<string, string[]> = {
   "chat/actions.ts#addItemFromChat": ["add_item"],
   "chat/actions.ts#undoFromChat": ["undo_change"],
   "life/messages-actions.ts#sendMessageFromPage": ["send_message"],
+  // Events: Connect, Connect back, the kind of a friendship and what people see
+  "events/connect-actions.ts#connectAction": ["connect_with"],
+  "events/connect-actions.ts#connectFromQrAction": ["connect_with"],
+  "events/connect-actions.ts#connectBackAction": ["connect_with"],
+  "events/connect-actions.ts#setFriendKindFromPage": ["set_friend_kind"],
+  "events/connect-actions.ts#saveProfileAction": ["set_profile"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],
@@ -78,6 +84,12 @@ const ROUTED: Record<string, string[]> = {
   "life/work/space-actions.ts#hoursAction": ["add_record", "change_record"],
   "life/work/space-actions.ts#mainAction": ["main_aim"],
   "life/venture-actions.ts#startNaiveAction": ["start_naive_venture"],
+  "life/build-actions.ts#askToBuildFromPage": ["ask_to_build"],
+  "life/build-actions.ts#answerBuildFromPage": ["answer_build_request"],
+  // Events
+  "events/actions.ts#newEventAction": ["host_event"],
+  "events/actions.ts#goingAction": ["going_to_event"],
+  "events/actions.ts#setPartAction": ["set_event_part"],
   // Meals
   "meals/actions.ts#addMealAction": ["add_meal"],
   "meals/actions.ts#saveMealAction": ["change_record"],
@@ -165,6 +177,8 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 
 /** Page server actions that are not registry entries, each with its reason. */
 const EXCLUDED: Record<string, string> = {
+  "events/actions.ts#publishEventAction": "Publishing a hosted event makes it public and makes the door token shown once as the host's check-in QR: a tap on the event's page only, never offered to a model.",
+  "events/actions.ts#cancelEventAction": "Cancelling a hosted event reaches everyone who said Going: the outside tier, which waits for the person's tap, so it stays a tap on the event's page.",
   "journal/actions.ts#importWorkAction": IMPORT,
   "meals/actions.ts#readReceiptAction": IMPORT,
   "schole/actions.ts#importGoodreadsAction": IMPORT,
@@ -226,6 +240,8 @@ const EXCLUDED: Record<string, string> = {
   "chat/actions.ts#declineFromChat": "Decline on a held change is the person's tap itself; a model never declines for them.",
   "life/messages-actions.ts#inviteFriendAction": "An invite link lets another account in; the person makes it on the page, never a model.",
   "life/messages-actions.ts#acceptFriendInviteAction": "Accepting an invite is the invited person's own act while signed in.",
+  "events/connect-actions.ts#checkInAction": "Checking in is the person's own tap at the event, while it runs; a model is never at the door.",
+  "events/connect-actions.ts#notNowAction": "Not now on a connect request is the person's own answer to another person; a model never turns someone away for them.",
   "settings/connections/actions.ts#disconnectAssistantAction": "Disconnecting an assistant is the person's own act in Settings.",
   "settings/connections/actions.ts#disconnectGoogleAction": "Disconnecting an OAuth connection is the person's own act in Settings.",
   "settings/connections/actions.ts#disconnectMicrosoftAction": "Disconnecting an OAuth connection is the person's own act in Settings.",
