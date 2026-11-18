@@ -11,6 +11,7 @@ import { requireUser } from "@/server/session";
 import { workspace, type Wanted, type Workspace } from "@/server/work-space";
 import { signalsOf } from "@/server/recommend";
 import { lifeActs } from "@/server/life-store";
+import { connectionTallies, type Tally } from "@/server/profile-store";
 import LifeAppPage from "../[app]/page";
 import { WorkHeader } from "./parts";
 import { writeTowardAction } from "./space-actions";
@@ -94,6 +95,33 @@ function Season({ s }: { s: Workspace }) {
   );
 }
 
+function Tallies({ title, rows }: { title: string; rows: Tally[] }) {
+  return (
+    <div className="grid content-start gap-1.5">
+      <h3 className="text-muted-foreground text-xs">{title}</h3>
+      {rows.length ? (
+        <ol className="grid gap-1">
+          {rows.map((r) => <li key={r.label} className="flex items-baseline justify-between gap-3 text-sm"><span className="min-w-0 truncate">{r.label}</span><span className="text-muted-foreground shrink-0 tabular-nums">{r.count}</span></li>)}
+        </ol>
+      ) : <p className="text-muted-foreground text-sm">None listed</p>}
+    </div>
+  );
+}
+
+/** What the people around the person do, from their own LinkedIn connections: for them alone, never shown to anyone. */
+function Around({ t }: { t: { companies: Tally[]; positions: Tally[] } }) {
+  return (
+    <section aria-labelledby="around" className="grid max-w-xl gap-3 rounded-xl border p-4">
+      <h2 id="around" className="font-semibold">What the people around you do</h2>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Tallies title="Companies" rows={t.companies} />
+        <Tallies title="Positions" rows={t.positions} />
+      </div>
+      <p className="text-muted-foreground text-xs">From your LinkedIn connections. Only you see this.</p>
+    </section>
+  );
+}
+
 /**
  * Work's workspace (doc "Work design guide", Workspace): the main aim first, with the one act, writing toward it;
  * this season's three figures; the next steps toward the aim; then the other aims and the records, small.
@@ -104,7 +132,7 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
   if (k === "inspired") redirect("/life/work");
   if (k) return LifeAppPage({ params: Promise.resolve({ app: "work" }), searchParams: Promise.resolve(sp) });
   const user = await requireUser();
-  const [s, signals] = await Promise.all([workspace(user.id), signalsOf(user.id)]);
+  const [s, signals, around] = await Promise.all([workspace(user.id), signalsOf(user.id), connectionTallies(user.id).catch(() => null)]);
   const main = s.main;
   const others = s.wanted.filter((w) => w !== main);
   const learn = main ? recommend(signals, undefined, 3) : [];
@@ -143,6 +171,8 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
             <li><Link href="/life/work/add" className="text-muted-foreground hover:text-foreground hover:bg-accent flex h-full items-center gap-1.5 rounded-lg border border-dashed px-3 py-2 text-sm transition"><PlusIcon className="size-4" />Add an aim</Link></li>
           </ul>
         </section>
+
+        {around?.total ? <Around t={around} /> : null}
 
         <nav aria-label="Work records" className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 border-t pt-4 text-sm">
           <Link href="/life/work/season" className="hover:text-foreground">This season</Link>

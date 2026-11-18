@@ -51,7 +51,7 @@ export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, given: 
   const result = await a.run(ctx, input);
   const c = a.change?.(result, input, before) ?? {};
   try {
-    const changeId = await changesOf(ctx).add({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: input ?? {}, before: c.before ?? null, after: c.after ?? null });
+    const changeId = await changesOf(ctx).add({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: (a.logged ? a.logged(input) : input) ?? {}, before: c.before ?? null, after: c.after ?? null });
     return { held: false, result, changeId };
   } catch (err) {
     console.error(`reflect: could not log ${a.id}: ${(err as Error).message}`);

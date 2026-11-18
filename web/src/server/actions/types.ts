@@ -126,6 +126,11 @@ export type Action<S extends z.ZodType = z.ZodType, R = unknown> = {
   run(ctx: ActionContext, input: z.output<S>): Promise<R>;
   /** Reads what a run will change, before it runs, so Undo can put it back. Its value reaches `change` as `before`. */
   before?(ctx: ActionContext, input: z.output<S>): Promise<unknown>;
+  /**
+   * What the change log keeps of the input, for an input too large or too private to keep whole (an uploaded file's
+   * text). Left out, the input itself. A held change keeps its whole input, since it runs from it later.
+   */
+  logged?(input: z.output<S>): unknown;
   /** What a run changed, kept in the change log (runAction in ./run.ts). Left out, only the input is kept. */
   change?(result: R, input: z.output<S>, before: unknown): Change;
   /**

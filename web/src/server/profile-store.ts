@@ -179,17 +179,29 @@ export async function restoreExperience(userId: string, rows: readonly Experienc
 /** The keyed hash a LinkedIn profile link is kept as (by its /in/ slug), shared across people so two exports can be compared. */
 export const linkedinTag = (slug: string) => sharedTag("linkedin", slug.toLowerCase());
 
-/** Keeps the person's LinkedIn connections, sealed; a connection already kept is updated. Returns the tags added. */
+/** Keeps the person's LinkedIn connections, sealed; a connection already kept is updated. Returns the tags added. Written 500 at a time. */
 export async function keepConnections(userId: string, rows: readonly ConnectionIn[]): Promise<string[]> {
+  const byTag = new Map<string, ConnectionIn>();
+  for (const c of rows.slice(0, 30000)) byTag.set(linkedinTag(c.slug), c);
+  const all = [...byTag];
   const added: string[] = [];
-  for (const c of rows.slice(0, 30000)) {
-    const t = linkedinTag(c.slug);
+  for (let i = 0; i < all.length; i += 500) {
+    const part = all.slice(i, i + 500);
     const r = await db().query(
-      `INSERT INTO linkedin_connection (user_id, link_hash, name_ct, company_ct, position_ct, connected_on) VALUES ($1, $2, $3, $4, $5, $6)
-       ON CONFLICT (user_id, link_hash) DO UPDATE SET name_ct = $3, company_ct = $4, position_ct = $5, connected_on = $6 RETURNING (xmax = 0) AS fresh`,
-      [userId, t, seal(userId, c.name), c.company ? seal(userId, c.company) : null, c.position ? seal(userId, c.position) : null, c.connectedOn],
+      `INSERT INTO linkedin_connection (user_id, link_hash, name_ct, company_ct, position_ct, connected_on)
+       SELECT $1, t.h, t.n, t.c, t.p, t.d FROM unnest($2::text[], $3::text[], $4::text[], $5::text[], $6::date[]) AS t(h, n, c, p, d)
+       ON CONFLICT (user_id, link_hash) DO UPDATE SET name_ct = EXCLUDED.name_ct, company_ct = EXCLUDED.company_ct, position_ct = EXCLUDED.position_ct, connected_on = EXCLUDED.connected_on
+       RETURNING link_hash, (xmax = 0) AS fresh`,
+      [
+        userId,
+        part.map(([t]) => t),
+        part.map(([, c]) => seal(userId, c.name)),
+        part.map(([, c]) => (c.company ? seal(userId, c.company) : null)),
+        part.map(([, c]) => (c.position ? seal(userId, c.position) : null)),
+        part.map(([, c]) => c.connectedOn),
+      ],
     );
-    if (r.rows[0]?.fresh) added.push(t);
+    for (const x of r.rows) if (x.fresh) added.push(x.link_hash);
   }
   return added;
 }
@@ -205,6 +217,39 @@ export type KeptConnection = { name: string; company: string | null; position: s
 export async function connectionsOf(userId: string, limit = 2000): Promise<KeptConnection[]> {
   const r = await db().query("SELECT name_ct, company_ct, position_ct, connected_on FROM linkedin_connection WHERE user_id = $1 ORDER BY connected_on DESC NULLS LAST LIMIT $2", [userId, limit]);
   return r.rows.map((x) => ({ name: open(userId, x.name_ct), company: x.company_ct ? open(userId, x.company_ct) : null, position: x.position_ct ? open(userId, x.position_ct) : null, connectedOn: x.connected_on ? new Date(x.connected_on).toISOString().slice(0, 10) : null }));
+}
+
+/** What the person has kept from LinkedIn: experience rows from it, connections, and when they last kept an upload. */
+export async function linkedinKept(userId: string): Promise<{ positions: number; schools: number; connections: number; lastUpload: string | null }> {
+  const r = await db().query(
+    `SELECT (SELECT count(*) FROM experience WHERE user_id = $1 AND source = 'linkedin' AND kind = 'position')::int AS positions,
+            (SELECT count(*) FROM experience WHERE user_id = $1 AND source = 'linkedin' AND kind = 'school')::int AS schools,
+            (SELECT count(*) FROM linkedin_connection WHERE user_id = $1)::int AS connections,
+            (SELECT max(created_at) FROM action_change WHERE user_id = $1 AND action_id = 'import_linkedin' AND status = 'done') AS last`,
+    [userId],
+  );
+  const x = r.rows[0] ?? {};
+  return { positions: x.positions ?? 0, schools: x.schools ?? 0, connections: x.connections ?? 0, lastUpload: iso(x.last) };
+}
+
+export type Tally = { label: string; count: number };
+
+/** The most common companies and positions among the person's LinkedIn connections, for them alone (opened here, never kept). */
+export async function connectionTallies(userId: string, top = 5): Promise<{ total: number; companies: Tally[]; positions: Tally[] }> {
+  const all = await connectionsOf(userId, 30000);
+  const tally = (pick: (c: KeptConnection) => string | null): Tally[] => {
+    const m = new Map<string, Tally>();
+    for (const c of all) {
+      const v = pick(c)?.trim();
+      if (!v) continue;
+      const k = v.toLowerCase();
+      const t = m.get(k);
+      if (t) t.count++;
+      else m.set(k, { label: v, count: 1 });
+    }
+    return [...m.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)).slice(0, top);
+  };
+  return { total: all.length, companies: tally((c) => c.company), positions: tally((c) => c.position) };
 }
 
 export type Match = { id: string; name: string; handle: string | null };

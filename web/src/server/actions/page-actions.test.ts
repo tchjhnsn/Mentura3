@@ -48,6 +48,9 @@ const ROUTED: Record<string, string[]> = {
   "settings/account/actions.ts#saveHandleAction": ["set_handle"],
   "settings/account/actions.ts#saveNameAction": ["set_name"],
   "settings/account/actions.ts#chooseAudienceAction": ["set_default_audience"],
+  // Settings, Profile, LinkedIn: keep an export, remove the connections
+  "settings/profile/linkedin/actions.ts#keepLinkedinAction": ["import_linkedin"],
+  "settings/profile/linkedin/actions.ts#removeLinkedinConnectionsFromPage": ["remove_linkedin_connections"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],
@@ -227,6 +230,7 @@ const EXCLUDED: Record<string, string> = {
   "schole/examinations/actions.ts#joinExaminationAction": EXAM,
   "schole/examinations/actions.ts#attestAction": EXAM,
   "schole/examinations/actions.ts#closeExaminationAction": EXAM,
+  "settings/profile/linkedin/actions.ts#previewLinkedinAction": "Reads the LinkedIn export files the browser unzipped, for the page's preview of what Keep would keep; it saves nothing (import_linkedin keeps them).",
   "settings/actions.ts#startHouseholdAction": SETTINGS,
   "settings/actions.ts#addMemberAction": SETTINGS,
   "settings/actions.ts#saveMemberAction": SETTINGS,
