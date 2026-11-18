@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { planOf } from "@/server/plan";
+import { planFor } from "../data";
 import { budgetView } from "@reflect/core/budget";
 import { money, Section, type Ctx } from "../parts";
 
 /** Money: what is left to allot a month, from the budget against take-home. */
 export async function MoneyCard({ ctx }: { ctx: Ctx }) {
-  const { plan, budget } = await planOf(ctx.userId);
+  const { plan, budget } = await planFor(ctx.userId);
   const v = budgetView(plan, budget);
   return (
     <Section title="Money" href="/plan" more="Budget">

@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { nextGoing, upcomingEvents } from "@/server/events-store";
+import { upcomingEvents } from "@/server/events-store";
+import { goingNext } from "../data";
 import { Empty, eventWhen, safe, Section, type Ctx } from "../parts";
 
 /** Events: the next one you're going to and three in Austin. */
 export async function EventsCard({ ctx }: { ctx: Ctx }) {
-  const [going, nearby] = await Promise.all([safe(nextGoing(ctx.userId), null), safe(upcomingEvents({ from: ctx.now, limit: 4 }), [])]);
+  const [going, nearby] = await Promise.all([safe(goingNext(ctx.userId), null), safe(upcomingEvents({ from: ctx.now, limit: 4 }), [])]);
   const events = nearby.filter((e) => e.id !== going?.id).slice(0, 3);
   return (
     <Section title="Events" href="/events" more="Events">

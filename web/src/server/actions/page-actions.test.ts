@@ -58,6 +58,10 @@ const ROUTED: Record<string, string[]> = {
   // Settings, Profile, LinkedIn: keep an export, remove the connections
   "settings/profile/linkedin/actions.ts#keepLinkedinAction": ["import_linkedin"],
   "settings/profile/linkedin/actions.ts#removeLinkedinConnectionsFromPage": ["remove_linkedin_connections"],
+  // The dashboard's own taps (move a Today item to the next day, Connect back, Undo in its toast)
+  "dashboard/actions.ts#moveToNextDayAction": ["change_event"],
+  "dashboard/actions.ts#connectBackFromDashboard": ["connect_with"],
+  "dashboard/actions.ts#undoFromDashboard": ["undo_change"],
   // Home cards
   "home-card-actions.ts#removeCardFromHome": ["remove_home_card"],
   "home-card-actions.ts#checkCardItem": ["check_home_item"],
@@ -256,6 +260,8 @@ const EXCLUDED: Record<string, string> = {
   "life/messages-actions.ts#inviteFriendAction": "An invite link lets another account in; the person makes it on the page, never a model.",
   "life/messages-actions.ts#acceptFriendInviteAction": "Accepting an invite is the invited person's own act while signed in.",
   "events/connect-actions.ts#checkInAction": "Checking in is the person's own tap at the event, while it runs; a model is never at the door.",
+  "dashboard/actions.ts#notNowFromDashboard": "Not now on a connect request is the person's own answer to another person; a model never turns someone away for them.",
+  "dashboard/actions.ts#saveLayoutAction": "Saves the dashboard's layout straight to its store for now; the registry entry set_dashboard_card is the dashboard inline builder's, and this moves onto it once that lands.",
   "events/connect-actions.ts#notNowAction": "Not now on a connect request is the person's own answer to another person; a model never turns someone away for them.",
   "settings/connections/actions.ts#disconnectAssistantAction": "Disconnecting an assistant is the person's own act in Settings.",
   "settings/connections/actions.ts#disconnectGoogleAction": "Disconnecting an OAuth connection is the person's own act in Settings.",

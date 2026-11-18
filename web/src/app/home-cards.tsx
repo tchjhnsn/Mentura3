@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { checkCardItem, removeCardFromHome } from "./home-card-actions";
+import { useDashToast } from "./dashboard/instant";
 
 /** One Home card as the page hands it over: its words already worked out for today. */
 export type CardView = {
@@ -21,12 +22,23 @@ export type CardView = {
   marked: boolean;
 };
 
-function Card({ c }: { c: CardView }) {
+function Card({ c: given }: { c: CardView }) {
   const [busy, start] = useTransition();
-  const check = (item: number | null) => start(() => checkCardItem(c.id, item));
+  const toast = useDashToast();
+  // A tap shows at once (useOptimistic) while it is kept; the page's fresh card replaces it after.
+  const [c, tick] = useOptimistic(given, (s, item: number | null) =>
+    item === null ? { ...s, marked: !s.marked } : { ...s, items: s.items.map((it, i) => (i === item ? { ...it, done: !it.done } : it)) });
+  const [gone, setGone] = useOptimistic(false, (_s, v: boolean) => v);
+  const check = (item: number | null) => start(async () => { tick(item); await checkCardItem(c.id, item); });
+  const remove = () => start(async () => {
+    setGone(true);
+    const changeId = await removeCardFromHome(c.id);
+    toast({ ok: true, text: `Removed ${c.title} from Home`, changeId });
+  });
+  if (gone) return null;
   return (
-    <li className={cn("bg-card relative grid min-w-0 content-start gap-1.5 rounded-xl border p-4 pr-10", busy && "opacity-70")}>
-      <Button variant="ghost" size="icon" className="absolute top-2 right-2 size-7" aria-label={`Remove ${c.title} from Home`} title="Remove" disabled={busy} onClick={() => start(() => removeCardFromHome(c.id))}>
+    <li className="bg-card relative grid min-w-0 content-start gap-1.5 rounded-xl border p-4 pr-10">
+      <Button variant="ghost" size="icon" className="absolute top-2 right-2 size-7" aria-label={`Remove ${c.title} from Home`} title="Remove" disabled={busy} onClick={remove}>
         <XIcon />
       </Button>
       {c.href ? <Link href={c.href} className="text-muted-foreground truncate text-sm font-medium hover:underline">{c.title} · {c.tile}</Link> : <span className="text-muted-foreground truncate text-sm font-medium">{c.title} · {c.tile}</span>}

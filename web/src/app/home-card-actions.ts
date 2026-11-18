@@ -7,11 +7,13 @@ import { checkHomeItemAction, removeHomeCardAction } from "@/server/actions/home
 
 // Through the registry (Ask Reflect plan, step 4): the chat's own entries, so a tap here is in the change log too.
 
-/** The x on a Home card: removes it from Home. */
-export async function removeCardFromHome(id: string): Promise<void> {
+/** The x on a Home card: removes it from Home (and the dashboard). Returns the change's id, for Undo. */
+export async function removeCardFromHome(id: string): Promise<string | null> {
   const user = await requireUser();
-  await fromPage(removeHomeCardAction, user.id, { id });
+  const ran = await fromPage(removeHomeCardAction, user.id, { id }, { change: true });
   revalidatePath("/");
+  revalidatePath("/dashboard");
+  return ran.changeId;
 }
 
 /** A tap on a checklist item (or a streak card's day): checks or unchecks it. */
@@ -19,4 +21,5 @@ export async function checkCardItem(id: string, item: number | null): Promise<vo
   const user = await requireUser();
   await fromPage(checkHomeItemAction, user.id, { id, ...(item === null ? {} : { item }) });
   revalidatePath("/");
+  revalidatePath("/dashboard");
 }
