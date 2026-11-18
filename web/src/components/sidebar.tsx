@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarIcon, CompassIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +60,7 @@ export function SidebarProvider({ groups, chats, children }: { groups: SidebarGr
           <Section title="Tools">
             <Link href="/journal" className={ROW}><NotebookPenIcon className="text-muted-foreground size-4" />Journal</Link>
             <Link href="/calendar" className={ROW}><CalendarIcon className="text-muted-foreground size-4" />Calendar</Link>
+            <Link href="/events" className={ROW}><CalendarDaysIcon className="text-muted-foreground size-4" />Events</Link>
           </Section>
 
           <Section title="Lenses">

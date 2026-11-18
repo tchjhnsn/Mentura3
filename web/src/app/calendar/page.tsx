@@ -141,7 +141,9 @@ export default async function CalendarPage({ searchParams }: { searchParams: Pro
                       // Synced events are read-only here: they are changed in the app that keeps them.
                       <div className="grid gap-2 border-t p-4 text-sm">
                         {o.event.note ? <p className="whitespace-pre-line">{o.event.note}</p> : null}
-                        <p className="text-muted-foreground">From {o.event.feed!.name}. Change it there.</p>
+                        {o.event.id.startsWith("event:") ? (
+                          <p className="text-muted-foreground">You said Going. <Link href={`/events/${o.event.id.slice(6)}`} className="text-foreground underline underline-offset-2">Open the event</Link></p>
+                        ) : <p className="text-muted-foreground">From {o.event.feed!.name}. Change it there.</p>}
                       </div>
                     ) : isRecordEvent(o.event) ? (
                       <p className="text-muted-foreground border-t p-4 text-sm">From your {tileLabel(o.event.tile)} records. <Link href={`/life/${o.event.tile}/${o.event.recordId}`} className="text-foreground underline underline-offset-2">Open it</Link> to change it.</p>
