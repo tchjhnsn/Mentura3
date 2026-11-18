@@ -9,9 +9,9 @@ import { changedTiles, GROUPS, tileFact, type Stage } from "@reflect/core/plan";
 import { dashboardFacts } from "@/server/dashboard";
 import { GLYPHS, hrefOf, MINE, toneOf, type Tone } from "./home-tiles";
 import { HomeToggle } from "./home-toggle";
-import { HomeCards, type CardView } from "./home-cards";
+import { HomeCards } from "./home-cards";
+import { cardView } from "./home-card-view";
 import { homeCardsToday } from "@/server/home-cards-store";
-import { cardLines, type HomeCard } from "@reflect/core/home-cards";
 import { cookies } from "next/headers";
 import { LookMenu } from "@/components/look-menu";
 import { LOOK_COOKIE, lookOf } from "@/lib/themes";
@@ -24,15 +24,6 @@ const DOT: Record<Tone, string> = { action: "bg-foreground", thought: "bg-tone-t
 const SAY: Record<Tone, string> = { action: "in action", thought: "in thought", unstated: "unstated" };
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
-
-/** A Home card as the strip draws it, its words worked out for today. */
-function cardView(c: HomeCard, today: string): CardView {
-  const t = MINE.find((x) => x.id === c.tile);
-  return {
-    id: c.id, title: c.title, tile: t?.label ?? c.tile, href: t ? hrefOf(t) : null, kind: c.content.kind,
-    lines: cardLines(c, today), items: c.content.kind === "checklist" ? c.content.items : [], marked: c.content.kind === "streak" && c.content.days.includes(today),
-  };
-}
 
 /** The steps still to be reached, in order, the chosen one heavy; Add a step is the screen's one filled element. */
 function Steps({ steps, chosen }: { steps: Stage[]; chosen: Stage | null }) {

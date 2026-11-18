@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
@@ -55,6 +55,7 @@ export function SidebarProvider({ groups, chats, me, children }: { groups: Sideb
         <div className="grid flex-1 content-start gap-5 overflow-y-auto px-3 pb-4">
           <div className="grid gap-0.5">
             <Link href="/" className={cn(ROW, "font-medium")}><HomeIcon className="size-4" />Home</Link>
+            <Link href="/dashboard" className={cn(ROW, "font-medium")}><LayoutDashboardIcon className="size-4" />Dashboard</Link>
             <Link href="/chat" className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />Ask Reflect</Link>
           </div>
 
