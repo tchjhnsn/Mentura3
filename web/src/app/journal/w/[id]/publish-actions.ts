@@ -5,7 +5,8 @@ import { requireUser } from "@/server/session";
 import { profileSettings } from "@/server/profile-store";
 import { profileHref } from "@/server/actions/profiles";
 import { excerpt } from "@reflect/core/site";
-import { publishWork, republishPost, subscribersToMail, unpublishWork } from "@/server/site-store";
+import { postById, publishWork, republishPost, subscribersToMail, unpublishWork } from "@/server/site-store";
+import { publishToRepo, unpublishFromRepo } from "@/server/site-repo";
 import { profilePage } from "@/server/profile-store";
 import { sendSiteMail } from "@/server/site-connectors";
 import { siteUrl } from "@/server/site";
@@ -14,7 +15,7 @@ import { siteUrl } from "@/server/site";
 // on the work's page only: publishing is never offered to a model, so these are not registry entries
 // (web/src/server/actions/page-actions.test.ts lists them under PUBLISH).
 
-export type Published = { slug: string; href: string; updatedAt: string; emailed?: number };
+export type Published = { slug: string; href: string; updatedAt: string; emailed?: number; repo?: string | null; repoError?: string };
 const fail = (e: unknown, fallback: string) => ({ error: e instanceof Error ? e.message : fallback });
 
 /** Publish the work, or update its post with the text as it is now, at the slug given (or its own). */
@@ -25,6 +26,14 @@ export async function publishWorkAction(workId: string, slug: string | null, ema
     const site = profileHref({ id: user.id, handle: (await profileSettings(user.id)).handle });
     revalidatePath(site);
     revalidatePath(`/journal/w/${workId}`);
+    // A site the person hosts themselves gets the post as a commit to its repository; their host redeploys.
+    let repo: string | null = null;
+    let repoError: string | undefined;
+    try {
+      repo = await publishToRepo(user.id, p);
+    } catch (e) {
+      repoError = e instanceof Error ? e.message.slice(0, 300) : "Could not write it to your repository.";
+    }
     // With "Email it to subscribers" on, each confirmed subscriber gets the post's opening and its link, through the
     // person's own email connector (or Reflect's sender), with their own link to leave.
     let emailed = 0;
@@ -41,7 +50,7 @@ export async function publishWorkAction(workId: string, slug: string | null, ema
         emailed++;
       }
     }
-    return { slug: p.slug, href: `${site}/${p.slug}`, updatedAt: p.updatedAt, emailed };
+    return { slug: p.slug, href: `${site}/${p.slug}`, updatedAt: p.updatedAt, emailed, repo, ...(repoError ? { repoError } : {}) };
   } catch (e) {
     return fail(e, "Could not publish.");
   }
@@ -52,6 +61,7 @@ export async function unpublishWorkAction(workId: string): Promise<{ postId: str
   const user = await requireUser();
   try {
     const p = await unpublishWork(user.id, String(workId));
+    if (p) await unpublishFromRepo(user.id, p).catch(() => undefined);
     revalidatePath(profileHref({ id: user.id, handle: (await profileSettings(user.id)).handle }));
     return { postId: p?.id ?? null };
   } catch (e) {
@@ -64,6 +74,8 @@ export async function republishAction(postId: string): Promise<{ ok: true } | { 
   const user = await requireUser();
   try {
     await republishPost(user.id, String(postId));
+    const p = await postById(user.id, String(postId));
+    if (p) await publishToRepo(user.id, p).catch(() => undefined);
     revalidatePath(profileHref({ id: user.id, handle: (await profileSettings(user.id)).handle }));
     return { ok: true };
   } catch (e) {

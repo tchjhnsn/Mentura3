@@ -9,7 +9,8 @@ import { getWork } from "./work-store";
 import { open, seal, tag } from "./crypto";
 
 export type Post = { id: string; workId: string; slug: string; kind: string; title: string; body: string; publishedAt: string; updatedAt: string };
-export type Site = { template: TemplateId; domain: string | null; domainCheckedAt: string | null };
+export type SiteRepo = { repo: string; branch: string; folder: string; ext: "md" | "mdx" };
+export type Site = { template: TemplateId; domain: string | null; domainCheckedAt: string | null; repo: SiteRepo | null };
 
 const newId = () => randomBytes(9).toString("base64url");
 const iso = (d: unknown) => (d instanceof Date ? d.toISOString() : d ? new Date(String(d)).toISOString() : null);
@@ -20,8 +21,34 @@ const toPost = (r: Record<string, unknown>): Post => ({
 
 /** The site's settings; the default (Plain, no domain) when none were set. */
 export async function siteOf(userId: string): Promise<Site> {
-  const r = (await db().query("SELECT template, domain, domain_checked_at FROM site WHERE user_id = $1", [userId])).rows[0];
-  return { template: isTemplate(r?.template) ? r.template : "plain", domain: r?.domain ?? null, domainCheckedAt: iso(r?.domain_checked_at) };
+  const r = (await db().query("SELECT template, domain, domain_checked_at, repo, repo_branch, repo_folder, repo_ext FROM site WHERE user_id = $1", [userId])).rows[0];
+  const repo: SiteRepo | null = r?.repo ? { repo: r.repo, branch: r.repo_branch ?? "main", folder: r.repo_folder ?? "content/posts", ext: r.repo_ext === "mdx" ? "mdx" : "md" } : null;
+  return { template: isTemplate(r?.template) ? r.template : "plain", domain: r?.domain ?? null, domainCheckedAt: iso(r?.domain_checked_at), repo };
+}
+
+/** Links the site to the person's own repository on GitHub, or unlinks it with null. */
+export async function setSiteRepo(userId: string, repo: SiteRepo | null): Promise<void> {
+  await db().query(
+    `INSERT INTO site (user_id, repo, repo_branch, repo_folder, repo_ext) VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (user_id) DO UPDATE SET repo = EXCLUDED.repo, repo_branch = EXCLUDED.repo_branch, repo_folder = EXCLUDED.repo_folder, repo_ext = EXCLUDED.repo_ext, updated_at = now()`,
+    [userId, repo?.repo ?? null, repo?.branch ?? null, repo?.folder ?? null, repo?.ext ?? null],
+  );
+}
+
+/** Remembers where a post was written in the site's repository (null when it was removed). */
+export async function setPostRepoPath(userId: string, postId: string, path: string | null): Promise<void> {
+  await db().query("UPDATE post SET repo_path = $3 WHERE id = $1 AND user_id = $2", [postId, userId, path]);
+}
+
+/** One post of the person's, live or taken down. */
+export async function postById(userId: string, postId: string): Promise<Post | null> {
+  const r = (await db().query("SELECT * FROM post WHERE id = $1 AND user_id = $2", [postId, userId])).rows[0];
+  return r ? toPost(r) : null;
+}
+
+/** Where a post was written in the site's repository, if anywhere. */
+export async function postRepoPath(userId: string, postId: string): Promise<string | null> {
+  return ((await db().query("SELECT repo_path FROM post WHERE id = $1 AND user_id = $2", [postId, userId])).rows[0]?.repo_path as string | undefined) ?? null;
 }
 
 /** Sets the site's template. Returns the one before. */

@@ -65,6 +65,7 @@ export default async function SiteSettings() {
 
         <Group title="Address" id="address">
           <li className="grid gap-2 px-4 py-3"><CopyLink path={href} /></li>
+          <Row href="/settings/site/repo" icon={<GitBranchIcon />} label="Your own site on GitHub" value={site.repo?.repo} sub={site.repo ? undefined : "Publish into a site you host yourself"} />
           <Row href="/settings/site/domain" icon={<GlobeIcon />} label="Use your own domain" value={site.domain ? (site.domainCheckedAt ? site.domain : `${site.domain}, not connected`) : undefined} />
         </Group>
 

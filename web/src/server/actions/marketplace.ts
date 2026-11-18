@@ -3,6 +3,8 @@
 // and its arguments. Connecting and disconnecting are taps in the marketplace only.
 import { z } from "zod";
 import { connectionsOf, callTool, toolsOf } from "../mcp-connections";
+import { browseRepo, writeRepoFile } from "../site-repo";
+import { siteOf } from "../site-store";
 import { action, type ActionContext } from "./types";
 
 const find = async (userId: string, name: string) => {
@@ -74,4 +76,35 @@ export const connectorActAction = action({
     return { connector: c.name, tool, text: r.text, structured: r.structured };
   },
   change: (r) => ({ after: { connector: r.connector, tool: r.tool } }),
+});
+
+// A site the person hosts themselves, through their GitHub connector (Torian, 2026-11-18 20:47Z): read its files,
+// and change one after the person taps Send. Linking the repository is a tap in Settings, Your site.
+
+export const siteFilesAction = action({
+  id: "site_files",
+  title: "Read the person's own site",
+  description: "Read the repository of the site the person hosts themselves (linked in Settings, Your site, Your own site on GitHub): a folder's file list (path empty or ending in /) or one file's text. Use it before site_edit to see the file as it is.",
+  tier: "read",
+  on: ["chat", "mcp"],
+  input: z.object({ path: z.string().max(400).default("").describe("A path in the repository, such as app/page.tsx; empty for the top folder") }),
+  run: async ({ userId }, { path }) => browseRepo(userId, path),
+});
+
+const EDIT = z.object({
+  path: z.string().min(1).max(400).describe("The file's path in the repository"),
+  content: z.string().max(200_000).describe("The whole new text of the file"),
+  message: z.string().min(1).max(200).describe("The commit message, in plain words"),
+});
+
+export const siteEditAction = action({
+  id: "site_edit",
+  title: "Change a file of the person's own site",
+  description: "Write one file of the site the person hosts themselves, as a commit to its repository's branch, only when the person asked for the change. Read the file first with site_files and send its whole new text. It waits for the person to tap Send; their host deploys it on push. A commit can be reverted on GitHub, not from Reflect.",
+  tier: "outside",
+  on: ["chat", "mcp"],
+  input: EDIT,
+  preview: async ({ userId }, { path, content, message }) => `${(await siteOf(userId)).repo?.repo ?? "Your site"}: commit "${message}" writing ${path} (${content.length} characters)`,
+  run: async ({ userId }, { path, content, message }) => writeRepoFile(userId, path.replace(/^\/+/, ""), content, message),
+  change: (r) => ({ after: { repo: r.repo, path: r.path } }),
 });
