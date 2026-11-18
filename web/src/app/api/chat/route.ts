@@ -21,7 +21,9 @@ import { chatTools } from "./tools";
 import { crisisResponse, inCrisis, messageText } from "./crisis";
 
 export const maxDuration = 60;
-const MAX_MESSAGES = 30;
+const MAX_MESSAGES = 40;
+/** Steps in one answer: tool rounds, then always a last step in words (toolChoice none), so no answer ends on a card alone. */
+const MAX_STEPS = 6;
 
 export async function POST(req: Request) {
   const user = await currentUser();
@@ -65,7 +67,8 @@ export async function POST(req: Request) {
         model,
         system: `${ASK_SYSTEM}\n\n${day ? `The person's today is ${day}.\n\n` : ""}${summary}`,
         messages: await convertToModelMessages(messages),
-        stopWhen: stepCountIs(4),
+        stopWhen: stepCountIs(MAX_STEPS),
+        prepareStep: ({ stepNumber }) => (stepNumber >= MAX_STEPS - 1 ? { toolChoice: "none" } : undefined),
         onFinish: async ({ steps }) => keep("reflect", steps.map((st) => st.text).filter(Boolean).join("\n\n")),
         tools: chatTools({ userId: user.id, ...(day ? { today: day } : {}), view, claims, items, show }),
       });
