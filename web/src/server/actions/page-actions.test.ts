@@ -51,6 +51,8 @@ const ROUTED: Record<string, string[]> = {
   "settings/account/actions.ts#saveHandleAction": ["set_handle"],
   "settings/account/actions.ts#saveNameAction": ["set_name"],
   "settings/account/actions.ts#chooseAudienceAction": ["set_default_audience"],
+  // Settings, Dashboard: the morning brief's opt-in (dashboard, 2026-11-18)
+  "settings/dashboard/actions.ts#setMorningBriefFromPage": ["set_morning_brief"],
   // Socials (Profiles and accounts, 2026-11-18)
   "settings/profile/socials/actions.ts#addSocialFromPage": ["add_social", "remove_social"],
   "settings/profile/socials/actions.ts#removeSocialFromPage": ["remove_social"],
