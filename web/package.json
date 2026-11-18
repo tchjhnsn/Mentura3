@@ -20,6 +20,7 @@
     "@better-auth/oauth-provider": "1.7.18",
     "@json-render/core": "0.21.3",
     "@json-render/react": "0.21.3",
+    "@modelcontextprotocol/client": "2.4.0",
     "@modelcontextprotocol/server": "2.4.0",
     "@neondatabase/serverless": "1.2.0",
     "@shadcn/react": "0.3.1",

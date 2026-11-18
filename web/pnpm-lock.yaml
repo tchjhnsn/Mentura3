@@ -29,6 +29,9 @@ importers:
       '@json-render/react':
         specifier: 0.21.3
         version: 0.21.3(react@19.3.1)(zod@4.6.7)
+      '@modelcontextprotocol/client':
+        specifier: 2.4.0
+        version: 2.4.0
       '@modelcontextprotocol/server':
         specifier: 2.4.0
         version: 2.4.0
@@ -812,6 +815,10 @@ packages:
 
   '@maplibre/vt-pbf@4.3.3':
     resolution: {integrity: sha512-dEe5XUd64RQbxNxy2OzIkJnwNDWjVmSXjCd0A7zLirm7QJ/WWbmtDFIkfsiM4yt1cplqzG6oSivRYeWx1SM1yg==}
+
+  '@modelcontextprotocol/client@2.4.0':
+    resolution: {integrity: sha512-LgrD2OphHuG12vfKFKz6SOnq7bKHQmhGJIAYdD+MZBn2npHEyry6uD8zvktodtl5CQM85MO0anUyD9JwmUmxww==}
+    engines: {node: '>=20'}
 
   '@modelcontextprotocol/core@2.4.0':
     resolution: {integrity: sha512-z8QBKqdfXLPzkLQuG4xp8hrVEMm1PZ1IgxMN2sMbJiFiAKOWXnAzogXn2W4aqIBlP1ea6U5yiqVquvUNM1Cj6Q==}
@@ -2502,6 +2509,10 @@ packages:
     resolution: {integrity: sha512-EKN1vKAMcZ8MlYMpaNuxN6R9yakzH6uajHcHVTqWJzvu5pWw9DyhbP35HH8MVBQ+dZjAfDxk+A8NiR9KWaXiyQ==}
     engines: {node: '>=18.0.0'}
 
+  eventsource@3.0.7:
+    resolution: {integrity: sha512-CRT1WTyuQoD771GW56XEZFQ/ZoSfWid1alKGDYMmkt2yl8UXrVR4pspqWNEcqKvVIzg6PAltWjxcSSPrboA4iA==}
+    engines: {node: '>=18.0.0'}
+
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
@@ -3263,6 +3274,10 @@ packages:
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
+
+  pkce-challenge@5.0.1:
+    resolution: {integrity: sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ==}
+    engines: {node: '>=16.20.0'}
 
   pkg-up@3.1.0:
     resolution: {integrity: sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==}
@@ -4585,6 +4600,16 @@ snapshots:
       '@mapbox/point-geometry': 1.1.0
       '@types/geojson': 7946.0.16
       pbf: 5.1.2
+
+  '@modelcontextprotocol/client@2.4.0':
+    dependencies:
+      '@modelcontextprotocol/core': 2.4.0
+      cross-spawn: 7.0.6
+      eventsource: 3.0.7
+      eventsource-parser: 3.1.1
+      jose: 6.2.16
+      pkce-challenge: 5.0.1
+      zod: 4.6.7
 
   '@modelcontextprotocol/core@2.4.0':
     dependencies:
@@ -6222,6 +6247,10 @@ snapshots:
 
   eventsource-parser@3.1.1: {}
 
+  eventsource@3.0.7:
+    dependencies:
+      eventsource-parser: 3.1.1
+
   execa@5.1.1:
     dependencies:
       cross-spawn: 7.0.6
@@ -7178,6 +7207,8 @@ snapshots:
   picomatch@2.3.2: {}
 
   picomatch@4.0.7: {}
+
+  pkce-challenge@5.0.1: {}
 
   pkg-up@3.1.0:
     dependencies:

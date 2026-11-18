@@ -131,6 +131,12 @@ export async function subscribersOf(ownerId: string): Promise<{ confirmed: { ema
   return { confirmed, waiting: r.rows.length - confirmed.length };
 }
 
+/** Confirmed subscribers with their leave token, for sending a post. Opened for the owner's own send only. */
+export async function subscribersToMail(ownerId: string, limit: number): Promise<{ email: string; token: string }[]> {
+  const r = await db().query("SELECT email_ct, token FROM site_subscriber WHERE site_user_id = $1 AND left_at IS NULL AND confirmed_at IS NOT NULL ORDER BY confirmed_at LIMIT $2", [ownerId, limit]);
+  return r.rows.map((x) => ({ email: open(ownerId, x.email_ct), token: x.token as string }));
+}
+
 /** How many confirmed subscribers the site has. */
 export async function subscriberCount(ownerId: string): Promise<number> {
   const r = await db().query("SELECT count(*)::int AS n FROM site_subscriber WHERE site_user_id = $1 AND left_at IS NULL AND confirmed_at IS NOT NULL", [ownerId]);
