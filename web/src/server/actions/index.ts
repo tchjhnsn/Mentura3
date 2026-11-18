@@ -25,6 +25,7 @@ import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
 import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
+import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
   keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
@@ -40,6 +41,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   toggleQuality, takeOffQuality, writeQuality, writeToward, mainAim,
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
+  goingToEvent, hostEvent, setEventPartAction,
   keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
   keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
   setUnitDoneAction, addItemNoteAction, removeItemNoteAction, addSessionAction, removeSessionAction, addItemSubjectsAction, removeItemSubjectAction,
@@ -66,6 +68,7 @@ export const ACTIONS: readonly Action[] = [
   ventureFilesAction, draftNaiveVenture, writeVentureFile,
   peopleToBuildWithAction,
   connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
+  eventsAction, eventAction,
   ...PAGE_ACTIONS,
 ];
 

@@ -3,6 +3,7 @@ import { isCalTile, isRepeat, recordEvents, type CalEvent, type CalTile } from "
 import { isLifeApp } from "@reflect/core/life";
 import { db } from "@/db/pool";
 import { feedCalEvents } from "./calendar-feeds";
+import { goingCalEvents } from "./events-store";
 import { open, seal } from "./crypto";
 import { googleCalEvents, mirrorToGoogle } from "./google-calendar";
 import { lifeRecords } from "./life-store";
@@ -88,17 +89,18 @@ export async function events(userId: string, from: string, to: string, tile?: Ca
  * A calendar's events with the days the person's records hold (a date planned, an election, a duty due, a goal's
  * day, a birthday), so nothing is entered twice, and the events of the calendars they sync (subscribed calendars,
  * Google Calendar, migration 0043, and Outlook Calendar, migration 0045), read-only and marked with `feed`. Filtered
- * to a tile when given; Google's and Outlook's events have no tile, so they show on the master calendar only. A synced calendar that cannot be read leaves the
+ * to a tile when given; the events the person said Going to in Events (migration 0050) show the same way. Google's and Outlook's events have no tile, so they show on the master calendar only. A synced calendar that cannot be read leaves the
  * rest showing.
  */
 export async function calendar(userId: string, from: string, to: string, tile?: CalTile | null): Promise<CalEvent[]> {
   const none = () => [] as CalEvent[];
-  const [own, records, subscribed, google, microsoft] = await Promise.all([
+  const [own, records, subscribed, google, microsoft, going] = await Promise.all([
     events(userId, from, to, tile),
     !tile ? lifeRecords(userId) : isLifeApp(tile) ? lifeRecords(userId, tile) : Promise.resolve([]),
     feedCalEvents(userId, from, to, tile).catch(none),
     tile ? Promise.resolve([]) : googleCalEvents(userId, from, to).catch(none),
     tile ? Promise.resolve([]) : microsoftCalEvents(userId, from, to).catch(none),
+    tile ? Promise.resolve([]) : goingCalEvents(userId, from, to).catch(none),
   ]);
-  return [...own, ...recordEvents(records), ...subscribed, ...google, ...microsoft];
+  return [...own, ...recordEvents(records), ...subscribed, ...google, ...microsoft, ...going];
 }

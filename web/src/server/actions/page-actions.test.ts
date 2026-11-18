@@ -86,6 +86,10 @@ const ROUTED: Record<string, string[]> = {
   "life/venture-actions.ts#startNaiveAction": ["start_naive_venture"],
   "life/build-actions.ts#askToBuildFromPage": ["ask_to_build"],
   "life/build-actions.ts#answerBuildFromPage": ["answer_build_request"],
+  // Events
+  "events/actions.ts#newEventAction": ["host_event"],
+  "events/actions.ts#goingAction": ["going_to_event"],
+  "events/actions.ts#setPartAction": ["set_event_part"],
   // Meals
   "meals/actions.ts#addMealAction": ["add_meal"],
   "meals/actions.ts#saveMealAction": ["change_record"],
@@ -173,6 +177,8 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 
 /** Page server actions that are not registry entries, each with its reason. */
 const EXCLUDED: Record<string, string> = {
+  "events/actions.ts#publishEventAction": "Publishing a hosted event makes it public and makes the door token shown once as the host's check-in QR: a tap on the event's page only, never offered to a model.",
+  "events/actions.ts#cancelEventAction": "Cancelling a hosted event reaches everyone who said Going: the outside tier, which waits for the person's tap, so it stays a tap on the event's page.",
   "journal/actions.ts#importWorkAction": IMPORT,
   "meals/actions.ts#readReceiptAction": IMPORT,
   "schole/actions.ts#importGoodreadsAction": IMPORT,
