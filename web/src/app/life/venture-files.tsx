@@ -10,13 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { startNaiveAction } from "./venture-actions";
 
-/** A folder opens at first when it holds a file somewhere inside; Naive's empty folders start closed. */
-const holdsFiles = (n: FileNode): boolean => n.type === "file" || n.children.some(holdsFiles);
-
 function FileTreeNode({ node, selected, onSelect }: { node: FileNode; selected: string; onSelect: (path: string) => void }) {
+  // Every folder starts closed (Torian, 2026-11-18).
   if (node.type === "folder") {
     return (
-      <Collapsible defaultOpen={holdsFiles(node)} className="group/folder">
+      <Collapsible className="group/folder">
         <CollapsibleTrigger asChild>
           <Button variant="ghost" size="sm" className="w-full justify-start font-normal aria-expanded:bg-transparent aria-expanded:hover:bg-muted dark:aria-expanded:hover:bg-muted/50">
             {/* Rotated by its own trigger's state: the pattern's group-data selector also matched an open parent folder. */}
