@@ -4,6 +4,9 @@ import { pendingChanges } from "@/server/actions/run";
 import { plansAction } from "@/server/actions/workflows";
 import { Chat, type Waiting } from "./chat";
 import { approvalCard, planCard } from "./spec";
+import type { UIMessage } from "ai";
+import { CHAT_PROMPT, isChatId, readChatPart } from "@reflect/core/chat-journal";
+import { listEntries } from "@/server/journal-store";
 
 export const metadata: Metadata = { title: "Ask" };
 export const dynamic = "force-dynamic";
@@ -30,5 +33,20 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   const q = (await searchParams).q;
   // A page can hand the chat a question to ask (a quiz on a lecture, say); it shows as the first suggestion, sent only on a tap.
   const ask = (Array.isArray(q) ? q[0] : q)?.trim().slice(0, 500) || undefined;
-  return <Chat ask={ask} pending={pending} plans={plans} />;
+  // A conversation continued from another page (the dashboard's ask bar, `?c=<chat id>`): the same id, so it stays one
+  // chat in the history, starting from its words as the history keeps them (the page hands over the rest when it can).
+  const c = (await searchParams).c;
+  const chatId = isChatId(Array.isArray(c) ? c[0] : c) ? String(Array.isArray(c) ? c[0] : c) : undefined;
+  const initial = chatId ? await keptMessages(user.id, chatId) : undefined;
+  return <Chat ask={ask} pending={pending} plans={plans} chatId={chatId} initial={initial} />;
+}
+
+/** A kept chat's words as messages, oldest first; empty when there is none yet. */
+async function keptMessages(userId: string, id: string): Promise<UIMessage[]> {
+  const entry = (await listEntries(userId, 50).catch(() => [])).find((e) => e.id === id && e.promptId === CHAT_PROMPT);
+  if (!entry) return [];
+  return entry.parts.map((p, i) => {
+    const { who, text } = readChatPart(p.text);
+    return { id: `${id}-${i}`, role: who === "reflect" ? "assistant" : "user", parts: [{ type: "text", text }] } satisfies UIMessage;
+  });
 }
