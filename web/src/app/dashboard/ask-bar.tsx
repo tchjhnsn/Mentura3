@@ -16,11 +16,14 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
+const noop = () => () => {};
+
 /**
  * The dashboard's ask bar: one line to Ask Reflect, which answers right here in a panel under the bar. It is the same
  * chat as Ask (/api/chat, the same model, tools and cards, Approval and Undo included), streamed, and kept in the chat
  * history under one id. A second question carries on the same conversation; "Continue in chat" opens it in Ask with
- * everything so far. A suggestion asks in one tap.
+ * everything so far. A suggestion asks in one tap. Cmd-K or Ctrl-K, or / when not typing elsewhere, puts the cursor
+ * in it; wide screens show the shortcut.
  */
 export function AskBar({ suggestions }: { suggestions: string[] }) {
   const router = useRouter();
@@ -38,6 +41,21 @@ export function AskBar({ suggestions }: { suggestions: string[] }) {
   const [transport] = React.useState(() => new DefaultChatTransport({ api: "/api/chat", body: () => ({ localDate: today(), model: model.current }) }));
   const { messages, sendMessage, setMessages, status, error, regenerate, stop } = useChat({ id, transport });
   const busy = status === "submitted" || status === "streaming";
+  // Which key to show is known only in the browser; the server renders no hint.
+  const mac = React.useSyncExternalStore(noop, () => /Mac|iPhone|iPad/.test(navigator.userAgent), () => null);
+  const input = React.useRef<HTMLInputElement>(null);
+  React.useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+      if ((e.key.toLowerCase() === "k" && (e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey) || (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey)) {
+        e.preventDefault();
+        input.current?.focus();
+        input.current?.select();
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, []);
   const lastAnswer = [...messages].reverse().find((m) => m.role === "assistant")?.id;
 
   const ask = (text: string) => {
@@ -63,7 +81,10 @@ export function AskBar({ suggestions }: { suggestions: string[] }) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
       <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="bg-card focus-within:ring-ring/50 flex items-center gap-2 rounded-2xl border p-2 pl-4 shadow-xs focus-within:ring-[3px]">
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={messages.length ? "Ask a follow-up" : "Ask Reflect or tell it what to do"} aria-label="Ask Reflect" className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent py-2 text-base outline-none" />
+        <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder={messages.length ? "Ask a follow-up" : "Ask Reflect or tell it what to do"} aria-label="Ask Reflect" aria-keyshortcuts="Meta+K Control+K /" className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent py-2 text-base outline-none" />
+        {mac !== null && !q && !busy ? (
+          <kbd className="text-muted-foreground bg-muted hidden shrink-0 rounded-md border px-1.5 py-0.5 font-sans text-xs lg:inline-block" aria-hidden="true">{mac ? "⌘K" : "Ctrl K"}</kbd>
+        ) : null}
         {busy ? (
           <Button type="button" size="icon" className="rounded-full" aria-label="Stop" onClick={() => void stop()}><SquareIcon /></Button>
         ) : (

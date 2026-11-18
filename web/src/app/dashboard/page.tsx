@@ -6,6 +6,7 @@ import { selfOf } from "@/server/profile-store";
 import { arrange, EMPTY_LAYOUT, layoutOf } from "@/server/dashboard-layout";
 import { AskBar } from "./ask-bar";
 import { DASH_CARDS } from "./cards";
+import { Board } from "./first-run";
 import { CardSkeleton, dayIn, hourIn, longDay, safe, type Ctx } from "./parts";
 
 export const metadata: Metadata = { title: "Dashboard" };
@@ -27,8 +28,8 @@ export default async function Dashboard() {
   const suggestions = ["What's on my day?", "How is my budget this month?", "Find an event this week", "What should I learn next?"];
   // The person's order and hidden cards (../../server/dashboard-layout.ts), each column keeping that order.
   const cards = arrange(DASH_CARDS, layout);
-  const column = (c: "main" | "side") => cards.filter((d) => d.column === c).map(({ id, Card }) => (
-    <Suspense key={id} fallback={<CardSkeleton />}><Card ctx={ctx} /></Suspense>
+  const column = (c: "main" | "side") => cards.filter((d) => d.column === c).map(({ id, skeleton, Card }) => (
+    <Suspense key={id} fallback={<CardSkeleton shape={skeleton} />}><Card ctx={ctx} /></Suspense>
   ));
 
   return (
@@ -43,10 +44,14 @@ export default async function Dashboard() {
         <AskBar suggestions={suggestions} />
       </section>
 
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <div className="grid grid-cols-[minmax(0,1fr)] content-start gap-8">{column("main")}</div>
-        <aside className="grid grid-cols-[minmax(0,1fr)] content-start gap-8">{column("side")}</aside>
-      </div>
+      <Suspense fallback={<CardSkeleton shape="hero" />}>
+        <Board ctx={ctx}>
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="grid grid-cols-[minmax(0,1fr)] content-start gap-8">{column("main")}</div>
+            <aside className="grid grid-cols-[minmax(0,1fr)] content-start gap-8">{column("side")}</aside>
+          </div>
+        </Board>
+      </Suspense>
     </main>
   );
 }
