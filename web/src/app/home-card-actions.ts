@@ -19,4 +19,5 @@ export async function checkCardItem(id: string, item: number | null): Promise<vo
   const user = await requireUser();
   await fromPage(checkHomeItemAction, user.id, { id, ...(item === null ? {} : { item }) });
   revalidatePath("/");
+  revalidatePath("/dashboard");
 }

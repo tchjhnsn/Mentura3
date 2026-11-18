@@ -6,6 +6,12 @@ import { AskCardsCard } from "./ask-cards";
 import { MoneyCard } from "./money";
 import { EventsCard } from "./events";
 import { ChatsCard } from "./chats";
+import { HabitsCard } from "./habits";
+import { VentureCard } from "./venture";
+import { ScholeCard } from "./schole";
+import { JournalCard } from "./journal";
+import { FoodCard } from "./food";
+import { SpendingCard } from "./spending";
 import { HealthCard } from "./health";
 import { WeatherCard } from "./weather";
 import { PeopleToSeeCard } from "./people-to-see";
@@ -22,8 +28,14 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "today", title: "Today", column: "main", skeleton: "hero", Card: TodayCard },
   { id: "people", title: "People", column: "main", skeleton: "faces", Card: PeopleCard },
   { id: "ask-cards", title: "From Ask Reflect", column: "main", Card: AskCardsCard },
+  { id: "habits", title: "Habits", column: "main", Card: HabitsCard },
+  { id: "schole", title: "Scholē", column: "main", Card: ScholeCard },
+  { id: "journal", title: "Journal", column: "main", Card: JournalCard },
+  { id: "venture", title: "Venture", column: "main", Card: VentureCard },
   { id: "week", title: "This week", column: "main", Card: WeekCard },
   { id: "money", title: "Money", column: "side", skeleton: "stat", Card: MoneyCard },
+  { id: "spending", title: "Spending", column: "side", Card: SpendingCard },
+  { id: "food", title: "Food", column: "side", Card: FoodCard },
   { id: "events", title: "Events for you", column: "side", Card: EventsCard },
   { id: "chats", title: "Recent chats", column: "side", Card: ChatsCard },
   { id: "weather", title: "Weather and when to leave", column: "side", Card: WeatherCard },
