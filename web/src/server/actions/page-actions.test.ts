@@ -215,6 +215,7 @@ const EXCLUDED: Record<string, string> = {
   "marketplace/actions.ts#addCustomAction": "A connector's sign-in happens in the person's own browser at the service, and disconnecting clears that sign-in, which only a new sign-in brings back; both stay taps on the marketplace.",
   "marketplace/actions.ts#disconnectAction": "A connector's sign-in happens in the person's own browser at the service, and disconnecting clears that sign-in, which only a new sign-in brings back; both stay taps on the marketplace.",
   "settings/site/actions.ts#pushSiteAction": "Pushes the person's site to their own GitHub through their GitHub connector, an outside service; it stays a tap on the page.",
+  "settings/site/actions.ts#deploySiteAction": "Deploys the person's site to their own Vercel through their Vercel connector, an outside service; it stays a tap on the page.",
   "journal/w/[id]/publish-actions.ts#publishWorkAction": PUBLISH,
   "journal/w/[id]/publish-actions.ts#unpublishWorkAction": PUBLISH,
   "journal/w/[id]/publish-actions.ts#republishAction": PUBLISH,

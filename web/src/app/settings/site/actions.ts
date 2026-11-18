@@ -9,7 +9,7 @@ import { fromPage } from "@/server/actions/page";
 import { setSiteTemplateAction } from "@/server/actions/site";
 import { markDomainChecked, setDomain, siteOf } from "@/server/site-store";
 import { siteProject } from "@/server/site-export";
-import { pushWithGithubConnector } from "@/server/site-connectors";
+import { deployWithVercelConnector, pushWithGithubConnector } from "@/server/site-connectors";
 
 // Settings, Your site (doc "Personal site and blog design guide", page 4). The template runs the registry's entry;
 // the domain's steps check public DNS and the host, so they are taps on this page only (page-actions.test.ts).
@@ -98,4 +98,16 @@ export async function pushSiteAction(): Promise<void> {
     redirect(`/settings/site/export?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not push.")}`);
   }
   redirect(`/settings/site/export?pushed=${encodeURIComponent(repo)}`);
+}
+
+export async function deploySiteAction(): Promise<void> {
+  const user = await requireUser();
+  let url = "";
+  try {
+    const { name, files } = await siteProject(user.id);
+    url = await deployWithVercelConnector(user.id, name, files);
+  } catch (e) {
+    redirect(`/settings/site/export?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not deploy.")}`);
+  }
+  redirect(`/settings/site/export?deployed=${encodeURIComponent(url)}`);
 }
