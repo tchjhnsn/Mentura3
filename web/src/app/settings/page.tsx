@@ -54,7 +54,7 @@ export default async function SettingsPage() {
         </Group>
 
         <Group title="Account" id="account">
-          <Row href="/settings/profile" icon={<IdCardIcon />} label="What people see" />
+          <Row href="/settings/account" icon={<IdCardIcon />} label="Profile" />
           <Row href="/settings/privacy" icon={<ShieldIcon />} label="Privacy" />
         </Group>
       </div>

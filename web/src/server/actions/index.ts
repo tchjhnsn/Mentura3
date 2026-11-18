@@ -24,8 +24,12 @@ import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } fro
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
 import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
+import { profilePageAction, setSectionAudienceAction } from "./profiles";
+import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction } from "./socials";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
+import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
+import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
   keepLibraryBook, keepReasonAction, learnedPiece, logPracticeAction, makePlaylistAction, orderWantAction, removeExcerptAction, removeItemAction, removeItemNoteAction, removeItemSubjectAction,
@@ -42,6 +46,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
   goingToEvent, hostEvent, setEventPartAction,
+  setHandleAction, setNameAction, setDefaultAudienceAction,
   keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
   keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
   setUnitDoneAction, addItemNoteAction, removeItemNoteAction, addSessionAction, removeSessionAction, addItemSubjectsAction, removeItemSubjectAction,
@@ -68,7 +73,10 @@ export const ACTIONS: readonly Action[] = [
   ventureFilesAction, draftNaiveVenture, writeVentureFile,
   peopleToBuildWithAction,
   connectRequestsAction, connectWithAction, setFriendKindAction, profileAction, setProfileAction,
+  profilePageAction, setSectionAudienceAction,
+  socialsAction, addSocialAction, removeSocialAction, confirmSocialAction,
   eventsAction, eventAction,
+  importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   ...PAGE_ACTIONS,
 ];
 

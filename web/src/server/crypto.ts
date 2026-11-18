@@ -28,3 +28,12 @@ export function tag(userId: string, text: string): string {
   const k = Buffer.from(hkdfSync("sha256", Buffer.from(master, "base64"), Buffer.from(userId), "reflect/cue/v1", 32));
   return createHmac("sha256", k).update(text).digest("hex");
 }
+
+/** A keyed hash shared across people, for matching the same outside link in two people's private lists (a LinkedIn
+ * profile link in two exports) without keeping the link itself. */
+export function sharedTag(purpose: string, text: string): string {
+  const master = process.env.REFLECT_DATA_KEY;
+  if (!master) throw new Error("REFLECT_DATA_KEY is not set");
+  const k = Buffer.from(hkdfSync("sha256", Buffer.from(master, "base64"), Buffer.alloc(0), `reflect/shared/${purpose}/v1`, 32));
+  return createHmac("sha256", k).update(text).digest("hex");
+}
