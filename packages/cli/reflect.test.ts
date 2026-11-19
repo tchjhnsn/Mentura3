@@ -4,6 +4,9 @@ import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { main } from "./reflect.ts";
 
+/** What `check` says of a vault that keeps no life records of the kinds a vault holds. */
+const NONE = "life records: none kept; checked belonging/friends (friends.friend), belonging/groups (friends.group), belonging/standing (polis.standing)";
+
 const dirs: string[] = [];
 afterAll(async () => Promise.all(dirs.map((d) => rm(d, { recursive: true, force: true }))));
 
@@ -25,13 +28,13 @@ describe("reflect CLI", () => {
     await run("close", id, "--dir", dir);
     await expect(run("add", id, "late", "--dir", dir)).rejects.toThrow(/closed/);
     expect((await run("list", "--dir", dir)).out[0]).toContain("closed");
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
 
     await writeFile(join(dir, "journal", "2026-11-09-hand.md"), "By hand.\n");
     const before = await run("check", "--dir", dir);
     expect(before.out).toContain("written outside reflect: journal/2026-11-09-hand.md");
     await run("check", "--adopt", "--dir", dir);
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
   it("fails on a grant that names entries", async () => {
@@ -57,12 +60,12 @@ describe("reflect CLI", () => {
     dirs.push(file);
     await run("export", "--out", file, "--moving-to", "reflect-app", "--dir", a);
     await expect(run("write", "more", "--dir", a)).rejects.toThrow(/moved to reflect-app/);
-    expect((await run("check", "--dir", a)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", a)).out).toEqual([NONE, "ok"]);
     await run("init", "--name", "Tester", "--dir", b);
     expect((await run("import", file, "--dir", b)).code).toBe(0);
     await expect(run("import", file, "--dir", b)).rejects.toThrow(/already has entries/);
     expect((await run("list", "--dir", b)).out[0]).toContain("Rain.");
-    expect((await run("check", "--dir", b)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", b)).out).toEqual([NONE, "ok"]);
   });
 
   it("lays out a vault any editor can open", async () => {
@@ -76,7 +79,7 @@ describe("reflect CLI", () => {
     expect(await readFile(join(dir, "household", "members", "README.md"), "utf8")).toContain("past the threshold");
     // A note the person adds anywhere in the vault's folders is a record written outside reflect.
     await writeFile(join(dir, "learn", "meditations.md"), "# Meditations\n");
-    expect((await run("check", "--dir", dir)).out).toEqual(["written outside reflect: learn/meditations.md", "ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "written outside reflect: learn/meditations.md", "ok"]);
     // A Naive venture under work/ keeps its own provenance; Reflect's check leaves it alone.
     const { mkdir: mk } = await import("node:fs/promises");
     await mk(join(dir, "work", "bakery"));
@@ -86,7 +89,7 @@ describe("reflect CLI", () => {
     await mkdir(join(dir, ".obsidian"));
     await writeFile(join(dir, ".obsidian", "app.json"), "{}");
     await run("check", "--adopt", "--dir", dir);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("sparks: a noun to write about, kept as an entry that names the noun as a concept", async () => {
@@ -111,7 +114,7 @@ describe("reflect CLI", () => {
     // A spark is kept closed: the time is up.
     await expect(run("add", a, "more", "--dir", dir)).rejects.toThrow(/closed/);
     expect((await run("list", "--dir", dir)).out).toHaveLength(2);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("keeps a custody checklist for official documents, with connections that hold some", async () => {
@@ -141,7 +144,7 @@ describe("reflect CLI", () => {
     expect(after.at(-1)).toBe("3 of 28 checked");
     expect(after).toContain("  [x] transcripts  connection Parchment");
     expect(after.find((l) => l.includes("diploma"))).toContain("[ ] diploma (held by Parchment)");
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
 
     // check finds a hand-edited card that names a connection which does not hold the document.
     await writeFile(join(dir, "documents", "passport.md"), "---\ntype: passport\ncustody: connection\nconnection: school\n---\n");
@@ -170,7 +173,7 @@ describe("reflect CLI", () => {
     await expect(run("passage", "line", "married", "--dir", dir)).rejects.toThrow(/in line a state is one of/);
     const state = JSON.parse(await readFile(join(dir, "life", "state.json"), "utf8"));
     expect(state).toEqual({ provide: { state: "learning", since: "2016-08" }, line: { state: "pair-bond", since: "2021-06-12" } });
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
     await writeFile(join(dir, "life", "state.json"), JSON.stringify({ line: { state: "raising-children", since: "2025-01" } }));
     expect((await run("check", "--dir", dir)).out).toContain("problem: life/state.json does not match life/passages.jsonl; it is rebuilt from the passages, never edited");
   });
@@ -244,7 +247,7 @@ describe("reflect CLI", () => {
     expect(map).toContain("  linear-algebra  a first step toward control-theory");
 
     await run("check", "--adopt", "--dir", dir);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
     await writeFile(join(dir, "learn", "subjects", "linear-algebra.md"), "---\nsubject: linear-algebra\nrequires: [[learn/subjects/control-theory]]\n---\n\n- 2026-01-01 grasp teach [[learn/books/missing]]\n");
     const problems = (await run("check", "--dir", dir)).out.join("\n");
     expect(problems).toContain("prerequisites go round in a circle");
@@ -280,7 +283,7 @@ describe("reflect CLI", () => {
     expect(saved.contents).toEqual(["System structure and behavior", "  The basics"]);
     await expect(main(["learn", "book", "Ghost", "--isbn", "0000000000", "--lookup", "--dir", dir], () => undefined, fetcher)).rejects.toThrow(/no book with isbn/);
     await expect(run("learn", "book", "Ghost", "--lookup", "--dir", dir)).rejects.toThrow(/needs --isbn/);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("drafts a transcript's courses, keeps only rows really in it, and keeps the ones the person confirms", async () => {
@@ -309,7 +312,7 @@ describe("reflect CLI", () => {
     expect(map).toContain("  Fall 2016  MATH 221 Linear Algebra  grade B-; you say: could explain the key ideas");
     await expect(run("learn", "transcript", "--keep", "9", "--dir", dir)).rejects.toThrow(/no row 9/);
     await run("check", "--adopt", "--dir", dir);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("keeps credentials, checks an Open Badges link, and reads a LinkedIn export only when asked to keep it", async () => {
@@ -346,7 +349,7 @@ describe("reflect CLI", () => {
     await run("learn", "grasp", "Systems Thinking", "teach", "--dir", dir);
     expect((await run("learn", "--dir", dir)).out.find((l) => l.startsWith("  systems-thinking"))).toMatch(/could teach it .*; vouched for by 2$/);
     await run("check", "--adopt", "--dir", dir);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("keeps films, talks, conversations and posts as inputs, and ideas as outputs that link them", async () => {
@@ -378,7 +381,7 @@ describe("reflect CLI", () => {
     await run("idea", "Corrupt and correct cities", "--drop", "a sermon on Micah 6", "--dir", dir);
     expect((await run("idea", "--dir", dir)).out.join("\n")).not.toContain("Micah");
     await expect(run("idea", "Other", "x", "--from", "learn/books/missing", "--dir", dir)).resolves.toBeTruthy();
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
     const map = (await run("learn", "--dir", dir)).out.join("\n");
     expect(map).toContain("Films\n  metropolis  film, watched");
     expect(map).toContain("Talks\n  strong-towns  Chuck Marohn, 2025-04");
@@ -439,7 +442,7 @@ describe("reflect CLI", () => {
     expect((await run("wiki", "absorb", "--keep", "1", "--dir", dir)).out).toEqual(["kept: wiki/patterns/building-alone (reading: ai)"]);
     await run("index", "--dir", dir);
     expect(await readFile(join(dir, "index.md"), "utf8")).toContain("[[wiki/_index]]");
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
   it("writes index.md, the catalog your own AI starts from, without journal text", async () => {
@@ -462,7 +465,7 @@ describe("reflect CLI", () => {
     expect(index).toMatch(/- \[\[journal\/2026-11-10-[^\]]+\]\] 2026-11-10/);
     expect(index).not.toContain("Sam");
     expect((await run("index", "--dir", dir)).out).toEqual(["index.md is up to date"]);
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
   it("sends an idea to Naive only when told to, and links the two both ways", async () => {
@@ -496,7 +499,7 @@ describe("reflect CLI", () => {
       expect((await run("idea", "Corner bakery", "--send", "naive", "--dir", dir)).out[0]).toMatch(/^already sent/);
       await run("idea", "Corner bakery", "--from", "a walk downtown", "--dir", dir);
       expect(await readFile(join(dir, "ideas/corner-bakery.md"), "utf8")).toContain("sent to naive");
-      expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+      expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
     } finally {
       if (before === undefined) delete process.env.NAIVE_BIN;
       else process.env.NAIVE_BIN = before;
@@ -536,7 +539,7 @@ describe("reflect CLI", () => {
     expect(map).toContain("Shown, not yet rated by you\n  political-philosophy");
     expect(map).toContain("Suggested, not known\n  urban-design");
     expect(map).not.toMatch(/Known\n  political-philosophy/);
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
   it("points at a folder outside the vault, keeps the placements the person chose, and notices drift", async () => {
@@ -612,7 +615,7 @@ describe("reflect CLI", () => {
     await run("source", "tag", "notes", "--keep", "3", "--dir", dir);
     expect((await readdir(join(dir, "journal"))).filter((n) => n.startsWith("2024-03-01-"))).toHaveLength(1);
     expect(await readFile(join(notes, "Reading", "Politics.md"), "utf8")).toContain("Book III");
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
     expect((await run("source", "--dir", dir)).out[1]).toBe("  7 file(s): 7 placed, 0 open");
 
     await writeFile(join(notes, "Reading", "Politics.md"), "# Politics\n\nRewritten.\n");
@@ -641,7 +644,7 @@ describe("reflect CLI", () => {
     const docs = (await run("documents", "--dir", dir)).out;
     expect(docs).toContain("legacy");
     expect(docs.find((l) => l.includes("life-insurance"))).toContain("connect the service that holds it");
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
   });
 
   it("keeps a release plan that can only give the legacy folder and entries marked to survive you", async () => {
@@ -671,7 +674,7 @@ describe("reflect CLI", () => {
     expect(r.out.filter((l) => l.startsWith("note:"))).toEqual([]);
     await expect(run("release", "terms", "--confirmations", "0", "--dir", dir)).rejects.toThrow(/confirmations is a whole number/);
     await run("check", "--adopt", "--dir", dir);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual([NONE, "ok"]);
     // A hand edit that gives away the journal fails check.
     const plan = JSON.parse(await readFile(join(dir, "legacy", "release.json"), "utf8"));
     plan.gifts.push({ what: "journal", to: "Sam", contact: "x" });
@@ -700,7 +703,7 @@ describe("reflect CLI", () => {
     expect(await readFile(join(dir, "household", "README.md"), "utf8")).toBe("# household\n");
     expect((await readdir(dir)).includes("ventures")).toBe(false);
     expect((await readdir(dir)).includes("library")).toBe(false);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual(["life records: 1 checked against their schemas (friends.friend 1, friends.group 0, polis.standing 0)", "ok"]);
   });
 
   it("brings the journal back from a soul vault", async () => {
@@ -727,7 +730,7 @@ describe("reflect CLI", () => {
     expect(JSON.parse(await readFile(join(life, "reflect.json"), "utf8")).soul).toBeUndefined();
     expect(await readFile(join(life, "journal", "README.md"), "utf8")).not.toContain("soul vault");
     expect((await run("list", "--dir", life)).out[0]).toContain("Walked to the bakery");
-    expect((await run("check", "--dir", life)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", life)).out).toEqual([NONE, "ok"]);
   });
 
   it("still works on an instance in the older people/<id> layout", async () => {
@@ -738,7 +741,7 @@ describe("reflect CLI", () => {
     await run("check", "--adopt", "--dir", dir);
     const id = (await run("write", "Old place.", "--date", "2026-11-01", "--dir", dir)).out[0]!;
     expect(await readdir(join(dir, "people", "p-0000abcd", "entries"))).toEqual([`2026-11-01-${id}.md`]);
-    expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
+    expect((await run("check", "--dir", dir)).out).toEqual(["life records: none, since this instance uses the older people layout", "ok"]);
   });
 
   it("lists the vault's actions and runs one against the vault", async () => {
@@ -746,15 +749,32 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     const listed = await run("actions");
-    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "list_entries", "write_entry", "get_entry"]);
-    expect(JSON.parse((await run("actions", "--json")).out[0]!)[2]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry"]);
+    expect(JSON.parse((await run("actions", "--json")).out[0]!)[3]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
     const today = new Date().toISOString().slice(0, 10);
     const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
     const id = (JSON.parse(wrote.out[0]!) as { id: string }).id;
     expect(wrote.out[1]).toMatch(/^change: /);
     expect((await run("act", "get_entry", "--input", JSON.stringify({ entry_id: id }), "--dir", dir)).out[0]).toContain("By the river.");
     await expect(run("act", "get_entry", "--input", "{bad", "--dir", dir)).rejects.toThrow(/--input is JSON/);
-    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+    const schema = JSON.parse((await run("act", "life_schema", "--input", JSON.stringify({ kind: "friends.friend" }), "--dir", dir)).out[0]!) as { "x-reflect": object };
+    expect(schema["x-reflect"]).toEqual({ app: "friends", kind: "friend", noun: "friend", category: "substance", good: "external", community: "polis" });
+  });
+
+  it("checks each friend, group and office note against its kind's schema, naming fields and never values", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    await writeFile(join(dir, "belonging", "friends", "sam.md"), "---\nkind: virtue\nevery: every-month\n---\n\n# Sam\n");
+    await writeFile(join(dir, "belonging", "groups", "choir.md"), "---\nwhat: Tuesday choir\n---\n");
+    await run("check", "--adopt", "--dir", dir);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["life records: 2 checked against their schemas (friends.friend 1, friends.group 1, polis.standing 0)", "ok"] });
+    await writeFile(join(dir, "belonging", "friends", "sam.md"), "---\nkind: drinking-buddy\nevery: every-month\n---\n\n# Sam\n");
+    const r = await run("check", "--dir", dir);
+    expect(r.code).toBe(1);
+    expect(r.out[0]).toBe("problem: belonging/friends/sam.md (friends.friend): field kind: expected one of the field's choices (utility, pleasure, virtue)");
+    expect(r.out.join("\n")).not.toContain("drinking-buddy");
   });
 
   it("refuses to run outside an instance", async () => {

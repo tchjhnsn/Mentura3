@@ -168,14 +168,17 @@ export async function lifetimeProblems(root: string, paths: RecordPaths): Promis
   return out;
 }
 
-/** The vault folders whose notes count as life app records for the lifecycle: a note per friend, group and office. */
-const NOTE_KINDS: readonly { dir: string; app: LifeAppId; kind: string; title: string }[] = [
+/**
+ * The vault folders whose notes are life app records: a note per friend, group and office. The lifecycle reads them
+ * and `reflect check` checks their front matter against the kinds' schemas (./life-check.ts).
+ */
+export const LIFE_NOTE_KINDS: readonly { dir: string; app: LifeAppId; kind: string; title: string }[] = [
   { dir: "belonging/friends", app: "friends", kind: "friend", title: "name" },
   { dir: "belonging/groups", app: "friends", kind: "group", title: "name" },
   { dir: "belonging/standing", app: "polis", kind: "standing", title: "role" },
 ];
 
-async function notesIn(root: string, dir: string): Promise<string[]> {
+export async function notesIn(root: string, dir: string): Promise<string[]> {
   try {
     return (await readdir(join(root, dir))).filter((f) => f.endsWith(".md") && f !== "README.md").sort();
   } catch (e) {
@@ -200,7 +203,7 @@ export async function readLifeRecords(root: string, today: string): Promise<Life
     needs.push({ need: n, state: h.state as NeedState, ...(h.runway ? { runway: h.runway } : {}), ...(h.kept_at ? { keptAt: h.kept_at } : {}) });
   }
   const records: LifeRecordFacts[] = [];
-  for (const k of NOTE_KINDS) {
+  for (const k of LIFE_NOTE_KINDS) {
     for (const f of await notesIn(root, k.dir)) {
       const { state, ...body } = headOf((await readRecord(root, join(k.dir, f))) ?? "");
       const name = f.slice(0, -3);

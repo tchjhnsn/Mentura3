@@ -9,6 +9,7 @@ import { filesJournal } from "../core/src/files-journal.ts";
 import { filesChanges } from "../core/src/files-changes.ts";
 import { listed, runVaultAction, VAULT_ACTIONS, type VaultContext } from "../core/src/vault-actions.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
+import { lifeCheckLine } from "../core/src/life-check.ts";
 import { adopt, checkInstance, initInstance, layoutOf, readConfig, upgradeVault } from "../core/src/instance.ts";
 import { addGift, addTrustee, LEGACY_ENTRIES, planProblems, previewRelease, readPlan, setTerms } from "../core/src/release.ts";
 import { BOOK_STATUS, FILM_STATUS, GRASP, keepBook, keepConversation, keepFilm, keepRecall, keepTalk, latestGrasp, slugOf, parseSubject, keepResource, keepSubject, learnMap, RESOURCE_STATUS, type BookStatus, type FilmStatus, type Grasp, type ResourceStatus, type SubjectRow } from "../core/src/learning.ts";
@@ -150,7 +151,9 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   in changes.jsonl
   mcp                             an MCP server over this vault on stdin and stdout, for your own AI:
                                   the same actions as tools
-  check [--adopt]                 check the instance; --adopt records hand-written changes in memory
+  check [--adopt]                 check the instance, and each life record (a note per friend, group and
+                                  office) against its kind's schema; --adopt records hand-written
+                                  changes in memory
   export [--out <file>] [--moving-to <where>]
                                   the whole journal as a bundle (stdout or a file); --moving-to then
                                   records that the instance moved and refuses writes here
@@ -263,6 +266,7 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
   if (cmd === "check") {
     const r = await checkInstance(root);
     for (const p of r.problems) out(`problem: ${p}`);
+    if (r.life) out(lifeCheckLine(r.life));
     if (values.adopt && r.problems.length === 0 && r.outside.length) {
       await adopt(root, r.outside);
       out(`adopted ${r.outside.length} record(s) written outside reflect`);
