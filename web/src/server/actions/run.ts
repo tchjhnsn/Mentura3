@@ -7,6 +7,7 @@ import { transaction } from "@/db/pool";
 import { postgresChanges } from "../action-change-store";
 import type { Action, ActionContext, ChangeLog, LoggedChange, Source } from "./types";
 import { actionById } from "./index";
+import { Refused } from "./failure";
 import { HOLD_DAYS, UNDO_DAYS } from "./limits";
 import { resumeAfterApproval, stopAfterDecline, type PlanView } from "./workflows";
 
@@ -41,7 +42,7 @@ export function plainPreview(title: string, input: unknown): string {
  * a hold fails, nothing has happened, so the error is thrown.
  */
 export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, given: ActionContext, input: z.output<S>, source: Source): Promise<Ran<R>> {
-  if (a.tier === "never") throw new Error(`${a.title} is never run for a model.`);
+  if (a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a.title} is never run for a model.` });
   const ctx: ActionContext = { ...given, origin: given.origin ?? source };
   if (a.tier === "read") return { held: false, result: await a.run(ctx, input), changeId: null };
   if (holds(a.tier, source, ctx.origin)) {
@@ -68,16 +69,16 @@ export function canUndo(c: LoggedChange, now = new Date()): boolean {
 export async function undoChange(ctx: ActionContext, id: string): Promise<{ undone: string; title: string }> {
   const log = changesOf(ctx);
   const c = await log.get(ctx.userId, id);
-  if (!c || c.userId !== ctx.userId) throw new Error("No such change.");
-  if (c.status === "undone") throw new Error("That change was already undone.");
-  if (c.status !== "done") throw new Error("That change has not happened yet.");
+  if (!c || c.userId !== ctx.userId) throw new Refused({ reason: "no-such-change", message: "No such change." });
+  if (c.status === "undone") throw new Refused({ reason: "already-made", message: "That change was already undone." });
+  if (c.status !== "done") throw new Refused({ reason: "not-yet", message: "That change has not happened yet." });
   const a = actionById(c.actionId);
-  if (c.tier !== "own" || !a?.undo) throw new Error(`${a?.title ?? c.actionId} cannot be undone here.`);
-  if (!canUndo(c, ctx.now ?? new Date())) throw new Error(`Changes can be undone for ${UNDO_DAYS} days; this one is older.`);
+  if (c.tier !== "own" || !a?.undo) throw new Refused({ reason: "not-undoable", message: `${a?.title ?? c.actionId} cannot be undone here.` });
+  if (!canUndo(c, ctx.now ?? new Date())) throw new Refused({ reason: "too-old", message: `Changes can be undone for ${UNDO_DAYS} days; this one is older.` });
   // The undo and marking it undone are one transaction: a second undo racing this one rolls back its own removal.
   await transaction(async () => {
     await a.undo!(ctx, c);
-    if (!(await log.markUndone(ctx.userId, id))) throw new Error("That change was already undone.");
+    if (!(await log.markUndone(ctx.userId, id))) throw new Refused({ reason: "already-made", message: "That change was already undone." });
   });
   return { undone: c.id, title: a.title };
 }
@@ -90,9 +91,9 @@ export function canApprove(c: LoggedChange, now = new Date()): boolean {
 /** Reads a held change for approveChange and declineChange: the person's own, and still held. */
 async function heldOf(ctx: ActionContext, id: string): Promise<LoggedChange> {
   const c = await changesOf(ctx).get(ctx.userId, id);
-  if (!c || c.userId !== ctx.userId) throw new Error("No such change.");
-  if (c.status === "done" || c.status === "undone") throw new Error("That change was already made.");
-  if (c.status === "declined") throw new Error("That change was declined.");
+  if (!c || c.userId !== ctx.userId) throw new Refused({ reason: "no-such-change", message: "No such change." });
+  if (c.status === "done" || c.status === "undone") throw new Refused({ reason: "already-made", message: "That change was already made." });
+  if (c.status === "declined") throw new Refused({ reason: "declined", message: "That change was declined." });
   return c;
 }
 
@@ -106,10 +107,10 @@ export async function approveChange(ctx: ActionContext, id: string): Promise<{ a
   const log = changesOf(ctx);
   const c = await heldOf(ctx, id);
   const a = actionById(c.actionId);
-  if (!a || a.tier === "never") throw new Error(`${a?.title ?? c.actionId} cannot be run here.`);
+  if (!a || a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a?.title ?? c.actionId} cannot be run here.` });
   const now = ctx.now ?? new Date();
-  if (!canApprove(c, now)) throw new Error(`A held change waits ${HOLD_DAYS} days; this one is older. Ask again.`);
-  if (!(await log.claim(ctx.userId, id, new Date(now.getTime() - HOLD_DAYS * DAY_MS)))) throw new Error("That change was already made.");
+  if (!canApprove(c, now)) throw new Refused({ reason: "too-old", message: `A held change waits ${HOLD_DAYS} days; this one is older. Ask again.` });
+  if (!(await log.claim(ctx.userId, id, new Date(now.getTime() - HOLD_DAYS * DAY_MS)))) throw new Refused({ reason: "already-made", message: "That change was already made." });
   let result: unknown;
   try {
     result = await transaction(async () => {
@@ -131,7 +132,7 @@ export async function approveChange(ctx: ActionContext, id: string): Promise<{ a
 /** Decline a held change: it never runs. Only the person who owns it, and only while it is held. */
 export async function declineChange(ctx: ActionContext, id: string): Promise<{ declined: string; title: string }> {
   const c = await heldOf(ctx, id);
-  if (!(await changesOf(ctx).decline(ctx.userId, id))) throw new Error("That change is no longer waiting.");
+  if (!(await changesOf(ctx).decline(ctx.userId, id))) throw new Refused({ reason: "already-made", message: "That change is no longer waiting." });
   const title = actionById(c.actionId)?.title ?? c.actionId;
   // A declined step stops its plan: nothing after it runs.
   if (c.source === "workflow") await stopAfterDecline(ctx, id, title).catch((err: Error) => console.error(`reflect: could not stop a plan: ${err.message}`));
