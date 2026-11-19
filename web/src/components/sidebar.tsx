@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, UsersRoundIcon, LandmarkIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
@@ -133,6 +133,7 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
               <Section title="Gather">
                 <Go href={to("/events")} className={ROW}><CalendarDaysIcon className="text-muted-foreground size-4" />Events</Go>
                 <Go href={to("/adventures")} className={ROW}><CompassIcon className="text-muted-foreground size-4" />Adventures</Go>
+                <Go href={to("/v/people")} className={ROW}><UsersRoundIcon className="text-muted-foreground size-4" />People you&apos;ve met</Go>
               </Section>
               <Section title="The polis">
                 {polisTiles.map((t) => <TileRow key={t.id} t={t} href={to(t.href)} />)}

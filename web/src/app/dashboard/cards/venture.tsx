@@ -3,7 +3,7 @@ import { rankBuilders } from "@reflect/core/build";
 import { buildCandidates, buildStatuses, incomingBuildRequests } from "@/server/build-store";
 import { lifeRecords } from "@/server/life-store";
 import { ventureFileCount } from "@/server/venture-files-store";
-import { MemberFace } from "@/app/life/build-people";
+import { MemberFace } from "@/components/dash";
 import { safe, Section, type Ctx } from "../parts";
 import { ventureInProgress, ventureNext } from "../tiles";
 
@@ -43,7 +43,7 @@ export async function VentureCard({ ctx }: { ctx: Ctx }) {
         ) : null}
       </Link>
       {asked.length ? (
-        <Link href="/life/ventures" className="text-muted-foreground hover:text-foreground px-2 text-sm">
+        <Link href="/v/people" className="text-muted-foreground hover:text-foreground px-2 text-sm">
           {asked.length === 1 ? `${asked[0]!.from.name} asked you to build ${asked[0]!.venture.name}` : `${asked.length} people asked you to build with them`}
         </Link>
       ) : null}

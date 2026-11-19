@@ -10,8 +10,7 @@ import { seedOf } from "@/server/actions/ventures";
 import { ventureFiles } from "@/server/venture-files-store";
 import { RecordPanel } from "../../record";
 import { VentureFiles } from "../../venture-files";
-import { BuildPeople } from "../../build-people";
-import { peopleToBuildWith } from "@/server/actions/build";
+import { PeopleRow } from "../../people-row";
 
 export const metadata: Metadata = { title: "Reflect" };
 export const dynamic = "force-dynamic";
@@ -29,8 +28,6 @@ export default async function LifeRecordPage({ params }: { params: Promise<{ app
   // A venture keeps its files in Naive's layout (2026-11-18); before it is started, the draft Keep would keep.
   const venture = app === "ventures" && kind.id === "venture";
   const files = venture ? await ventureFiles(user.id, id) : [];
-  // People to build with (Events and connections, 2026-11-18), under Files.
-  const builders = venture ? (await peopleToBuildWith(user.id, id)).people : [];
   const title = titleOf(kind, record.body);
   const list = `/life/${app}?k=${kind.id}`;
   return (
@@ -43,7 +40,8 @@ export default async function LifeRecordPage({ params }: { params: Promise<{ app
         </div>
         <RecordPanel app={app} kind={kind} record={record} acts={acts} back={`/life/${app}/${id}`} />
         {venture ? <VentureFiles venture={id} files={files} draft={files.length ? [] : draftVenture(seedOf(record))} /> : null}
-        {venture ? <BuildPeople venture={id} people={builders} /> : null}
+        {/* People to build with are on Village and polis (2026-11-19); the venture travels as its id only. */}
+        {venture ? <PeopleRow href={`/v/people?venture=${id}#build`} title="People to build with" sub="Ask someone you've met to build it with you" /> : null}
       </div>
     </main>
   );

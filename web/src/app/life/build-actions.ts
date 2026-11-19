@@ -18,6 +18,7 @@ export async function askToBuildFromPage(venture: string, person: string): Promi
     return { error: said(e, "That could not be asked.") };
   }
   revalidatePath(`/life/ventures/${venture}`);
+  revalidatePath("/v/people");
   return {};
 }
 
