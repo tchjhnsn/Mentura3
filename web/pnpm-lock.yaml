@@ -77,6 +77,9 @@ importers:
       cn:
         specifier: ^0.5.2
         version: 0.5.2
+      effect:
+        specifier: 4.1.2
+        version: 4.1.2
       fflate:
         specifier: 0.8.2
         version: 0.8.2
@@ -2452,6 +2455,9 @@ packages:
 
   earcut@3.2.4:
     resolution: {integrity: sha512-FHc6yNpnTORB0tM5kmZ03iD2mDuNakDE2lvf4Hw1XkfxtEHIGVi01B/GqUSwx+NcC1WGjidAfpTXzeALtPtfpg==}
+
+  effect@4.1.2:
+    resolution: {integrity: sha512-d3Oah1WyKxFLFh19yWheS5IXIVaITzxZ71JkE1rkUozq/6EcJSU5nPk5bF2QrSygZ3SQoiNQB8TsxFriyMeMaQ==}
 
   electron-to-chromium@1.5.489:
     resolution: {integrity: sha512-1cF87WItryk9lj5wg5SLsNegUihdkcHuOfrANPpO02y/d2krm1Oc3GjA9KBwlT5o145FTa1bbjdLc7pZnvtnYQ==}
@@ -6181,6 +6187,8 @@ snapshots:
   dotenv@17.4.2: {}
 
   earcut@3.2.4: {}
+
+  effect@4.1.2: {}
 
   electron-to-chromium@1.5.489: {}
 
