@@ -10,13 +10,16 @@ import { ADULT_REQUIRED, confirmsAdult } from "./adult";
 /** What a person's own AI may ask for. "journal" covers what the MCP tools do (see /consent for the words). */
 export const MCP_SCOPES = ["openid", "profile", "offline_access", "journal"] as const;
 
-export type AuthSite = { baseURL: string; trustedOrigins: string[]; resource: string };
+export type AuthSite = { baseURL: string; trustedOrigins: string[]; resource: string; /** Set when Home and Village and polis have their own hosts, so one sign-in covers both. */ cookieDomain?: string | null };
 
 export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(database: D, site: AuthSite) {
   return {
     database,
     baseURL: site.baseURL,
     trustedOrigins: site.trustedOrigins,
+    // One sign-in for both sides (doc "Private and shared Reflect plan", 2026-11-19): with a custom domain the session
+    // cookie sits on the parent domain, so mentura.xyz and polis.mentura.xyz see the same person.
+    ...(site.cookieDomain ? { advanced: { crossSubDomainCookies: { enabled: true, domain: site.cookieDomain } } } : {}),
     emailAndPassword: { enabled: true, minPasswordLength: 10 },
     // Continue with Google (doc "Profiles and accounts design guide", 2026-11-18), only once the deployment holds
     // GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET (by name). Google never makes a new account, since sign-up asks the
