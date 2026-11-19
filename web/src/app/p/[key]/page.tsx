@@ -124,7 +124,7 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
   if (home) {
     return (
       <main className={cn(PAGE, bar && "pb-24 sm:pb-6")}>
-        <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
+        <ThingHeader search={!!user} back="/v" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
         {ownerBar}
         {error ? <p className="text-destructive mt-4 text-sm">{error}</p> : null}
         <div className="mt-6">
@@ -196,7 +196,7 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
 
   return (
     <main className={cn(PAGE, bar && "pb-24 sm:pb-6")}>
-      <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
+      <ThingHeader search={!!user} back="/v" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
 
       {ownerBar}
 

@@ -41,7 +41,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
           <>
             <h1 className="text-xl font-semibold">This code no longer works</h1>
             <p className="text-muted-foreground text-sm">Ask them to open Your QR again.</p>
-            <div><Button asChild variant="outline"><Link href="/">Go home</Link></Button></div>
+            <div><Button asChild variant="outline"><Link href="/v">Village and polis</Link></Button></div>
           </>
         )}
       </div>
