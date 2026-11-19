@@ -23,7 +23,8 @@ const Ctx = createContext<State | null>(null);
 /**
  * The sidebar (Torian, 2026-11-17; docked and resizable from 2026-11-19, "the experience the third pane operates by
  * needs to be how our entire sidebar operates"). At 1024 px and wider it sits at the left and the page narrows to make
- * room (`--side-w` on the root, read by `body` in globals.css); the handle on its right edge resizes it between 220
+ * room (`--side-w` on the root, read by the page's wrapper below; never `body`, whose padding and margins a menu's or
+ * dialog's scroll lock takes over while it is open, which slid the page under the sidebar, 2026-11-19); the handle on its right edge resizes it between 220
  * and 420 (arrow keys too), and a double click puts it back to 272. The button at the left of every page's header and
  * the one in the sidebar open and close it. Open or shut and the width are kept in a cookie, so the server paints the
  * first frame with them and it stays as the person left it. Narrower than 1024 it slides over the page with a light
@@ -81,7 +82,7 @@ export function SidebarProvider({ groups, chats, me, initial, children }: { grou
 
   return (
     <Ctx.Provider value={{ open, toggle }}>
-      {children}
+      <div data-page="" className="lg:pl-[var(--side-w,0px)]">{children}</div>
       {over && !wide ? <div aria-hidden="true" onClick={() => setOver(false)} className="fixed inset-0 z-40 bg-black/20" /> : null}
       <nav id="sidebar" aria-label="Reflect" inert={!open}
         style={{ ["--side" as string]: `${width}px` }}
