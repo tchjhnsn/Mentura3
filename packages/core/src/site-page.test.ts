@@ -3,12 +3,12 @@ import { checkPage, COMPONENTS, homeTemplate, isPagePath, mayShowPart, parsePage
 
 /** One example of every component in the library, with every value it takes. */
 const EXAMPLES: Record<string, Props> = {
-  Photo: { src: "https://example.com/lake.jpg", alt: "At the lake", caption: "Big Bend, \"spring\"", shape: "round" },
+  Photo: { src: "https://example.com/lake.jpg", alt: "At the lake", caption: "Big Bend, \"spring\"", shape: "round", frame: "sprig-corners" },
   Gallery: { images: ["https://example.com/a.jpg", "/b.png"], caption: "Two" },
   Video: { src: "https://www.youtube.com/watch?v=abc", caption: "A talk" },
   Audio: { src: "https://example.com/a.mp3", title: "Song" },
   Embed: { url: "https://example.com/post", title: "A post" },
-  Quote: { text: "We are what we repeatedly do. {Not code}", cite: "Will Durant" },
+  Quote: { text: "We are what we repeatedly do. {Not code}", cite: "Will Durant", frame: "holly-corners" },
   Callout: { text: "Line one\nline two" },
   Divider: {},
   Button: { label: "Write to me", href: "https://example.com/contact" },
@@ -16,7 +16,7 @@ const EXAMPLES: Record<string, Props> = {
   ProfileCard: {},
   Links: {},
   Now: { text: "Reading Aristotle in Austin" },
-  Part: { source: "adventures/big-bend-2026", view: "card" },
+  Part: { source: "adventures/big-bend-2026", view: "card", shape: "soft", frame: "dotted-frame" },
 };
 
 describe("site page components", () => {
@@ -90,7 +90,10 @@ describe("what a page cannot hold", () => {
     ['<PostList limit={500} />', /from 1 to 50/],
     ['<PostList limit="3" />', /whole number/],
     ['<Part source="bank/accounts" />', /not a part/],
-    ['<Photo src="https://e.com/a.jpg" shape="star" />', /one of/],
+    ['<Photo src="https://e.com/a.jpg" shape="star" />', /no shape is named star/],
+    ['<Quote text="Hi" frame="tinsel" />', /no frame is named tinsel/],
+    ['<Video src="https://e.com/a.mp4" frame="holly-corners" />', /no frame/],
+    ['<Divider shape="round" />', /no shape/],
     ['<Divider /> and more', /own line/],
     ["<Photo src=\"https://e.com/a.jpg\"", /not closed/],
     ["import X from './x'", /import or export/],

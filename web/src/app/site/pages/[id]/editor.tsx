@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, BoldIcon, ExternalLinkIcon, Heading2Icon, ItalicIcon, LayersIcon, ListIcon, MoreHorizontalIcon, PlusIcon, QuoteIcon } from "lucide-react";
+import { ArrowLeftIcon, BoldIcon, ExternalLinkIcon, Heading2Icon, ItalicIcon, LayersIcon, ListIcon, MoreHorizontalIcon, PaletteIcon, PlusIcon, QuoteIcon } from "lucide-react";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "@tiptap/markdown";
@@ -13,8 +13,10 @@ import type { PublishablePart } from "@/server/part-share";
 import { Button } from "@/components/ui/button";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { VirtuInlinePublish } from "@/components/virtu-sections";
 import { cn } from "@/lib/utils";
-import { ICONS, PartsContext, SiteComponent } from "./component-node";
+import { ICONS, LooksContext, PartsContext, SiteComponent, type BlockLooks } from "./component-node";
 import { partsForLibraryAction, publishPageAction, removePageAction, savePageAction, setPagePathAction, setPageTitleAction, shareOnSiteAction, unpublishPageAction } from "../actions";
 
 type Status = "saved" | "unsaved" | "saving" | { error: string };
@@ -38,8 +40,16 @@ function emptyLine(e: Editor): { from: number; to: number; slash: boolean } | nu
  * Markdown editor with the component library. / on an empty line, or the + in the margin beside it, opens the library.
  * The draft saves itself; Publish, the one filled button, puts it live. Title and address are behind the ... menu.
  */
-export function PageEditor({ page, base, parts: initialParts }: { page: PageInfo; base: string; parts: PublishablePart[] }) {
+export function PageEditor({ page, base, parts: initialParts, design = null, looks = null }: {
+  page: PageInfo; base: string; parts: PublishablePart[];
+  /** The editor.panel slot drawn on the server (Virtu's sections), or null when no added plugin fills it. */
+  design?: ReactNode;
+  /** What added plugins put on a selected block's bar (editor.component-option), or null. */
+  looks?: BlockLooks | null;
+}) {
   const router = useRouter();
+  const [designOpen, setDesignOpen] = useState(false);
+  const wide = useWide();
   const [status, setStatus] = useState<Status>("saved");
   const [published, setPublished] = useState(page.published);
   const [changed, setChanged] = useState(page.changed);
@@ -192,6 +202,7 @@ export function PageEditor({ page, base, parts: initialParts }: { page: PageInfo
 
   return (
     <PartsContext.Provider value={parts}>
+    <LooksContext.Provider value={looks}>
       <main className="min-h-screen">
         <header className="bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-2">
@@ -218,6 +229,10 @@ export function PageEditor({ page, base, parts: initialParts }: { page: PageInfo
               tool("Quote", QuoteIcon, marks?.quote, () => editor.chain().focus().toggleBlockquote().run()),
             ] : null}
             <Button type="button" variant="ghost" size="icon" className="size-8 sm:hidden" aria-label="Add a component" onMouseDown={(e) => e.preventDefault()} onClick={openLibrary}><PlusIcon /></Button>
+            {design ? (
+              <Button type="button" variant="ghost" size="icon" className={cn("size-8", designOpen && "bg-muted")} aria-label="Design" aria-pressed={designOpen}
+                onMouseDown={(e) => e.preventDefault()} onClick={() => setDesignOpen((o) => !o)}><PaletteIcon /></Button>
+            ) : null}
             <span className={cn("text-muted-foreground w-16 text-right text-xs", typeof status === "object" && "text-destructive")} role="status">{statusText}</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label="Page settings"><MoreHorizontalIcon /></Button></DropdownMenuTrigger>
@@ -227,6 +242,7 @@ export function PageEditor({ page, base, parts: initialParts }: { page: PageInfo
                 {published ? <DropdownMenuItem asChild><a href={live} target="_blank" rel="noreferrer">View page<ExternalLinkIcon className="ml-auto" /></a></DropdownMenuItem> : null}
                 {published ? <DropdownMenuItem onSelect={() => start(async () => { await unpublishPageAction(page.id); setPublished(false); setNote(page.fixed ? "Unpublished. Visitors see your profile layout again." : "Unpublished."); })}>Unpublish</DropdownMenuItem> : null}
                 {!page.fixed ? <><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onSelect={() => start(() => removePageAction(page.id))}>Remove page</DropdownMenuItem></> : null}
+                {!design ? <><DropdownMenuSeparator /><DropdownMenuItem asChild className="text-muted-foreground"><Link href="/marketplace/plugins/virtu">More options with Virtu</Link></DropdownMenuItem></> : null}
               </DropdownMenuContent>
             </DropdownMenu>
             <Button type="button" size="sm" className="ml-1" disabled={pending || !editor || (published && !changed && status === "saved")} onClick={publish}>Publish</Button>
@@ -253,8 +269,36 @@ export function PageEditor({ page, base, parts: initialParts }: { page: PageInfo
           </div>
         </article>
       </main>
+      {design ? (
+        // The Design panel: Virtu's sections on the person's site, a panel on the right on a wide screen and a sheet on a
+        // phone. Non-modal, so the page stays in view and editable beside it.
+        <Sheet open={designOpen} onOpenChange={setDesignOpen} modal={false}>
+          <SheetContent side={wide ? "right" : "bottom"} overlay={false} onInteractOutside={(e) => e.preventDefault()}
+            className={cn("gap-0 overflow-y-auto", wide ? "w-full sm:max-w-sm" : "max-h-[75svh] rounded-t-2xl")}>
+            {wide ? null : <span aria-hidden className="bg-muted mx-auto mt-2 h-1 w-10 rounded-full" />}
+            <SheetHeader className="pb-2">
+              <SheetTitle>Design</SheetTitle>
+              <SheetDescription>Your site&apos;s colours, type, shape and looks, for every page. Visitors see a change once you publish it here.</SheetDescription>
+            </SheetHeader>
+            <div className="px-4 pb-4"><VirtuInlinePublish.Provider value={true}>{design}</VirtuInlinePublish.Provider></div>
+          </SheetContent>
+        </Sheet>
+      ) : null}
+    </LooksContext.Provider>
     </PartsContext.Provider>
   );
+}
+
+function useWide(): boolean {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const m = matchMedia("(min-width: 640px)");
+    const on = () => setWide(m.matches);
+    on();
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
+  }, []);
+  return wide;
 }
 
 /** The library's search: a name that starts with the words typed first, then any word that does, then words that contain them. */

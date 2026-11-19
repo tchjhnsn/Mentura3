@@ -10,13 +10,14 @@ import { db } from "@/db/pool";
 import { previewCss } from "@reflect/virtu/build";
 import { applyEdits, previewEdits, type EditorEdit, type EditorState } from "@reflect/virtu/editor";
 import { seasonOn } from "@reflect/virtu/calendar";
+import { blockLookCss, blockSurfaceClasses } from "@reflect/virtu/blocks";
 import { lookCss, lookJson, NO_LOOK, readLookChoice, type LookCatalog, type LookChoice } from "@reflect/virtu/looks";
 import type { Json, Loaded } from "@reflect/virtu/model";
 import snapshot from "../../../packages/virtu/site/site.loaded.json";
 import looksSnapshot from "../../../packages/virtu/site/looks.loaded.json";
 
 const SYSTEM = snapshot as unknown as Loaded;
-const CATALOG = looksSnapshot as unknown as LookCatalog;
+export const CATALOG = looksSnapshot as unknown as LookCatalog;
 /** Seasons turn over on the owner's calendar; Reflect's people are in Austin for now. */
 const SEASON_TIME_ZONE = "America/Chicago";
 
@@ -108,4 +109,23 @@ export async function setDesign(userId: string, edits: EditorEdit[], looks?: Loo
     "INSERT INTO site (user_id, design) VALUES ($1, $2::jsonb) ON CONFLICT (user_id) DO UPDATE SET design = EXCLUDED.design, updated_at = now()",
     [userId, JSON.stringify({ edits, looks: lookJson(look) })],
   );
+}
+
+/** The CSS a page's blocks need for the shapes and frames they name (Virtu's own, scoped to each block). */
+export function blockCss(used: { shapes: readonly string[]; frames: readonly string[] }): string {
+  return blockLookCss(CATALOG, used);
+}
+
+/** The classes a block's surface takes under a shape from the catalog; none for a name it does not have. */
+export function blockSurface(shape: unknown): string[] {
+  return typeof shape === "string" ? blockSurfaceClasses(CATALOG.shapes.find((s) => s.name === shape)) : [];
+}
+
+/** The catalog's shapes that draw an edge, for a surface with no server to ask (the editor, the exported site). */
+export const EDGED_SHAPES = CATALOG.shapes.filter((s) => s.edge !== null).map((s) => s.name);
+
+/** The site's tokens alone (Virtu's --virtu- properties), without its look: for a page that draws blocks but not the site's slots. */
+export async function siteTokensCss(userId: string): Promise<string> {
+  const d = await storedDesign(userId);
+  return previewCss(applyEdits(SYSTEM, d.edits).loaded) ?? "";
 }

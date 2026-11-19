@@ -31,6 +31,12 @@ type Virtu = {
 
 const VirtuContext = createContext<Virtu | null>(null);
 
+/**
+ * Set by a host whose screen already has its own filled button (the site editor's Publish): Virtu's Publish is then
+ * an outline button, so the screen keeps one filled button.
+ */
+export const VirtuInlinePublish = createContext(false);
+
 function useVirtu(): Virtu {
   const v = useContext(VirtuContext);
   if (!v) throw new Error("Virtu's sections need VirtuDesign around them.");
@@ -68,6 +74,7 @@ export function VirtuDesign({ children, endpoint = "/api/site/design" }: { child
   const [note, setNote] = useState<string | null>(null);
   const open = useLastOpen();
   const asked = useRef(0);
+  const inline = useContext(VirtuInlinePublish);
 
   // Ask Virtu for the state of the saved design plus the changes, a moment after the last change.
   useEffect(() => {
@@ -160,7 +167,7 @@ export function VirtuDesign({ children, endpoint = "/api/site/design" }: { child
               {note ?? (state === null ? "Checking…" : why && changed ? why : changed ? "Checked by Virtu. Publish to show it to visitors." : "Your site's design. Every change is checked by Virtu.")}
             </p>
             {changed ? <Button variant="ghost" size="sm" onClick={discard} disabled={busy}>Discard</Button> : null}
-            {changed ? <Button size="sm" onClick={publish} disabled={!canPublish}>{busy ? "Publishing…" : "Publish"}</Button> : null}
+            {changed ? <Button size="sm" variant={inline ? "outline" : "default"} onClick={publish} disabled={!canPublish}>{busy ? "Publishing…" : "Publish"}</Button> : null}
           </div>
         </div>
       </OpenContext.Provider>
@@ -349,5 +356,17 @@ export function VirtuLooks() {
       <Chips label="Seasons" options={seasons} value={c.season ?? ""} onPick={(id) => setLook({ season: id || null })} />
       {c.season && L?.today ? <p className="text-muted-foreground text-xs">Today: {plainName(L.today)}</p> : null}
     </Group>
+  );
+}
+
+/** The site editor's Design panel (the editor.panel slot): Virtu's four sections together, always on the person's site. */
+export function VirtuDesignSections() {
+  return (
+    <>
+      <VirtuShape />
+      <VirtuType />
+      <VirtuColour />
+      <VirtuLooks />
+    </>
   );
 }
