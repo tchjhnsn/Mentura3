@@ -28,7 +28,7 @@ export type WeekInput = {
 export type WeekTile = { tile: string; label: string; href: string; lines: string[] };
 export type WeekLook = { tiles: WeekTile[]; qualities: { id: string; name: string; entries: number; href: string }[] };
 
-const LABEL: Record<string, string> = { work: "Work", income: "Income", food: "Food", water: "Water", shelter: "Shelter", transport: "Transport", safety: "Safety", home: "Home", health: "Health", fitness: "Fitness", body: "Body", friends: "Friends", standing: "Standing", mate: "Mate", kin: "Kin", polis: "Polis", ventures: "Ventures", legacy: "Legacy" };
+const LABEL: Record<string, string> = { work: "Ergon", income: "Income", food: "Food", water: "Water", shelter: "Shelter", transport: "Transport", safety: "Safety", home: "Home", health: "Health", fitness: "Fitness", body: "Body", friends: "Friends", standing: "Standing", mate: "Mate", kin: "Kin", polis: "Polis", ventures: "Ventures", legacy: "Legacy" };
 const times = (n: number) => (n === 1 ? "once" : n === 2 ? "twice" : `${n} times`);
 const hours = (m: number) => {
   const h = Math.floor(m / 60), r = m % 60;
@@ -104,7 +104,7 @@ export function weekLook(i: WeekInput, range: { from: string; to: string }): Wee
   }));
   const named = [...qualities].flatMap(([id, entries]) => {
     const name = i.traitName(id);
-    return name ? [{ id, name, entries, href: `/journal/qualities/${encodeURIComponent(id)}` }] : [];
+    return name ? [{ id, name, entries, href: `/schole/qualities/${encodeURIComponent(id)}` }] : [];
   }).sort((a, b) => b.entries - a.entries);
   return { tiles, qualities: named };
 }

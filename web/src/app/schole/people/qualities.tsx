@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CheckIcon, PlusIcon } from "lucide-react";
 import { traitById, type Exemplar } from "@reflect/core/formation";
 import { admiredOf } from "@/server/admired";
-import { toggleQualityAction } from "@/app/journal/qualities/actions";
+import { toggleQualityAction } from "@/app/schole/qualities/actions";
 
 /**
  * Qualities in their own words (doc "Qualities design guide"): the qualities a person names in their own book, each
@@ -14,7 +14,7 @@ export async function QualitiesInTheirWords({ e, userId, back }: { e: Exemplar; 
     <section aria-labelledby="qualities" className="grid gap-2">
       <div>
         <h2 id="qualities" className="text-base font-semibold">Qualities in their own words</h2>
-        <p className="text-muted-foreground text-sm">From {e.book.title}. Press + to keep one in your <Link href="/journal/qualities" className="underline underline-offset-2">Qualities</Link>.</p>
+        <p className="text-muted-foreground text-sm">From {e.book.title}. Press + to keep one in your <Link href="/schole/qualities" className="underline underline-offset-2">Qualities</Link>.</p>
       </div>
       <ul className="divide-y border-y">
         {e.traits.map((t) => {
@@ -23,7 +23,7 @@ export async function QualitiesInTheirWords({ e, userId, back }: { e: Exemplar; 
           return (
             <li key={t.trait} className="flex items-start justify-between gap-4 py-3">
               <span className="grid min-w-0 gap-1">
-                <Link href={`/journal/qualities/${t.trait}`} className="font-medium hover:underline">{trait.name}</Link>
+                <Link href={`/schole/qualities/${t.trait}`} className="font-medium hover:underline">{trait.name}</Link>
                 <q className="text-muted-foreground text-sm">{t.quote}</q>
                 <span className="text-muted-foreground text-xs">{t.where}</span>
               </span>

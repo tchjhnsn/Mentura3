@@ -34,7 +34,7 @@ describe("the book of your life", () => {
     ]);
     const md = bookMarkdown(chapters, "2026-11-12T20:00:00Z");
     expect(md).toContain("*As of 2026-11-12.*");
-    expect(md).toContain("## Work\n\n### Once held\n\n- ~~Work is only for money.~~ *(held 2025-01-01 to 2026-03-01)*");
+    expect(md).toContain("## Ergon\n\n### Once held\n\n- ~~Work is only for money.~~ *(held 2025-01-01 to 2026-03-01)*");
     expect(md).toContain("- Marriage is a covenant. *(since 2026-01-02, with Augustine, On the Good of Marriage)*");
     expect(md).not.toContain("## Needs");
     expect(bookMarkdown(compileBook([]).chapters, "2026-11-12")).toContain("Nothing placed");

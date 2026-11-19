@@ -8,7 +8,7 @@ import { GROUPS, PLAN_PATHS, partSummary, planPart, taxOn, type GroupId, type Pl
 
 /** Every tile on Home, each of which gets a money allotment, with its name as Home shows it. */
 const LABELS: Record<string, string> = {
-  learn: "Scholē", work: "Work", health: "Health", fitness: "Fitness",
+  learn: "Scholē", work: "Ergon", health: "Health", fitness: "Fitness",
   income: "Income", shelter: "Shelter", food: "Food", water: "Water", transport: "Transport", safety: "Safety", mate: "Mate", kin: "Kin",
   friends: "Friends", standing: "Standing", polis: "Polis", ventures: "Ventures",
 };

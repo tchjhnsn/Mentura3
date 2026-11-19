@@ -18,7 +18,7 @@ import { originLabel, type Origin } from "./origins";
 export const DOMAINS = [
   { id: "needs", title: "Needs", about: "Food, shelter, health, income: providing for yourself." },
   { id: "learn", title: "Learning", about: "What you know and how you came to know it." },
-  { id: "work", title: "Work", about: "Work and the ventures you build." },
+  { id: "work", title: "Ergon", about: "Work and the ventures you build." },
   { id: "belonging", title: "Belonging", about: "Friends, groups, and the standing you hold." },
   { id: "line", title: "Line", about: "Seeking a mate, marriage, children, caring for kin." },
   { id: "household", title: "Household", about: "The home and the people in it." },
