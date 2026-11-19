@@ -4,7 +4,7 @@
 // estimates (./plan-data.ts). Each step carries forward everything before it. The plan is a tree of small parts,
 // each addressed by a path ("next/costs/food"), so the chat, the MCP server and the pages fetch only the part asked
 // about. Pure data and arithmetic: no I/O.
-import { FEDERAL_TAX, FOOD_LEVELS, FOOD_PLANS, PAYROLL, type FoodLevel, type Source } from "./plan-data";
+import { FEDERAL_TAX, FOOD_LEVELS, FOOD_PLANS, PAYROLL, type FoodLevel, type Source } from "./plan-data.ts";
 
 export type GroupId = "person" | "household" | "village";
 /** The tiles in three groups, after Aristotle's order of association (Politics I.2). */
