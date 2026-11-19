@@ -617,14 +617,14 @@
       ]
     },
     {
-      "noun": "payment card",
+      "noun": "home card",
       "level": "life",
-      "meaning": "A card one pays with",
-      "standard": "ISO/IEC 7812",
+      "meaning": "A small card the person puts on Home for a time, such as a word a day or a checklist",
+      "standard": "ours",
       "status": "kept",
       "app": "home",
       "broader": [
-        "having"
+        "artifact"
       ],
       "good": "external",
       "community": "person",

@@ -37,8 +37,8 @@
   "x-reflect": {
     "app": "home",
     "kind": "card",
-    "noun": "payment card",
-    "category": "having",
+    "noun": "home card",
+    "category": "substance",
     "good": "external",
     "community": "person"
   }
