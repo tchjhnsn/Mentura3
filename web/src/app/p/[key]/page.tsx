@@ -21,6 +21,8 @@ import { postsOf, siteOf, type Post } from "@/server/site-store";
 import { connectFromProfile, setAudienceFromProfile } from "./actions";
 import { SubscribeButton } from "./subscribe";
 import { SiteFooter, WritingList } from "./site-parts";
+import { PageView } from "./page-view";
+import { publishedPage } from "@/server/site-pages";
 
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
@@ -79,7 +81,9 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
   const error = one(sp.error) || null;
   // The profile is the person's site (doc "Personal site and blog design guide", 2026-11-18): their writing comes
   // first, and once there is any, Subscribe is the one filled act for everyone else.
-  const [site, posts] = await Promise.all([siteOf(owner.id).catch(() => ({ template: "plain" as const })), postsOf(owner.id, 20).catch((): Post[] => [])]);
+  // Home is the site's Home page once its owner published it (plan "Appearance, Virtu and the site editor", PR 3);
+  // until then the profile layout below, which is what Home's template starts from, so no site changes look by itself.
+  const [site, posts, home] = await Promise.all([siteOf(owner.id).catch(() => ({ template: "plain" as const })), postsOf(owner.id, 20).catch((): Post[] => []), publishedPage(owner.id, "").catch(() => null)]);
   const template = site.template;
   const subscribe = !isOwner && posts.length ? <SubscribeButton ownerId={p.id} name={p.name} className="flex-1 sm:flex-none" /> : null;
   const quiet = subscribe ? "outline" : "default";
@@ -103,6 +107,34 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
   if (subscribe) {
     act = <>{act}{subscribe}</>;
     bar = true;
+  }
+
+  const ownerBar = isOwner ? (
+        <div className="bg-muted text-muted-foreground mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
+          <span>{preview ? "This is how everyone sees you" : "This is how people you've met see you"}</span>
+          <Link href={preview ? href : `${href}?as=everyone`} role="switch" aria-checked={preview} className="flex shrink-0 items-center gap-2 text-foreground">
+            <span>Everyone</span>
+            <span className={cn("relative h-5 w-9 rounded-full transition", preview ? "bg-primary" : "bg-input")}>
+              <span className={cn("bg-background absolute top-0.5 size-4 rounded-full shadow transition-all", preview ? "left-4.5" : "left-0.5")} />
+            </span>
+          </Link>
+        </div>
+  ) : null;
+
+  if (home) {
+    return (
+      <main className={cn(PAGE, bar && "pb-24 sm:pb-6")}>
+        <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
+        {ownerBar}
+        {error ? <p className="text-destructive mt-4 text-sm">{error}</p> : null}
+        <div className="mt-6">
+          <PageView body={home.body} editHref={editing ? `/site/pages/${home.id}` : null}
+            c={{ p, posts, href, ownerId: owner.id, isOwner, act: bar ? null : act, serif: template === "notebook" }} />
+        </div>
+        <SiteFooter href={href} />
+        {bar && act ? <div className="bg-background/95 fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t px-4 py-3 backdrop-blur sm:hidden">{act}</div> : null}
+      </main>
+    );
   }
 
   const section = (id: SectionId, has: boolean, body: ReactNode) => {
@@ -166,17 +198,7 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
     <main className={cn(PAGE, bar && "pb-24 sm:pb-6")}>
       <ThingHeader search={!!user} back="/" backLabel="Back" crumbs={[{ label: "Profile" }]} title={p.name} action={bar ? (subscribe ?? act) : undefined} />
 
-      {isOwner ? (
-        <div className="bg-muted text-muted-foreground mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
-          <span>{preview ? "This is how everyone sees you" : "This is how people you've met see you"}</span>
-          <Link href={preview ? href : `${href}?as=everyone`} role="switch" aria-checked={preview} className="flex shrink-0 items-center gap-2 text-foreground">
-            <span>Everyone</span>
-            <span className={cn("relative h-5 w-9 rounded-full transition", preview ? "bg-primary" : "bg-input")}>
-              <span className={cn("bg-background absolute top-0.5 size-4 rounded-full shadow transition-all", preview ? "left-4.5" : "left-0.5")} />
-            </span>
-          </Link>
-        </div>
-      ) : null}
+      {ownerBar}
 
       <section aria-label="Who" className="mt-6 flex items-start gap-4">
         {/* virtu-slot-avatar and virtu-shape-avatar: the site's look (src/server/site-design.ts) can round it and decorate it. */}
