@@ -40,8 +40,9 @@ export type Tile = { id: string; label: string; app: App };
 export const MINE: readonly Tile[] = [
   { id: "learn", label: "Scholē", app: "learn" },
   { id: "work", label: "Ergon", app: "work" },
-  { id: "income", label: "Income", app: "work" },
-  { id: "food", label: "Food", app: "home" },
+  // Income is the household's budget; earning moved into Ergon (Torian, 2026-11-19). The id stays "income" for its records.
+  { id: "income", label: "Budget", app: "work" },
+  { id: "food", label: "Food and water", app: "home" },
   { id: "water", label: "Water", app: "home" },
   { id: "shelter", label: "Shelter", app: "home" },
   { id: "health", label: "Health", app: "body" },
@@ -62,10 +63,14 @@ export const MINE: readonly Tile[] = [
  * Where a tile goes: Learn, the journal (Ideas and Journal), or its app in `@reflect/core/life`, at the part it
  * names (Income opens Work's income). Food opens its own app at /meals.
  */
+/** Tiles folded into another for now: Water into Food and water (Torian, 2026-11-19). Kept as records and costs. */
+export const FOLDED: readonly string[] = ["water"];
+
 export function hrefOf(t: Tile): string | null {
   if (t.app === "learn") return "/schole";
   if (t.app === "journal") return "/journal";
   if (t.id === "food") return "/meals";
+  if (t.id === "income") return "/plan";
   const life = TILE_KIND[t.id];
   return life ? `/life/${life.app}${life.kind ? `?k=${life.kind}` : ""}` : null;
 }

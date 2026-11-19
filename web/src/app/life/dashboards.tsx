@@ -76,7 +76,7 @@ export async function HealthDash({ userId, records, acts, today }: { userId: str
           <Bars values={nights.map((d) => byNight.get(d) ?? null)} line={7} max={10} labels={nights.map((d) => `${shortDay(d)}: ${byNight.get(d) ?? "not logged"}`)} />
           <span className="text-muted-foreground mt-1 flex justify-between text-[0.65rem]">{nights.map((d) => <span key={d} className="flex-1 text-center">{weekday(d)}</span>)}</span>
         </DashCard>
-        <DashCard href={set("health", "coverage", here)} title="Coverage" value={s.health.coverage ?? "Not set"} sub={s.health.coverage ? "What it costs counts in your income plan" : "Your plan or how you pay for care"} />
+        <DashCard href={set("health", "coverage", here)} title="Coverage" value={s.health.coverage ?? "Not set"} sub={s.health.coverage ? "What it costs counts in your budget" : "Your plan or how you pay for care"} />
         <DashCard href={set("health", "doctor", here)} title="Regular doctor" value={s.health.doctor ?? "Not set"} sub={visits[0] ? `Last visit ${shortDay(visits[0])}` : "A doctor who knows you"}>
           {s.health.doctor ? <Face name={s.health.doctor.replace(/^Dr\.?\s*/i, "")} size={40} /> : null}
         </DashCard>
