@@ -7,8 +7,6 @@ import { ThingHeader } from "@/components/headers";
 import { requireUser } from "@/server/session";
 import { myCrafts } from "@/server/crafts-store";
 import { MINE, hrefOf } from "@/app/home-tiles";
-import { RotatingName } from "../../rotating-name";
-import { groupNames } from "../../names";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +27,6 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
   const user = await requireUser();
   const mine = new Map((await myCrafts(user.id)).map((c) => [c.ref, c.state]));
   const crafts = craftsIn(g.id);
-  const names = groupNames(g);
   const fitnessTile = MINE.find((t) => t.id === "fitness");
   const fitness = (fitnessTile && hrefOf(fitnessTile)) ?? "/life/body";
   return (
@@ -38,7 +35,7 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1.5">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">
-            <RotatingName names={names} labelEn={g.label} />
+            {g.label}
           </h1>
           <p className="text-muted-foreground">{g.after.charAt(0).toUpperCase() + g.after.slice(1)}.</p>
         </div>

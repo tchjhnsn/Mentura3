@@ -5,8 +5,6 @@ import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
 import { requireUser } from "@/server/session";
 import { myCrafts } from "@/server/crafts-store";
-import { RotatingName } from "../rotating-name";
-import { groupNames } from "../names";
 
 export const metadata: Metadata = { title: "Making" };
 export const dynamic = "force-dynamic";
@@ -30,7 +28,7 @@ export default async function MakingPage() {
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1.5">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">
-            <RotatingName names={door.names} labelEn={door.label} />
+            {door.label}
           </h1>
           <p className="text-muted-foreground">{door.about}</p>
           <p className="text-muted-foreground text-xs">{door.source}</p>
@@ -42,12 +40,11 @@ export default async function MakingPage() {
             {CRAFT_GROUPS.map((g, i) => {
               const crafts = craftsIn(g.id);
               const kept = byGroup.get(g.id) ?? 0;
-              const names = groupNames(g);
               return (
                 <li key={g.id}>
                   <Link href={`/schole/making/${g.id}`} className="hover:bg-accent grid h-full content-start gap-1.5 rounded-lg border p-4 transition">
                     <span className="flex items-baseline justify-between gap-3">
-                      <span className="min-w-0 font-semibold"><RotatingName names={names} labelEn={g.label} delay={i * 250} /></span>
+                      <span className="min-w-0 font-semibold">{g.label}</span>
                       <span className="text-muted-foreground shrink-0 text-xs">{crafts.length} crafts</span>
                     </span>
                     <span className="text-muted-foreground text-sm">{crafts.slice(0, SHOWN).map((c) => c.label).join(", ")}, and more</span>

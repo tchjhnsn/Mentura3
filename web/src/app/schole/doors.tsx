@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 import { DOORS } from "@reflect/core/crafts";
-import { RotatingName } from "./rotating-name";
 
 /**
  * The three doors (doc "Scholē landing design guide"): Making, Doing and Knowing, Aristotle's craft, practical wisdom
@@ -18,7 +17,7 @@ export function Doors() {
             <Link href={`/schole/${d.id}`} className="hover:bg-accent flex h-full items-start gap-3 rounded-xl border p-4 transition sm:flex-col sm:gap-2">
               <span className="min-w-0 flex-1 space-y-1">
                 <span className="block text-lg leading-snug font-semibold tracking-tight">
-                  <RotatingName names={d.names} labelEn={d.label} delay={i * 700} />
+                  {d.label}
                 </span>
                 <span className="text-muted-foreground block text-sm">{d.line}</span>
                 <span className="text-muted-foreground block text-xs">{d.source}</span>
