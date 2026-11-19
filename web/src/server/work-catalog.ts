@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { filingsFrom, type Company, type Filing, type Job, type WikiWork } from "@reflect/core/work-browse";
+import { outsideFetch } from "@/server/outside";
 
 // The catalogs Work browses, read from src/data (written by scripts/work-catalogs.ts): O*NET's occupations,
 // Wikidata's historical and fictional work, and Y Combinator's directory. Companies forming this week are read
@@ -29,7 +30,7 @@ export async function filingsThisWeek(form: "D" | "S-1", now = new Date()): Prom
   const end = now.toISOString().slice(0, 10);
   const start = new Date(now.getTime() - 7 * 86400_000).toISOString().slice(0, 10);
   try {
-    const r = await fetch(`https://efts.sec.gov/LATEST/search-index?forms=${form}&dateRange=custom&startdt=${start}&enddt=${end}`, {
+    const r = await outsideFetch()(`https://efts.sec.gov/LATEST/search-index?forms=${form}&dateRange=custom&startdt=${start}&enddt=${end}`, {
       // The SEC asks automated clients to name themselves in the user agent.
       headers: { "user-agent": "Reflect reflect-app@reflect-wheat-three.vercel.app" },
       next: { revalidate: 21600 },

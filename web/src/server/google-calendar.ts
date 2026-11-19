@@ -3,6 +3,7 @@ import { wallIn } from "@reflect/core/ics";
 import { db } from "@/db/pool";
 import { later } from "./calendar-feeds";
 import { open, seal } from "./crypto";
+import { outsideFetch } from "@/server/outside";
 
 // Google Calendar, two-way (migration 0043). Built, and dormant until the deployment holds GOOGLE_CLIENT_ID and
 // GOOGLE_CLIENT_SECRET (read by name only); until then the connector says it needs setup and nothing here runs.
@@ -37,8 +38,8 @@ export function authUrl(origin: string, state: string): string {
 type Tokens = { access_token: string; expires_in: number; refresh_token?: string };
 
 async function tokenRequest(body: Record<string, string>): Promise<Tokens> {
-  const res = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, signal: AbortSignal.timeout(TIMEOUT_MS),
+  const res = await outsideFetch({ timeoutMs: TIMEOUT_MS })("https://oauth2.googleapis.com/token", {
+    method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ client_id: process.env.GOOGLE_CLIENT_ID ?? "", client_secret: process.env.GOOGLE_CLIENT_SECRET ?? "", ...body }),
   });
   if (!res.ok) throw new Error(`Google refused the sign-in (${res.status}).`);
@@ -60,7 +61,7 @@ export async function connectGoogle(userId: string, code: string, origin: string
 export async function disconnectGoogle(userId: string): Promise<void> {
   const row = await db().query("SELECT refresh_ct FROM google_calendar WHERE user_id = $1 AND removed_at IS NULL", [userId]);
   const refresh = row.rows[0]?.refresh_ct as string | null | undefined;
-  if (refresh) await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(open(userId, refresh))}`, { method: "POST", signal: AbortSignal.timeout(TIMEOUT_MS) }).catch(() => undefined);
+  if (refresh) await outsideFetch({ timeoutMs: TIMEOUT_MS })(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(open(userId, refresh))}`, { method: "POST" }).catch(() => undefined);
   await db().query("UPDATE google_calendar SET removed_at = now(), access_ct = NULL, refresh_ct = NULL, events_ct = NULL WHERE user_id = $1", [userId]);
 }
 
@@ -88,7 +89,7 @@ async function accessToken(userId: string, r: Row): Promise<string> {
 }
 
 async function call(token: string, url: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_MS), headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...(init.headers ?? {}) } });
+  return outsideFetch({ timeoutMs: TIMEOUT_MS })(url, { ...init, headers: { authorization: `Bearer ${token}`, "content-type": "application/json", ...(init.headers ?? {}) } });
 }
 
 // ---- Pull ----

@@ -35,13 +35,14 @@ import { ClassicWork } from "./classic";
 import { summaryHref } from "../../summary/href";
 import { AuthorName, BookGrid } from "../../book-card";
 import { setBookStatusAction } from "../../actions";
+import { outsideFetch } from "@/server/outside";
 
 export const metadata: Metadata = { title: "Book" };
 export const dynamic = "force-dynamic";
 
 const STATUS = [["want", "Want to read"], ["reading", "Reading"], ["read", "Read"]] as const;
 const STANCE: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
-const cached = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
+const cached = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 const Label = ({ children }: { children: ReactNode }) => <h3 className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{children}</h3>;
 
 /**

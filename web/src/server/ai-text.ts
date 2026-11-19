@@ -6,6 +6,7 @@ import { generateText } from "ai";
 import { descriptionPrompt, readAiText, summaryPrompt, type AiKind, type Source } from "@reflect/core/ai-text";
 import { db } from "@/db/pool";
 import { chatModel } from "./chat-model";
+import { outsideFetch } from "@/server/outside";
 
 export type AiText = { body: string; sources: { label: string; url: string }[]; model: string };
 
@@ -27,7 +28,7 @@ export async function aiTextFor(key: string, kind: AiKind): Promise<AiText | nul
 async function wiki(params: Record<string, string>): Promise<unknown> {
   const q = new URLSearchParams({ ...params, format: "json", formatversion: "2" });
   try {
-    const r = await fetch(`https://en.wikipedia.org/w/api.php?${q}`, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
+    const r = await outsideFetch({ timeoutMs: 8000 })(`https://en.wikipedia.org/w/api.php?${q}`, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
     return r.ok ? await r.json() : null;
   } catch {
     return null;

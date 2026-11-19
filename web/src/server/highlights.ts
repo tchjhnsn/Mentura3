@@ -1,7 +1,8 @@
 import { workEntry } from "@reflect/core/openlibrary";
 import type { ExcerptOut } from "./excerpt-store";
+import { outsideFetch } from "@/server/outside";
 
-const cached = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
+const cached = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 
 /** One book's excerpts with its title and author, for the highlights page and export. */
 export type HighlightBook = { work: string; title: string; author: string; cover?: number; excerpts: (ExcerptOut & { where: string | null })[] };

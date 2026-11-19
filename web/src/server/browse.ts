@@ -2,6 +2,7 @@ import "./free";
 import { AUTHOR_ID, authorWorks, browseQuery, searchBooks, type CatalogEntry, type Sort } from "@reflect/core/openlibrary";
 import { categoryOf, themaCategory, themaQuery, themaSection } from "@reflect/core/thema";
 import { bookWay, isWay } from "@reflect/core/ways";
+import { outsideFetch } from "@/server/outside";
 
 /** What a list of books on Browse or an author page is drawn from: a search, a Thema section or category, or an author. */
 export type BookSource = { kind: "q"; q: string } | { kind: "cat"; code: string } | { kind: "author"; id: string } | { kind: "new" } | { kind: "free" };
@@ -26,7 +27,7 @@ function clause(f: Filter | undefined): string {
   if (f === "old") return " first_publish_year:[* TO 1923]";
   return "";
 }
-export const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 3600 } });
+export const openLibrary = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 3600 } });
 
 /** A source that came back from a browser, checked again. */
 export function cleanSource(raw: unknown): BookSource | null {
