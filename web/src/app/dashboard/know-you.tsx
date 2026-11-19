@@ -24,7 +24,7 @@ export function nextStep(areas: MyAreas, picks: number): { href: string; label: 
  * "Your reading" and the rest, with what the picks lead to.
  */
 export async function KnowYou({ ctx }: { ctx: Ctx }) {
-  const [areas, mine] = await Promise.all([safe(myAreas(ctx.userId), NONE), safe(myInterests(ctx.userId), [] as MyInterest[])]);
+  const [areas, mine] = await Promise.all([safe(myAreas(ctx.userId), NONE), safe(myInterests(ctx.userId, { crafts: false }), [] as MyInterest[])]);
   const next = nextStep(areas, mine.length);
   const waiting = areas.later && areas.later > ctx.today;
   const card = next && !waiting;

@@ -17,6 +17,6 @@ export default async function PickPage({ params }: { params: Promise<{ area: str
   const area = areaOf(id);
   if (!area) notFound();
   const user = await requireUser();
-  const picked = (await myInterests(user.id)).filter((i) => i.area === area.id).map((i) => i.ref);
+  const picked = (await myInterests(user.id, { crafts: false })).filter((i) => i.area === area.id).map((i) => i.ref);
   return <Pick area={area} items={itemsIn(area.id)} initial={picked} />;
 }
