@@ -7,6 +7,8 @@ import { ownerOf, profilePage } from "@/server/profile-store";
 import { postsOf, siteOf } from "@/server/site-store";
 import { profileHref } from "@/server/actions/profiles";
 import { SiteFooter, WritingList } from "../site-parts";
+import { PageScreen } from "../page-view";
+import { publishedPage } from "@/server/site-pages";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Writing" };
@@ -20,7 +22,9 @@ export default async function AllWriting({ params }: { params: Promise<{ key: st
   if (!p) notFound();
   const href = profileHref(p);
   if (owner.redirect || (owner.handle && decodeURIComponent(key) !== owner.handle)) redirect(`${href}/writing`);
-  const [user, posts, site] = await Promise.all([currentUser().catch(() => null), postsOf(owner.id), siteOf(owner.id).catch(() => ({ template: "plain" as const }))]);
+  const [user, posts, site, page] = await Promise.all([currentUser().catch(() => null), postsOf(owner.id), siteOf(owner.id).catch(() => ({ template: "plain" as const })), publishedPage(owner.id, "writing").catch(() => null)]);
+  // The Writing page, once its owner published it in the site editor; until then every post as a list.
+  if (page) return <PageScreen ownerId={owner.id} page={page} p={p} posts={posts} href={href} viewerId={user?.id ?? null} serif={site.template === "notebook"} />;
   return (
     <main className={PAGE}>
       <ThingHeader search={!!user} back={href} backLabel={p.name} crumbs={[{ label: p.name, href }]} title="Writing" />

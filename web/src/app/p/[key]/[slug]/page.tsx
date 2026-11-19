@@ -13,6 +13,8 @@ import { postBySlug, postsOf, siteOf } from "@/server/site-store";
 import { profileHref } from "@/server/actions/profiles";
 import { SubscribeButton } from "../subscribe";
 import { postDay, SiteFooter, WritingList } from "../site-parts";
+import { PageScreen } from "../page-view";
+import { publishedPage } from "@/server/site-pages";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +46,9 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
 export default async function PostPage({ params }: { params: Promise<{ key: string; slug: string }> }) {
   const { key, slug } = await params;
   const x = await load(key, slug);
-  if (!x) notFound();
+  // Not a post: a page of the site at this address (plan "Appearance, Virtu and the site editor", PR 3). A post wins
+  // a clash, though none should arise: a page cannot take a live post's address, and a new post skips the pages'.
+  if (!x) return <SitePageAt keyParam={key} path={slug} />;
   const { owner, post, p } = x;
   const href = profileHref(p);
   if (owner.redirect || (owner.handle && decodeURIComponent(key) !== owner.handle)) redirect(`${href}/${post.slug}`);
@@ -100,4 +104,16 @@ export default async function PostPage({ params }: { params: Promise<{ key: stri
       </div>
     </main>
   );
+}
+
+/** A published page of the site at /p/<handle>/<path>, or Not found. */
+async function SitePageAt({ keyParam, path }: { keyParam: string; path: string }) {
+  const owner = await ownerOf(keyParam);
+  if (!owner || !path) notFound();
+  const [page, p] = await Promise.all([publishedPage(owner.id, decodeURIComponent(path)).catch(() => null), profilePage(owner.id, null)]);
+  if (!page || !p) notFound();
+  const href = profileHref(p);
+  if (owner.redirect || (owner.handle && decodeURIComponent(keyParam) !== owner.handle)) redirect(`${href}/${path}`);
+  const [user, posts, site] = await Promise.all([currentUser().catch(() => null), postsOf(owner.id, 50), siteOf(owner.id).catch(() => ({ template: "plain" as const }))]);
+  return <PageScreen ownerId={owner.id} page={page} p={p} posts={posts} href={href} viewerId={user?.id ?? null} serif={site.template === "notebook"} />;
 }
