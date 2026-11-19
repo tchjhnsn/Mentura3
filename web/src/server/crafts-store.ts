@@ -6,14 +6,19 @@ import { lifeRecords, type LifeRecord } from "./life-store";
 
 export type MyCraft = { record: LifeRecord; craft: Craft | null; ref: string; title: string; state: string | null };
 
+/** A craft record is kept when it is not let go. */
+export const isKeptCraft = (r: LifeRecord) => r.kind === "craft" && r.state !== "let-go";
+
+/** One craft record with its catalogue entry, title and state. */
+export function craftOfRecord(record: LifeRecord): MyCraft {
+  const ref = String(record.body.ref ?? "");
+  const craft = craftOf(ref) ?? null;
+  return { record, craft, ref, title: String(record.body.title ?? craft?.label ?? ref), state: record.state };
+}
+
 /** Every craft the person keeps (not let go), oldest first. */
 export async function myCrafts(userId: string): Promise<MyCraft[]> {
-  const rs = (await lifeRecords(userId, "work")).filter((r) => r.kind === "craft" && r.state !== "let-go");
-  return rs.map((record) => {
-    const ref = String(record.body.ref ?? "");
-    const craft = craftOf(ref) ?? null;
-    return { record, craft, ref, title: String(record.body.title ?? craft?.label ?? ref), state: record.state };
-  });
+  return (await lifeRecords(userId, "work")).filter(isKeptCraft).map(craftOfRecord);
 }
 
 /** The person's kept craft for one catalogue id, or null. */

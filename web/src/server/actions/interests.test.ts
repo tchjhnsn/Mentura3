@@ -4,9 +4,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // in-memory stand-in for the life records, each undone.
 type Rec = { id: string; app: string; kind: string; state: string | null; body: Record<string, unknown>; createdAt: string; updatedAt: string };
 const recs = new Map<string, Rec>();
+type Act = { id: string; record: string; kind: string; day: string; minutes: null; amount: null; note: string | null; at: string };
+const acts: Act[] = [];
 let n = 0;
 vi.mock("../life-store", () => ({
   lifeRecords: async () => [...recs.values()],
+  lifeActs: async (_u: string, record?: string) => acts.filter((a) => !record || a.record === record),
   addLifeRecord: async (_u: string, app: string, kind: string, body: Record<string, unknown>, state?: string) => {
     const id = `r${++n}`;
     recs.set(id, { id, app, kind, state: state ?? null, body: { ...body }, createdAt: "", updatedAt: "" });
@@ -28,7 +31,7 @@ const ctx = { userId: "me" };
 const logged = (actionId: string, before: unknown, after: unknown) => ({ id: "c", userId: "me", actionId, source: "page" as const, tier: "own" as const, input: {}, before, after, status: "done" as const, preview: null, createdAt: new Date(), undoneAt: null });
 
 describe("interests", () => {
-  beforeEach(() => void (recs.clear(), (n = 0)));
+  beforeEach(() => void (recs.clear(), (acts.length = 0), (n = 0)));
 
   it("picks a book as something followed, unpicks it, picks it again, and undoes the first pick", async () => {
     const b = await pickInterest.before!(ctx, { ref: "b-meditations", picked: true });
@@ -84,5 +87,35 @@ describe("interests", () => {
     expect(one.thing.title).toBe("Meditations");
     expect(await interests.run(ctx, { path: "b-emma" })).toMatchObject({ interest: null, thing: { title: "Emma" } });
     expect(await interests.run(ctx, { path: "nope" })).toMatchObject({ error: expect.stringContaining("Nothing at 'nope'") });
+  });
+
+  it("reads a kept craft as a Make interest without writing anything, and leaves it out where only picks count", async () => {
+    await pickInterest.run(ctx, { ref: "b-meditations", picked: true });
+    recs.set("c1", { id: "c1", app: "work", kind: "craft", state: "practising", body: { ref: "baking", title: "Baking", stage: "proficient", how: "experience" }, createdAt: "", updatedAt: "" });
+    recs.set("c2", { id: "c2", app: "work", kind: "craft", state: "let-go", body: { ref: "joinery", title: "Joinery" }, createdAt: "", updatedAt: "" });
+    acts.push({ id: "a1", record: "c1", kind: "made", day: "2026-11-12", minutes: null, amount: null, note: "Focaccia", at: "" });
+    acts.push({ id: "a2", record: "other", kind: "made", day: "2026-11-12", minutes: null, amount: null, note: "Not a craft", at: "" });
+    const before = JSON.stringify([...recs.values()]);
+
+    const mine = await myInterests("me");
+    expect(mine.map((i) => i.ref)).toEqual(["b-meditations", "craft:baking"]);
+    expect(mine[1]).toMatchObject({ id: "c1", modes: ["make"], area: null, item: null, source: "told", make: { commitment: "regular", skill: "adapts" }, craft: { id: "baking", state: "practising", learned: ["experience"], made: [{ day: "2026-11-12", note: "Focaccia" }] } });
+    expect((await myInterests("me", { crafts: false })).map((i) => i.ref)).toEqual(["b-meditations"]);
+
+    const all = await interests.run(ctx, { path: "" }) as { count: number; interests: { ref: string }[] };
+    expect(all.count).toBe(2);
+    const make = await interests.run(ctx, { path: "make" }) as { interests: { ref: string; says: string[]; href: string; craft: { firstProject: string } }[] };
+    expect(make.interests).toHaveLength(1);
+    expect(make.interests[0]).toMatchObject({ ref: "craft:baking", says: ["You make Baking: regular practice, at Adapts."], href: "/schole/crafts/baking", craft: { firstProject: "Mug cake" } });
+    expect(await interests.run(ctx, { path: "know" })).toMatchObject({ interests: [{ ref: "b-meditations" }] });
+    const one = await interests.run(ctx, { path: "craft:baking" }) as { interest: { ref: string }; thing: { title: string; group: string; first_project: { name: string } }; more_like_it: { ref: string }[] };
+    expect(one.interest.ref).toBe("craft:baking");
+    expect(one.thing).toMatchObject({ title: "Baking", group: "Food and drink", first_project: { name: "Mug cake" } });
+    expect(one.more_like_it.length).toBeGreaterThan(0);
+    expect(one.more_like_it.every((m) => m.ref.startsWith("craft:"))).toBe(true);
+    expect(await interests.run(ctx, { path: "craft:joinery" })).toMatchObject({ interest: null, thing: { title: "Joinery" } });
+    expect(await interests.run(ctx, { path: "craft:nope" })).toMatchObject({ error: expect.stringContaining("Nothing at") });
+
+    expect(JSON.stringify([...recs.values()])).toBe(before);
   });
 });

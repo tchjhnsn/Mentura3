@@ -141,11 +141,11 @@ export const setInterestArea = action({
   },
 });
 
-const INTERESTS_PATHS = "'' (all, with Get to know you progress), 'make', 'do', 'know', 'books', 'podcasts', or one thing's id such as 'b-meditations'";
+const INTERESTS_PATHS = "'' (all, with Get to know you progress), 'make', 'do', 'know', 'books', 'podcasts', or one thing's id such as 'b-meditations' or 'craft:baking'";
 export const interests = action({
   id: "interests",
   title: "Read what the person loves",
-  description: `Fetch the person's interests from Get to know you: each thing, whether they make, do or follow it, its levels, and a plain sentence for each. Fetch the smallest part that answers. Paths: ${INTERESTS_PATHS}.`,
+  description: `Fetch the person's interests from Get to know you and their Scholē crafts (read as Make interests, with the craft's details): each thing, whether they make, do or follow it, its levels, and a plain sentence for each. Fetch the smallest part that answers. Paths: ${INTERESTS_PATHS}.`,
   tier: "read",
   on: ["chat", "mcp"],
   input: z.object({ path: z.string().max(120).default("").describe("Such as 'know' or 'b-meditations'") }),
