@@ -17,7 +17,6 @@ import { budget, budgetStep, setBudget } from "@/server/actions/budget";
 import { applyLens, lensAction, lensesAction } from "@/server/actions/lenses";
 import { plansAction, startPlan, type PlanView } from "@/server/actions/workflows";
 import { messagesAction, sendMessageAction } from "@/server/actions/messages";
-import { openPaneAction } from "@/server/actions/pane";
 import type { AddedEvent } from "@/server/calendar-tools";
 import type { LearnView } from "@/server/learn-store";
 import type { LearnItem } from "@/server/ways-store";
@@ -238,8 +237,6 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
       return r.messages.length ? `Messages with ${r.with.name} (${r.href}), oldest first: ${JSON.stringify(r.messages.map((m) => ({ from: m.from, text: m.text, at: m.at })))}`.slice(0, 12000) : `No messages with ${r.with.name} yet.`;
     }),
     use(sendMessageAction, (r) => `Sent to ${r.to}. It cannot be taken back. The conversation is at ${r.href}.`),
-    // The page opens in the pane on the person's screen when this call finishes (src/app/chat/chat.tsx).
-    use(openPaneAction, (r) => `Opened ${r.opened} beside the chat. Do not describe the page; say in a few words what they can do there.`),
   ];
   // Every other chat action (most are the page acts) is reached through find_actions and act, so the model sees about
   // forty tools at once instead of a hundred, chooses better and talks more.

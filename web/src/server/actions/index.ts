@@ -30,7 +30,6 @@ import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } f
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
 import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
 import { dashboardAction, setDashboardCardAction } from "./dashboard";
-import { openPaneAction } from "./pane";
 import { dashboardToday, setMorningBriefAction } from "./dashboard-today";
 import { setSiteDesignAction, setSiteTemplateAction, siteAction, siteDesignAction } from "./site";
 import { connectorActAction, connectorReadAction, connectorsAction, pluginsAction, siteEditAction, siteFilesAction } from "./marketplace";
@@ -85,7 +84,6 @@ export const ACTIONS: readonly Action[] = [
   dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
   siteAction, setSiteTemplateAction, siteDesignAction, setSiteDesignAction,
   connectorsAction, connectorReadAction, connectorActAction, siteFilesAction, siteEditAction, pluginsAction,
-  openPaneAction,
   ...PAGE_ACTIONS,
 ];
 
