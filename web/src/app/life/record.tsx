@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PenLineIcon, Trash2Icon } from "lucide-react";
+import { ChevronDownIcon, PenLineIcon, Trash2Icon } from "lucide-react";
 import { ORIGINS } from "@reflect/core/origins";
 import { shown, titleOf, type Body, type Field, type Kind, type LifeAppId } from "@reflect/core/life";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,16 @@ import { cn } from "@/lib/utils";
 import type { LifeAct, LifeRecord } from "@/server/life-store";
 import { actLifeAction, addLifeAction, removeLifeAction, saveLifeAction, stateLifeAction } from "./actions";
 
-const SELECT = "border-input bg-background h-9 w-full rounded-md border px-3 text-sm shadow-xs";
+// A native select drawn like shadcn's Input, with a chevron of its own instead of the browser's gradient (2026-11-19).
+const SELECT = "border-input bg-background h-9 w-full appearance-none rounded-md border pr-9 pl-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+function Select({ className, children, ...rest }: React.ComponentProps<"select">) {
+  return (
+    <span className={cn("relative block", className)}>
+      <select className={SELECT} {...rest}>{children}</select>
+      <ChevronDownIcon aria-hidden="true" className="text-muted-foreground pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2" />
+    </span>
+  );
+}
 const today = () => new Date().toISOString().slice(0, 10);
 
 /** One field's input, filled with what the record holds. */
@@ -44,10 +53,10 @@ export function FieldInput({ f, body }: { f: Field; body: Body }) {
       <label htmlFor={id} className="text-sm font-medium">{f.label}</label>
       {f.kind === "long" ? <Textarea id={id} name={f.key} defaultValue={typeof v === "string" ? v : ""} placeholder={f.hint} rows={3} />
         : f.kind === "choice" ? (
-          <select id={id} name={f.key} defaultValue={typeof v === "string" ? v : ""} className={SELECT}>
+          <Select id={id} name={f.key} defaultValue={typeof v === "string" ? v : ""}>
             <option value="">Not said</option>
             {f.options!.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
-          </select>
+          </Select>
         )
         : <Input id={id} name={f.key} type={f.kind === "day" ? "date" : f.kind === "number" || f.kind === "money" ? "text" : "text"} inputMode={f.kind === "number" || f.kind === "money" ? "decimal" : undefined} defaultValue={v === undefined ? "" : String(v)} placeholder={f.kind === "money" ? "$" : f.hint} />}
     </div>
@@ -98,7 +107,7 @@ export function Acts({ kind, record, acts, back }: { kind: Kind; record: LifeRec
       <form action={actLifeAction.bind(null, record.id)} className="flex flex-wrap items-end gap-2">
         <input type="hidden" name="$back" value={back} />
         <label className="grid gap-1 text-sm">What
-          <select name="kind" className={cn(SELECT, "w-44")}>{offered.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}</select>
+          <Select name="kind" className="w-44">{offered.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}</Select>
         </label>
         <label className="grid gap-1 text-sm">Day<Input type="date" name="day" defaultValue={today()} className="w-40" required /></label>
         {minutes ? <label className="grid gap-1 text-sm">Minutes<Input name="minutes" inputMode="numeric" className="w-24" /></label> : null}

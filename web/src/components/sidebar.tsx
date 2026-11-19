@@ -26,7 +26,7 @@ const STEP = 16;
 
 /**
  * The sidebar, rebuilt on shadcn/ui's Sidebar (Torian, 2026-11-19: "rebuild the sidebar using one of the sidebars from
- * ShadCN"), after its block that collapses to icons (sidebar-07): a switcher at the top for the two sides (Home, and
+ * ShadCN"), after its block that collapses to icons (sidebar-07), in the inset variant: a switcher at the top for the two sides (Home, and
  * Village and polis, like a team switcher), the side's navigation in groups (the tile groups fold), recent chats, and
  * the person at the foot with their profile and Settings. On a wide screen it sits beside the page and collapses to
  * icons (the button in every header, or Cmd/Ctrl-B); its right edge still resizes it between 220 and 420 (arrow keys
@@ -45,7 +45,10 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
     <Provider open={open} onOpenChange={onOpen} style={{ "--sidebar-width": `${width}px` } as CSSProperties}>
       <Nav groups={groups} polisTiles={polisTiles} places={places} chats={chats} me={me} width={width} onWidth={setWidth} onResized={resize} />
       {/* The page beside it. Not a <main>: every page has its own. */}
-      <div data-page="" className="relative flex min-w-0 flex-1 flex-col">{children}</div>
+      {/* The page, inset as a rounded card beside the sidebar (shadcn's inset variant, 2026-11-19: "it matches the radius
+          design of the rest of our system"). Not a <main>: every page has its own. overflow-clip: a header's
+          background reaches past its sides (BAR in ./headers.tsx); clipped here it stops at the card's rounded edge. */}
+      <div data-page="" data-slot="sidebar-inset" className="bg-background relative isolate flex min-w-0 w-full flex-1 flex-col overflow-clip md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2">{children}</div>
     </Provider>
   );
 }
@@ -70,7 +73,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   const tile = (t: SidebarTile) => item(t.href, t.label, <svg viewBox="0 0 100 100" aria-hidden="true"><path d={t.glyph} className="fill-current" fillRule="evenodd" /></svg>);
 
   return (
-    <Sidebar collapsible="icon" aria-label="Reflect">
+    <Sidebar variant="inset" collapsible="icon" aria-label="Reflect">
       <SidebarHeader>
         <SideSwitcher side={side} to={to} />
       </SidebarHeader>
@@ -181,7 +184,7 @@ function Person({ me, to }: { me: { name: string; href: string }; to: (p: string
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <Face name={me.name} size={32} />
+            <span className="ring-sidebar-border shrink-0 rounded-full ring-1"><Face name={me.name} size={32} /></span>
             <span className="truncate text-sm font-medium">{me.name}</span>
             <ChevronsUpDownIcon className="ml-auto" />
           </SidebarMenuButton>
