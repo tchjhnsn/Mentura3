@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.food-likes",
+  "title": "How you eat",
+  "description": "How you like to eat, the food you grew up on, and what you will not eat.",
+  "type": "object",
+  "properties": {
+    "eat": {
+      "type": "string",
+      "title": "How do you like to eat?",
+      "enum": [
+        "any",
+        "lower-carb",
+        "higher-carb",
+        "vegetarian",
+        "no-pork"
+      ]
+    },
+    "region": {
+      "type": "string",
+      "title": "What food did you grow up on?",
+      "enum": [
+        "south",
+        "creole",
+        "tex-mex",
+        "midwest",
+        "everyday"
+      ]
+    },
+    "nights": {
+      "type": "string",
+      "title": "How many nights a week do you cook?",
+      "enum": [
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ]
+    },
+    "hours": {
+      "type": "string",
+      "title": "How many hours a week do you want to spend cooking?",
+      "enum": [
+        "1",
+        "2",
+        "3",
+        "5",
+        "7",
+        "10"
+      ]
+    },
+    "avoid-shellfish": {
+      "type": "boolean",
+      "title": "Shellfish"
+    },
+    "avoid-fish": {
+      "type": "boolean",
+      "title": "Fish"
+    },
+    "avoid-dairy": {
+      "type": "boolean",
+      "title": "Dairy"
+    },
+    "avoid-nuts": {
+      "type": "boolean",
+      "title": "Nuts"
+    },
+    "avoid-gluten": {
+      "type": "boolean",
+      "title": "Gluten"
+    },
+    "avoid-pork": {
+      "type": "boolean",
+      "title": "Pork"
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "food-likes",
+    "noun": "preference",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}

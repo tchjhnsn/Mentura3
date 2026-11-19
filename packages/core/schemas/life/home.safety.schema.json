@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.safety",
+  "title": "Safety",
+  "description": "Physical safety at home and away, an emergency fund and preparedness.",
+  "type": "object",
+  "properties": {
+    "how": {
+      "type": "string",
+      "title": "How it is met",
+      "enum": [
+        "self-provided",
+        "stocked",
+        "supplied",
+        "cared-for"
+      ]
+    },
+    "by": {
+      "type": "string",
+      "title": "By whom",
+      "enum": [
+        "self",
+        "market",
+        "nature",
+        "polis",
+        "kin",
+        "gifts"
+      ]
+    },
+    "kit": {
+      "type": "boolean",
+      "title": "An emergency kit"
+    },
+    "plan": {
+      "type": "boolean",
+      "title": "A plan the household knows"
+    },
+    "fund": {
+      "type": "boolean",
+      "title": "An emergency fund"
+    },
+    "documents": {
+      "type": "boolean",
+      "title": "Important documents kept safe"
+    },
+    "cycle": {
+      "type": "string",
+      "title": "Check the standard again",
+      "enum": [
+        "every-month",
+        "every-3-months",
+        "every-6-months",
+        "every-year"
+      ]
+    },
+    "cost": {
+      "type": "number",
+      "title": "What it costs a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "safety",
+    "noun": "need",
+    "category": "having",
+    "good": "body",
+    "community": "household"
+  }
+}

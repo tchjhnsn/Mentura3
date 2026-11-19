@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:polis.duty",
+  "title": "Duty",
+  "description": "Jury service, taxes, licenses and permits, and other things the law asks of you.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Duty",
+      "maxLength": 300
+    },
+    "due": {
+      "type": "string",
+      "title": "Due",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "repeats": {
+      "type": "string",
+      "title": "Comes back",
+      "enum": [
+        "once",
+        "every-year"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "polis",
+    "kind": "duty",
+    "noun": "duty",
+    "category": "relation",
+    "good": "external",
+    "community": "polis"
+  }
+}

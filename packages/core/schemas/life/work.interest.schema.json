@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.interest",
+  "title": "Interest",
+  "description": "Something the person makes, does or follows, from Get to know you (`@reflect/core/interests` for the levels, `@reflect/core/interest-catalogue` for the things): which modes, and for each its commitment and its skill (Make, Do) or depth (Know).",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "title": "Which thing",
+      "maxLength": 4000
+    },
+    "title": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "area": {
+      "type": "string",
+      "title": "Area",
+      "maxLength": 4000
+    },
+    "modes": {
+      "type": "string",
+      "title": "Make, Do, Know",
+      "maxLength": 4000
+    },
+    "make_commitment": {
+      "type": "string",
+      "title": "Making: commitment",
+      "maxLength": 4000
+    },
+    "make_skill": {
+      "type": "string",
+      "title": "Making: skill",
+      "maxLength": 4000
+    },
+    "do_commitment": {
+      "type": "string",
+      "title": "Doing: commitment",
+      "maxLength": 4000
+    },
+    "do_skill": {
+      "type": "string",
+      "title": "Doing: skill",
+      "maxLength": 4000
+    },
+    "know_commitment": {
+      "type": "string",
+      "title": "Knowing: commitment",
+      "maxLength": 4000
+    },
+    "know_depth": {
+      "type": "string",
+      "title": "Knowing: depth",
+      "maxLength": 4000
+    },
+    "source": {
+      "type": "string",
+      "title": "How we learned it",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "interest",
+    "noun": "interest",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}

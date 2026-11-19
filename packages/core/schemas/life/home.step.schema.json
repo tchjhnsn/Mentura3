@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.step",
+  "title": "Step",
+  "description": "A change still to be reached, such as married or two children, with what it would cost. Nothing that is not yet is guaranteed.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "The step",
+      "description": "Married",
+      "maxLength": 300
+    },
+    "order": {
+      "type": "number",
+      "title": "Order",
+      "description": "1 for the next step",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "year": {
+      "type": "number",
+      "title": "Year, if you have one",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "where": {
+      "type": "string",
+      "title": "Where you would live",
+      "description": "County and state",
+      "maxLength": 300
+    },
+    "adults": {
+      "type": "number",
+      "title": "Adults in the household",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "children": {
+      "type": "number",
+      "title": "Children",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "food": {
+      "type": "string",
+      "title": "How you would eat",
+      "enum": [
+        "thrifty",
+        "low",
+        "moderate",
+        "liberal"
+      ]
+    },
+    "shelter": {
+      "type": "number",
+      "title": "Housing a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "transport": {
+      "type": "number",
+      "title": "Transport a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "water": {
+      "type": "number",
+      "title": "Water a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "safety": {
+      "type": "number",
+      "title": "Safety a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "children-cost": {
+      "type": "number",
+      "title": "Children a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "health": {
+      "type": "number",
+      "title": "Health care a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "learning": {
+      "type": "number",
+      "title": "Learning a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "giving": {
+      "type": "number",
+      "title": "Giving a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "other": {
+      "type": "number",
+      "title": "Everything else a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "food-cost": {
+      "type": "number",
+      "title": "Food a month, if you know it",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "step",
+    "noun": "life change",
+    "category": "being affected",
+    "good": "external",
+    "community": "household"
+  }
+}

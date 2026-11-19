@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:mate.date",
+  "title": "Date",
+  "description": "Each date: who, where, how it went and what you learned.",
+  "type": "object",
+  "properties": {
+    "who": {
+      "type": "string",
+      "title": "Who",
+      "maxLength": 300
+    },
+    "day": {
+      "type": "string",
+      "title": "When",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "where": {
+      "type": "string",
+      "title": "Where",
+      "maxLength": 300
+    },
+    "how": {
+      "type": "string",
+      "title": "How it went",
+      "maxLength": 20000
+    },
+    "learned": {
+      "type": "string",
+      "title": "What I learned",
+      "maxLength": 20000
+    },
+    "musts": {
+      "type": "string",
+      "title": "Against my must-haves",
+      "enum": [
+        "met-all",
+        "met-some",
+        "met-none",
+        "too-soon-to-tell"
+      ]
+    },
+    "dealbreaker": {
+      "type": "boolean",
+      "title": "A dealbreaker came up"
+    },
+    "again": {
+      "type": "string",
+      "title": "See them again",
+      "enum": [
+        "yes",
+        "no",
+        "not-sure"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "mate",
+    "kind": "date",
+    "noun": "date",
+    "category": "doing",
+    "good": "external",
+    "community": "union"
+  }
+}

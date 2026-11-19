@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.belonging",
+  "title": "Belonging",
+  "description": "What you own of value, where it is kept and what it is worth, so a loss can be shown and claimed. Keep a copy away from home too.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "What it is",
+      "maxLength": 300
+    },
+    "where": {
+      "type": "string",
+      "title": "Where it is kept",
+      "maxLength": 300
+    },
+    "value": {
+      "type": "number",
+      "title": "What it is worth",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "proof": {
+      "type": "boolean",
+      "title": "Photo or receipt kept"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "belonging",
+    "noun": "belonging",
+    "category": "substance",
+    "good": "external",
+    "community": "household"
+  }
+}

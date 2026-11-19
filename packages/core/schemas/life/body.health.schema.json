@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:body.health",
+  "title": "Health",
+  "description": "Coverage, a regular doctor, and how you rest and sleep.",
+  "type": "object",
+  "properties": {
+    "coverage": {
+      "type": "string",
+      "title": "Coverage",
+      "maxLength": 300
+    },
+    "doctor": {
+      "type": "string",
+      "title": "Regular doctor",
+      "maxLength": 300
+    },
+    "checkup": {
+      "type": "string",
+      "title": "Last checkup",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "sleep": {
+      "type": "number",
+      "title": "Hours of sleep a night, usually",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "body",
+    "kind": "health",
+    "noun": "health",
+    "category": "quality",
+    "good": "body",
+    "community": "person"
+  }
+}
