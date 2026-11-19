@@ -64,8 +64,8 @@ describe("interests", () => {
     const b = await setInterestArea.before!(ctx, { area: "music", as: "skipped" });
     const r = await setInterestArea.run(ctx, { area: "music", as: "skipped" });
     await setInterestArea.run(ctx, { sorted: true, later: "2026-11-26" });
-    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: ["music"], sorted: true, later: "2026-11-26" });
+    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: ["music"], sorted: true, later: "2026-11-26", genres: [], eras: [] });
     await setInterestArea.undo!(ctx, logged("set_interest_area", b, r));
-    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: [], sorted: false, later: null });
+    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: [], sorted: false, later: null, genres: [], eras: [] });
   });
 });

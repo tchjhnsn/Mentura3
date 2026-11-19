@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Search } from "lucide-react";
-import { AREAS, MIN_PICKS, becauseOf, related, type CatalogItem } from "@reflect/core/interest-catalogue";
+import { AREAS, ERAS, GENRES, MIN_PICKS, becauseOf, filterMusic, related, type CatalogItem, type EraId, type GenreId } from "@reflect/core/interest-catalogue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { pickAction, setAreaAction } from "../../actions";
 type Area = (typeof AREAS)[number];
 
 /** The tile grid, the search, and the pinned row that fills as the person taps. */
-export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[]; initial: string[] }) {
+export function Pick({ area, items: all, initial, initialGenres = [], initialEras = [] }: { area: Area; items: CatalogItem[]; initial: string[]; initialGenres?: string[]; initialEras?: string[] }) {
   const router = useRouter();
   const [picks, setPicks] = useState<string[]>(initial);
   // Related things moved in beside a tapped tile, by the tile they came from; they slide in once, on that tap.
@@ -23,7 +23,13 @@ export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[
   const [q, setQ] = useState("");
   const [, start] = useTransition();
   const [leaving, setLeaving] = useState(false);
-  const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  // Music starts from genres and eras: a tap on one narrows the grid at once; with none chosen, newest first.
+  const music = area.id === "music";
+  const [genres, setGenres] = useState<string[]>(initialGenres);
+  const [eras, setEras] = useState<string[]>(initialEras);
+  const items = useMemo(() => (music ? filterMusic(all, genres, eras) : all), [music, all, genres, eras]);
+  const byId = useMemo(() => new Map(all.map((i) => [i.id, i])), [all]);
+  const flip = (set: (f: (x: string[]) => string[]) => void, id: string) => set((x) => (x.includes(id) ? x.filter((y) => y !== id) : [...x, id]));
 
   // Grid order: catalogue order, with each tapped tile's related things right after it.
   const order = useMemo(() => {
@@ -53,12 +59,12 @@ export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[
   const left = MIN_PICKS - picks.length;
   const leave = (as: "done" | "skipped") => {
     setLeaving(true);
-    start(async () => { await setAreaAction({ area: area.id, as }); router.push("/dashboard"); });
+    start(async () => { await setAreaAction({ area: area.id, as, ...(music ? { genres: genres as GenreId[], eras: eras as EraId[] } : {}) }); router.push("/dashboard"); });
   };
   const preview = done ? becauseOf(picks, 3) : [];
 
   return (
-    <main className="mx-auto grid min-h-screen max-w-5xl grid-cols-[minmax(0,1fr)] content-start gap-5 px-4 pt-4 pb-56 sm:px-6">
+    <main className="mx-auto grid min-h-screen max-w-5xl grid-cols-[minmax(0,1fr)] content-start gap-5 px-4 pt-4 sm:px-6">
       <div className="flex items-center gap-3">
         <button type="button" onClick={() => leave("skipped")} disabled={leaving} className="text-muted-foreground hover:text-foreground text-sm">Skip {area.label.toLowerCase()}</button>
         <span className="flex-1" />
@@ -72,6 +78,13 @@ export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{area.pick}</h1>
         <p className="text-muted-foreground text-[15px]">{area.promise}</p>
       </header>
+
+      {music ? (
+        <div className="grid gap-3">
+          <Facet label="What you listen to" options={GENRES} on={genres} flip={(id) => flip(setGenres, id)} />
+          <Facet label="When" options={ERAS} on={eras} flip={(id) => flip(setEras, id)} />
+        </div>
+      ) : null}
 
       <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">
         {order.map((it) => {
@@ -92,8 +105,8 @@ export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[
       </ul>
       {order.length === 0 ? <p className="text-muted-foreground text-sm">Nothing here by that name yet.</p> : null}
 
-      <footer className="bg-background/95 supports-[backdrop-filter]:bg-background/80 fixed inset-x-0 bottom-0 z-20 border-t backdrop-blur">
-        <div className="mx-auto grid max-w-5xl gap-3 px-4 py-3 sm:px-6">
+      <footer className="bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky bottom-0 z-20 -mx-4 mt-4 border-t backdrop-blur sm:-mx-6">
+        <div className="grid gap-3 px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold">{area.row}</span>
             <span className="text-muted-foreground text-sm tabular-nums">{Math.min(picks.length, MIN_PICKS)} of {MIN_PICKS}{picks.length > MIN_PICKS ? ` (+${picks.length - MIN_PICKS})` : ""}</span>
@@ -132,5 +145,22 @@ export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[
         </div>
       </footer>
     </main>
+  );
+}
+
+/** A row of chips that narrows the grid as it is tapped (music's genres and eras). */
+function Facet({ label, options, on, flip }: { label: string; options: readonly { id: string; label: string }[]; on: string[]; flip: (id: string) => void }) {
+  return (
+    <div className="grid gap-1.5">
+      <span className="text-muted-foreground text-xs font-medium">{label}</span>
+      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+        {options.map((o) => (
+          <button key={o.id} type="button" aria-pressed={on.includes(o.id)} onClick={() => flip(o.id)}
+            className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm", on.includes(o.id) ? "border-foreground bg-foreground text-background font-medium" : "hover:bg-muted")}>
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

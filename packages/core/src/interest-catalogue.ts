@@ -51,3 +51,56 @@ export function becauseOf(picks: readonly string[], n = 6): { item: CatalogItem;
 
 /** The first guess of a pick's mode on Sort: books, shows and musicians are things one follows. The person moves it. */
 export const firstMode = (_c: CatalogItem): Mode => "know";
+
+/** Music's genres, each the tags it covers; the picker opens with these so the person starts from what they hear. */
+export const GENRES = [
+  { id: "pop", label: "Pop", tags: ["pop"] },
+  { id: "hip-hop", label: "Hip hop", tags: ["hip hop"] },
+  { id: "rnb", label: "R&B and soul", tags: ["r&b", "soul", "motown", "funk"] },
+  { id: "rock", label: "Rock and indie", tags: ["rock", "alternative"] },
+  { id: "country", label: "Country", tags: ["country"] },
+  { id: "folk", label: "Folk", tags: ["folk"] },
+  { id: "latin", label: "Latin", tags: ["latin", "reggaeton"] },
+  { id: "afrobeats", label: "Afrobeats", tags: ["afrobeats"] },
+  { id: "k-pop", label: "K-pop", tags: ["k-pop"] },
+  { id: "electronic", label: "Electronic", tags: ["electronic", "dance"] },
+  { id: "gospel", label: "Gospel and worship", tags: ["gospel", "worship"] },
+  { id: "jazz", label: "Jazz", tags: ["jazz"] },
+  { id: "blues", label: "Blues", tags: ["blues"] },
+  { id: "classical", label: "Classical and film", tags: ["classical", "film"] },
+] as const;
+export type GenreId = (typeof GENRES)[number]["id"];
+
+/** When a musician broke through, newest first; the decade is one of the item's tags. */
+export const ERAS = [
+  { id: "2020s", label: "2020s", tags: ["2020s"] },
+  { id: "2010s", label: "2010s", tags: ["2010s"] },
+  { id: "2000s", label: "2000s", tags: ["2000s"] },
+  { id: "1990s", label: "1990s", tags: ["1990s"] },
+  { id: "1980s", label: "1980s", tags: ["1980s"] },
+  { id: "1970s", label: "1970s", tags: ["1970s"] },
+  { id: "1960s", label: "1960s", tags: ["1960s"] },
+  { id: "1950s", label: "1950s", tags: ["1950s"] },
+  { id: "earlier", label: "Before 1950", tags: ["1940s", "1930s", "1920s", "before-1900"] },
+] as const;
+export type EraId = (typeof ERAS)[number]["id"];
+const ERA_TAGS: ReadonlySet<string> = new Set(ERAS.flatMap((e) => e.tags));
+
+/** The item's era index (0 is newest), or the end of the list when it has none. */
+export const eraIndex = (c: CatalogItem) => {
+  const i = ERAS.findIndex((e) => e.tags.some((t) => c.tags.includes(t)));
+  return i < 0 ? ERAS.length : i;
+};
+/** The tags a person reads ("jazz, trumpet"), without the era tags. */
+export const topicsOf = (c: CatalogItem) => c.tags.filter((t) => !ERA_TAGS.has(t));
+
+/** Items in the chosen genres and eras (any of each; none chosen means all), newest first, catalogue order within. */
+export function filterMusic(items: readonly CatalogItem[], genres: readonly string[], eras: readonly string[]): CatalogItem[] {
+  const gt = GENRES.filter((g) => genres.includes(g.id)).flatMap((g) => g.tags as readonly string[]);
+  const et = ERAS.filter((e) => eras.includes(e.id)).flatMap((e) => e.tags as readonly string[]);
+  return items
+    .map((c, i) => ({ c, i }))
+    .filter(({ c }) => (!gt.length || c.tags.some((t) => gt.includes(t))) && (!et.length || c.tags.some((t) => et.includes(t))))
+    .sort((a, b) => eraIndex(a.c) - eraIndex(b.c) || a.i - b.i)
+    .map(({ c }) => c);
+}
