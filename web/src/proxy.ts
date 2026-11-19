@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { polisHostOf, sideOfPath } from "@/lib/sides";
+import { PATH_HEADER } from "@/server/guest-wall";
 
 // A person's own domain (doc "Personal site and blog design guide", 2026-11-18): a request to a host that is not one of
 // Reflect's own is looked up among sites' checked domains, and its paths are served from that person's site:
@@ -8,6 +9,14 @@ import { polisHostOf, sideOfPath } from "@/lib/sides";
 const OWN = /(^|\.)(localhost|vercel\.app)$|^127\.0\.0\.1$|^\[::1\]$/;
 const cache = new Map<string, { key: string | null; at: number }>();
 const TTL = 60_000;
+
+/** Passes the request on, telling the app its path in PATH_HEADER (the guest wall, src/server/guest-wall.ts). The
+ * header is always overwritten, so a browser cannot choose it. */
+function pass(req: NextRequest, rewrite?: URL): NextResponse {
+  const headers = new Headers(req.headers);
+  headers.set(PATH_HEADER, (rewrite ?? req.nextUrl).pathname);
+  return rewrite ? NextResponse.rewrite(rewrite, { request: { headers } }) : NextResponse.next({ request: { headers } });
+}
 
 const siteBase = () => process.env.REFLECT_URL ?? process.env.BETTER_AUTH_URL;
 
@@ -49,11 +58,11 @@ function sides(req: NextRequest, host: string): NextResponse | null {
     return NextResponse.redirect(url, 308);
   };
   if (host === polis) {
-    if (path === "/") { const url = req.nextUrl.clone(); url.pathname = "/v"; return NextResponse.rewrite(url); }
+    if (path === "/") { const url = req.nextUrl.clone(); url.pathname = "/v"; return pass(req, url); }
     if (path === "/v") return to(polis, "/");
-    return sideOfPath(path) === "home" ? to(home.hostname, path) : NextResponse.next();
+    return sideOfPath(path) === "home" ? to(home.hostname, path) : pass(req);
   }
-  if (host === home.hostname) return sideOfPath(path) === "polis" ? to(polis, path === "/v" ? "/" : path) : NextResponse.next();
+  if (host === home.hostname) return sideOfPath(path) === "polis" ? to(polis, path === "/v" ? "/" : path) : pass(req);
   if (host.endsWith(".vercel.app") && process.env.VERCEL_ENV === "production") return to(home.hostname, path);
   return null;
 }
@@ -62,14 +71,14 @@ export async function proxy(req: NextRequest) {
   const host = (req.headers.get("host") ?? "").split(":")[0]!.toLowerCase();
   const moved = host ? sides(req, host) : null;
   if (moved) return moved;
-  if (!host || OWN.test(host) || ownHosts().has(host)) return NextResponse.next();
+  if (!host || OWN.test(host) || ownHosts().has(host)) return pass(req);
   const path = req.nextUrl.pathname;
-  if (path.startsWith("/p/") || /\.(?!xml$)[a-z0-9]+$/i.test(path)) return NextResponse.next();
+  if (path.startsWith("/p/") || /\.(?!xml$)[a-z0-9]+$/i.test(path)) return pass(req);
   const key = await siteKey(host);
-  if (!key) return NextResponse.next();
+  if (!key) return pass(req);
   const url = req.nextUrl.clone();
   url.pathname = `/p/${encodeURIComponent(key)}${path === "/" ? "" : path}`;
-  return NextResponse.rewrite(url);
+  return pass(req, url);
 }
 
 export const config = {

@@ -118,8 +118,15 @@ const ROUTED: Record<string, string[]> = {
   "life/build-actions.ts#answerBuildFromPage": ["answer_build_request"],
   // Events
   "events/actions.ts#newEventAction": ["host_event"],
+  "meetings/[id]/prep/actions.ts#savePrepItemAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#removePrepItemAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#setPrepMarkAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#draftPrepAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#practiceRehearsedAction": ["set_meeting_prep"],
   "events/actions.ts#goingAction": ["going_to_event"],
   "events/actions.ts#setPartAction": ["set_event_part"],
+  // Meetings: + New meeting
+  "meetings/actions.ts#newMeetingAction": ["schedule_meeting"],
   // Meals
   "meals/actions.ts#addMealAction": ["add_meal"],
   "meals/actions.ts#saveMealAction": ["change_record"],
@@ -208,6 +215,16 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 
 /** Page server actions that are not registry entries, each with its reason. */
 const EXCLUDED: Record<string, string> = {
+  "m/[token]/actions.ts#acceptInviteAction": "Accepting an invite ties the signed-in account to a meeting and may mark it a guest account: only the invitee's own tap on the invite page, never a model.",
+  "meetings/[id]/actions.ts#setPartAction": "The host sets one part of the meeting from its row on the page (store setMeetingPart); the chat's equivalent is set_meeting_part.",
+  "meetings/[id]/actions.ts#setCancelledAction": "Cancelling or restoring a meeting reaches every guest, so it stays a tap on the meeting page.",
+  "meetings/[id]/actions.ts#inviteGuestAction": "Inviting a guest emails an outside person a link that opens the meeting: a tap on the page only.",
+  "meetings/[id]/actions.ts#removeGuestAction": "Removing a guest stops their link from opening the meeting, which affects another person: a tap on the page only.",
+  "meetings/[id]/actions.ts#setNotesAction": "The host saves the notes from the page's textarea (store setNotes); the chat's equivalent is set_meeting_notes.",
+  "meetings/[id]/actions.ts#setNotesSharedAction": "Sharing notes, or taking them back, shows sealed notes and follow-ups to guests: a tap on the page only.",
+  "meetings/[id]/actions.ts#addFollowupAction": "The host adds a follow-up from the page's form; the chat's equivalent is add_meeting_followup.",
+  "meetings/[id]/actions.ts#setFollowupDoneAction": "Ticking a follow-up done, or unticking it, from its box on the meeting page.",
+  "meetings/[id]/actions.ts#removeFollowupAction": "Removing a follow-up from its row on the meeting page.",
   "dashboard/actions.ts#refreshBriefAction": "Writes the dashboard's morning brief again with a model from the person's own records and keeps it for the day; it changes no record, and the chat answers the same question from its own reads.",
   "events/actions.ts#publishEventAction": "Publishing a hosted event makes it public and makes the door token shown once as the host's check-in QR: a tap on the event's page only, never offered to a model.",
   "site/pages/actions.ts#addPageAction": SITE_PAGE,
