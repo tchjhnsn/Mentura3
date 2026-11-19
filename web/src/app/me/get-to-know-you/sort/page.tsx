@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Make, Do, Know" };
 export default async function SortPage({ searchParams }: { searchParams: Promise<{ focus?: string }> }) {
   const { focus } = await searchParams;
   const user = await requireUser();
-  const cards: SortCard[] = (await myInterests(user.id)).map((i) => ({
+  const cards: SortCard[] = (await myInterests(user.id, { crafts: false })).map((i) => ({
     ref: i.ref, title: i.title, image: i.item?.image ?? null, round: false, modes: i.modes,
     make: { commitment: i.make?.commitment ?? null, skill: i.make?.skill ?? null },
     do: { commitment: i.do?.commitment ?? null, skill: i.do?.skill ?? null },
