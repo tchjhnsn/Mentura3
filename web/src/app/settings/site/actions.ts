@@ -11,6 +11,7 @@ import { markDomainChecked, setDomain, setSiteRepo, siteOf } from "@/server/site
 import { inspectRepo } from "@/server/site-repo";
 import { siteProject } from "@/server/site-export";
 import { deployWithVercelConnector, pushWithGithubConnector } from "@/server/site-connectors";
+import { outsideFetch } from "@/server/outside";
 
 // Settings, Your site (doc "Personal site and blog design guide", page 4). The template runs the registry's entry;
 // the domain's steps check public DNS and the host, so they are taps on this page only (page-actions.test.ts).
@@ -63,7 +64,7 @@ async function addToHost(domain: string): Promise<"added" | "no-keys" | "refused
   const project = process.env.VERCEL_PROJECT_ID;
   if (!token || !project) return "no-keys";
   const team = process.env.VERCEL_TEAM_ID ? `?teamId=${encodeURIComponent(process.env.VERCEL_TEAM_ID)}` : "";
-  const r = await fetch(`https://api.vercel.com/v10/projects/${encodeURIComponent(project)}/domains${team}`, {
+  const r = await outsideFetch()(`https://api.vercel.com/v10/projects/${encodeURIComponent(project)}/domains${team}`, {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ name: domain }),

@@ -1,5 +1,6 @@
 import { currentUser } from "@/server/session";
 import { frameVerdict, siteUrl } from "@/server/frame-check";
+import { outsideFetch } from "@/server/outside";
 
 // Whether a site may be shown in the pane's browser tab (src/components/pane.tsx): ?url=<address>. It reads only the
 // site's headers and answers { ok, url, reason? }; nothing of the page comes back. Public http(s) sites only, each
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
   const headers = { "cache-control": "no-store" };
   try {
     for (let hop = 0; hop < 4; hop++) {
-      const res = await fetch(url, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(5000), headers: { "user-agent": "Mozilla/5.0 (compatible; Reflect frame check)" } });
+      const res = await outsideFetch({ timeoutMs: 5000 })(url, { method: "GET", redirect: "manual", headers: { "user-agent": "Mozilla/5.0 (compatible; Reflect frame check)" } });
       res.body?.cancel().catch(() => {});
       const to = res.status >= 300 && res.status < 400 ? res.headers.get("location") : null;
       if (to) {

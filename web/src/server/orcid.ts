@@ -1,5 +1,6 @@
 // A person's works from their public ORCID record (pub.orcid.org, no key), for scholars' pages: the full article list
 // beside the few Reflect lists by hand. Empty when ORCID cannot be reached.
+import { outsideFetch } from "@/server/outside";
 
 export type OrcidWork = { title: string; year: number | null; venue: string | null; doi: string | null; type: string };
 
@@ -15,7 +16,7 @@ type Summary = {
 export async function orcidWorks(orcid: string): Promise<OrcidWork[]> {
   if (!/^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/.test(orcid)) return [];
   try {
-    const r = await fetch(`https://pub.orcid.org/v3.0/${orcid}/works`, { headers: { Accept: "application/json" }, next: { revalidate: 60 * 60 * 24 } });
+    const r = await outsideFetch()(`https://pub.orcid.org/v3.0/${orcid}/works`, { headers: { Accept: "application/json" }, next: { revalidate: 60 * 60 * 24 } });
     if (!r.ok) return [];
     const d = (await r.json()) as { group?: { "work-summary"?: Summary[] }[] };
     return (d.group ?? []).flatMap((g) => {

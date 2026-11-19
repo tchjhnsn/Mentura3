@@ -1,8 +1,9 @@
 import { librivoxBook, type Audiobook } from "@reflect/core/librivox";
 import type { WorkAccess } from "@reflect/core/openlibrary";
 import { librivoxId } from "./free";
+import { outsideFetch } from "@/server/outside";
 
-const slow = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(6000) });
+const slow = (url: string) => outsideFetch({ timeoutMs: 6000 })(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 
 /**
  * A book's free LibriVox recording: the catalog's links, else the book found in LibriVox's catalog by title and

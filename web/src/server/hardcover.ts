@@ -1,4 +1,5 @@
 import { HARDCOVER_URL, hardcoverAuth, hardcoverBook, type HardcoverBook } from "@reflect/core/hardcover";
+import { outsideFetch } from "@/server/outside";
 
 type Answer = { data?: unknown; errors?: { message?: string }[]; error?: string; error_description?: string };
 
@@ -13,7 +14,7 @@ export async function hardcoverFor(work: { title: string; authors: readonly stri
   let error: string | undefined;
   const query = async (q: string, variables: Record<string, unknown>) => {
     try {
-      const r = await fetch(HARDCOVER_URL, {
+      const r = await outsideFetch({ retries: 2 })(HARDCOVER_URL, {
         method: "POST",
         headers: { "content-type": "application/json", accept: "application/json", authorization: hardcoverAuth(token), "user-agent": "reflect-app (book pages: edition rankings)" },
         body: JSON.stringify({ query: q, variables }),

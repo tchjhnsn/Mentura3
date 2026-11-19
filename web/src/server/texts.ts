@@ -2,13 +2,14 @@ import { findGutenberg, gutenbergBook, rdfEnglish, type Chapter } from "@reflect
 import { standardBook } from "@reflect/core/standardebooks";
 import type { WorkAccess } from "@reflect/core/openlibrary";
 import { englishGutenberg, gutenbergId } from "./free";
+import { outsideFetch } from "@/server/outside";
 
 /** Where a public-domain book's text comes from: Standard Ebooks (proofread and typeset) or Project Gutenberg. */
 export type TextSource = { kind: "standard"; id: string } | { kind: "gutenberg"; id: string };
 /** A book's text: its chapters, its notes by id (Standard Ebooks endnotes; none for Gutenberg), and whom it comes from. */
 export type BookText = { source: TextSource; chapters: Chapter[]; notes: Record<string, string>; credit: { name: string; href: string } };
 
-const cached = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
+const cached = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 
 /**
  * Where to read a book's text in Reflect: its Standard Ebooks edition when the catalog links one, else its
