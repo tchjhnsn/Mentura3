@@ -25,6 +25,7 @@ import { mediumOf } from "@reflect/core/ways";
 import type { CatalogEntry } from "@reflect/core/openlibrary";
 import type { Piece } from "../../chat/spec";
 import { actTools } from "./act";
+import { failureText } from "@/server/actions/failure";
 
 /** What one chat request has already read, and where its cards go. */
 export type ChatDeps = { userId: string; today?: string; view: LearnView; claims: ClaimOut[] | null; items: LearnItem[]; show: (p: Piece) => void };
@@ -36,7 +37,9 @@ export function chatTools({ userId, today, view, claims, items, show }: ChatDeps
   // through runAction, so every change is logged; a change the person can undo gets an Undo chip under its card. A
   // shared or outside action does not run: it shows an Approval card (Keep or Send) and the model is told it waits.
   const exec = <S extends z.ZodType, R>(a: Action<S, R>, say: (r: R, input: z.output<S>) => unknown) => async (input: z.output<S>) => {
-    const ran = await runAction(a, ctx, input, "chat");
+    const ran = await runAction(a, ctx, input, "chat").catch((err: unknown) => {
+      throw new Error(failureText(a.title, err));
+    });
     if (ran.held) {
       const tap = a.tier === "outside" ? "Send" : "Keep";
       show({ kind: "approval", change: ran.changeId, title: a.title, preview: ran.preview, tier: a.tier === "outside" ? "outside" : "shared" });

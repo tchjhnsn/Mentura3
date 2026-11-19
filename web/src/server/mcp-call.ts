@@ -4,6 +4,7 @@
 import type { z } from "zod";
 import type { Action, ActionContext } from "./actions";
 import { HOLD_DAYS, runAction } from "./actions/run";
+import { failureText } from "./actions/failure";
 import { siteUrl } from "./site";
 
 export type McpCall<R> =
@@ -22,7 +23,11 @@ export function heldMessage(a: Pick<Action, "tier">, changeId: string, preview: 
 /** Run one action for the person an MCP token names. Shared and outside actions are held by runAction, never run here. */
 export async function callMcpAction<S extends z.ZodType, R>(a: Action<S, R>, ctx: ActionContext, input: z.output<S>): Promise<McpCall<R>> {
   if (a.tier === "never") throw new Error(`${a.id} is not offered to a model.`);
-  const ran = await runAction(a, ctx, input, "mcp");
+  // A failure reaches the assistant as failureText says: Reflect's own message, or one plain sentence for a database
+  // or programming error, never the driver's text.
+  const ran = await runAction(a, ctx, input, "mcp").catch((err: unknown) => {
+    throw new Error(failureText(a.title, err));
+  });
   if (ran.held) return { kind: "held", changeId: ran.changeId, message: heldMessage(a, ran.changeId, ran.preview) };
   return { kind: "done", result: ran.result, changeId: ran.changeId };
 }
