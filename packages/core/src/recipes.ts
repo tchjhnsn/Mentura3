@@ -2,7 +2,7 @@
 // written for Reflect, grouped by where they come from; a whole meal is a main and its sides. Preferences come from a
 // few questions answered with taps; a week is planned from them. Old public-domain cookbooks are listed as cookbooks to
 // read, with their sources; no recipe here is said to be from one.
-import { parseIngredients, type Ingredient } from "./meals";
+import { parseIngredients, type Ingredient } from "./meals.ts";
 
 export type Region = "south" | "creole" | "tex-mex" | "midwest" | "everyday";
 export type Course = "main" | "side" | "bread";

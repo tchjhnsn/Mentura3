@@ -175,6 +175,26 @@ describe("reflect CLI", () => {
     expect((await run("check", "--dir", dir)).out).toContain("problem: life/state.json does not match life/passages.jsonl; it is rebuilt from the passages, never edited");
   });
 
+  it("prints the current stage, what the records suggest now, and the next stage's gates", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    await run("need", "food", "stocked", "--runway", "1d", "--dir", dir);
+    await run("passage", "line", "seeking-a-mate", "--on", "2023-01", "--dir", dir);
+    await writeFile(join(dir, "belonging", "friends", "ann.md"), "---\nstate: close\n---\n\n# Ann\n");
+    const r = await run("stage", "--date", "2099-01-01", "--dir", dir);
+    expect(r.code).toBe(0);
+    expect(r.out.slice(0, 3)).toEqual(["provide: no passage kept", "belonging: no passage kept", "line: Seeking a mate since 2023-01"]);
+    expect(r.out.some((l) => l.startsWith("  Restock food (needs/food): stocked on "))).toBe(true);
+    expect(r.out).toContain("  Say how water is met (needs/water): needs/water.md is not kept; every need is attended to in every stage");
+    expect(r.out).toContain("  Nothing kept yet for Dates in Mate (mate/date): Seeking a mate brings this kind of record forward");
+    expect(r.out).toContain("    [x] a friend is kept: friends: ann");
+    expect(r.out).toContain("  line: Pair bond");
+    expect(r.out).toContain("    consent: A joint vault opens only when both partners join. It waits on your partner.");
+    expect(r.out.at(-1)).toBe("\nOnly you say a stage is done: reflect passage <region> <state>");
+    await expect(run("stage", "--date", "soon", "--dir", dir)).rejects.toThrow(/--date/);
+  });
+
   it("models what you know from the books you read and your own grasp of their subjects", async () => {
     const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
     dirs.push(dir);

@@ -3,8 +3,11 @@
 // between states is a dated passage the person keeps (life/passages.jsonl), the way Naive derives
 // "founder" from facts instead of filing anyone under it. life/state.json is the latest passage in each
 // region, rebuilt from the passages, never written by hand.
+import { readdir } from "node:fs/promises";
 import { join } from "node:path";
 import type { RecordPaths } from "./layout.ts";
+import type { LifeAppId } from "./life.ts";
+import type { LifeRecordFacts, LifeRecords, NeedFacts } from "./lifecycle.ts";
 import { readRecord, writeRecord } from "./record-io.ts";
 
 /** The folders of a vault, each with the guide its README carries. Order is the order of a life. */
@@ -163,4 +166,46 @@ export async function lifetimeProblems(root: string, paths: RecordPaths): Promis
   for (const p of passages) if (!isRegion(p.region) || !(REGIONS[p.region] as readonly string[]).includes(p.to)) out.push(`life/passages.jsonl: ${p.region} has no state ${p.to}`);
   if (stateText !== null && JSON.stringify(JSON.parse(stateText)) !== JSON.stringify(lifeState(passages))) out.push("life/state.json does not match life/passages.jsonl; it is rebuilt from the passages, never edited");
   return out;
+}
+
+/** The vault folders whose notes count as life app records for the lifecycle: a note per friend, group and office. */
+const NOTE_KINDS: readonly { dir: string; app: LifeAppId; kind: string; title: string }[] = [
+  { dir: "belonging/friends", app: "friends", kind: "friend", title: "name" },
+  { dir: "belonging/groups", app: "friends", kind: "group", title: "name" },
+  { dir: "belonging/standing", app: "polis", kind: "standing", title: "role" },
+];
+
+async function notesIn(root: string, dir: string): Promise<string[]> {
+  try {
+    return (await readdir(join(root, dir))).filter((f) => f.endsWith(".md") && f !== "README.md").sort();
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw e;
+  }
+}
+
+/**
+ * What a vault holds for the lifecycle (`needNow` in ./lifecycle.ts): the passages in life/passages.jsonl, how
+ * each need is met from needs/<need>.md, and a record per note in belonging/friends, groups and standing, with its
+ * front matter as the body and its `state:` line as the state when it has one. The web app keeps its life records
+ * in its database, not in a vault, so a vault has no others and no acts.
+ */
+export async function readLifeRecords(root: string, today: string): Promise<LifeRecords> {
+  const passages = parsePassages(await readRecord(root, join("life", "passages.jsonl")));
+  const needs: NeedFacts[] = [];
+  for (const n of NEEDS) {
+    const text = await readRecord(root, join("needs", `${n}.md`));
+    const h = text ? headOf(text) : {};
+    if (!h.state || !(NEED_STATES as readonly string[]).includes(h.state)) continue;
+    needs.push({ need: n, state: h.state as NeedState, ...(h.runway ? { runway: h.runway } : {}), ...(h.kept_at ? { keptAt: h.kept_at } : {}) });
+  }
+  const records: LifeRecordFacts[] = [];
+  for (const k of NOTE_KINDS) {
+    for (const f of await notesIn(root, k.dir)) {
+      const { state, ...body } = headOf((await readRecord(root, join(k.dir, f))) ?? "");
+      const name = f.slice(0, -3);
+      records.push({ id: `${k.dir}/${name}`, app: k.app, kind: k.kind, state: state ?? null, body: { [k.title]: name, ...body } });
+    }
+  }
+  return { today, records, acts: [], needs, passages };
 }
