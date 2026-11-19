@@ -25,6 +25,10 @@ import { lastActivity, listItems, mergeInputs } from "@/server/ways-store";
 import { LearnHeader } from "./header";
 import { newEpisodeCards } from "@/server/new-episodes";
 import { NewEpisodeCards } from "./podcasts/new-episodes";
+import { myCrafts } from "@/server/crafts-store";
+import { YourCrafts } from "./your-crafts";
+import { Doors } from "./doors";
+import { ByWay } from "./by-way";
 
 export const metadata: Metadata = { title: "Scholē" };
 export const dynamic = "force-dynamic";
@@ -196,6 +200,8 @@ function NextUp({ picks }: { picks: { c: Collection; next: CollectionItem }[] })
  * the next in a collection they began, the next week on the Scholē calendar and new episodes from their shows, and
  * one line to Browse. New, or with nothing under way, it is the way in: what are you working toward, and
  * collections chosen by people that serve it.
+ * Crafts (doc "Scholē landing design guide"): both start with Your crafts and the three doors, Making, Doing and
+ * Knowing, and end with By way and By medium chips; Continue stays the one filled button.
  */
 export default async function SpacePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -209,7 +215,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   const user = await requireUser();
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
-  const [view, items, recent, signals] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), signalsOf(user.id)]);
+  const [view, items, recent, signals, crafts] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), signalsOf(user.id), myCrafts(user.id).catch(() => [])]);
   const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null,
     href: b.catalog?.work ? (b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
@@ -247,6 +253,8 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
       <main className={PAGE}>
         <LearnHeader on="space" />
         <div className={`mt-4 ${SPACE}`}>
+          <YourCrafts crafts={crafts} />
+          <Doors />
           <WorkingToward aims={aims} aim={aim} />
           <section className="grid grid-cols-1 gap-4">
             <Head title="Chosen by people" href="/schole/playlists" note="" />
@@ -259,6 +267,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
           <div className="[&_h2]:text-lg"><Suspense fallback={null}><NewFromShows userId={user.id} today={today} /></Suspense></div>
           <p><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Browse everything<ChevronRightIcon className="size-4" /></Link></p>
           <LearnInstrument />
+          <ByWay />
         </div>
       </main>
     );
@@ -277,6 +286,8 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
+        <YourCrafts crafts={crafts} />
+        <Doors />
         <section className="grid grid-cols-1 gap-3" aria-label="Continue">
           <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
           <Hero c={last} />
@@ -298,6 +309,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
           </section>
         ) : null}
         {!items.some((i) => i.status === "doing" && instrumentByUrl(i.url)) ? <LearnInstrument /> : null}
+        <ByWay />
         <p className="border-t pt-6"><Link href="/schole/browse" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm underline-offset-4 hover:underline">Find something new<ChevronRightIcon className="size-4" /></Link></p>
       </div>
     </main>
