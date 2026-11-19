@@ -1,6 +1,7 @@
 // The action registry's framework (Reflect framework plan, step 4): what an action is, why a run is refused, and the
 // runner that keeps every non-read run in a change log, holds a shared or outside action asked for by a model, and
-// undoes an own-tier change. It names no store: the host gives the change log and the transaction. The web app's host
+// undoes an own-tier change. A publishing action (`publishes`, step 6) is always held until the host's presentation gate
+// is ready and the person approves. It names no store: the host gives the change log and the transaction. The web app's host
 // is Postgres (web/src/server/actions/run.ts); a vault's is files (./vault-actions.ts). The way Naive's router serves
 // its CLI, MCP and API, the app, the CLI and an MCP server over a vault all run actions through here.
 // Plain TypeScript with no package imports: an input is any Standard Schema (zod's schemas are, and so are ./input.ts's).
@@ -86,6 +87,12 @@ export type ActionDecl = {
   description: string;
   tier: Tier;
   on: readonly Surface[];
+  /**
+   * The presentation policy channel a run puts something before others on (Reflect framework plan, step 6). A
+   * publishing action is always held, from any source, and runs only when its presentation record is complete and the
+   * person approves it. An agent may draft and check; it never approves.
+   */
+  publishes?: string;
 };
 
 /**
@@ -135,7 +142,9 @@ export type RefusedReason =
   | "not-yet" // held, not run
   | "not-undoable" // shared or outside, or the action has no undo
   | "too-old" // past the undo or hold window
-  | "bad-input"; // the input does not fit the action's schema (a vault's runner checks it; the app's surfaces do)
+  | "bad-input" // the input does not fit the action's schema (a vault's runner checks it; the app's surfaces do)
+  | "not-presented" // a publishing action whose presentation record is not complete, or a host with no gate
+  | "person-only"; // a publishing action approved by anyone but the person
 
 /**
  * The runner refused: nothing ran. The message is for the person. A tagged error (`_tag` "Refused"), as Effect's
@@ -164,8 +173,21 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 export const holds = (tier: Tier, source: Source, origin?: Source): boolean =>
   (tier === "shared" || tier === "outside") && (source === "chat" || source === "mcp" || (source === "workflow" && origin !== "page"));
 
-/** What runAction did: ran (with the change id, or null for a read), or held it unrun. */
-export type Ran<R> = { held: false; result: R; changeId: string | null } | { held: true; changeId: string; preview: string };
+/**
+ * The presentation gate's answer, as the runner reads it (./presentation.ts's GateVerdict is one): ready, or the
+ * missing items, each said for the person.
+ */
+export type Gate = { ready: true } | { ready: false; missing: readonly { item: string; message: string }[] };
+
+/** The sources that are a model or a plan acting, never the person: they may draft and check a presentation. */
+export const AGENT_SOURCES: readonly Source[] = ["chat", "mcp", "workflow"];
+
+/** What runAction did: ran (with the change id, or null for a read), or held it unrun. A publishing action's hold
+ * carries its gate. */
+export type Ran<R> = { held: false; result: R; changeId: string | null } | { held: true; changeId: string; preview: string; gate?: Gate };
+
+/** The gate's missing items as one paragraph for the person. */
+export const gateText = (g: Gate): string => (g.ready ? "The presentation record is complete." : `Not ready to go out. Still needed: ${g.missing.map((m) => m.message).join("; ")}.`);
 
 const said = (v: unknown): string => (typeof v === "string" ? v : JSON.stringify(v));
 /** The preview of an action with no `preview` of its own: its title, then each input field as given. */
@@ -203,6 +225,11 @@ export type RunnerHost<Ctx extends RunContext, A extends Action<Ctx, StandardSch
   afterApprove?(ctx: Ctx, c: LoggedChange): Promise<Partial<E>>;
   /** After a held change was declined (the app stops the plan it was a step of). */
   afterDecline?(ctx: Ctx, c: LoggedChange, title: string): Promise<void>;
+  /**
+   * The presentation gate for a publishing action's run with this input (./presentation.ts's gateFor over the host's
+   * policy and the record the input names). A host without it runs no publishing action.
+   */
+  gate?(ctx: Ctx, channelId: string, input: unknown): Promise<Gate>;
 };
 
 /** The runner over one host: run, undo, approve, decline and list held changes. */
@@ -217,6 +244,14 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
   async function runAction<S extends StandardSchema, R>(a: Action<Ctx, S, R, StandardSchema>, given: Ctx, input: InferOutput<S>, source: Source): Promise<Ran<R>> {
     if (a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a.title} is never run for a model.` });
     const ctx: Ctx = { ...given, origin: given.origin ?? source };
+    if (a.publishes !== undefined) {
+      // A publishing action never runs straight away, whoever asks: it waits for its presentation record and the person.
+      const gate = await gateOf(ctx, a, input);
+      const said = a.preview ? await a.preview(ctx, input) : plainPreview(a.title, input);
+      const preview = `${said}\nOn ${a.publishes}. ${gateText(gate)}`;
+      const changeId = await host.changes(ctx).hold({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: input ?? {}, preview });
+      return { held: true, changeId, preview, gate };
+    }
     if (a.tier === "read") return { held: false, result: await a.run(ctx, input), changeId: null };
     if (holds(a.tier, source, ctx.origin)) {
       const preview = a.preview ? await a.preview(ctx, input) : plainPreview(a.title, input);
@@ -230,6 +265,13 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
       const changeId = await host.changes(ctx).add({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: (a.logged ? a.logged(input) : input) ?? {}, before: c.before ?? null, after: c.after ?? null });
       return { held: false as const, result, changeId };
     });
+  }
+
+  /** The gate for a publishing action: the host's, or not presented when the host has none. */
+  async function gateOf(ctx: Ctx, a: ActionDecl, input: unknown): Promise<Gate> {
+    const channel = a.publishes ?? "";
+    if (!host.gate) throw new Refused({ reason: "not-presented", message: `${a.title} puts something before others on ${channel}, and this host has no presentation gate.` });
+    return host.gate(ctx, channel, input);
   }
 
   /** Whether a logged change can still be undone now: own tier, an action with undo, done, and under 30 days old. */
@@ -270,15 +312,22 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
    * Run a held change, as the person who owns it, when they tap Keep or Send. It runs once: claiming it moves it from
    * held to done in one step, so a second tap (or a second tab) is refused. The run and keeping its before and after are
    * one transaction; if either fails, what the run wrote is rolled back and the change goes back to held.
-   * Refuses another person's change, one already made or declined, and one older than 7 days.
+   * Refuses another person's change, one already made or declined, and one older than 7 days. `by` is who taps: the
+   * person on a page by default. A publishing action is approved only by the person (never `chat`, `mcp` or a
+   * `workflow`), and only once its presentation record is complete; until then it stays held.
    */
-  async function approveChange(ctx: Ctx, id: string): Promise<{ approved: string; title: string; result: unknown } & Partial<E>> {
+  async function approveChange(ctx: Ctx, id: string, by: Source = "page"): Promise<{ approved: string; title: string; result: unknown } & Partial<E>> {
     const log = host.changes(ctx);
     const c = await heldOf(ctx, id);
     const a = host.actionById(c.actionId);
     if (!a || a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a?.title ?? c.actionId} cannot be run here.` });
     const now = ctx.now ?? new Date();
     if (!canApprove(c, now)) throw new Refused({ reason: "too-old", message: `A held change waits ${HOLD_DAYS} days; this one is older. Ask again.` });
+    if (a.publishes !== undefined) {
+      if (AGENT_SOURCES.includes(by)) throw new Refused({ reason: "person-only", message: `Only the person approves what goes out on ${a.publishes}. An agent may draft and check, and never approves.` });
+      const gate = await gateOf(ctx, a, c.input);
+      if (!gate.ready) throw new Refused({ reason: "not-presented", message: gateText(gate) });
+    }
     if (!(await log.claim(ctx.userId, id, new Date(now.getTime() - HOLD_DAYS * DAY_MS)))) throw new Refused({ reason: "already-made", message: "That change was already made." });
     let result: unknown;
     try {

@@ -779,6 +779,20 @@
       ]
     },
     {
+      "noun": "presentation",
+      "level": "life",
+      "meaning": "Appearing before others, in person or in public view, as someone and for some end: an action with its six circumstances, who acts and in what role, what, about what or to whom, by what means, for what end and how (Nicomachean Ethics III.1, 1111a3-6), on an occasion that is deliberative, judicial or ceremonial (Rhetoric I.3)",
+      "standard": "Aristotle, Nicomachean Ethics III.1; Rhetoric I.3",
+      "status": "kept",
+      "app": null,
+      "broader": [
+        "doing"
+      ],
+      "good": "soul",
+      "community": "polis",
+      "kinds": []
+    },
+    {
       "noun": "life change",
       "level": "life",
       "meaning": "A change one means to reach, such as marrying or a child (Physics III.1)",

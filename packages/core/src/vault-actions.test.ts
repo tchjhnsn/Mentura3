@@ -5,6 +5,7 @@ import { PassThrough } from "node:stream";
 import { afterAll, describe, expect, it } from "vitest";
 import { filesChanges } from "./files-changes.ts";
 import { filesJournal } from "./files-journal.ts";
+import { filesPresentations } from "./files-presentations.ts";
 import { initInstance } from "./instance.ts";
 import { runVaultAction, VAULT_ACTIONS, vaultRunner, type VaultContext } from "./vault-actions.ts";
 import { answerMcp, serveStdio } from "./vault-mcp.ts";
@@ -18,12 +19,38 @@ async function vault(): Promise<VaultContext & { root: string }> {
   const root = await mkdtemp(join(tmpdir(), "reflect-vault-actions-"));
   dirs.push(root);
   const c = await initInstance(root, "Tester");
-  return { root, userId: c.person, journal: filesJournal(root, c.person, { layout: "vault" }), changes: filesChanges(root), now: NOW };
+  return { root, userId: c.person, journal: filesJournal(root, c.person, { layout: "vault" }), changes: filesChanges(root), presentations: filesPresentations(root, c.person, { now: () => NOW }), now: NOW };
 }
 
 describe("a vault's actions", () => {
-  it("are the guide, the life schemas and the journal's, read and own tier", () => {
-    expect(VAULT_ACTIONS.map((a) => [a.id, a.tier])).toEqual([["reflect_guide", "read"], ["life_schema", "read"], ["list_entries", "read"], ["write_entry", "own"], ["get_entry", "read"]]);
+  it("are the guide, the life schemas, the journal's and the presentation gate's, read and own tier, and none publishes", () => {
+    expect(VAULT_ACTIONS.map((a) => [a.id, a.tier])).toEqual([["reflect_guide", "read"], ["life_schema", "read"], ["list_entries", "read"], ["write_entry", "own"], ["get_entry", "read"], ["draft_presentation", "own"], ["check_presentation", "read"]]);
+    expect(VAULT_ACTIONS.filter((a) => a.publishes !== undefined)).toEqual([]);
+  });
+
+  it("draft a presentation, update it until the gate is ready, and check it; an agent may draft but never approves", async () => {
+    const v = await vault();
+    const first = await runVaultAction(v, "draft_presentation", { channel: "in-person", role: "son", audience: "my parents" }, "mcp");
+    if (first.held) throw new Error("held");
+    expect(first.result).toMatchObject({ id: "2026-11-19-in-person", gate: { ready: false, missing: [{ item: "end" }] } });
+    expect(await readFile(join(v.root, "presentation-policy.json"), "utf8")).toContain('"in-person"');
+    const second = await runVaultAction(v, "draft_presentation", { channel: "in-person", id: "2026-11-19-in-person", end: "Honour my parents", relation: "their son", virtue: "shame", occasion: "ceremonial" }, "mcp");
+    expect(second).toMatchObject({ held: false, result: { gate: { ready: true, rule: { role: "son", end: "honour my parents" } }, presentation: { audience: { who: "my parents", relation: "their son" }, virtue: { excess: "bashfulness", deficiency: "shamelessness" } } } });
+    expect(await runVaultAction(v, "check_presentation", { id: "2026-11-19-in-person" }, "mcp")).toMatchObject({ changeId: null, result: { id: "2026-11-19-in-person", channel: "in-person", ready: true } });
+    expect((await v.changes.recent(v.userId, 5)).map((c) => [c.actionId, c.source, c.status])).toEqual([["draft_presentation", "mcp", "done"], ["draft_presentation", "mcp", "done"]]);
+    await expect(runVaultAction(v, "draft_presentation", { channel: "in-person", id: "nope" }, "mcp")).rejects.toThrow(/no presentation nope/);
+    await expect(runVaultAction(v, "draft_presentation", { channel: "in-person", occasion: "festive" }, "mcp")).rejects.toMatchObject({ reason: "bad-input" });
+    await expect(runVaultAction(v, "check_presentation", { id: "missing" }, "mcp")).rejects.toThrow(/no presentation missing/);
+  });
+
+  it("gates a publishing action by the record its input names", async () => {
+    const v = await vault();
+    const host = vaultRunner as unknown as { runAction: typeof vaultRunner.runAction };
+    const post = { id: "post_page", title: "Post a page", description: "Posts.", tier: "outside" as const, on: [], publishes: "personal-site", run: async () => "posted" };
+    const none = await host.runAction(post, v, { presentation: "nope" }, "cli");
+    expect(none).toMatchObject({ held: true, gate: { ready: false, missing: [{ item: "presentation" }] } });
+    await runVaultAction(v, "draft_presentation", { channel: "personal-site", role: "writer", end: "share what I have thought through", audience: "readers" }, "cli");
+    expect(await host.runAction(post, v, { presentation: "2026-11-19-personal-site" }, "cli")).toMatchObject({ held: true, gate: { ready: true } });
   });
 
   it("write, list and read entries in the folder, and keep a write in changes.jsonl without its text", async () => {
@@ -77,7 +104,7 @@ describe("the MCP server over a vault", () => {
     expect(await answerMcp({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26" } }, open)).toMatchObject({ id: 1, result: { protocolVersion: "2025-03-26", capabilities: { tools: {} } } });
     expect(await answerMcp({ jsonrpc: "2.0", method: "notifications/initialized" }, open)).toBeNull();
     const tools = await answerMcp({ jsonrpc: "2.0", id: 2, method: "tools/list" }, open);
-    expect((tools?.result as { tools: { name: string }[] }).tools.map((t) => t.name)).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry"]);
+    expect((tools?.result as { tools: { name: string }[] }).tools.map((t) => t.name)).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation"]);
     const wrote = await answerMcp({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "write_entry", arguments: { text: "Cold.", local_date: "2026-11-19" } } }, open);
     expect(wrote?.result).toMatchObject({ content: [{ type: "text" }], _meta: { change: expect.any(String) } });
     expect((await v.changes.recent(v.userId, 1))[0]!.source).toBe("mcp");

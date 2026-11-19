@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "presentation.schema.json",
+  "title": "Presentation",
+  "description": "One appearance before others, in person or in public view, at presentations/<id>.json in the vault (noun presentation, category doing; Reflect framework plan, step 6). It names the channel, the six circumstances of an action (Nicomachean Ethics III.1, 1111a3-6), the occasion (Rhetoric I.3), the audience with the person's relation to them, the virtue at stake with its two faults (Nicomachean Ethics IV.3, IV.6-9), and afterward how it went. The gate needs the end, the role and the audience. packages/core/src/presentation.ts reads and checks it.",
+  "type": "object",
+  "required": ["id", "channel", "circumstances", "created", "updated"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "channel": { "type": "string", "description": "A channel id from presentation-policy.json" },
+    "circumstances": {
+      "type": "object",
+      "required": ["who"],
+      "additionalProperties": false,
+      "properties": {
+        "who": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Who acts, and in what role. A name left out is the person.",
+          "properties": { "name": { "type": "string" }, "role": { "type": "string" } }
+        },
+        "what": { "type": "string", "description": "What is done or said" },
+        "about": { "type": "string", "description": "About what, or to whom" },
+        "means": { "type": "string", "description": "By what means: the medium, what one wears or carries" },
+        "end": { "type": "string", "description": "For what end: what the appearance is for" },
+        "how": { "type": "string", "description": "How: the manner and bearing" }
+      }
+    },
+    "occasion": { "enum": ["deliberative", "judicial", "ceremonial"], "description": "Rhetoric I.3: deliberating about the future, judging the past, praise or ceremony" },
+    "audience": {
+      "type": "object",
+      "required": ["who"],
+      "additionalProperties": false,
+      "properties": { "who": { "type": "string" }, "relation": { "type": "string", "description": "The person's relation to them" } }
+    },
+    "virtue": {
+      "type": "object",
+      "required": ["id", "excess", "deficiency"],
+      "additionalProperties": false,
+      "description": "The virtue at stake and the two faults it sits between",
+      "oneOf": [
+        { "properties": { "id": { "const": "friendliness" }, "excess": { "const": "flattery" }, "deficiency": { "const": "quarrelsomeness" } } },
+        { "properties": { "id": { "const": "truthfulness" }, "excess": { "const": "boastfulness" }, "deficiency": { "const": "false modesty" } } },
+        { "properties": { "id": { "const": "wit" }, "excess": { "const": "buffoonery" }, "deficiency": { "const": "boorishness" } } },
+        { "properties": { "id": { "const": "shame" }, "excess": { "const": "bashfulness" }, "deficiency": { "const": "shamelessness" } } },
+        { "properties": { "id": { "const": "greatness-of-soul" }, "excess": { "const": "vanity" }, "deficiency": { "const": "smallness of soul" } } }
+      ],
+      "properties": { "id": { "type": "string" }, "excess": { "type": "string" }, "deficiency": { "type": "string" } }
+    },
+    "afterward": {
+      "type": "object",
+      "required": ["on", "went"],
+      "additionalProperties": false,
+      "properties": { "on": { "type": "string", "format": "date" }, "went": { "type": "string", "minLength": 1 } }
+    },
+    "created": { "type": "string", "format": "date-time" },
+    "updated": { "type": "string", "format": "date-time" }
+  }
+}
