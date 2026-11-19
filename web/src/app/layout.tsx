@@ -39,7 +39,7 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   // The person's theme and background (src/lib/themes.ts), painted by the server so the first frame is already theirs.
   const jar = await cookies();
   const look = lookOf(jar.get(LOOK_COOKIE)?.value);
-  // The sidebar, open or shut and how wide (src/components/sidebar.tsx), so the first frame already leaves it room.
+  // The sidebar, open or shut and how wide (src/components/sidebar.tsx), so the first frame is painted with them.
   const side = sideOf(jar.get(SIDE_COOKIE)?.value);
   // Which host this page came in on: Home's, or the shared side's own (src/lib/sides.ts).
   const polis = polisOrigin();
@@ -50,7 +50,7 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   // The Appearance button (src/components/appearance-button.tsx): on this device when turned on, and only for someone signed in.
   const button = user && appearanceButtonOn(jar.get(APPEARANCE_BUTTON_COOKIE)?.value) ? <AppearanceButton look={look} today={today} site={<AppearanceSlot userId={user.id} />} /> : null;
   return (
-    <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={{ ...themeVars(theme), ...(user && side.open ? { "--side-w": `${side.width}px` } : {}) } as CSSProperties}
+    <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={themeVars(theme) as CSSProperties}
       className={`${sans.variable} ${serif.variable}${look.mode === "dark" ? " dark" : ""}`} suppressHydrationWarning>
       <head>
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
