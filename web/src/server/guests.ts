@@ -2,9 +2,10 @@
 // episode search and Open Library. Nothing here calls a model.
 import { appleAppearances, bareName, sameBook, wikiBio, type Appearance, type Bio, type BookMention } from "@reflect/core/guests";
 import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
+import { outsideFetch, outsideText } from "./outside";
 
-const day = (url: string, timeout = 6000) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(timeout) });
-const text = async (url: string) => { try { const r = await day(url); return r.ok ? await r.text() : null; } catch { return null; } };
+const day = (url: string) => outsideFetch({ timeoutMs: 6000 })(url, { next: { revalidate: 86400 } });
+const text = (url: string) => outsideText(url, { next: { revalidate: 86400 } }, { timeoutMs: 6000 });
 
 /** A guest's Wikipedia summary: the page the show notes link, else the page by the guest's name; null when there is none. */
 export async function bioFor(name: string, wiki?: string | null): Promise<Bio | null> {

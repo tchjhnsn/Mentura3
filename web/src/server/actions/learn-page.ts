@@ -22,8 +22,9 @@ import { makePlaylist, setSaved, setTopicFollow } from "../topics";
 import { aimsOf } from "../collections";
 import { logPractice, setPieceLearned } from "../instruments";
 import { action, idsIn, type ActionContext } from "./types";
+import { outsideFetch } from "../outside";
 
-const openLibrary: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
+const openLibrary: Fetch = (url) => outsideFetch()(url, { cache: "no-store" });
 const uuid = z.string().max(60);
 const day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 const STATUS = BOOK_STATUS as unknown as [string, ...string[]];

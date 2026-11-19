@@ -16,9 +16,10 @@ import { quoteFromShelves } from "../passages";
 import { getItem } from "../ways-store";
 import { action } from "./types";
 import { itemsOf, viewOf } from "./loaded";
+import { outsideFetch } from "../outside";
 
-const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
-const catalogFetch: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app (learn items)" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) } as RequestInit);
+const openLibrary = (url: string) => outsideFetch()(url, { cache: "no-store" });
+const catalogFetch: Fetch = (url) => outsideFetch({ userAgent: "reflect-app (learn items)" })(url, { next: { revalidate: 86400 } });
 type Books = Awaited<ReturnType<typeof searchBooks>>;
 
 export const piano = action({

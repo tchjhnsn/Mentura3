@@ -9,8 +9,9 @@ import { addCourses, addCredential, listCourses, listCredentials } from "../lear
 import { addInput, inputTitle, listInputs, markSubject } from "../ideas-store";
 import { addItem, addItemSubjects, changeItem, listItems, removeItem } from "../ways-store";
 import { action, idsIn } from "./types";
+import { outsideFetch } from "../outside";
 
-const openLibrary: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app" } });
+const openLibrary: Fetch = (url) => outsideFetch()(url);
 
 /** Keep a book the person names. With an ISBN, Open Library fills the authors; its subjects come back as suggestions only. */
 export async function toolAddBook(userId: string, b: { title: string; isbn?: string; status?: BookStatus; subjects?: string[] }, fetcher: Fetch = openLibrary) {
