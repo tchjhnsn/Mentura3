@@ -3,6 +3,7 @@
 // move between them over time, so it is not a tile: it is a lens, beside Legacy and Qualities. Each adventure is
 // Not yet until the person marks it done, when it moves to Already. Kept as the hidden kind "adventure" in the legacy
 // app (`./life.ts`); its tiles are a comma list of tile ids. Pure data: no I/O.
+import { audienceOf, type RecordAudience } from "./audience";
 import { GROUPS } from "./plan";
 
 /** Every tile an adventure can touch: the tiles of the three groups on Home. */
@@ -67,6 +68,8 @@ export type Adventure = {
   id: string; name: string; tiles: string[]; with: string | null; done: boolean; ref: string | null;
   place: string | null; lat: number | null; lon: number | null; start: string | null; end: string | null;
   plan: Day[]; drafted: boolean; checklist: Task[]; budget: number | null; people: string[];
+  /** Who sees it on the shared side (`./audience.ts`): by default its owner and the people on it. */
+  audience: RecordAudience;
 };
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -103,8 +106,8 @@ export function cleanChecklist(raw: unknown): Task[] {
 /** Names of the people going, as the person gave them; never accounts. */
 export const peopleOf = (raw: unknown): string[] => String(raw ?? "").split(",").map((s) => s.trim()).filter(Boolean).slice(0, 30);
 
-/** An adventure from its kept record. */
-export function adventureOf(r: { id: string; state: string | null; body: Record<string, unknown> }): Adventure {
+/** An adventure from its kept record, with the audience set on it (`life_record.audience`) when there is one. */
+export function adventureOf(r: { id: string; state: string | null; body: Record<string, unknown>; audience?: unknown }): Adventure {
   const b = r.body;
   const w = typeof b.with === "string" && WITH.some((x) => x.id === b.with) ? b.with : null;
   const start = day(b.start), end = day(b.end);
@@ -112,6 +115,7 @@ export function adventureOf(r: { id: string; state: string | null; body: Record<
     id: r.id, name: String(b.name ?? "An adventure"), tiles: tilesOf(b.tiles), with: w, done: r.state === "done", ref: str(b.ref, 60),
     place: str(b.place, 200), lat: num(b.lat, -90, 90), lon: num(b.lon, -180, 180), start, end: end && start && end >= start ? end : null,
     plan: cleanPlan(b.plan), drafted: b.drafted === true, checklist: cleanChecklist(b.checklist), budget: num(b.budget, 0, 1e7), people: peopleOf(b.people),
+    audience: audienceOf("adventure", r.audience),
   };
 }
 

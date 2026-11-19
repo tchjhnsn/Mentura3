@@ -52,4 +52,10 @@ describe("adventures", () => {
     expect(nextUp(all, "2026-11-17")?.id).toBe("soon");
     expect(nextUp([a("x"), a("y")], "2026-11-17")?.id).toBe("x");
   });
+
+  it("is seen by its owner and the people on it unless the person sets another audience", () => {
+    expect(adventureOf({ id: "x", state: "not-yet", body: { name: "Go camping" } }).audience).toBe("invited");
+    expect(adventureOf({ id: "x", state: "not-yet", body: { name: "Go camping" }, audience: "everyone" }).audience).toBe("everyone");
+    expect(adventureOf({ id: "x", state: "not-yet", body: { name: "Go camping" }, audience: "bogus" }).audience).toBe("invited");
+  });
 });
