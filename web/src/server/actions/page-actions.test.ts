@@ -189,6 +189,7 @@ const DIRECT: Record<string, string> = {
 };
 
 const IMPORT = "Brings in a file or photo the browser reads; it reaches Reflect only from the page.";
+const SITE_PAGE = "Writing a page of the person's site in the site editor (add, autosave, title, address, remove): pages are public once published, so they are kept to the editor; chat reads them through /api/site/pages.";
 const PUBLISH = "Publishing: never offered to a model (tier never), so not a registry entry.";
 const READ = "A read for the page's own list or popup; it changes nothing. The chat reads with find_item, search_library, browse_category and show_ways.";
 const PLACE = "The reader or player keeping the person's place as they read or listen; not something a person asks for.";
@@ -200,6 +201,17 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 const EXCLUDED: Record<string, string> = {
   "dashboard/actions.ts#refreshBriefAction": "Writes the dashboard's morning brief again with a model from the person's own records and keeps it for the day; it changes no record, and the chat answers the same question from its own reads.",
   "events/actions.ts#publishEventAction": "Publishing a hosted event makes it public and makes the door token shown once as the host's check-in QR: a tap on the event's page only, never offered to a model.",
+  "site/pages/actions.ts#addPageAction": SITE_PAGE,
+  "site/pages/actions.ts#savePageAction": SITE_PAGE,
+  "site/pages/actions.ts#setPageTitleAction": SITE_PAGE,
+  "site/pages/actions.ts#setPagePathAction": SITE_PAGE,
+  "site/pages/actions.ts#removePageAction": SITE_PAGE,
+  "site/pages/actions.ts#publishPageAction": "Publishing a site page makes it public: a tap on Publish in the site editor only, never offered to a model, like publishing a post.",
+  "site/pages/actions.ts#unpublishPageAction": "Taking a site page down is the counterpart of Publish, which stays the person's own tap in the site editor.",
+  "site/pages/actions.ts#partsForLibraryAction": "Reads the parts the person may put on their site when the editor's library opens; it changes nothing, and chat reads the same through /api/site/pages/parts.",
+  "site/pages/actions.ts#shareOnSiteAction": "Sharing a part of a tile or the household on the person's public site makes it public: the owner confirms it in the library, never a model.",
+  "site/pages/actions.ts#unshareOnSiteAction": "Stops showing a part on the person's public site; the counterpart of sharing, which stays the owner's tap.",
+  "site/pages/actions.ts#okHouseholdPartAction": "The household's creator gives their OK for a member's household part to go on that member's public site: a person's own tap on Settings, Household, never a model.",
   "events/actions.ts#cancelEventAction": "Cancelling a hosted event reaches everyone who said Going: the outside tier, which waits for the person's tap, so it stays a tap on the event's page.",
   "journal/actions.ts#importWorkAction": IMPORT,
   "meals/actions.ts#readReceiptAction": IMPORT,
