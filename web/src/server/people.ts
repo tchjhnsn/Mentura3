@@ -5,20 +5,18 @@ import { db } from "@/db/pool";
 import { SPARQL, feedForms, feedHosts, hostsQuery, namedShows, personQuery, readHosts, readPerson, type Host, type HostedShow, type Link } from "@reflect/core/people";
 import type { Show } from "@reflect/core/podcasts";
 import { fyydSearchUrl, readFyyd } from "@reflect/core/podcastindex";
+import { outsideText } from "./outside";
 
 // Good answers are kept a day in memory; a failure (a timeout, Wikidata's rate limit) is asked again next time.
 const kept = new Map<string, { at: number; text: string }>();
 const day = async (url: string, accept?: string) => {
   const had = kept.get(url);
   if (had && Date.now() - had.at < 86_400_000) return had.text;
-  try {
-    const r = await fetch(url, { headers: { "user-agent": "reflect-app/1.0 (podcast pages)", ...(accept ? { accept } : {}) }, cache: "no-store", signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return null;
-    const text = await r.text();
-    if (kept.size > 2000) kept.delete(kept.keys().next().value!);
-    kept.set(url, { at: Date.now(), text });
-    return text;
-  } catch { return null; }
+  const text = await outsideText(url, { headers: accept ? { accept } : {}, cache: "no-store" }, { userAgent: "reflect-app/1.0 (podcast pages)" });
+  if (text === null) return null;
+  if (kept.size > 2000) kept.delete(kept.keys().next().value!);
+  kept.set(url, { at: Date.now(), text });
+  return text;
 };
 const sparql = (q: string) => day(`${SPARQL}?query=${encodeURIComponent(q)}`, "application/sparql-results+json");
 
