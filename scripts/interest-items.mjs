@@ -1,7 +1,8 @@
-// Builds packages/core/src/interest-items.json from scripts/interest-seed.json: the real books, podcast shows and
-// musicians the Get to know you picker shows (design guide "Get to know you: person dashboard", 2026-11-19).
+// Builds packages/core/src/interest-items.json from scripts/interest-seed.json: the real books
+// and podcast shows the Get to know you picker shows (design guide "Get to know you: person dashboard", 2026-11-19).
+// Music was taken out on 2026-11-19 (Torian: not essential to the experience).
 // Books: Open Library (cover, work page) and the author's Wikipedia page. Podcasts: Apple's podcast search (artwork,
-// feed, page). Music: the musician's Wikipedia page (lead photo, one line). Run from the repo root with Node 22.18+:
+// feed, page). Run from the repo root with Node 22.18+:
 // node scripts/interest-items.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -27,7 +28,7 @@ const wiki = async (title) => {
   const img = j.thumbnail?.source ?? null;
   return { name: j.title, line: j.description ?? null, image: img && !/ignature|\.svg/i.test(img) ? img : null, page: j.content_urls?.desktop?.page ?? null };
 };
-// --only music (or books, podcasts) rebuilds that area and keeps the others as they are.
+// --only books (or podcasts) rebuilds that area and keeps the others as they are.
 const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : null;
 const kept = only ? JSON.parse(readFileSync("packages/core/src/interest-items.json", "utf8")).filter((x) => x.area !== only) : [];
 const out = [];
@@ -44,12 +45,6 @@ for (const [title, by, tags] of only && only !== "podcasts" ? [] : seed.podcasts
   out.push({ id: `p-${slug(title)}`, area: "podcasts", title, by, tags: tags.split(","), image: d?.artworkUrl600 ?? null, link: d?.collectionViewUrl?.split("?")[0] ?? null, feed: d?.feedUrl ?? null, people: [] });
   process.stdout.write(d ? "." : "x");
 }
-for (const [name, page, tags] of only && only !== "music" ? [] : seed.music) {
-  await wait(250);
-  const w = await wiki(page || name);
-  out.push({ id: `m-${slug(name)}`, area: "music", title: name, by: w?.line ?? "", tags: tags.split(","), image: w?.image ?? null, link: w?.page ?? null, people: w ? [{ ...w, role: "musician" }] : [] });
-  process.stdout.write(w?.image ? "." : "x");
-}
-const all = [...kept.filter((x) => x.area === "books"), ...out.filter((x) => x.area === "books"), ...kept.filter((x) => x.area === "podcasts"), ...out.filter((x) => x.area === "podcasts"), ...kept.filter((x) => x.area === "music"), ...out.filter((x) => x.area === "music")];
+const all = [...kept.filter((x) => x.area === "books"), ...out.filter((x) => x.area === "books"), ...kept.filter((x) => x.area === "podcasts"), ...out.filter((x) => x.area === "podcasts")];
 writeFileSync("packages/core/src/interest-items.json", JSON.stringify(all, null, 1) + "\n");
 console.log(`\n${all.length} items, ${all.filter((x) => !x.image).length} without an image`);

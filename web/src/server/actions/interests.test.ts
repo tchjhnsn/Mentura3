@@ -44,8 +44,8 @@ describe("interests", () => {
   });
 
   it("sorts into Make, Do, Know with levels, clears one, and undoes", async () => {
-    await pickInterest.run(ctx, { ref: "m-miles-davis", picked: true });
-    const input = { ref: "m-miles-davis", modes: ["do", "know"] as ("do" | "know")[], do_commitment: "regular" as const, do_skill: "steady" as const, know_depth: "appreciates" as const };
+    await pickInterest.run(ctx, { ref: "p-dan-carlin-s-hardcore-history", picked: true });
+    const input = { ref: "p-dan-carlin-s-hardcore-history", modes: ["do", "know"] as ("do" | "know")[], do_commitment: "regular" as const, do_skill: "steady" as const, know_depth: "appreciates" as const };
     const b = await setInterest.before!(ctx, input);
     const r = await setInterest.run(ctx, input);
     const i = (await myInterests("me"))[0]!;
@@ -53,7 +53,7 @@ describe("interests", () => {
     expect(i.do).toEqual({ commitment: "regular", skill: "steady" });
     expect(i.know).toMatchObject({ depth: "appreciates" });
     expect(i.make).toBeUndefined();
-    await setInterest.run(ctx, { ref: "m-miles-davis", do_skill: null });
+    await setInterest.run(ctx, { ref: "p-dan-carlin-s-hardcore-history", do_skill: null });
     expect((await myInterests("me"))[0]!.do?.skill).toBeUndefined();
     await setInterest.undo!(ctx, logged("set_interest", b, r));
     expect((await myInterests("me"))[0]!.modes).toEqual(["know"]);
@@ -61,11 +61,11 @@ describe("interests", () => {
 
   it("marks areas done or skipped, sorted, put off, and undoes", async () => {
     await setInterestArea.run(ctx, { area: "books", as: "done" });
-    const b = await setInterestArea.before!(ctx, { area: "music", as: "skipped" });
-    const r = await setInterestArea.run(ctx, { area: "music", as: "skipped" });
+    const b = await setInterestArea.before!(ctx, { area: "podcasts", as: "skipped" });
+    const r = await setInterestArea.run(ctx, { area: "podcasts", as: "skipped" });
     await setInterestArea.run(ctx, { sorted: true, later: "2026-11-26" });
-    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: ["music"], sorted: true, later: "2026-11-26", genres: [], eras: [] });
+    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: ["podcasts"], sorted: true, later: "2026-11-26" });
     await setInterestArea.undo!(ctx, logged("set_interest_area", b, r));
-    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: [], sorted: false, later: null, genres: [], eras: [] });
+    expect(await myAreas("me")).toEqual({ done: ["books"], skipped: [], sorted: false, later: null });
   });
 });

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
-import { areaOf, itemOf, related, topicsOf } from "@reflect/core/interest-catalogue";
+import { areaOf, itemOf, related } from "@reflect/core/interest-catalogue";
 import { MODES, sentence } from "@reflect/core/interests";
 import { Button } from "@/components/ui/button";
 import { SidebarButton } from "@/components/sidebar";
@@ -17,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<{ ref: stri
   return { title: itemOf((await params).ref)?.title ?? "Interest" };
 }
 
-const OPEN: Record<string, string> = { books: "Open Library", podcasts: "Apple Podcasts", music: "Wikipedia" };
+const OPEN: Record<string, string> = { books: "Open Library", podcasts: "Apple Podcasts" };
 
 /**
  * An interest's page (design guide "Get to know you: person dashboard", page 6, the interest card): the thing, how the
@@ -30,10 +30,8 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
   const user = await requireUser();
   const mine = await myInterest(user.id, ref);
   const area = areaOf(item.area);
-  const round = item.area === "music";
   const lines = mine ? MODES.map((m) => sentence(mine, m.id)).filter((s): s is string => !!s) : [];
   const more = related(ref, 6);
-  // A solo musician's only person is the musician; the hero already shows them.
   const people = item.people.filter((p) => p.name !== item.title);
 
   return (
@@ -44,7 +42,7 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
       </header>
 
       <section className="grid grid-cols-[auto_minmax(0,1fr)] items-start gap-4 sm:gap-6">
-        <Cover src={item.image} name={item.title} round={round} eager className="size-28 sm:size-40" />
+        <Cover src={item.image} name={item.title} eager className="size-28 sm:size-40" />
         <div className="grid min-w-0 gap-2">
           <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{area?.label.replace(/s$/, "")}</span>
           <h1 className="text-3xl font-bold tracking-tight">{item.title}</h1>
@@ -68,7 +66,7 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
 
       {people.length ? (
         <section className="grid gap-3">
-          <h2 className="text-lg font-semibold">{item.area === "music" ? "Who" : "The people behind it"}</h2>
+          <h2 className="text-lg font-semibold">The people behind it</h2>
           <ul className="grid gap-3 sm:grid-cols-2">
             {people.map((p) => (
               <li key={p.name}>
@@ -85,10 +83,10 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
         </section>
       ) : null}
 
-      {topicsOf(item).length ? (
+      {item.tags.length ? (
         <section className="grid gap-2">
           <h2 className="text-lg font-semibold">What it is about</h2>
-          <p className="text-muted-foreground text-[15px]">{topicsOf(item).join(", ")}</p>
+          <p className="text-muted-foreground text-[15px]">{item.tags.join(", ")}</p>
         </section>
       ) : null}
 
@@ -99,7 +97,7 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
             {more.map((m) => (
               <li key={m.id}>
                 <Link href={`/me/interests/${m.id}`} className="grid gap-1.5">
-                  <Cover src={m.image} name={m.title} round={round} className="aspect-square w-full" />
+                  <Cover src={m.image} name={m.title} className="aspect-square w-full" />
                   <span className="line-clamp-2 text-sm leading-tight font-medium">{m.title}</span>
                 </Link>
               </li>
