@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, BoldIcon, ExternalLinkIcon, Heading2Icon, ItalicIcon, LayersIcon, ListIcon, MoreHorizontalIcon, PaletteIcon, PlusIcon, QuoteIcon } from "lucide-react";
+import { BoldIcon, ExternalLinkIcon, Heading2Icon, ItalicIcon, LayersIcon, ListIcon, MoreHorizontalIcon, PaletteIcon, PlusIcon, QuoteIcon } from "lucide-react";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "@tiptap/markdown";
@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { VirtuInlinePublish } from "@/components/virtu-sections";
 import { cn } from "@/lib/utils";
+import { SidebarButton } from "@/components/sidebar";
 import { ICONS, LooksContext, PartsContext, SiteComponent, type BlockLooks } from "./component-node";
 import { partsForLibraryAction, publishPageAction, removePageAction, savePageAction, setPagePathAction, setPageTitleAction, shareOnSiteAction, unpublishPageAction } from "../actions";
 
@@ -206,7 +207,7 @@ export function PageEditor({ page, base, parts: initialParts, design = null, loo
       <main className="min-h-screen">
         <header className="bg-background/90 sticky top-0 z-20 border-b backdrop-blur">
           <div className="mx-auto flex max-w-3xl items-center gap-1 px-4 py-2">
-            <Button asChild variant="ghost" size="icon" aria-label="Your site" onClick={() => void save()}><Link href="/settings/site"><ArrowLeftIcon /></Link></Button>
+            <SidebarButton className="-ml-2" />
             <div className="grid min-w-0 flex-1 leading-tight">
               {editing === "title" ? (
                 <input autoFocus aria-label="Title" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => commit("title", title)}

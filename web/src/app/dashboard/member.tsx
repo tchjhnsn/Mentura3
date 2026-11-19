@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeftIcon } from "lucide-react";
+import { SidebarButton } from "@/components/sidebar";
 import { Face } from "@/components/dash";
 import { Badge } from "@/components/ui/badge";
 import { memberView } from "@/server/dashboard-today";
@@ -21,7 +21,7 @@ export async function MemberDashboard({ userId, memberId }: { userId: string; me
   return (
     <main className="mx-auto grid min-h-screen max-w-3xl grid-cols-[minmax(0,1fr)] content-start gap-8 px-4 py-6 sm:px-6">
       <header className="flex items-center gap-3">
-        <Link href="/dashboard?view=household" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"><ArrowLeftIcon className="size-4" />Household</Link>
+        <SidebarButton className="-ml-2" />
       </header>
       <section className="flex min-w-0 items-center gap-4">
         <Face name={member.name} size={64} />

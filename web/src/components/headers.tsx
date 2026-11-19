@@ -1,11 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BackButton } from "./back-button";
 import { SearchButton } from "./search-button";
 import { SidebarButton } from "./sidebar";
 import { usePathname } from "next/navigation";
@@ -22,13 +20,8 @@ export type Crumb = { label: string; href?: string };
 // so nothing scrolled past shows beside or behind it, without widening the page (Torian, 2026-11-15).
 export const BAR = "bg-background sticky top-0 z-30 shadow-[0_0_0_100vmax_var(--background)] [clip-path:inset(-100vmax_-100vmax_0)]";
 
-function Back({ fallback, label }: { fallback: string; label: string }) {
-  return (
-    <Suspense fallback={<Button asChild variant="ghost" size="icon" aria-label={label}><Link href={fallback}><ArrowLeftIcon /></Link></Button>}>
-      <BackButton fallback={fallback} label={label} />
-    </Suspense>
-  );
-}
+// No header has a back button (Torian, 2026-11-19: "kind of pointless now"): the docked sidebar, a tile's title
+// and the breadcrumbs are the way around. `back` stays as where a tile's title and a task's title lead.
 
 /**
  * A section's header: its title, its tabs (in a row of their own on a phone, which scrolls), and search. A section
@@ -37,13 +30,11 @@ function Back({ fallback, label }: { fallback: string; label: string }) {
 export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: string; backLabel: string; title: string; tabs?: ReactNode; icons?: ReactNode }) {
   // A tile's header (one with its own icons): the tile's name, always, as the way to the tile's workspace (or the home
   // screen from the workspace), and the icons, which show where in the tile you are (Torian, 2026-11-16 08:53Z: "the
-  // title should remain the name of the app/tile that you're in"). Back sits before it as on every page but Home
-  // (2026-11-17): the page you came from, else the tile's workspace or Home.
+  // title should remain the name of the app/tile that you're in").
   if (icons) return (
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
         <SidebarButton className="-ml-2" />
-        <Back fallback={back} label={backLabel} />
         <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight"><Link href={back} title={backLabel} className="hover:opacity-80">{title}</Link></h1>
         <div className="ml-auto flex shrink-0 items-center gap-2">{icons}</div>
       </div>
@@ -54,7 +45,6 @@ export function SectionHeader({ back, backLabel, title, tabs, icons }: { back: s
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-3">
         <SidebarButton className="-ml-2" />
-        <Back fallback={back} label={backLabel} />
         {/* With icons, a phone gives the title its own line under them (a large title, as iOS does), so a larger
             text size or a long name never cuts it to "Sc...". */}
         <h1 className={cn("truncate text-2xl font-semibold tracking-tight", icons && "hidden sm:block")}>{title}</h1>
@@ -88,11 +78,11 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
 }
 
 /**
- * One thing's header: back, where it sits (Learn / Browse / Courses, or Learn / My shelves / Teaching), and search.
+ * One thing's header: where it sits (Learn / Browse / Courses, or Learn / My shelves / Teaching), and search.
  * Once the page's title (the element with id `page-title`) has scrolled away, it shows the thing's name and its
  * main action instead.
  */
-export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, search = true }: { back: string; backLabel?: string; crumbs: Crumb[]; title: string; action?: ReactNode; /** Settings pages leave search out (2026-11-17). */ search?: boolean }) {
+export function ThingHeader({ crumbs, title, action, search = true }: { /** Kept for callers; no back button shows. */ back?: string; backLabel?: string; crumbs: Crumb[]; title: string; action?: ReactNode; /** Settings pages leave search out (2026-11-17). */ search?: boolean }) {
   const [past, setPast] = useState(false);
   const inPanel = useInPanel();
   const path = usePathname();
@@ -104,13 +94,12 @@ export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, s
     return () => io.disconnect();
   }, []);
   // In the Settings panel a section's own page has no header (the list on the left is the way back), and below it
-  // the header keeps only Back and where you are.
+  // the header keeps only where you are.
   if (inPanel && isSectionRoot(path)) return null;
   return (
     <header className={cn(BAR, "py-2", past ? "border-b" : "")}>
       <div className="flex min-h-10 items-center gap-2">
         {inPanel ? null : <SidebarButton className="-ml-2" />}
-        <Back fallback={back} label={backLabel} />
         {past ? <p className="min-w-0 truncate font-semibold">{title}</p> : <Crumbs crumbs={crumbs} />}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {past && action ? <div className="flex items-center gap-2 [&_form]:flex [&_form]:gap-2">{action}</div> : null}
@@ -121,13 +110,12 @@ export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, s
   );
 }
 
-/** The header of a page where you are doing something: back to the thing, its name and where you are in it, and only what the doing needs. */
+/** The header of a page where you are doing something: its name (a link back to the thing) and where you are in it, and only what the doing needs. */
 export function TaskHeader({ back, title, position, right }: { back: { href: string; label: string }; title: string; position?: string; right?: ReactNode }) {
   return (
     <header className={cn(BAR, "py-2")}>
       <div className="flex min-h-10 items-center gap-2">
         <SidebarButton className="-ml-2" />
-        <Back fallback={back.href} label={back.label} />
         <Link href={back.href} className="min-w-0 truncate text-sm hover:underline"><span className="font-medium">{title}</span>{position ? <span className="text-muted-foreground"> · {position}</span> : null}</Link>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {right}
