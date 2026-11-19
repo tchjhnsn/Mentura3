@@ -62,7 +62,7 @@ export function Sort({ cards: initial, focus }: { cards: SortCard[]; focus: stri
         <p className="text-muted-foreground text-[15px]">We placed your picks with a first guess. Move what is wrong and your dashboard changes with it.</p>
       </header>
 
-      {cards.length === 0 ? <p className="text-muted-foreground text-sm">Nothing picked yet. Pick a few books, podcasts or musicians first.</p> : null}
+      {cards.length === 0 ? <p className="text-muted-foreground text-sm">Nothing picked yet. Pick a few books or podcasts first.</p> : null}
 
       <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {MODES.map((m) => {

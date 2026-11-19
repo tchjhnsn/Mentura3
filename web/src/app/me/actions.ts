@@ -8,7 +8,7 @@ import type { z } from "zod";
 
 // Get to know you through the registry, so a pick, a sort or a skip from these pages is in the change log too.
 
-/** Keep or let go of one book, show or musician the person tapped. */
+/** Keep or let go of one book or show the person tapped. */
 export async function pickAction(ref: string, picked: boolean): Promise<void> {
   const user = await requireUser();
   await fromPage(pickInterest, user.id, { ref, picked });

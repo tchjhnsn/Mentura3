@@ -15,7 +15,7 @@ export default async function SortPage({ searchParams }: { searchParams: Promise
   const { focus } = await searchParams;
   const user = await requireUser();
   const cards: SortCard[] = (await myInterests(user.id)).map((i) => ({
-    ref: i.ref, title: i.title, image: i.item?.image ?? null, round: i.area === "music", modes: i.modes,
+    ref: i.ref, title: i.title, image: i.item?.image ?? null, round: false, modes: i.modes,
     make: { commitment: i.make?.commitment ?? null, skill: i.make?.skill ?? null },
     do: { commitment: i.do?.commitment ?? null, skill: i.do?.skill ?? null },
     know: { commitment: i.know?.commitment ?? null, depth: i.know?.depth ?? null },

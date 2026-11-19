@@ -4,7 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * A book cover, show artwork or musician's photo from the catalogue. Missing or failed is a tile tinted in primary with
+ * A book cover or show artwork from the catalogue. Missing or failed is a tile tinted in primary with
  * the name's initial, never a broken image. Faces and covers are cropped to fill the box.
  */
 export function Cover({ src, name, className, eager, round }: { src?: string | null; name: string; className?: string; eager?: boolean; round?: boolean }) {
