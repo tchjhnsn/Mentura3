@@ -15,7 +15,7 @@ const metOut = (m: Met) => ({ name: m.name, met_at: m.event ? { title: m.event.t
 export const connectRequestsAction = action({
   id: "connect_requests",
   title: "Read connect requests and people met",
-  description: "Read who asked to connect with the person at an event (they answer with Connect back or Not now in the Friends tile, or connect_with), and the friends they made through Connect with the event where they met and how the person sees each friendship. Never shows anyone's email.",
+  description: "Read who asked to connect with the person at an event (they answer with Connect back or Not now on People you've met, /v/people, or connect_with), and the friends they made through Connect with the event where they met and how the person sees each friendship. Never shows anyone's email.",
   tier: "read",
   on: ["chat", "mcp"],
   input: z.object({ limit: z.number().int().min(1).max(100).default(20) }),
@@ -24,7 +24,7 @@ export const connectRequestsAction = action({
     return {
       incoming: incoming.map((r) => ({ name: r.from.name, at: r.at, event: r.event ? { title: r.event.title, href: eventHref(r.event.id) } : null })),
       connections: met.slice(0, limit).map(metOut),
-      href: "/life/friends",
+      href: "/v/people",
     };
   },
 });

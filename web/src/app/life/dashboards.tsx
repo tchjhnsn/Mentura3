@@ -12,8 +12,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { logFitnessAction, logFriendAction, logHealthAction, logTimeAction } from "./dash-actions";
 import { Upcoming } from "./upcoming";
-import { ConnectRequests } from "./connect-requests";
-import { BuildRequests } from "./build-people";
+import { incomingRequests } from "@/server/connect-store";
+import { PeopleRow } from "./people-row";
 
 const DAY = 86400_000;
 const dayBefore = (today: string, n: number) => new Date(Date.parse(`${today}T00:00:00Z`) - n * DAY).toISOString().slice(0, 10);
@@ -170,7 +170,8 @@ export async function FitnessDash({ userId, records, acts, today }: { userId: st
 export async function FriendsDash({ userId, records, acts, today }: { userId: string; records: LifeRecord[]; acts: LifeAct[]; today: string }) {
   const s = friendsSpace(records, acts, today);
   // Before migration 0047 is applied the message tables are missing; Messages then shows only its link.
-  const threads = await threadsOf(userId).catch(() => []);
+  // People met at events and Connect requests are on Village and polis (/v/people); here only how many wait.
+  const [threads, requests] = await Promise.all([threadsOf(userId).catch(() => []), incomingRequests(userId).catch(() => [])]);
   const EVERY: Record<string, number> = { "Every week": 7, "Every 2 weeks": 14, "Every month": 30, "Every 3 months": 91, "Every 6 months": 182, "Every year": 365 };
   const left = (f: (typeof s.close)[number]) => { const n = f.every ? EVERY[f.every] : 30; return f.since === null ? 0 : Math.max(0, 1 - f.since / (n ?? 30)); };
   const due = s.close.filter((f) => f.overdue).slice(0, 4);
@@ -210,7 +211,7 @@ export async function FriendsDash({ userId, records, acts, today }: { userId: st
         )}
       </Hero>
 
-      <ConnectRequests userId={userId} />
+      <PeopleRow title="People you've met" sub="At events, and who asked to connect" waiting={requests.length} />
 
       <section className="grid gap-3">
         <DashHead title="Messages" href="/life/friends/messages" more={threads.length ? "See all" : "Open"} />
@@ -501,8 +502,8 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
   const month = dayBefore(today, 29);
   const time = live.reduce((n, r) => n + minutesSince(acts, r.id, month), 0);
   const name = (r: LifeRecord) => String(r.body.name || "A venture");
-  // Requests to build (Events and connections, 2026-11-18): only when someone asked.
-  const requests = await incomingBuildRequests(userId);
+  // Requests to build (Events and connections, 2026-11-18) are answered on Village and polis (/v/people); here only how many wait.
+  const requests = await incomingBuildRequests(userId).catch(() => []);
   return (
     <div className="grid grid-cols-1 gap-8">
       <Hero>
@@ -525,12 +526,7 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
           </div>
         ) : null}
       </Hero>
-      {requests.length ? (
-        <section className="grid gap-3">
-          <DashHead title="Asked to build" />
-          <BuildRequests requests={requests} />
-        </section>
-      ) : null}
+      <PeopleRow href="/v/people#build" title="People to build with" sub="Who builds, among the people you've met" waiting={requests.length} />
       {live.length ? (
         <section className="grid gap-3">
           <DashHead title="Your ventures"><Link href="/life/ventures?k=venture" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><PlusIcon className="size-4" />Add</Link></DashHead>

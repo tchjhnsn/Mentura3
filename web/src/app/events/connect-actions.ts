@@ -50,21 +50,23 @@ export async function connectFromQrAction(token: string): Promise<void> {
   redirect(href);
 }
 
-/** Connect back on a request in the Friends tile. */
+/** Connect back on a request, or Connect with someone met, on People you've met (/v/people). */
 export async function connectBackAction(fromUser: string): Promise<void> {
   const user = await requireUser();
   try {
     await fromPage(connectWithAction, user.id, { to: fromUser });
   } catch (e) {
-    redirect(`/life/friends?error=${why(e, "Could not connect.")}`);
+    redirect(`/v/people?error=${why(e, "Could not connect.")}`);
   }
+  revalidatePath("/v/people");
   revalidatePath("/life/friends");
 }
 
-/** Not now on a request in the Friends tile. The other person is not told. */
+/** Not now on a request on People you've met. The other person is not told. */
 export async function notNowAction(requestId: string): Promise<void> {
   const user = await requireUser();
   await declineRequest(user.id, requestId);
+  revalidatePath("/v/people");
   revalidatePath("/life/friends");
 }
 

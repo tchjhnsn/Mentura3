@@ -66,6 +66,13 @@ export function Face({ name, size = 48, ring }: { name: string; size?: number; /
   return ring !== undefined ? <Ring value={ring} size={size} stroke={3}>{inner}</Ring> : inner;
 }
 
+/** A member's face: their picture when they have one, else their initials in a circle. */
+export function MemberFace({ name, image, size = 44 }: { name: string; image: string | null | undefined; size?: number }) {
+  // A plain img: the picture comes from the member's sign-in provider, on any host.
+  // eslint-disable-next-line @next/next/no-img-element
+  return image ? <img src={image} alt="" width={size} height={size} className="shrink-0 rounded-full object-cover" style={{ width: size, height: size }} /> : <Face name={name} size={size} />;
+}
+
 /** A section heading in a dashboard, with an optional link on the right. */
 export function DashHead({ title, href, more = "See all", children }: { title: string; href?: string; more?: string; children?: ReactNode }) {
   return (
