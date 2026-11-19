@@ -2,18 +2,23 @@
 // the core, declared here once. The web app builds its own entries for these ids from the same declarations
 // (web/src/server/actions/journal.ts), with zod inputs for its surfaces and its Postgres store, so the app, the
 // `reflect` CLI and an MCP server over a vault (./vault-mcp.ts) offer the same actions under the same names and words.
-// Today that is the journal: the guide, listing entries, writing one and reading one.
+// Today that is the journal (the guide, listing entries, writing one and reading one) and the presentation gate's
+// drafting and checking (./presentation.ts, Reflect framework plan step 6), which the app does not offer yet.
 import { acceptLocalDate, type Entry } from "./journal.ts";
 import type { IsoDate } from "./person.ts";
 import type { Journal } from "./store.ts";
-import { int, object, str, UUID, type InputSchema, type JsonSchema } from "./input.ts";
+import { int, object, oneOf, optional, str, UUID, type InputSchema, type JsonSchema } from "./input.ts";
 import { checkInput, makeRunner, Refused, type Action, type ActionDecl, type ChangeLog, type Ran, type RunContext, type Source, type StandardSchema } from "./registry.ts";
+import { draftPresentation, gateFor, ID, newPresentationId, OCCASIONS, VIRTUE_IDS, type DraftFields, type GateVerdict, type Presentation } from "./presentation.ts";
+import { vaultGate, type Presentations } from "./files-presentations.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
 export const GUIDE = [
   "Reflect keeps a person's journal, what they learn, their own ideas, their calendar and the plan for what survives them. You help them write and keep things; you never decide for them.",
   "",
   "Rules: save only what the person asked you to save, in their words. Never infer facts about the person beyond what they wrote, and never share their entries.",
+  "",
+  "Before anything of the person's goes before others, draft its presentation record with them (draft_presentation) and check it (check_presentation): the channel, who speaks and in what role, for what end, to what audience. You may draft and check; only the person approves.",
 ].join("\n");
 
 export const REFLECT_GUIDE = {
@@ -48,6 +53,49 @@ export const GET_ENTRY = {
   on: ["mcp"],
 } as const satisfies ActionDecl;
 
+export const DRAFT_PRESENTATION = {
+  id: "draft_presentation",
+  title: "Draft a presentation",
+  description:
+    "Draft or update the record of one appearance before others, in person or in public view, in the person's own words: the channel (from their presentation policy), who acts and in what role, what, about what or to whom, by what means, for what end, how, the occasion (deliberative, judicial or ceremonial), the audience and their relation to them, and the virtue at stake. Give id to update a draft; a field left out stays, an empty one clears. Returns what the gate still needs. Drafting never approves.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const CHECK_PRESENTATION = {
+  id: "check_presentation",
+  title: "Check a presentation",
+  description: "Whether a presentation record is ready to pass the gate on its channel, or what it still needs (the end, the role, the audience, a channel rule that matches), with the channel's checks and how to preview it. Checking never approves.",
+  tier: "read",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+/** A gate verdict as an action returns it. */
+export const gateOut = (g: GateVerdict) =>
+  g.ready
+    ? { ready: true as const, rule: { role: g.rule.role, end: g.rule.end, content: g.rule.content }, preview: g.channel.preview, checks: g.channel.checks.map((c) => c.check) }
+    : { ready: false as const, missing: g.missing };
+
+/** Draft or update a presentation record in the vault, writing the default policy first when the vault has none. */
+export async function draftPresentationIn(store: Presentations, f: DraftFields & { id?: string }, now = new Date()): Promise<{ id: string; presentation: Presentation; gate: ReturnType<typeof gateOut> }> {
+  await store.ensurePolicy();
+  const policy = await store.policy();
+  const existing = f.id ? await store.get(f.id) : null;
+  if (f.id && !existing) throw new Error(`no presentation ${f.id}; leave id out to draft a new one`);
+  const id = existing?.id ?? newPresentationId(f.channel, now.toISOString().slice(0, 10), new Set((await store.list()).map((p) => p.id)));
+  const { id: _given, ...fields } = f;
+  const presentation = draftPresentation(policy, existing, fields, { id, now });
+  await store.put(presentation);
+  return { id, presentation, gate: gateOut(gateFor(policy, presentation, presentation.channel)) };
+}
+
+/** Check a presentation record kept in the vault against its channel. */
+export async function checkPresentationIn(store: Presentations, id: string) {
+  const p = await store.get(id);
+  if (!p) throw new Error(`no presentation ${id}`);
+  return { id, channel: p.channel, ...gateOut(gateFor(await store.policy(), p, p.channel)) };
+}
+
 /** One entry as an action returns it. */
 export const entryOut = (e: Entry) => ({ id: e.id, date: e.localDate, closed: e.closedAt !== null, text: e.parts.map((p) => p.text).join("\n\n") });
 
@@ -72,7 +120,7 @@ export async function getEntryIn(j: Pick<Journal, "entryText">, entryId: string)
 }
 
 /** What a vault's action runs with: the person, their journal and their vault's change log. */
-export type VaultContext = RunContext & { journal: Journal; changes: ChangeLog };
+export type VaultContext = RunContext & { journal: Journal; changes: ChangeLog; presentations: Presentations };
 
 /** A vault action: checked by an input schema of the core's own (./input.ts), so its JSON Schema can be listed. */
 export type VaultAction = Action<VaultContext, InputSchema<unknown>, unknown>;
@@ -100,7 +148,38 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
     input: object({ entry_id: str({ pattern: UUID, format: "uuid" }) }),
     run: async ({ journal }, { entry_id }) => getEntryIn(journal, entry_id),
   }),
+  vault({
+    ...DRAFT_PRESENTATION,
+    input: object({
+      channel: str({ min: 1, describe: "a channel id from the presentation policy, such as personal-site, reflect-profile, social, email or in-person" }),
+      id: optional(str({ pattern: ID, describe: "a draft's id, to update it" })),
+      who: optional(str({ describe: "who acts, when not the person" })),
+      role: optional(str({ describe: "the role they speak in, such as founder, friend, citizen or son" })),
+      what: optional(str({ describe: "what is done or said" })),
+      about: optional(str({ describe: "about what, or to whom" })),
+      means: optional(str({ describe: "by what means: the medium, what one wears or carries" })),
+      end: optional(str({ describe: "for what end: what the appearance is for" })),
+      how: optional(str({ describe: "how: the manner and bearing" })),
+      occasion: optional(oneOf(OCCASIONS, { describe: "Rhetoric I.3" })),
+      audience: optional(str({ describe: "who will see or hear it" })),
+      relation: optional(str({ describe: "the person's relation to the audience" })),
+      virtue: optional(oneOf(VIRTUE_IDS, { describe: "the virtue at stake (Nicomachean Ethics IV.3, IV.6-9)" })),
+    }),
+    run: async ({ presentations, now }, input) => draftPresentationIn(presentations, input, now),
+    change: (r) => ({ after: { id: r.id } }),
+  }),
+  vault({
+    ...CHECK_PRESENTATION,
+    input: object({ id: str({ pattern: ID }) }),
+    run: async ({ presentations }, { id }) => checkPresentationIn(presentations, id),
+  }),
 ];
+
+/**
+ * The vault's actions the app does not offer yet: the presentation gate's, whose records have no Postgres store. Every
+ * other vault action is one of the app's, under the same id and words (web/src/server/actions/registry.test.ts).
+ */
+export const VAULT_ONLY: readonly string[] = [DRAFT_PRESENTATION.id, CHECK_PRESENTATION.id];
 
 export const vaultActionById = (id: string): VaultAction | undefined => VAULT_ACTIONS.find((a) => a.id === id);
 
@@ -113,6 +192,8 @@ export const vaultRunner = makeRunner<VaultContext, VaultAction>({
   changes: (ctx) => ctx.changes,
   transaction: (f) => f(),
   actionById: vaultActionById,
+  // A publishing action names its presentation record by id in its input's `presentation` field.
+  gate: (ctx, channel, input) => vaultGate(ctx.presentations, input && typeof input === "object" ? (input as { presentation?: unknown }).presentation : undefined, channel),
 });
 
 /**

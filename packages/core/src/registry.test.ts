@@ -98,6 +98,37 @@ describe("the core runner", () => {
     expect([holds("shared", "chat"), holds("outside", "mcp"), holds("shared", "workflow"), holds("shared", "workflow", "page"), holds("shared", "cli"), holds("own", "mcp")]).toEqual([true, true, true, false, false, false]);
   });
 
+  it("holds a publishing action from any source until its presentation is complete and the person approves", async () => {
+    const log = memoryLog();
+    const ready = { value: false };
+    const asked: unknown[] = [];
+    const post: Action<Ctx, ReturnType<typeof addInput>, string> = { id: "post_page", title: "Post a page", description: "Posts one.", tier: "outside", on: ["chat"], publishes: "personal-site", input: addInput(), run: async ({ list }, { name }) => (list.push(`posted ${name}`), name) };
+    const runner = makeRunner<Ctx, Action<Ctx>>({
+      changes: (c) => c.log,
+      transaction: (f) => f(),
+      actionById: (id) => (id === post.id ? (post as unknown as Action<Ctx>) : undefined),
+      gate: async (_ctx, channel, input) => (asked.push([channel, input]), ready.value ? { ready: true } : { ready: false, missing: [{ item: "end", message: "the end: what this appearance is for" }] }),
+    });
+    const ctx = { userId: "u1", log, list: [] as string[] };
+    // Even the person at the command line is held: what goes before others waits for its record and their tap.
+    const held = await runner.runAction(post, ctx, { name: "about" }, "cli");
+    expect(held).toEqual({ held: true, changeId: "c1", preview: "Post a page.\nname: about\nOn personal-site. Not ready to go out. Still needed: the end: what this appearance is for.", gate: { ready: false, missing: [{ item: "end", message: "the end: what this appearance is for" }] } });
+    expect(asked).toEqual([["personal-site", { name: "about" }]]);
+    await expect(runner.approveChange(ctx, "c1")).rejects.toMatchObject({ reason: "not-presented", message: "Not ready to go out. Still needed: the end: what this appearance is for." });
+    expect(log.rows[0]!.status).toBe("held");
+    ready.value = true;
+    // An agent never approves, ready or not.
+    for (const by of ["chat", "mcp", "workflow"] as const) await expect(runner.approveChange(ctx, "c1", by)).rejects.toMatchObject({ reason: "person-only" });
+    expect(await runner.approveChange(ctx, "c1", "cli")).toEqual({ approved: "c1", title: "Post a page", result: "about" });
+    expect(ctx.list).toEqual(["posted about"]);
+  });
+
+  it("refuses a publishing action on a host with no presentation gate", async () => {
+    const { runner, ctx } = setup();
+    const post: Action<Ctx> = { id: "post", title: "Post", description: "Posts.", tier: "outside", on: [], publishes: "social", run: async () => null };
+    await expect(runner.runAction(post, ctx, undefined, "page")).rejects.toMatchObject({ reason: "not-presented", message: "Post puts something before others on social, and this host has no presentation gate." });
+  });
+
   it("checks an input against its schema and refuses one that does not fit", async () => {
     const s = object({ limit: int({ min: 1, max: 200, default: 20 }), name: str({ min: 1 }) });
     expect(await checkInput({ title: "T", input: s }, { name: "a", extra: 1 })).toEqual({ limit: 20, name: "a" });

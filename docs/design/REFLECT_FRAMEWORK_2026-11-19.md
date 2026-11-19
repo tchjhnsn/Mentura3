@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and nothing reads the schemas yet.
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core and the CLI (step 6: `src/presentation.ts`, `reflect present`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and nothing reads the schemas yet.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -102,7 +102,7 @@ One PR each:
    Built in `lean/` (see `lean/README.md`): the ontology is generated into Lean from `ontology.json` by `scripts/ontology-lean.ts` with a certificate the kernel checks by `decide`; serves links and choices are abstract models with checkers whose success gives well-foundedness, no cycle and a telos for every choice; the communities form a strict total order. Not built: generating a plan from a person's records and checking it, which waits for step 2, and running `lake build` in CI.
 4. **The action registry moved from `web/` into core,** so the CLI and an MCP server over a vault get the same routes as the app, the way Naive's router serves its CLI, MCP and API.
 5. **The life stages as the framework's lifecycle,** like Naive's phases: the Ventures of a Lifetime statechart in `packages/core/src/lifetime.ts`, with soft gates (decided 2026-11-12).
-6. **The presentation gate,** proposed and not built. Torian asked on 2026-11-19: "how should a man present himself before others given any given circumstance?" He wants the context of the public viewing asked whenever anything enters public view, in person or online, with Aristotle, Dale Carnegie and C. S. Lewis as his teachers. He sees it as the personal form of Naive's publication gate (EE-025), so it is modelled on that gate.
+6. **The presentation gate,** built in core and the CLI; see below for what is not built. Torian asked on 2026-11-19: "how should a man present himself before others given any given circumstance?" He wants the context of the public viewing asked whenever anything enters public view, in person or online, with Aristotle, Dale Carnegie and C. S. Lewis as his teachers. He sees it as the personal form of Naive's publication gate (EE-025), so it is modelled on that gate.
 
 ## Step 6: the presentation gate
 
@@ -153,7 +153,17 @@ It has no field for the end (the purpose) or for the speaker's role. Those are t
 - **The gate itself.** A publishing action held by the runner (`holds` in `packages/core/src/registry.ts`) stays held until its presentation record names the end, the role and the audience, and the person approves it. An agent may draft and check, but it never approves, as in Naive.
 - **Shared with Naive.** `end` and `role` are proposed for Naive's channel rules too, as Naive's own change in its own PR. A venture speaks as someone for some end as well.
 
+### Built
+
+- **The policy:** `packages/core/src/presentation.ts` (`PresentationPolicy`, `parsePresentationPolicy`, `checkPresentationPolicy`, `defaultPolicy`) and `packages/core/schemas/presentation-policy.schema.json`. It keeps Naive's keys, adds `role` and `end` to each rule, has the `in-person` kind with no destination, and refuses any approver but the person. The default has the personal site, the Reflect profile, social, email and in person.
+- **The record:** noun `presentation` under doing in `packages/core/src/terms/ontology.json`, with no life kinds (it is not a life record kind), so K1 and K2 hold unchanged; good of the soul, community polis. `Presentation` and `packages/core/schemas/presentation.schema.json` hold the channel, the six circumstances, the occasion, the audience with the relation, the virtue with its two faults and the afterward. A vault keeps it at `presentations/<id>.json` through `packages/core/src/files-presentations.ts`, and `reflect check` checks it.
+- **The gate:** `gateFor(policy, record, channelId)` is ready or names the missing items (the end, the role, the audience, a channel rule that matches). In `packages/core/src/registry.ts` an action declared with `publishes: <channel>` is always held, from any source, with the gate in its preview; `approveChange` runs it only when the gate is ready and the approver is the person (an agent source is refused with `person-only`).
+- **Drafting and checking:** vault actions `draft_presentation` and `check_presentation`, and `reflect present <channel>`, `reflect present check <id>` and `reflect present after <id>`.
+
 ### Not built
 
-- The policy, the record, the gate and the Naive proposal.
+- No action publishes yet, in the vault or the app. The tcjcafe.com GitHub save in the web app does not go through the gate, and the app keeps no presentation records, so the two vault actions are the vault's alone (`VAULT_ONLY`).
+- Approving a held change from the CLI or the vault's MCP server, so a publishing action held in a vault waits for a host that offers approval.
+- The Naive proposal: `end` and `role` on Naive's channel rules, as Naive's own PR.
+- Running each channel's checks: they are reviews the person reads, listed by `reflect present check`.
 - The first test is tcjcafe.com. The founder scholarship thread is auditing it against the six circumstances.

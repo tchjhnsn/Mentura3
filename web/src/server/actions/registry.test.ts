@@ -135,9 +135,14 @@ describe("the action registry", () => {
 describe("the vault's actions in the app", () => {
   it("match the app's entries", async () => {
     const { z } = await import("zod");
-    const { VAULT_ACTIONS } = await import("@reflect/core/vault-actions");
+    const { VAULT_ACTIONS, VAULT_ONLY } = await import("@reflect/core/vault-actions");
     for (const v of VAULT_ACTIONS) {
       const a = actionById(v.id);
+      // The presentation gate's actions are the vault's alone until the app keeps presentation records.
+      if (VAULT_ONLY.includes(v.id)) {
+        expect(a, v.id).toBeUndefined();
+        continue;
+      }
       expect(a, v.id).toBeDefined();
       expect({ id: a!.id, title: a!.title, description: a!.description, tier: a!.tier, on: a!.on }).toEqual({ id: v.id, title: v.title, description: v.description, tier: v.tier, on: v.on });
       const app = a!.input ? (z.toJSONSchema(a!.input, { io: "input" }) as { properties?: object; required?: string[] }) : { properties: {}, required: [] };

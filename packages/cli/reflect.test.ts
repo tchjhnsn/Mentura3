@@ -746,7 +746,7 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     const listed = await run("actions");
-    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "list_entries", "write_entry", "get_entry"]);
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation"]);
     expect(JSON.parse((await run("actions", "--json")).out[0]!)[2]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
     const today = new Date().toISOString().slice(0, 10);
     const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
@@ -754,6 +754,32 @@ describe("reflect CLI", () => {
     expect(wrote.out[1]).toMatch(/^change: /);
     expect((await run("act", "get_entry", "--input", JSON.stringify({ entry_id: id }), "--dir", dir)).out[0]).toContain("By the river.");
     await expect(run("act", "get_entry", "--input", "{bad", "--dir", dir)).rejects.toThrow(/--input is JSON/);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+  });
+
+  it("drafts a presentation, checks it against the gate, and keeps how it went", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    const listed = await run("present", "--dir", dir);
+    expect(listed.out[0]).toBe("Channels");
+    expect(listed.out.join("\n")).toContain("in-person  In person");
+    expect(listed.out.at(-1)).toMatch(/none yet/);
+    const drafted = await run("present", "personal-site", "--role", "writer", "--dir", dir);
+    const id = drafted.out[0]!;
+    expect(id).toMatch(/^\d{4}-\d{2}-\d{2}-personal-site$/);
+    expect(drafted.out.slice(1)).toEqual(["  needs the end: what this appearance is for", "  needs the audience: who will see or hear it, and your relation to them"]);
+    const notYet = await run("present", "check", id, "--dir", dir);
+    expect(notYet.code).toBe(1);
+    await run("present", "personal-site", "--id", id, "--end", "share what I have thought through", "--audience", "readers", "--virtue", "truthfulness", "--dir", dir);
+    const ready = await run("present", "check", id, "--dir", dir);
+    expect(ready.code).toBe(0);
+    expect(ready.out).toContain("  ready: the person approves before it goes out");
+    expect(ready.out).toContain("  at stake: truthfulness about oneself, between boastfulness and false modesty (Nicomachean Ethics IV.7, 1127a13-b32)");
+    expect((await run("present", "after", id, "Two kind letters.", "--on", "2026-11-20", "--dir", dir)).out).toEqual([`kept how ${id} went`]);
+    expect((await run("present", "--dir", dir)).out.join("\n")).toContain(`${id}  personal-site  ready  went: Two kind letters.`);
+    await expect(run("present", "billboard", "--dir", dir)).rejects.toThrow(/no channel billboard/);
+    await expect(run("present", "email", "--virtue", "courage", "--dir", dir)).rejects.toThrow(/--virtue is one of/);
     expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
   });
 

@@ -10,6 +10,7 @@ import { learnProblems } from "./learning.ts";
 import { ideaProblems } from "./ideas.ts";
 import { sourceProblems } from "./sources.ts";
 import { wikiProblems } from "./wiki.ts";
+import { presentationProblems } from "./files-presentations.ts";
 import { LEGACY_TEMPLATES, LIFETIME_FOLDERS, lifetimeProblems } from "./lifetime.ts";
 import { readRecord, writeRecord } from "./record-io.ts";
 import { planProblems, readPlan } from "./release.ts";
@@ -218,7 +219,7 @@ export async function checkInstance(root: string): Promise<CheckResult> {
     } catch {
       problems.push("legacy/release.json is not JSON");
     }
-    problems.push(...(await learnProblems(root)), ...(await ideaProblems(root)), ...(await sourceProblems(root)), ...(await wikiProblems(root)));
+    problems.push(...(await learnProblems(root)), ...(await ideaProblems(root)), ...(await sourceProblems(root)), ...(await wikiProblems(root)), ...(await presentationProblems(root, config.person)));
   }
   const shas = lastShas(lines);
   const outside: string[] = [];

@@ -119,6 +119,8 @@ inductive Noun
   | «election»
   /-- adventure (kept; app legacy; kinds legacy:adventure). A trip or experience undertaken Standard: schema.org Trip. -/
   | «adventure»
+  /-- presentation (kept; app shared; kinds none). Appearing before others, in person or in public view, as someone and for some end: an action with its six circumstances, who acts and in what role, what, about what or to whom, by what means, for what end and how (Nicomachean Ethics III.1, 1111a3-6), on an occasion that is deliberative, judicial or ceremonial (Rhetoric I.3) Standard: Aristotle, Nicomachean Ethics III.1; Rhetoric I.3. -/
+  | «presentation»
   /-- life change (kept; app home; kinds home:step). A change one means to reach, such as marrying or a child (Physics III.1) Standard: Aristotle, Physics III.1. -/
   | «lifeChange»
   deriving DecidableEq, Repr
@@ -180,10 +182,11 @@ def Noun.name : Noun → String
   | .«date» => "date"
   | .«election» => "election"
   | .«adventure» => "adventure"
+  | .«presentation» => "presentation"
   | .«lifeChange» => "life change"
 
 /-- [D] Every noun, once. -/
-def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«lifeChange»]
+def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«presentation», .«lifeChange»]
 
 /-- [D] The nouns a noun names in broader. -/
 def Noun.broaderNouns : Noun → List Noun
@@ -229,6 +232,7 @@ def Noun.broaderNouns : Noun → List Noun
   | .«date» => []
   | .«election» => []
   | .«adventure» => []
+  | .«presentation» => []
   | .«lifeChange» => []
 
 /-- [D] The categories a noun names in broader. -/
@@ -275,6 +279,7 @@ def Noun.broaderCategories : Noun → List Category
   | .«date» => [.«doing»]
   | .«election» => [.«doing»]
   | .«adventure» => [.«doing»]
+  | .«presentation» => [.«doing»]
   | .«lifeChange» => [.«beingAffected»]
 
 /-- [D] Certificate: the number of broader nouns above a noun on its longest path. -/
@@ -321,6 +326,7 @@ def Noun.rank : Noun → Nat
   | .«date» => 0
   | .«election» => 0
   | .«adventure» => 0
+  | .«presentation» => 0
   | .«lifeChange» => 0
 
 /-- [D] Certificate: the category a noun reaches. -/
@@ -367,6 +373,7 @@ def Noun.category : Noun → Category
   | .«date» => .«doing»
   | .«election» => .«doing»
   | .«adventure» => .«doing»
+  | .«presentation» => .«doing»
   | .«lifeChange» => .«beingAffected»
 
 /-- [D] The broader links as a hierarchy. -/
