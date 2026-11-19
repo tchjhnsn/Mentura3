@@ -13,6 +13,47 @@ export const NEUTRAL_PATHS = ["/chat", "/settings", "/marketplace", "/sign-in", 
 /** App folders whose every page is on the shared side, checked by the wall test (sides-wall.test.ts). */
 export const SHARED_ROUTE_DIRS = ["v", "events", "adventures", "connect", "p"] as const;
 
+/**
+ * Server modules that hold the person's or the household's own records, which no page on the shared side may import
+ * by path (sides-wall.test.ts). A shared page reaches what it shows through a module that returns only the shared part
+ * (`@/server/adventures` returns adventure records only). Read and decided one by one, 2026-11-19. Left off on
+ * purpose: `kept-works` and `learn-shelves` (pure helpers over what a caller passes, no records of their own) and
+ * `profile-store`, `events-store`, `connect-store`, `site-store` (the shared side's own records, with their audiences).
+ */
+export const PRIVATE_STORES = [
+  "journal-store", // journal entries and reflections, sealed with the person's key
+  "household-store", // the household's members and facts, sealed with the household's key
+  "budget", // the monthly budget, a hidden Home record of the person's
+  "spending-store", // receipts, hidden Home records of the person's
+  "meals-store", // meals and the shopping list, Home records scaled to the household
+  "examination-store", // a candidate's examinations, sealed with their key
+  "me-store", // the person's stated facts, beliefs and values
+  "ideas-store", // the person's own ideas and their inputs
+  "claims-store", // claims and stances in Learn
+  "legacy-store", // the legacy release plan: trustees, recipients and their parts
+  "calendar-store", // the person's calendar events across tiles
+  "calendar-feeds", // the calendars the person subscribes to
+  "plan", // the household plan built from Home, Work and the household
+  "life-store", // every tile app's records (Work, Home, Body, Friends, Mate, Kin, Polis, Legacy), sealed together
+  "messages-store", // the person's conversations
+  "messages-db", // the rows behind messages: friend links, invites and sealed message text
+  "learn-store", // books, subjects and grasps in Learn
+  "learn-reason-store", // why the person is learning a course, a work of their journal
+  "learn-sources-store", // uploads, credentials and transcripts the person adds to Learn
+  "person-store", // what onboarding produced about the person
+  "work-store", // the journal's works, sealed with the person's key
+  "book-store", // the book of the person's life: beliefs and editions
+  "item-store", // items and their sealed, hash-chained events
+  "excerpt-store", // excerpts the person keeps from books
+  "ways-store", // what the person keeps to learn from (books, talks, films)
+  "quiz-store", // the person's quizzes and answers
+  "workflow-store", // the person's saved plans of actions
+  "venture-files-store", // a venture's files, sealed with the person's key
+  "home-cards-store", // Home cards, hidden life records
+  "qualities", // what the person wrote about each quality they keep
+  "log-store", // the log, read from all the person's records
+] as const;
+
 const under = (path: string, base: string) => path === base || path.startsWith(`${base}/`);
 
 /** The side a path is on, or null for a page on neither. */

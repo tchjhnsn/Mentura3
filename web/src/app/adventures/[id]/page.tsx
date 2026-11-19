@@ -9,7 +9,7 @@ import { PinMap } from "@/components/map";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { lifeRecord } from "@/server/life-store";
+import { adventureRecord } from "@/server/adventures";
 import { requireUser } from "@/server/session";
 import { cn } from "@/lib/utils";
 import {
@@ -23,8 +23,8 @@ export const dynamic = "force-dynamic";
 
 async function load(id: string) {
   const user = await requireUser();
-  const r = await lifeRecord(user.id, id);
-  return r && r.app === "legacy" && r.kind === "adventure" ? adventureOf(r) : null;
+  const r = await adventureRecord(user.id, id);
+  return r ? adventureOf(r) : null;
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

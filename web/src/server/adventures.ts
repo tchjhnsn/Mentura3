@@ -1,11 +1,22 @@
 import { adventureOf, cleanChecklist, cleanPlan, type Adventure } from "@reflect/core/adventures";
 import { geocode } from "./geocode";
-import { addLifeRecord, lifeRecord, lifeRecords, saveLifeRecord } from "./life-store";
+import { addLifeRecord, lifeRecord, lifeRecords, recordAudiences, saveLifeRecord } from "./life-store";
 
 /** The person's adventures (`@reflect/core/adventures`), Not yet first, newest first within each. */
 export async function adventuresOf(userId: string): Promise<Adventure[]> {
-  const recs = (await lifeRecords(userId, "legacy")).filter((r) => r.kind === "adventure");
-  return recs.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map(adventureOf).sort((a, b) => Number(a.done) - Number(b.done));
+  const [all, audiences] = await Promise.all([lifeRecords(userId, "legacy"), recordAudiences(userId)]);
+  const recs = all.filter((r) => r.kind === "adventure");
+  return recs.sort((a, b) => b.createdAt.localeCompare(a.createdAt)).map((r) => adventureOf({ ...r, audience: audiences.get(r.id) })).sort((a, b) => Number(a.done) - Number(b.done));
+}
+
+/**
+ * One of the person's adventures as its kept record, or null when the id is not an adventure of theirs. The shared
+ * side's adventure pages read through this, never `./life-store` itself, so they reach adventures and nothing else.
+ */
+export async function adventureRecord(userId: string, id: string) {
+  const r = await lifeRecord(userId, id);
+  if (!r || r.app !== "legacy" || r.kind !== "adventure") return null;
+  return { ...r, audience: (await recordAudiences(userId)).get(r.id) };
 }
 
 /** One part of the adventures, for the chat and the MCP server: '' (all), 'not-yet', 'already', a tile id, or an adventure id. */
