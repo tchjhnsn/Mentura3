@@ -5,10 +5,11 @@ import { ITEM_LISTS } from "@reflect/core/item-lists";
 import type { Found } from "@reflect/core/lookup";
 import { fyydSearchUrl, gpodderSearchUrl, mergeShowFinds, podcastIndexHeaders, podcastIndexSearchUrl, readFyyd, readGpodder, readPodcastIndex } from "@reflect/core/podcastindex";
 import type { Medium } from "@reflect/core/ways";
+import { outsideFetch } from "@/server/outside";
 
 export const textFetch: Fetch = async (url) => {
   try {
-    const r = await fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 21600 }, signal: AbortSignal.timeout(8000) });
+    const r = await outsideFetch({ timeoutMs: 8000 })(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 21600 } });
     return r.ok ? await r.text() : null;
   } catch {
     return null;
@@ -34,7 +35,7 @@ async function indexShows(term: string): Promise<Found[]> {
   const key = process.env.PODCASTINDEX_KEY, secret = process.env.PODCASTINDEX_SECRET;
   if (!key || !secret) return [];
   try {
-    const r = await fetch(podcastIndexSearchUrl(term), { headers: await podcastIndexHeaders(key, secret), next: { revalidate: 21600 }, signal: AbortSignal.timeout(8000) });
+    const r = await outsideFetch({ timeoutMs: 8000 })(podcastIndexSearchUrl(term), { headers: await podcastIndexHeaders(key, secret), next: { revalidate: 21600 } });
     return r.ok ? readPodcastIndex(await r.json()) : [];
   } catch {
     return [];

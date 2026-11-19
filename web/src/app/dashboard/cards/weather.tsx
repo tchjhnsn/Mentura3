@@ -5,6 +5,7 @@ import { nextGoing } from "@/server/events-store";
 import { lifeRecords } from "@/server/life-store";
 import { clockIn, dayIn, safe, Section, type Ctx } from "../parts";
 import { forecastUrl, leaveBy, looksLikeAddress, placeFor, readForecast, TRAVEL_MARGIN, type Forecast } from "../world";
+import { outsideFetch } from "@/server/outside";
 
 /**
  * Today's weather from Open-Meteo (free, no key) for a city's coordinates, which are all that is sent. Cached for
@@ -12,7 +13,7 @@ import { forecastUrl, leaveBy, looksLikeAddress, placeFor, readForecast, TRAVEL_
  */
 async function forecast(place: { lat: number; lon: number }): Promise<Forecast | null> {
   try {
-    const res = await fetch(forecastUrl(place), { next: { revalidate: 1800 }, signal: AbortSignal.timeout(4000) } as RequestInit);
+    const res = await outsideFetch({ timeoutMs: 4000 })(forecastUrl(place), { next: { revalidate: 1800 } } as RequestInit);
     return res.ok ? readForecast(await res.json()) : null;
   } catch {
     return null;

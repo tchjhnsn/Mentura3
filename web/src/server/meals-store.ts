@@ -6,6 +6,7 @@ import { fitMeal, mealPlanOf, planWeek, recipeOf, recipesOfMeal, wholeMealOf, ty
 import { addEvent, events, removeEvent } from "./calendar-store";
 import { householdOf } from "./household-store";
 import { addLifeRecord, lifeRecord, lifeRecords, removeLifeRecord } from "./life-store";
+import { outsideFetch } from "@/server/outside";
 
 export type KeptMeal = Meal & { recipe: string | null };
 
@@ -133,11 +134,10 @@ export async function sendToInstacart(userId: string, day?: string): Promise<str
   const list = toBuy(v);
   if (!list.length) throw new Error("Plan a meal first.");
   const base = process.env.INSTACART_API_BASE || "https://connect.instacart.com";
-  const r = await fetch(`${base}/idp/v1/products/products_link`, {
+  const r = await outsideFetch({ timeoutMs: 20_000 })(`${base}/idp/v1/products/products_link`, {
     method: "POST",
     headers: { authorization: `Bearer ${key}`, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify(instacartBody(`Meals for the week of ${v.week[0]}`, list)),
-    signal: AbortSignal.timeout(20_000),
   });
   const j = (await r.json().catch(() => null)) as { products_link_url?: string } | null;
   if (!r.ok || !j?.products_link_url) throw new Error("Instacart did not make the list.");

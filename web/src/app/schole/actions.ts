@@ -22,6 +22,7 @@ import { checkAnswer, newQuiz, type Quiz } from "@/server/quiz-store";
 import { courseHref } from "./courses/shell";
 import { fromPage } from "@/server/actions/page";
 import { setBookStatusAction as setBookStatusEntry, addItemAction as addItemEntry } from "@/server/actions/learning";
+import { outsideFetch } from "@/server/outside";
 import {
   addItemNoteAction as addItemNoteEntry, addItemSubjectsAction as addItemSubjectsEntry, addSessionAction as addSessionEntry, changeItemAction as changeItemEntry, favoriteEpisodeAction as favoriteEntry,
   followListAction as followListEntry, highlightsToJournal, keepClaimAction as keepClaimEntry, keepExcerpt, keepLibraryBook, keepReasonAction as keepReasonEntry, orderWantAction, removeExcerptAction as removeExcerptEntry,
@@ -33,7 +34,7 @@ import {
 // log and, where it can be taken back, undone. Imports, publishing, lookups, quizzes and the reader's own place are
 // not registry entries (web/src/server/actions/page-actions.test.ts says why).
 
-const openLibrary = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
+const openLibrary = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, cache: "no-store" });
 const status = (v: FormDataEntryValue | null): BookStatus => ((BOOK_STATUS as readonly string[]).includes(String(v)) ? (String(v) as BookStatus) : "want");
 
 /** Put a library book on the person's shelves. The entry comes back from the page, so it is cleaned again. */
@@ -134,7 +135,7 @@ export async function removeExcerptAction(id: string, work: string): Promise<voi
   revalidatePath(`/schole/works/${String(work)}`);
 }
 
-const wiktionary = (word: string) => fetch(`https://en.wiktionary.org/w/index.php?title=${encodeURIComponent(word)}&action=raw`, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 604800 } });
+const wiktionary = (word: string) => outsideFetch()(`https://en.wiktionary.org/w/index.php?title=${encodeURIComponent(word)}&action=raw`, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 604800 } });
 
 /**
  * A word looked up while reading, from Wiktionary: its English senses with their labels, the word as written
@@ -227,7 +228,7 @@ export async function followListAction(id: string): Promise<number> {
   return added;
 }
 
-const catalog: Fetch = (url) => fetch(url, { headers: { "user-agent": "reflect-app (learn items)" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
+const catalog: Fetch = (url) => outsideFetch({ timeoutMs: 8000 })(url, { headers: { "user-agent": "reflect-app (learn items)" }, next: { revalidate: 86400 } });
 const field = (form: FormData, k: string) => String(form.get(k) ?? "");
 const has = (form: FormData, k: string) => form.has(k);
 

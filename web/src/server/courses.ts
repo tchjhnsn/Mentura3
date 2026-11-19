@@ -3,10 +3,11 @@
 import { courseInfo, courseLecture, courseLectures, textCitation, type CourseInfo, type CourseSite, type Lecture, type LectureRef } from "@reflect/core/courses";
 import { searchBooks, type CatalogEntry } from "@reflect/core/openlibrary";
 import { openLibrary } from "./browse";
+import { outsideFetch } from "@/server/outside";
 
 const page = async (url: string): Promise<string | null> => {
   try {
-    const r = await fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
+    const r = await outsideFetch({ timeoutMs: 8000 })(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
     return r.ok ? await r.text() : null;
   } catch {
     return null;

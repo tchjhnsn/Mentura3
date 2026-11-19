@@ -6,6 +6,7 @@
 // (rooms/create-room, meeting-tokens/create-meeting-token).
 import { endsAt } from "@reflect/core/meetings";
 import { setDailyRoom, type MeetingView } from "./meetings-store";
+import { outsideFetch } from "@/server/outside";
 
 export const DAILY_ENV = "DAILY_API_KEY";
 export const DAILY_API = "https://api.daily.co/v1";
@@ -73,7 +74,7 @@ export const alreadyExists = (body: unknown) => {
 // ---- Network ----
 
 async function daily<T>(method: "GET" | "POST", path: string, body?: unknown): Promise<{ ok: boolean; status: number; data: T | null }> {
-  const r = await fetch(`${DAILY_API}${path}`, {
+  const r = await outsideFetch()(`${DAILY_API}${path}`, {
     method,
     headers: { authorization: `Bearer ${process.env[DAILY_ENV]}`, "content-type": "application/json" },
     body: body === undefined ? undefined : JSON.stringify(body),

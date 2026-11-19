@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { appleChart, audiobookLanguages, findAudiobooks, readAudiobook, type Audiobook, type AudiobookQuery } from "@reflect/core/audiobooks";
 import { librivoxBook } from "@reflect/core/librivox";
 import { canonAudiobooks } from "@reflect/core/canon";
+import { outsideFetch } from "@/server/outside";
 
 let all: Audiobook[] | null = null;
 let byId: Map<string, Audiobook> | null = null;
@@ -27,13 +28,13 @@ export const languages = () => audiobookLanguages(audiobooks());
 /** The recording's cover, from the Internet Archive item that keeps it. */
 export const coverOf = (a: { item: string }): string | null => (a.item ? `https://archive.org/services/img/${a.item}` : null);
 
-const slow = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 }, signal: AbortSignal.timeout(8000) });
+const slow = (url: string) => outsideFetch({ timeoutMs: 8000 })(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 /** The recording's parts to play, from LibriVox, in any language. */
 export const recordingOf = (id: string) => librivoxBook([id], slow, { anyLanguage: true }).catch(() => null);
 
 /** The top podcasts on Apple in a topic's genres (the first genre; Apple's chart is per genre). */
 export async function topPodcasts(genres: readonly number[], limit = 24) {
   if (!genres.length) return [];
-  const r = await fetch(`https://itunes.apple.com/us/rss/toppodcasts/limit=${limit}/genre=${genres[0]}/json`, { next: { revalidate: 86400 }, signal: AbortSignal.timeout(6000) }).catch(() => null);
+  const r = await outsideFetch({ timeoutMs: 6000 })(`https://itunes.apple.com/us/rss/toppodcasts/limit=${limit}/genre=${genres[0]}/json`, { next: { revalidate: 86400 } }).catch(() => null);
   return appleChart(r?.ok ? await r.text() : null);
 }

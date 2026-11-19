@@ -3,10 +3,11 @@
 // read again in the background, for up to a day, so a slow host does not hold up the page.
 import { episodeChapters, episodeTranscript, showOf, type Chapter, type Episode, type Show } from "@reflect/core/podcasts";
 import type { Passage } from "@reflect/core/courses";
+import { outsideFetch } from "@/server/outside";
 
 const page = async (url: string): Promise<string | null> => {
   try {
-    const r = await fetch(url, { headers: { "user-agent": "Reflect podcast player" }, cache: "no-store", signal: AbortSignal.timeout(12000) });
+    const r = await outsideFetch({ timeoutMs: 12000 })(url, { headers: { "user-agent": "Reflect podcast player" }, cache: "no-store" });
     return r.ok ? await r.text() : null;
   } catch {
     return null;
