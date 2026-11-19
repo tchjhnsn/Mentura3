@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
+import { CalendarIcon, ChevronRightIcon, FolderIcon, PlusIcon, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SidebarButton } from "@/components/sidebar";
@@ -56,7 +56,8 @@ function Steps({ steps, chosen }: { steps: Stage[]; chosen: Stage | null }) {
 /**
  * Home (doc "Already and Not yet design guide"): the tiles in three groups, after Aristotle's order of association.
  * Already is life as it is; Not yet lays out the steps still to be reached, with what each would cost and the tiles
- * it would change. Each tile opens its app, and the sidebar (the button at the top left) reaches every tile, tool and lens from any page it sits on.
+ * it would change. The village and polis is one card that opens Village and polis (/v), the shared side; the person
+ * and the household show their tiles. Each tile opens its app, and the sidebar (the button at the top left) reaches every tile, tool and lens from any page it sits on.
  */
 export default async function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
@@ -103,7 +104,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<Rec
       <HomeCards cards={cards.map((c) => cardView(c, today))} />
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_4fr_2fr]">
-        {GROUPS.map((g) => (
+        {GROUPS.map((g) => g.id === "village" ? (
+          // The village and polis is shared, so it has its own side (src/lib/sides.ts): one card that opens it. Its
+          // costs still count in the plan and the income (@reflect/core/plan).
+          <section key={g.id} aria-labelledby={`group-${g.id}`} className="grid content-start">
+            <Link href="/v" className={cn("bg-card hover:bg-accent group grid gap-1 rounded-xl border p-4 shadow-xs transition", changed && !g.tiles.some((t) => changed.has(t)) && "opacity-50")}>
+              <div className="flex items-center justify-between gap-2">
+                <h2 id={`group-${g.id}`} className="font-semibold">{g.label}</h2>
+                <ChevronRightIcon className="text-muted-foreground size-4 shrink-0 transition group-hover:translate-x-0.5" aria-hidden="true" />
+              </div>
+              <span className="text-muted-foreground text-sm">Events, adventures and the polis, shared with others</span>
+            </Link>
+          </section>
+        ) : (
           <section key={g.id} aria-labelledby={`group-${g.id}`} className="grid content-start gap-3">
             <h2 id={`group-${g.id}`} className={cn("font-semibold", changed && !g.tiles.some((t) => changed.has(t)) && "text-muted-foreground")}>{g.label}</h2>
             <ul className={cn("grid grid-cols-3 gap-3", g.id === "household" ? "sm:grid-cols-4" : g.id === "person" ? "sm:grid-cols-4 lg:grid-cols-2" : "lg:grid-cols-2")}>
