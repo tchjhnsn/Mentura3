@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { UIMessage } from "ai";
-import { CalendarIcon, CalendarDaysIcon, FileTextIcon, LayoutDashboardIcon, Maximize2Icon, MessageSquareIcon, NotebookPenIcon, PlusIcon, XIcon } from "lucide-react";
+import { CalendarIcon, CalendarDaysIcon, FileTextIcon, GlobeIcon, LayoutDashboardIcon, Maximize2Icon, MessageSquareIcon, NotebookPenIcon, PlusIcon, XIcon } from "lucide-react";
 import { CARRY_KEY, Chat } from "@/app/chat/chat";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { BrowserTab } from "./pane-browser";
 import { PaneCtx } from "./pane-context";
 import { PANE_COOKIE, PANE_DEFAULT, PANE_MAX as MAX, PANE_MIN as MIN, type PaneState } from "./pane-state";
 
@@ -20,7 +21,8 @@ const MAX_TABS = 8;
 /** One tab of the pane: a chat (new, or carried on from another page) or one of Reflect's own pages. */
 type Tab =
   | { id: string; kind: "chat"; title: string; ask?: string; chatId?: string }
-  | { id: string; kind: "page"; title: string; path: string };
+  | { id: string; kind: "page"; title: string; path: string }
+  | { id: string; kind: "site"; title: string; url: string | null };
 
 /** Places the + menu offers besides a new chat. */
 const PLACES = [
@@ -49,8 +51,8 @@ const embedded = () => typeof window !== "undefined" && window.self !== window.t
  * globals.css); the handle on its left edge resizes it between 320 and 720, and a double click puts it back to 400.
  * Narrower, it slides over the page from the right; on a phone it is a sheet from the bottom.
  *
- * It holds tabs (PR 2): chats and pages. + opens a new chat or a place; Alt-click on any link in Reflect opens that
- * page here; the chat's `open_pane` tool opens a record beside it. A page tab is Reflect itself in a frame, so links
+ * It holds tabs (PR 2): chats and pages. + opens a new chat, a place or a website (PR 3, ./pane-browser.tsx); Alt-click on any link opens that
+ * page, or that outside site, here; the chat's `open_pane` tool opens a record beside it. A page tab is Reflect itself in a frame, so links
  * inside it stay in the tab. Every link to a new chat (`/chat`, `/chat?q=`, `/chat?c=`) opens a chat tab instead of
  * leaving the page; Cmd-click still opens the page. Open as a page takes the tab to the main window. The chat page
  * itself has no pane. Open or shut and the width are kept in a cookie, so the server paints the first frame with them.
@@ -111,6 +113,10 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
     add({ id: tabId(), kind: "page", title: title || "Page", path: p });
     show();
   }, [add, show, router]);
+  const openSite = useCallback((url: string | null) => {
+    add({ id: tabId(), kind: "site", title: url ? new URL(url).hostname.replace(/^www\./, "") : "Website", url });
+    show();
+  }, [add, show]);
   const close = useCallback(() => {
     setOpen(false);
     setFull(false);
@@ -149,21 +155,22 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
       if ((a as HTMLElement).closest("aside[data-pane]")) return;
       const href = a.getAttribute("href") ?? "";
       const url = new URL(href, window.location.href);
-      if (url.origin !== window.location.origin || window.location.pathname === "/chat") return;
-      if (url.pathname === "/chat") {
+      if (window.location.pathname === "/chat") return;
+      if (url.origin === window.location.origin && url.pathname === "/chat") {
         e.preventDefault();
         e.stopPropagation();
         return openChat({ ask: url.searchParams.get("q")?.trim().slice(0, 500) || undefined, chatId: url.searchParams.get("c") || undefined });
       }
-      const p = e.altKey ? pagePath(href) : null;
-      if (!p) return;
+      if (!e.altKey) return;
+      const p = pagePath(href);
       e.preventDefault();
       e.stopPropagation();
-      openPage(p, a.textContent?.trim().slice(0, 40) || undefined);
+      if (p) openPage(p, a.textContent?.trim().slice(0, 40) || undefined);
+      else if (/^https?:$/.test(url.protocol)) openSite(url.href);
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [openChat, openPage, inFrame]);
+  }, [openChat, openPage, openSite, inFrame]);
 
   const resize = (w: number) => {
     const next = clamp(w);
@@ -217,6 +224,11 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
         }
         to = `/chat?c=${encodeURIComponent(c.id)}`;
       }
+    } else if (current.kind === "site") {
+      // An outside site goes to a tab of the browser's own.
+      if (current.url) window.open(current.url, "_blank", "noopener,noreferrer");
+      shut(current.id);
+      return;
     } else {
       const loc = frames.current.get(current.id)?.contentWindow?.location;
       to = loc ? loc.pathname + loc.search + loc.hash : current.path;
@@ -274,9 +286,9 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
               {tabs.map((t) => {
                 const on = t.id === current?.id;
                 return (
-                  <div key={t.id} ref={on ? (el) => el?.scrollIntoView({ block: "nearest", inline: "nearest" }) : undefined} className={cn("group/tab flex max-w-44 min-w-20 items-center rounded-md text-sm", on ? "bg-muted font-medium" : "text-muted-foreground hover:bg-accent")}>
+                  <div key={t.id} ref={on ? (el) => el?.scrollIntoView({ block: "nearest", inline: "nearest" }) : undefined} className={cn("group/tab flex max-w-44 min-w-24 items-center rounded-md text-sm", on ? "bg-muted font-medium" : "text-muted-foreground hover:bg-accent")}>
                     <button type="button" role="tab" aria-selected={on} aria-controls={`pane-${t.id}`} onClick={() => setActive(t.id)} className="flex min-w-0 items-center gap-1.5 py-1 pr-1 pl-2.5">
-                      {t.kind === "chat" ? <MessageSquareIcon className="size-3.5 shrink-0" /> : <FileTextIcon className="size-3.5 shrink-0" />}
+                      {t.kind === "chat" ? <MessageSquareIcon className="size-3.5 shrink-0" /> : t.kind === "site" ? <GlobeIcon className="size-3.5 shrink-0" /> : <FileTextIcon className="size-3.5 shrink-0" />}
                       <span className="truncate">{t.title}</span>
                     </button>
                     {tabs.length > 1 ? (
@@ -299,6 +311,8 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
                   <DropdownMenuItem key={p.path} onSelect={() => openPage(p.path, p.title)}><p.Icon />{p.title}</DropdownMenuItem>
                 ))}
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => openSite(null)}><GlobeIcon />Open a website</DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Alt-click any link to open it here</DropdownMenuLabel>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -320,6 +334,8 @@ export function PaneProvider({ initial, children }: { initial: PaneState; childr
                     },
                   }}
                 />
+              ) : t.kind === "site" ? (
+                <BrowserTab url={t.url} onUrl={(u, title) => setTabs((list) => list.map((x) => (x.id === t.id ? { ...x, url: u, title } : x)))} />
               ) : (
                 <iframe
                   ref={(el) => { if (el) frames.current.set(t.id, el); }}
