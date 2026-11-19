@@ -721,6 +721,22 @@ describe("reflect CLI", () => {
     expect((await run("check", "--dir", dir)).out).toEqual(["ok"]);
   });
 
+  it("lists the vault's actions and runs one against the vault", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    const listed = await run("actions");
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "list_entries", "write_entry", "get_entry"]);
+    expect(JSON.parse((await run("actions", "--json")).out[0]!)[2]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
+    const today = new Date().toISOString().slice(0, 10);
+    const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
+    const id = (JSON.parse(wrote.out[0]!) as { id: string }).id;
+    expect(wrote.out[1]).toMatch(/^change: /);
+    expect((await run("act", "get_entry", "--input", JSON.stringify({ entry_id: id }), "--dir", dir)).out[0]).toContain("By the river.");
+    await expect(run("act", "get_entry", "--input", "{bad", "--dir", dir)).rejects.toThrow(/--input is JSON/);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: ["ok"] });
+  });
+
   it("refuses to run outside an instance", async () => {
     const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
     dirs.push(dir);

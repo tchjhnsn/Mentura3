@@ -6,6 +6,9 @@ import { join } from "node:path";
 import { parseBundle } from "../core/src/bundle.ts";
 import { parseArgs } from "node:util";
 import { filesJournal } from "../core/src/files-journal.ts";
+import { filesChanges } from "../core/src/files-changes.ts";
+import { listed, runVaultAction, VAULT_ACTIONS, type VaultContext } from "../core/src/vault-actions.ts";
+import { serveStdio } from "../core/src/vault-mcp.ts";
 import { adopt, checkInstance, initInstance, layoutOf, readConfig, upgradeVault } from "../core/src/instance.ts";
 import { addGift, addTrustee, LEGACY_ENTRIES, planProblems, previewRelease, readPlan, setTerms } from "../core/src/release.ts";
 import { BOOK_STATUS, FILM_STATUS, GRASP, keepBook, keepConversation, keepFilm, keepRecall, keepTalk, latestGrasp, slugOf, parseSubject, keepResource, keepSubject, learnMap, RESOURCE_STATUS, type BookStatus, type FilmStatus, type Grasp, type ResourceStatus, type SubjectRow } from "../core/src/learning.ts";
@@ -138,6 +141,12 @@ const USAGE = `reflect <command> [--dir <instance>]
   add <entry> [text]              add to an entry that is still open
   close <entry>                   close an entry
   list                            the entries, newest first
+  actions [--json]                the actions a vault offers, the same ones the app offers under the
+                                  same names (today the journal's): id, tier, title and input
+  act <action> [--input <json>]   run one against this vault, with its input as JSON; a change is kept
+                                  in changes.jsonl
+  mcp                             an MCP server over this vault on stdin and stdout, for your own AI:
+                                  the same actions as tools
   check [--adopt]                 check the instance; --adopt records hand-written changes in memory
   export [--out <file>] [--moving-to <where>]
                                   the whole journal as a bundle (stdout or a file); --moving-to then
@@ -231,6 +240,8 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       send: { type: "string" },
       workspace: { type: "string" },
       yes: { type: "boolean", default: false },
+      input: { type: "string" },
+      json: { type: "boolean", default: false },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -262,9 +273,35 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     out(`${noun}\n${sparkPrompt(noun, form)}\nThen keep it: reflect spark "${noun}"${form === "sentence" ? " --sentence" : ` --minutes ${form.replace("m", "")}`} < what-you-wrote.txt`);
     return 0;
   }
+  if (cmd === "actions") {
+    const list = VAULT_ACTIONS.map(listed);
+    if (values.json) out(JSON.stringify(list, null, 2));
+    else for (const a of list) out(`${a.id}  ${a.tier}  ${a.title}${Object.keys(a.input.properties ?? {}).length ? `  {${Object.keys(a.input.properties ?? {}).join(", ")}}` : ""}\n  ${a.description}`);
+    return 0;
+  }
   const config = await readConfig(root);
   const paths = recordPaths(layoutOf(config), config.person);
   const journal = filesJournal(root, config.person, { layout: layoutOf(config) });
+  const vault: VaultContext & { movedTo?: string } = { userId: config.person, journal, changes: filesChanges(root), ...(config.moved_to ? { movedTo: config.moved_to } : {}) };
+  if (cmd === "act" && rest[0]) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(values.input ?? "{}");
+    } catch {
+      throw new Error(`--input is JSON, such as '{"limit": 5}'`);
+    }
+    const ran = await runVaultAction(vault, rest[0], raw, "cli");
+    if (ran.held) out(`held: ${ran.changeId}\n${ran.preview}`);
+    else {
+      out(typeof ran.result === "string" ? ran.result : JSON.stringify(ran.result, null, 2));
+      if (ran.changeId) out(`change: ${ran.changeId}`);
+    }
+    return 0;
+  }
+  if (cmd === "mcp") {
+    await serveStdio(process.stdin, out, async () => vault);
+    return 0;
+  }
   if (cmd === "list") {
     for (const e of await journal.listEntries()) out(`${e.id}  ${e.localDate}  ${e.closedAt ? "closed" : "open  "}  ${(e.parts[0]?.text ?? "").split("\n")[0]!.slice(0, 60)}`);
     return 0;
