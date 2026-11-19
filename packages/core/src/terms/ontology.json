@@ -1,0 +1,712 @@
+{
+  "version": "0.1.0",
+  "note": "Reflect's nouns, in Naive's ontology format (Torian, 2026-11-19: Reflect's own copy, Naive's format). The top categories are Aristotle's ten Categories (Categories 4, 1b25-2a4), each mapped to a class of BFO (ISO/IEC 21838-2). A noun names what a record is about, not the record. Each noun names what it is a kind of in broader (SKOS broader): another noun or a top category, and every noun reaches exactly one top category. app is the life app a noun belongs to, or null when it is shared; kinds lists the life record kinds (app:kind in packages/core/src/life.ts) about it, and every kind is listed by exactly one noun. packages/core/src/terms/ontology.ts checks it.",
+  "top_categories": [
+    {
+      "name": "substance",
+      "greek": "ousia",
+      "meaning": "What something is, standing on its own: this person, this house. Everything else is said of a substance or is in one (Categories 5, 2a11-b6).",
+      "standard": "Aristotle, Categories 5 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "independent continuant",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000004"
+      }
+    },
+    {
+      "name": "quantity",
+      "greek": "poson",
+      "meaning": "How much or how many: a sum of money, hours, a weight (Categories 6). BFO treats a magnitude as a quality of its bearer.",
+      "standard": "Aristotle, Categories 6 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "quality",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000019"
+      }
+    },
+    {
+      "name": "quality",
+      "greek": "poion",
+      "meaning": "What sort: states and dispositions (a virtue, health, a skill), capacities, affective qualities and shape (Categories 8). Habits and virtues are qualities that last (8b27).",
+      "standard": "Aristotle, Categories 8 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "specifically dependent continuant",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000020"
+      }
+    },
+    {
+      "name": "relation",
+      "greek": "pros ti",
+      "meaning": "Said of something toward another: friend of, citizen of, an end for the sake of which (Categories 7).",
+      "standard": "Aristotle, Categories 7 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "relational quality",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000145"
+      }
+    },
+    {
+      "name": "place",
+      "greek": "pou",
+      "meaning": "Where: in the Lyceum, in Travis County (Categories 4, 2a1). A place holds what is in it (Physics IV.4).",
+      "standard": "Aristotle, Categories 4; Physics IV.4 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "site",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000029"
+      }
+    },
+    {
+      "name": "time",
+      "greek": "pote",
+      "meaning": "When: yesterday, last year (Categories 4, 2a2).",
+      "standard": "Aristotle, Categories 4 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "temporal region",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000008"
+      }
+    },
+    {
+      "name": "position",
+      "greek": "keisthai",
+      "meaning": "How something lies or sits (Categories 4, 2a2). BFO treats a posture as a quality.",
+      "standard": "Aristotle, Categories 4 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "quality",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000019"
+      }
+    },
+    {
+      "name": "having",
+      "greek": "echein",
+      "meaning": "What one has on or holds: has shoes on, is armed (Categories 4, 2a3), and possessions, documents and rights (Categories 15). A need is a privation, the lack of a having (Categories 10, 12a26). BFO has no class for possession; holding something is modelled as a role.",
+      "standard": "Aristotle, Categories 4, 10, 15 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "role",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000023"
+      }
+    },
+    {
+      "name": "doing",
+      "greek": "poiein",
+      "meaning": "Acting on something: cutting, working, buying (Categories 4, 2a3; 9). Doing and being affected are one change seen from agent and patient (Physics III.3, 202b).",
+      "standard": "Aristotle, Categories 4, 9; Physics III.3 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "process",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000015"
+      }
+    },
+    {
+      "name": "being affected",
+      "greek": "paschein",
+      "meaning": "Undergoing: being cut, being changed (Categories 4, 2a4; 9). Change is the actuality of what is potential, as such (Physics III.1, 201a10).",
+      "standard": "Aristotle, Categories 4, 9; Physics III.1 (Ackrill, Clarendon 1963)",
+      "bfo": {
+        "class": "process",
+        "iri": "http://purl.obolibrary.org/obo/BFO_0000015"
+      }
+    }
+  ],
+  "nouns": [
+    {
+      "noun": "person",
+      "level": "life",
+      "meaning": "An individual human being, the first example of a substance (Categories 5, 2a13)",
+      "standard": "Aristotle, Categories 5",
+      "status": "kept",
+      "app": null,
+      "broader": [
+        "substance"
+      ],
+      "kinds": []
+    },
+    {
+      "noun": "community",
+      "level": "life",
+      "meaning": "A partnership formed for the sake of some good (Politics I.1, 1252a1): a union, household, village, polis, group or venture",
+      "standard": "Aristotle, Politics I.1-2",
+      "status": "kept",
+      "app": null,
+      "broader": [
+        "substance"
+      ],
+      "kinds": []
+    },
+    {
+      "noun": "artifact",
+      "level": "life",
+      "meaning": "A thing made by art rather than by nature; it has no source of change in itself (Physics II.1, 192b13-32)",
+      "standard": "Aristotle, Physics II.1",
+      "status": "kept",
+      "app": null,
+      "broader": [
+        "substance"
+      ],
+      "kinds": []
+    },
+    {
+      "noun": "household",
+      "level": "life",
+      "meaning": "The community of everyday life (Politics I.2, 1252b12-14)",
+      "standard": "Aristotle, Politics I.2",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "community"
+      ],
+      "kinds": [
+        "work:household"
+      ]
+    },
+    {
+      "noun": "friend group",
+      "level": "life",
+      "meaning": "Friends and others joined for a shared pursuit (Nicomachean Ethics VIII.9, 1160a9-30)",
+      "standard": "Aristotle, Nicomachean Ethics VIII.9",
+      "status": "kept",
+      "app": "friends",
+      "broader": [
+        "community"
+      ],
+      "kinds": [
+        "friends:group"
+      ]
+    },
+    {
+      "noun": "venture",
+      "level": "life",
+      "meaning": "A community formed to make or provide something; in Naive, a venture",
+      "standard": "Naive (venture)",
+      "status": "kept",
+      "app": "ventures",
+      "broader": [
+        "community"
+      ],
+      "kinds": [
+        "ventures:venture"
+      ]
+    },
+    {
+      "noun": "friend",
+      "level": "life",
+      "meaning": "A person one wishes well for their own sake, known to wish it back (Nicomachean Ethics VIII.2, 1155b31-1156a5)",
+      "standard": "Aristotle, Nicomachean Ethics VIII.2",
+      "status": "kept",
+      "app": "friends",
+      "broader": [
+        "person"
+      ],
+      "kinds": [
+        "friends:friend"
+      ]
+    },
+    {
+      "noun": "relative",
+      "level": "life",
+      "meaning": "A person of one's kin",
+      "standard": "Aristotle, Politics I.2 (kin)",
+      "status": "kept",
+      "app": "kin",
+      "broader": [
+        "person"
+      ],
+      "kinds": [
+        "kin:relative"
+      ]
+    },
+    {
+      "noun": "admired person",
+      "level": "life",
+      "meaning": "A person whose qualities one wants for oneself",
+      "standard": "Aristotle, Rhetoric II.11 (emulation)",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "person"
+      ],
+      "kinds": [
+        "work:admired"
+      ]
+    },
+    {
+      "noun": "meal",
+      "level": "life",
+      "meaning": "Food prepared to be eaten",
+      "standard": "schema.org Recipe",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "artifact"
+      ],
+      "kinds": [
+        "home:meal"
+      ]
+    },
+    {
+      "noun": "firearm",
+      "level": "life",
+      "meaning": "A gun kept at home",
+      "standard": "ATF (firearm)",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "artifact"
+      ],
+      "kinds": [
+        "home:firearm"
+      ]
+    },
+    {
+      "noun": "belonging",
+      "level": "life",
+      "meaning": "A thing one owns and keeps",
+      "standard": "schema.org Product",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "artifact"
+      ],
+      "kinds": [
+        "home:belonging"
+      ]
+    },
+    {
+      "noun": "letter",
+      "level": "life",
+      "meaning": "A letter written to be given to someone, often after one's death",
+      "standard": "Ethical will (Baines)",
+      "status": "kept",
+      "app": "legacy",
+      "broader": [
+        "artifact"
+      ],
+      "kinds": [
+        "legacy:letter"
+      ]
+    },
+    {
+      "noun": "records",
+      "level": "life",
+      "meaning": "The person's journal and records, handed on or sealed at death",
+      "standard": "ours",
+      "status": "kept",
+      "app": "legacy",
+      "broader": [
+        "artifact"
+      ],
+      "kinds": [
+        "legacy:vault"
+      ]
+    },
+    {
+      "noun": "income",
+      "level": "life",
+      "meaning": "Money coming in, by amount and period",
+      "standard": "IRS (income)",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "quantity"
+      ],
+      "kinds": [
+        "work:income"
+      ]
+    },
+    {
+      "noun": "budget",
+      "level": "life",
+      "meaning": "Money set aside each month for each need",
+      "standard": "Budget (household finance)",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "quantity"
+      ],
+      "kinds": [
+        "home:budget"
+      ]
+    },
+    {
+      "noun": "body measure",
+      "level": "life",
+      "meaning": "Height, weight and the weight one wants",
+      "standard": "CDC (anthropometric measures)",
+      "status": "kept",
+      "app": "body",
+      "broader": [
+        "quantity"
+      ],
+      "kinds": [
+        "body:measures"
+      ]
+    },
+    {
+      "noun": "hours available",
+      "level": "life",
+      "meaning": "Hours a week one can give to work",
+      "standard": "ours",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "quantity"
+      ],
+      "kinds": [
+        "work:now"
+      ]
+    },
+    {
+      "noun": "virtue",
+      "level": "life",
+      "meaning": "A state of character, a mean between two vices, chosen (Nicomachean Ethics II.5-6, 1106b36)",
+      "standard": "Aristotle, Nicomachean Ethics II.6",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "work:quality"
+      ]
+    },
+    {
+      "noun": "craft",
+      "level": "life",
+      "meaning": "A state of making with true reasoning, technē (Nicomachean Ethics VI.4, 1140a20)",
+      "standard": "Aristotle, Nicomachean Ethics VI.4",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "work:craft"
+      ]
+    },
+    {
+      "noun": "health",
+      "level": "life",
+      "meaning": "A condition of the body (Categories 8, 8b36-9a3)",
+      "standard": "Aristotle, Categories 8",
+      "status": "kept",
+      "app": "body",
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "body:health"
+      ]
+    },
+    {
+      "noun": "fitness",
+      "level": "life",
+      "meaning": "The body's strength and endurance, built by exercise (Nicomachean Ethics II.2, 1104a15)",
+      "standard": "Aristotle, Nicomachean Ethics II.2",
+      "status": "kept",
+      "app": "body",
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "body:fitness"
+      ]
+    },
+    {
+      "noun": "interest",
+      "level": "life",
+      "meaning": "A lasting draw toward a subject, at some depth of knowing, commitment and skill",
+      "standard": "ours (interest model, reflect#257)",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "work:interest"
+      ]
+    },
+    {
+      "noun": "preference",
+      "level": "life",
+      "meaning": "A disposition toward some things over others: what draws one, how one eats (Categories 8, 8b27-9a13)",
+      "standard": "Aristotle, Categories 8 (disposition)",
+      "status": "kept",
+      "app": null,
+      "broader": [
+        "quality"
+      ],
+      "kinds": [
+        "work:craft-likes",
+        "work:interest-areas",
+        "home:food-likes"
+      ]
+    },
+    {
+      "noun": "end",
+      "level": "life",
+      "meaning": "That for the sake of which something is done, the object of wish (Physics II.3, 194b33; Nicomachean Ethics III.4)",
+      "standard": "Aristotle, Nicomachean Ethics III.4",
+      "status": "kept",
+      "app": "legacy",
+      "broader": [
+        "relation"
+      ],
+      "kinds": [
+        "legacy:wish"
+      ]
+    },
+    {
+      "noun": "inspiration",
+      "level": "life",
+      "meaning": "Work one is drawn to, and why",
+      "standard": "ours",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "relation"
+      ],
+      "kinds": [
+        "work:inspiration"
+      ]
+    },
+    {
+      "noun": "citizenship",
+      "level": "life",
+      "meaning": "Sharing in judging and ruling in a polis (Politics III.1, 1275a22); residence and districts",
+      "standard": "Aristotle, Politics III.1",
+      "status": "kept",
+      "app": "polis",
+      "broader": [
+        "relation"
+      ],
+      "kinds": [
+        "polis:civic"
+      ]
+    },
+    {
+      "noun": "standing",
+      "level": "life",
+      "meaning": "Honour earned and deserved (Nicomachean Ethics IV.3)",
+      "standard": "Aristotle, Nicomachean Ethics IV.3",
+      "status": "kept",
+      "app": "polis",
+      "broader": [
+        "relation"
+      ],
+      "kinds": [
+        "polis:standing"
+      ]
+    },
+    {
+      "noun": "duty",
+      "level": "life",
+      "meaning": "What one owes a community and does again",
+      "standard": "Aristotle, Nicomachean Ethics V.1 (the lawful)",
+      "status": "kept",
+      "app": "polis",
+      "broader": [
+        "relation"
+      ],
+      "kinds": [
+        "polis:duty"
+      ]
+    },
+    {
+      "noun": "home place",
+      "level": "life",
+      "meaning": "The county and state where one lives, and what serves it",
+      "standard": "Aristotle, Categories 4 (where)",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "place"
+      ],
+      "kinds": [
+        "home:place"
+      ]
+    },
+    {
+      "noun": "need",
+      "level": "life",
+      "meaning": "Something a life cannot go without, held as met or lacking: food, water, shelter, transport, safety (Politics I.2, 1252b29)",
+      "standard": "Aristotle, Politics I.2; Maslow (needs)",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "having"
+      ],
+      "kinds": [
+        "home:food",
+        "home:water",
+        "home:shelter",
+        "home:transport",
+        "home:safety"
+      ]
+    },
+    {
+      "noun": "credential",
+      "level": "life",
+      "meaning": "A licence, degree or certificate held",
+      "standard": "Credential (CTDL)",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "having"
+      ],
+      "kinds": [
+        "work:credential"
+      ]
+    },
+    {
+      "noun": "payment card",
+      "level": "life",
+      "meaning": "A card one pays with",
+      "standard": "ISO/IEC 7812",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "having"
+      ],
+      "kinds": [
+        "home:card"
+      ]
+    },
+    {
+      "noun": "means of getting around",
+      "level": "life",
+      "meaning": "A way one gets to work and essentials: a car, the bus, walking",
+      "standard": "ours",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "having"
+      ],
+      "kinds": [
+        "home:way"
+      ]
+    },
+    {
+      "noun": "estate plan",
+      "level": "life",
+      "meaning": "A will, insurance, guardians, power of attorney, beneficiaries",
+      "standard": "Estate planning",
+      "status": "kept",
+      "app": "legacy",
+      "broader": [
+        "having"
+      ],
+      "kinds": [
+        "legacy:plan"
+      ]
+    },
+    {
+      "noun": "work",
+      "level": "life",
+      "meaning": "An activity one does, paid or not (ergon)",
+      "standard": "Aristotle, Nicomachean Ethics I.7 (ergon)",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "work:work",
+        "work:imagined"
+      ]
+    },
+    {
+      "noun": "purchase",
+      "level": "life",
+      "meaning": "Buying something, with what it cost",
+      "standard": "schema.org BuyAction",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "home:receipt",
+        "home:grocery-run"
+      ]
+    },
+    {
+      "noun": "choice",
+      "level": "life",
+      "meaning": "Deliberate desire for what is in one's power, the origin of action (Nicomachean Ethics III.3, 1113a10; VI.2, 1139a31)",
+      "standard": "Aristotle, Nicomachean Ethics III.3",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "home:basket"
+      ]
+    },
+    {
+      "noun": "seeking a mate",
+      "level": "life",
+      "meaning": "Looking for a partner, with must-haves and hopes",
+      "standard": "ours",
+      "status": "kept",
+      "app": "mate",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "mate:seeking"
+      ]
+    },
+    {
+      "noun": "date",
+      "level": "life",
+      "meaning": "Time spent with someone one might marry",
+      "standard": "ours",
+      "status": "kept",
+      "app": "mate",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "mate:date"
+      ]
+    },
+    {
+      "noun": "election",
+      "level": "life",
+      "meaning": "Choosing officials or measures by vote",
+      "standard": "Election (OCD-ID)",
+      "status": "kept",
+      "app": "polis",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "polis:election"
+      ]
+    },
+    {
+      "noun": "adventure",
+      "level": "life",
+      "meaning": "A trip or experience undertaken",
+      "standard": "schema.org Trip",
+      "status": "kept",
+      "app": "legacy",
+      "broader": [
+        "doing"
+      ],
+      "kinds": [
+        "legacy:adventure"
+      ]
+    },
+    {
+      "noun": "life change",
+      "level": "life",
+      "meaning": "A change one means to reach, such as marrying or a child (Physics III.1)",
+      "standard": "Aristotle, Physics III.1",
+      "status": "kept",
+      "app": "home",
+      "broader": [
+        "being affected"
+      ],
+      "kinds": [
+        "home:step"
+      ]
+    }
+  ]
+}
