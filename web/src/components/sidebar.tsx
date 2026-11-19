@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, WrenchIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -101,12 +101,10 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
                 {item("/", "Home", <HomeIcon />)}
                 {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
                 {item("/chat", "New Chat", <PlusIcon />)}
+                {/* The journal and the calendar on one page (2026-11-19), also in Settings. */}
+                {item("/tools", "Tools", <WrenchIcon />)}
               </SidebarMenu>
             </Group>
-            <Fold label="Tools">
-              {item("/journal", "Journal", <NotebookPenIcon />)}
-              {item("/calendar", "Calendar", <CalendarIcon />)}
-            </Fold>
             {groups.map((g) => <Fold key={g.label} label={g.label}>{g.tiles.map(tile)}</Fold>)}
           </>
         )}
@@ -126,7 +124,6 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 
       <SidebarFooter>
         <SidebarMenu>
-          {item("/settings", "Settings", <SettingsIcon />)}
           {me ? <Person me={me} to={to} /> : null}
         </SidebarMenu>
       </SidebarFooter>
@@ -191,7 +188,7 @@ function Person({ me, to }: { me: { name: string; href: string }; to: (p: string
         <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side="top" align="start" sideOffset={4}>
           <DropdownMenuLabel className="flex items-center gap-2 font-normal"><Face name={me.name} size={32} /><span className="truncate font-medium">{me.name}</span></DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Go href={to(me.href)}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
+          <DropdownMenuItem asChild><Go href={to("/settings/profile")}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
           <DropdownMenuItem asChild><Go href={to("/settings")}><SettingsIcon />Settings</Go></DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
