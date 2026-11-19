@@ -22,6 +22,13 @@ describe("Reflect's ontology", () => {
     expect(nounOfKind("home", "water")?.noun).toBe("need");
   });
 
+  it("files presentation under doing as a shared noun with no life kinds, so K1 and K2 still hold", () => {
+    const p = ONTOLOGY.nouns.find((n) => n.noun === "presentation")!;
+    expect(p).toMatchObject({ broader: ["doing"], app: null, kinds: [], good: "soul", community: "polis" });
+    expect(checkOntology(ONTOLOGY, KINDS).categoryOf.get("presentation")).toBe("doing");
+    expect(checkOntology(ONTOLOGY, KINDS).problems.filter((x) => /^K[12]/.test(x))).toEqual([]);
+  });
+
   it("U1 finds a cycle", () => {
     const o = copy();
     o.nouns.find((n) => n.noun === "person")!.broader = ["friend"];

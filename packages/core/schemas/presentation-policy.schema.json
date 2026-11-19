@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "presentation-policy.schema.json",
+  "title": "Presentation policy",
+  "description": "Where a person appears before others and as whom, for what end, at presentation-policy.json in the vault (Reflect framework plan, step 6). Shaped like Naive's publication policy (publication-policy.schema.json in tchjhnsn/naive, EE-025), with role and end on each channel rule, a channel kind in-person that has no destination, and the person as the only approver. Every publishing action passes the gate: it names its channel and a presentation record with the end, the role and the audience, a channel rule matches, and the person approves. Agents may draft and check; they never approve. packages/core/src/presentation.ts reads and checks it.",
+  "type": "object",
+  "required": ["person", "channels"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "person": { "type": "string", "description": "The person's id, from reflect.json" },
+    "updated": { "type": "string", "format": "date" },
+    "note": { "type": "string" },
+    "guidelines": {
+      "type": "array",
+      "description": "The rules an appearance follows: the person's own (fittingness, the virtues of social life, their teachers) and outside ones (a platform's rules, disclosure law).",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "kind"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "kind": { "enum": ["brand", "editorial", "legal", "platform", "disclosure", "security", "other"] },
+          "owner": { "type": "string" },
+          "path": { "type": "string", "description": "Relative to the vault" },
+          "url": { "type": "string" },
+          "checked": { "type": "string", "format": "date", "description": "When an outside guideline's URL was last checked" }
+        }
+      }
+    },
+    "channels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "kind", "rules", "checks", "preview"],
+        "additionalProperties": false,
+        "if": { "properties": { "kind": { "const": "in-person" } } },
+        "then": { "not": { "required": ["destination"] } },
+        "else": { "required": ["destination"] },
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "not": { "enum": ["check", "after"] } },
+          "name": { "type": "string" },
+          "kind": { "enum": ["website", "profile", "blog", "social", "newsletter", "email", "in-person", "other"] },
+          "destination": { "type": "string", "description": "Where it lands: a URL, an account or a recipient list. An in-person channel has none." },
+          "audience": { "type": "string" },
+          "guidelines": { "type": "array", "items": { "type": "string" }, "description": "Guideline ids that apply here" },
+          "rules": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Who may present what on this channel, as whom and for what end",
+            "items": {
+              "type": "object",
+              "required": ["content", "role", "end", "approvers"],
+              "additionalProperties": false,
+              "properties": {
+                "content": { "type": "string", "description": "The kind of content, such as essays, a profile, a toast" },
+                "role": { "type": "string", "minLength": 1, "description": "The speaker's role there, such as founder, friend, citizen or son" },
+                "end": { "type": "string", "minLength": 1, "description": "What the appearance is for" },
+                "drafters": { "type": "array", "items": { "enum": ["person", "agent"] }, "description": "Agents may draft" },
+                "approvers": { "type": "array", "minItems": 1, "items": { "const": "person" }, "description": "Always the person; no agent approves" }
+              }
+            }
+          },
+          "checks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "check"],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string" },
+                "check": { "type": "string", "description": "A command, or for a review what the person checks" },
+                "kind": { "enum": ["conformance", "review"] }
+              }
+            }
+          },
+          "preview": { "type": "string", "description": "How to see exactly what would go out before it does; in person, how to rehearse it" },
+          "platform": {
+            "enum": ["substack", "medium", "x", "facebook", "instagram", "threads", "linkedin", "youtube", "tiktok", "reddit", "bluesky", "mastodon", "discord", "app-store", "google-play", "github", "other"]
+          },
+          "replies": {
+            "type": "object",
+            "required": ["mode"],
+            "additionalProperties": false,
+            "properties": {
+              "mode": { "enum": ["gated", "delegated", "none"] },
+              "delegates": { "type": "array", "items": { "type": "string" } },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

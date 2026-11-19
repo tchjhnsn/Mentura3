@@ -8,6 +8,8 @@ import { parseArgs } from "node:util";
 import { filesJournal } from "../core/src/files-journal.ts";
 import { filesChanges } from "../core/src/files-changes.ts";
 import { listed, runVaultAction, VAULT_ACTIONS, type VaultContext } from "../core/src/vault-actions.ts";
+import { filesPresentations } from "../core/src/files-presentations.ts";
+import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
 import { lifeCheckLine } from "../core/src/life-check.ts";
 import { adopt, checkInstance, initInstance, layoutOf, readConfig, upgradeVault } from "../core/src/instance.ts";
@@ -145,6 +147,19 @@ const USAGE = `reflect <command> [--dir <instance>]
   add <entry> [text]              add to an entry that is still open
   close <entry>                   close an entry
   list                            the entries, newest first
+  present                         your presentation policy's channels and your presentation records, each
+                                  ready or with what it still needs
+  present <channel> [--id <draft>] [--role <role>] [--end <what it is for>] [--audience <who>]
+                [--relation <yours to them>] [--who <name>] [--what <text>] [--about <what or whom>]
+                [--means <text>] [--how <text>] [--occasion deliberative|judicial|ceremonial]
+                [--virtue friendliness|truthfulness|wit|shame|greatness-of-soul]
+                                  draft how you will appear before others on a channel (the six
+                                  circumstances of Nicomachean Ethics III.1), or update a draft with --id;
+                                  writes presentation-policy.json first when the vault has none
+  present check <id>              whether the record passes the gate: the end, the role, the audience and a
+                                  channel rule that matches; exits 1 when something is missing
+  present after <id> [text] [--on YYYY-MM-DD]
+                                  afterward, how it went (text from the argument or stdin)
   actions [--json]                the actions a vault offers, the same ones the app offers under the
                                   same names (today the journal's): id, tier, title and input
   act <action> [--input <json>]   run one against this vault, with its input as JSON; a change is kept
@@ -248,6 +263,17 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       yes: { type: "boolean", default: false },
       input: { type: "string" },
       json: { type: "boolean", default: false },
+      id: { type: "string" },
+      role: { type: "string" },
+      end: { type: "string" },
+      audience: { type: "string" },
+      relation: { type: "string" },
+      who: { type: "string" },
+      what: { type: "string" },
+      about: { type: "string" },
+      means: { type: "string" },
+      occasion: { type: "string" },
+      virtue: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -289,7 +315,8 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
   const config = await readConfig(root);
   const paths = recordPaths(layoutOf(config), config.person);
   const journal = filesJournal(root, config.person, { layout: layoutOf(config) });
-  const vault: VaultContext & { movedTo?: string } = { userId: config.person, journal, changes: filesChanges(root), ...(config.moved_to ? { movedTo: config.moved_to } : {}) };
+  const presentations = filesPresentations(root, config.person);
+  const vault: VaultContext & { movedTo?: string } = { userId: config.person, journal, changes: filesChanges(root), presentations, ...(config.moved_to ? { movedTo: config.moved_to } : {}) };
   if (cmd === "act" && rest[0]) {
     let raw: unknown;
     try {
@@ -303,6 +330,60 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       out(typeof ran.result === "string" ? ran.result : JSON.stringify(ran.result, null, 2));
       if (ran.changeId) out(`change: ${ran.changeId}`);
     }
+    return 0;
+  }
+  if (cmd === "present") {
+    const [sub, id, text] = rest;
+    const missingLines = (g: { ready: true } | { ready: false; missing: readonly { message: string }[] }) => (g.ready ? ["ready: the person approves before it goes out"] : g.missing.map((m) => `needs ${m.message}`));
+    if (!sub) {
+      const policy = await presentations.policy();
+      out("Channels");
+      for (const c of policy.channels) out(`  ${c.id}  ${c.name}${c.destination ? `: ${c.destination}` : ""}\n${c.rules.map((r) => `    as ${r.role}, for: ${r.end}`).join("\n")}`);
+      const list = await presentations.list();
+      out("\nPresentations");
+      for (const p of list) out(`  ${p.id}  ${p.channel}  ${gateFor(policy, p, p.channel).ready ? "ready" : "not ready"}${p.afterward ? "  went: " + p.afterward.went.split("\n")[0]!.slice(0, 50) : ""}`);
+      if (!list.length) out("  none yet: reflect present <channel> --role <role> --end <what it is for> --audience <who>");
+      return 0;
+    }
+    if (sub === "check") {
+      if (!id) throw new Error("present check <id>");
+      const p = await presentations.get(id);
+      if (!p) throw new Error(`no presentation ${id}`);
+      const policy = await presentations.policy();
+      const g = gateFor(policy, p, p.channel);
+      out(`${p.id} on ${p.channel}`);
+      for (const l of missingLines(g)) out(`  ${l}`);
+      if (g.ready) {
+        out(`  rule: as ${g.rule.role}, for: ${g.rule.end} (${g.rule.content})`);
+        for (const c of g.channel.checks) out(`  [ ] ${c.check}`);
+        out(`  preview: ${g.channel.preview}`);
+      }
+      if (p.virtue) {
+        const v = VIRTUES.find((x) => x.id === p.virtue!.id)!;
+        out(`  at stake: ${v.name}, between ${v.excess} and ${v.deficiency} (${v.cite})`);
+      }
+      return g.ready ? 0 : 1;
+    }
+    if (sub === "after") {
+      if (!id) throw new Error("present after <id> [text]");
+      if (config.moved_to) throw new Error(`this instance moved to ${config.moved_to}; write there`);
+      const p = await presentations.get(id);
+      if (!p) throw new Error(`no presentation ${id}`);
+      const on = values.on ?? today();
+      await presentations.put(recordAfterward(p, textFrom(text), on, new Date()));
+      out(`kept how ${id} went`);
+      return 0;
+    }
+    if (values.occasion && !(OCCASIONS as readonly string[]).includes(values.occasion)) throw new Error(`--occasion is one of ${OCCASIONS.join(", ")}`);
+    if (values.virtue && !(VIRTUE_IDS as readonly string[]).includes(values.virtue)) throw new Error(`--virtue is one of ${VIRTUE_IDS.join(", ")}`);
+    const fields = ["id", "who", "role", "what", "about", "means", "end", "how", "occasion", "audience", "relation", "virtue"] as const;
+    const input: Record<string, string> = { channel: sub };
+    for (const f of fields) if (values[f] !== undefined) input[f] = values[f]!;
+    const ran = await runVaultAction(vault, "draft_presentation", input, "cli");
+    if (ran.held) throw new Error("drafting a presentation is never held");
+    const r = ran.result as { id: string; gate: { ready: true } | { ready: false; missing: { message: string }[] } };
+    out(r.id);
+    for (const l of missingLines(r.gate)) out(`  ${l}`);
     return 0;
   }
   if (cmd === "mcp") {

@@ -43,6 +43,20 @@ export function int(o: { min?: number; max?: number; default?: number; describe?
   };
 }
 
+/** One of a fixed list of strings. */
+export function oneOf<T extends string>(values: readonly T[], o: { describe?: string } = {}): Field<T> {
+  return {
+    json: { type: "string", enum: [...values], ...(o.describe ? { description: o.describe } : {}) },
+    optional: false,
+    check: (v) => (typeof v === "string" && (values as readonly string[]).includes(v) ? { value: v as T } : { message: `expected one of ${values.join(", ")}` }),
+  };
+}
+
+/** A field that may be left out. Left out, the checked input does not have it. */
+export function optional<T>(f: Field<T>): Field<T | undefined> {
+  return { json: f.json, optional: true, check: (v) => (v === undefined ? { value: undefined } : f.check(v)) };
+}
+
 /** The RFC 9562 form of a uuid, as zod's `z.string().uuid()` reads it. */
 export const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -68,7 +82,7 @@ export function object<F extends Record<string, Field<unknown>>>(fields: F): Inp
       }
       const r = f.check(given[k]);
       if ("message" in r) issues.push({ message: r.message, path: [k] });
-      else out[k] = r.value;
+      else if (r.value !== undefined) out[k] = r.value;
     }
     return issues.length ? { issues } : { value: out as Out<F> };
   };
