@@ -2,6 +2,7 @@ import "./globals.css";
 import type { CSSProperties, ReactNode } from "react";
 import { Inter, Newsreader } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { RememberPage } from "@/components/settings-panel";
 import { SidebarProvider, type SidebarGroup } from "@/components/sidebar";
 import { CHAT_PROMPT, readChatPart } from "@reflect/core/chat-journal";
 import { GROUPS } from "@reflect/core/plan";
@@ -22,7 +23,7 @@ export const metadata = { title: "Reflect", description: "Your life, in your own
 const GROUPED: SidebarGroup[] = GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.flatMap((id) => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; }) }));
 
 /** Every page in shadcn's look (src/app/globals.css), with the sidebar kept once for the whole app when someone is signed in. */
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children, modal }: { children: ReactNode; /** Settings over the page (app/@modal). */ modal: ReactNode }) {
   const user = await currentUser().catch(() => null);
   const chats = user ? (await listEntries(user.id, 40).catch(() => [])).filter((e) => e.promptId === CHAT_PROMPT).slice(0, 5).map((c) => ({ id: c.id, title: c.parts.map((p) => readChatPart(p.text)).find((m) => m.who === "you")?.text ?? "A chat" })) : [];
   // Their face at the foot of the sidebar opens their own profile (Profiles, 2026-11-18).
@@ -37,7 +38,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
-        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me}>{children}</SidebarProvider> : children}</TooltipProvider>
+        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage /></TooltipProvider>
       </body>
     </html>
   );

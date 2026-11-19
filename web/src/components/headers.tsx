@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { BackButton } from "./back-button";
 import { SearchButton } from "./search-button";
 import { SidebarButton } from "./sidebar";
+import { usePathname } from "next/navigation";
+import { isSectionRoot, useInPanel } from "./settings-panel";
 
 // Three kinds of header, each matched to its page (Torian, 2026-11-14): a section's pages keep the section's tabs;
 // one thing's page (a book, a course, an author) says where it sits and, once its title scrolls away, carries its
@@ -92,6 +94,8 @@ function Crumbs({ crumbs }: { crumbs: Crumb[] }) {
  */
 export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, search = true }: { back: string; backLabel?: string; crumbs: Crumb[]; title: string; action?: ReactNode; /** Settings pages leave search out (2026-11-17). */ search?: boolean }) {
   const [past, setPast] = useState(false);
+  const inPanel = useInPanel();
+  const path = usePathname();
   useEffect(() => {
     const el = document.getElementById("page-title");
     if (!el) return;
@@ -99,15 +103,18 @@ export function ThingHeader({ back, backLabel = "Back", crumbs, title, action, s
     io.observe(el);
     return () => io.disconnect();
   }, []);
+  // In the Settings panel a section's own page has no header (the list on the left is the way back), and below it
+  // the header keeps only Back and where you are.
+  if (inPanel && isSectionRoot(path)) return null;
   return (
     <header className={cn(BAR, "py-2", past ? "border-b" : "")}>
       <div className="flex min-h-10 items-center gap-2">
-        <SidebarButton className="-ml-2" />
+        {inPanel ? null : <SidebarButton className="-ml-2" />}
         <Back fallback={back} label={backLabel} />
         {past ? <p className="min-w-0 truncate font-semibold">{title}</p> : <Crumbs crumbs={crumbs} />}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {past && action ? <div className="flex items-center gap-2 [&_form]:flex [&_form]:gap-2">{action}</div> : null}
-          {search ? <SearchButton /> : null}
+          {search && !inPanel ? <SearchButton /> : null}
         </div>
       </div>
     </header>
