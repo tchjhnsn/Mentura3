@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDaysIcon, CompassIcon, LandmarkIcon, UserRoundIcon } from "lucide-react";
+import { CalendarDaysIcon, CompassIcon, LandmarkIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { SidebarButton } from "@/components/sidebar";
 import { SearchButton } from "@/components/search-button";
 import { PAGE } from "@/components/page-header";
@@ -86,6 +86,7 @@ export default async function VillagePage() {
           {me ? <Place href={me.href} icon={<UserRoundIcon className="size-4" />} label="Your profile" /> : null}
           <Place href="/events" icon={<CalendarDaysIcon className="size-4" />} label="Events" />
           <Place href="/adventures" icon={<CompassIcon className="size-4" />} label="Adventures" />
+          <Place href="/v/people" icon={<UsersRoundIcon className="size-4" />} label="People you've met" />
           <Place href="/life/polis" icon={<LandmarkIcon className="size-4" />} label="Polis" />
         </aside>
       </div>

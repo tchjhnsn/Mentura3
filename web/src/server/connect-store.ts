@@ -170,19 +170,19 @@ export async function declineRequest(userId: string, requestId: string): Promise
   return (r.rowCount ?? 0) > 0;
 }
 
-export type Incoming = { id: string; from: { id: string; name: string }; event: { id: string; title: string; startsAt: string | null } | null; at: string };
+export type Incoming = { id: string; from: { id: string; name: string; image?: string | null; handle?: string | null }; event: { id: string; title: string; startsAt: string | null } | null; at: string };
 
 /** Requests made to the person that are still open and have not lapsed, newest first. */
 export async function incomingRequests(userId: string): Promise<Incoming[]> {
   const r = await db().query(
-    `SELECT q.id, q.from_user, u.name, q.created_at, e.id AS event_id, e.title, e.starts_at FROM connect_request q
-       JOIN "user" u ON u.id = q.from_user LEFT JOIN event e ON e.id = q.event_id
+    `SELECT q.id, q.from_user, u.name, u.image, p.handle, q.created_at, e.id AS event_id, e.title, e.starts_at FROM connect_request q
+       JOIN "user" u ON u.id = q.from_user LEFT JOIN event e ON e.id = q.event_id LEFT JOIN member_profile p ON p.user_id = q.from_user
      WHERE q.to_user = $1 AND q.accepted_at IS NULL AND q.declined_at IS NULL AND q.expires_at > now()
        AND NOT EXISTS (SELECT 1 FROM friend_link f WHERE (f.user_a, f.user_b) = (LEAST(q.from_user, q.to_user), GREATEST(q.from_user, q.to_user)))
      ORDER BY q.created_at DESC LIMIT 50`,
     [userId],
   );
-  return r.rows.map((x) => ({ id: x.id, from: { id: x.from_user, name: nameOr(x.name) }, event: x.event_id ? { id: x.event_id, title: x.title, startsAt: iso(x.starts_at) } : null, at: iso(x.created_at)! }));
+  return r.rows.map((x) => ({ id: x.id, from: { id: x.from_user, name: nameOr(x.name), image: x.image ?? null, handle: x.handle ?? null }, event: x.event_id ? { id: x.event_id, title: x.title, startsAt: iso(x.starts_at) } : null, at: iso(x.created_at)! }));
 }
 
 /** Whether the person has an open request to another, not yet answered or lapsed: what a profile's Connect shows as Requested. */
@@ -237,4 +237,46 @@ export async function setFriendKind(userId: string, otherId: string, kind: strin
   if (kind) await db().query("INSERT INTO friend_kind (user_id, other_id, kind) VALUES ($1, $2, $3) ON CONFLICT (user_id, other_id) DO UPDATE SET kind = $3, updated_at = now()", [userId, otherId, kind]);
   else await db().query("DELETE FROM friend_kind WHERE user_id = $1 AND other_id = $2", [userId, otherId]);
   return (was.rows[0]?.kind as string | undefined) ?? null;
+}
+
+/** Someone the person has met, as People you've met shows them (/v/people). */
+export type MetPerson = { id: string; name: string; image: string | null; handle: string | null; event: { id: string; title: string; startsAt: string | null } | null; connected: boolean; requested: boolean };
+
+/**
+ * Everyone the person has met (Village and polis, People you've met): their connections (friend_link) and everyone
+ * checked in to an event with them, one row a person, with the latest event both were at (else where they connected),
+ * whether they are connected, and whether the person's Connect waits on them. Newest meeting first. Shared facts only:
+ * how the person sees a friendship (friend_kind) stays on Home and is not read.
+ */
+export async function peopleMet(userId: string): Promise<MetPerson[]> {
+  const r = await db().query(
+    `WITH met AS (
+       SELECT c.user_id AS other, e.id AS event_id, e.title, e.starts_at, e.starts_at AS at FROM event_checkin me
+         JOIN event_checkin c ON c.event_id = me.event_id AND c.user_id <> me.user_id
+         JOIN event e ON e.id = me.event_id
+       WHERE me.user_id = $1
+       UNION ALL
+       SELECT CASE WHEN f.user_a = $1 THEN f.user_b ELSE f.user_a END, e.id, e.title, e.starts_at, COALESCE(e.starts_at, f.created_at) FROM friend_link f
+         LEFT JOIN event e ON e.id = f.met_event
+       WHERE f.user_a = $1 OR f.user_b = $1
+     ), latest AS (
+       SELECT DISTINCT ON (other) other, event_id, title, starts_at, at FROM met
+       ORDER BY other, (event_id IS NULL), at DESC NULLS LAST
+     )
+     SELECT u.id, u.name, u.image, p.handle, l.event_id, l.title, l.starts_at,
+       EXISTS (SELECT 1 FROM friend_link f WHERE (f.user_a, f.user_b) = (LEAST($1, u.id), GREATEST($1, u.id))) AS connected,
+       EXISTS (SELECT 1 FROM connect_request q WHERE q.from_user = $1 AND q.to_user = u.id AND q.accepted_at IS NULL AND q.declined_at IS NULL AND q.expires_at > now()) AS requested
+     FROM latest l JOIN "user" u ON u.id = l.other LEFT JOIN member_profile p ON p.user_id = u.id
+     ORDER BY l.at DESC NULLS LAST, u.name LIMIT 200`,
+    [userId],
+  );
+  return r.rows.map((x) => ({
+    id: x.id as string,
+    name: nameOr(x.name),
+    image: (x.image as string | null) ?? null,
+    handle: (x.handle as string | null) ?? null,
+    event: x.event_id ? { id: x.event_id as string, title: x.title as string, startsAt: iso(x.starts_at) } : null,
+    connected: x.connected === true,
+    requested: x.requested === true,
+  }));
 }
