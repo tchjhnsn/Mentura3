@@ -7,6 +7,7 @@ import { z } from "zod";
 import { COMMITMENT, DEPTH, MODES, SKILL } from "@reflect/core/interests";
 import { AREAS, firstMode, itemOf } from "@reflect/core/interest-catalogue";
 import { addLifeRecord, lifeRecords, removeLifeRecord, saveLifeRecord, setLifeField, setLifeState, type LifeRecord } from "../life-store";
+import { interestsPart } from "../interests-store";
 import { action, type ActionContext, type LoggedChange } from "./types";
 
 const ids = <T extends { id: string }>(xs: readonly T[]) => xs.map((x) => x.id) as [T["id"], ...T["id"][]];
@@ -138,4 +139,15 @@ export const setInterestArea = action({
     if (!before?.areas) throw new Error("This change cannot be undone.");
     for (const k of AREA_KEYS) await setLifeField(userId, "work", "interest-areas", k, before.areas[k] ?? null);
   },
+});
+
+const INTERESTS_PATHS = "'' (all, with Get to know you progress), 'make', 'do', 'know', 'books', 'podcasts', or one thing's id such as 'b-meditations'";
+export const interests = action({
+  id: "interests",
+  title: "Read what the person loves",
+  description: `Fetch the person's interests from Get to know you: each thing, whether they make, do or follow it, its levels, and a plain sentence for each. Fetch the smallest part that answers. Paths: ${INTERESTS_PATHS}.`,
+  tier: "read",
+  on: ["chat", "mcp"],
+  input: z.object({ path: z.string().max(120).default("").describe("Such as 'know' or 'b-meditations'") }),
+  run: async ({ userId }, { path }) => (await interestsPart(userId, path)) ?? { error: `Nothing at '${path}'. Paths: ${INTERESTS_PATHS}.` },
 });
