@@ -11,7 +11,7 @@ export async function ApprovalsCard({ ctx }: { ctx: Ctx }) {
   const list = await pendingChanges({ userId: ctx.userId }, 10).catch(() => []);
   if (!list.length) return null;
   return (
-    <Section title="Waiting for you" href="/chat" more="Ask">
+    <Section title="Waiting for you" href="/chat" more="New Chat">
       <div className="grid grid-cols-[minmax(0,1fr)] gap-2">
         {list.map((p) => (
           <Approval
@@ -21,7 +21,7 @@ export async function ApprovalsCard({ ctx }: { ctx: Ctx }) {
             title={p.title}
             preview={p.preview}
             tap={p.tier === "outside" ? "Send" : "Keep"}
-            from={p.source === "mcp" ? "from your AI" : p.source === "workflow" ? "from a plan" : "from Ask"}
+            from={p.source === "mcp" ? "from your AI" : p.source === "workflow" ? "from a plan" : "from a chat"}
           />
         ))}
       </div>

@@ -18,7 +18,7 @@ export default async function NewSkill({ searchParams }: { searchParams: Promise
       <div className={COLUMN}>
         <div className="grid gap-1">
           <h1 id="page-title" className="text-2xl font-semibold tracking-tight">Write a skill</h1>
-          <p className="text-muted-foreground text-sm">Tell Ask Reflect how you want something done. It follows the skill whenever a request fits, and still waits for your Send before it changes anything.</p>
+          <p className="text-muted-foreground text-sm">Tell Reflect how you want something done. It follows the skill whenever a request fits, and still waits for your Send before it changes anything.</p>
         </div>
         <SkillForm skill={null} error={error} />
       </div>

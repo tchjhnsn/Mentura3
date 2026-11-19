@@ -130,8 +130,8 @@ function PlanTab({ a }: { a: Adventure }) {
       <div className="grid content-start justify-items-start gap-3 rounded-2xl border border-dashed p-8">
         <SparklesIcon className="text-muted-foreground size-6" />
         <h2 className="text-lg font-semibold">No plan yet</h2>
-        <p className="text-muted-foreground max-w-md">Ask Reflect to draft one: the days, the stops on each, what to pack and what it costs. You keep what you like and change the rest.</p>
-        <Button asChild><Link href={askFor(a)}><SparklesIcon />Ask Reflect to draft a plan</Link></Button>
+        <p className="text-muted-foreground max-w-md">Start a new chat to draft one: the days, the stops on each, what to pack and what it costs. You keep what you like and change the rest.</p>
+        <Button asChild><Link href={askFor(a)}><SparklesIcon />Draft a plan in a new chat</Link></Button>
       </div>
       {mapPins.length ? <PinMap pins={mapPins} className="h-72 w-full overflow-hidden rounded-2xl border" /> : null}
     </div>

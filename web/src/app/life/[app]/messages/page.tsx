@@ -48,7 +48,7 @@ export default async function MessagesPage({ params, searchParams }: { params: P
             <ActionRow icon={<UserPlusIcon />} label="Invite a friend" action={inviteFriendAction} />
           </Group>
         )}
-        <p className="text-muted-foreground text-center text-xs">Only you and the person you write to see a conversation. Ask Reflect reads your messages only when you ask it about them. Your journal is never shared.</p>
+        <p className="text-muted-foreground text-center text-xs">Only you and the person you write to see a conversation. Reflect reads your messages only when you ask it about them. Your journal is never shared.</p>
       </div>
     </main>
   );

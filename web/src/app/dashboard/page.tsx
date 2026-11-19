@@ -69,7 +69,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </header>
       <DashBeacon />
 
-      <section aria-label="Ask Reflect" data-dash-card="ask" className="grid grid-cols-[minmax(0,1fr)] gap-4">
+      <section aria-label="New Chat" data-dash-card="ask" className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <h1 className="text-3xl font-semibold tracking-tight">{greeting}{first ? `, ${first}` : ""}</h1>
         <Suspense fallback={<BriefSkeleton />}><BriefCard ctx={ctx} /></Suspense>
         <AskBar suggestions={suggestions} />

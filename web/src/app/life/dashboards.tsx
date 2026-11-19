@@ -83,7 +83,7 @@ export async function HealthDash({ userId, records, acts, today }: { userId: str
         <DashCard href={set("health", "checkup", here)} title="Checkup" tone={checkupDue !== null && checkupDue < 0 ? "warn" : undefined}
           value={s.checkup ? (checkupDue! < 0 ? "Overdue" : checkupDue! < 31 ? "Due this month" : `Due in ${Math.round(checkupDue! / 30)} months`) : "Not set"}
           sub={s.checkup ? `Last on ${shortDay(s.checkup.day)}` : "Once a year"} />
-        <DashCard href={ask("Help me with my health: find a doctor, a checkup, or what my coverage covers.")} title="Ask Reflect" value="Find a doctor, plan a checkup" sub="Reflect puts visits on your calendar">
+        <DashCard href={ask("Help me with my health: find a doctor, a checkup, or what my coverage covers.")} title="New Chat" value="Find a doctor, plan a checkup" sub="Reflect puts visits on your calendar">
           <SparklesIcon className="text-primary size-5" />
         </DashCard>
       </div>
@@ -156,7 +156,7 @@ export async function FitnessDash({ userId, records, acts, today }: { userId: st
               </li>
             ))}
           </ul>
-        ) : <p className="text-muted-foreground text-sm">Beyond the guidelines: run a 5K, squat your bodyweight. <Link href={ask("Help me set a fitness goal I can keep.")} className="text-primary">Ask Reflect</Link></p>}
+        ) : <p className="text-muted-foreground text-sm">Beyond the guidelines: run a 5K, squat your bodyweight. <Link href={ask("Help me set a fitness goal I can keep.")} className="text-primary">New Chat</Link></p>}
       </section>
       <Upcoming userId={userId} tile="body" today={today} hideEmpty title="Coming up" />
     </div>
@@ -551,7 +551,7 @@ export async function VenturesDash({ userId, records, acts, today }: { userId: s
         </section>
       ) : null}
       <section className="grid gap-3">
-        <DashHead title="Ask Reflect" />
+        <DashHead title="New Chat" />
         <div className="flex flex-wrap gap-2">
           {["What would it take to turn my idea into a business?", "How do I set aside taxes for my side business?", ...(all.length ? ["Which of my ventures is worth the time I give it?"] : [])].map((q) => (
             <Link key={q} href={ask(q)} className="hover:bg-accent flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition"><MessageCircleIcon className="size-3.5" />{q}</Link>
@@ -578,10 +578,10 @@ export async function LegacyDash({ userId, records, acts, today }: { userId: str
   const act = !s.kept
     ? <Button asChild><Link href={addPlan("will")}><PlusIcon />Add</Link></Button>
     : s.next
-      ? <Button asChild><Link href={ask(`Help me put my ${s.next.label.toLowerCase()} in place: what it is, what I need to decide, and who can help me make it.`)}><SparklesIcon />Ask Reflect</Link></Button>
+      ? <Button asChild><Link href={ask(`Help me put my ${s.next.label.toLowerCase()} in place: what it is, what I need to decide, and who can help me make it.`)}><SparklesIcon />New Chat</Link></Button>
       : s.due
         ? <Button asChild><Link href={`/life/legacy/${s.due.record}`}>Review</Link></Button>
-        : <Button asChild><Link href={ask("Walk me through reviewing my estate plan: my will, power of attorney, advance directive, beneficiaries and life insurance.")}><SparklesIcon />Ask Reflect</Link></Button>;
+        : <Button asChild><Link href={ask("Walk me through reviewing my estate plan: my will, power of attorney, advance directive, beneficiaries and life insurance.")}><SparklesIcon />New Chat</Link></Button>;
   const card = (d: (typeof s.docs)[number]) => (
     <li key={d.id}>
       <DashCard href={d.record ? `/life/legacy/${d.record}` : addPlan(d.id)} title={d.label} value={DOC_STATE[d.status]} tone={d.status === "review" ? "warn" : d.status === "in-place" ? "good" : undefined} className="h-full"

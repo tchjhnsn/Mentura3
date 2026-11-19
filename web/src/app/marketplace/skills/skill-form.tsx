@@ -17,7 +17,7 @@ export function SkillForm({ skill, error }: { skill: UserSkill | null; error: st
         <Input name="description" required maxLength={SKILL_LIMITS.description} defaultValue={skill?.description ?? ""} placeholder="I ask to plan or look back on my week" />
       </label>
       <label className="grid gap-1.5">
-        <span className="text-sm font-medium">What Ask Reflect should do</span>
+        <span className="text-sm font-medium">What Reflect should do</span>
         <Textarea name="instructions" required rows={10} maxLength={SKILL_LIMITS.instructions} defaultValue={skill?.instructions ?? ""}
           placeholder={"Start with what I finished, from my calendar and journal.\nThen the three things that matter most next week, each with a time.\nKeep it under ten lines."} />
       </label>

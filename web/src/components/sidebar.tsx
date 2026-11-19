@@ -7,6 +7,7 @@ import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LayoutDashboardI
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
+import { usePane } from "./pane-context";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -41,6 +42,8 @@ export function SidebarProvider({ groups, chats, me, children }: { groups: Sideb
   const pin = (on: boolean) => { setPinned(on); try { localStorage.setItem(KEY, on ? "1" : "0"); } catch {} };
   const shut = () => { pin(false); setOpen(false); };
   const close = () => { if (!pinned) setOpen(false); };
+  // New Chat opens the second pane beside the page (Panes design guide); on the chat page itself it is a link.
+  const pane = usePane();
 
   return (
     <Ctx.Provider value={{ open, toggle: () => (open ? shut() : setOpen(true)) }}>
@@ -56,7 +59,7 @@ export function SidebarProvider({ groups, chats, me, children }: { groups: Sideb
           <div className="grid gap-0.5">
             <Link href="/" className={cn(ROW, "font-medium")}><HomeIcon className="size-4" />Home</Link>
             <Link href="/dashboard" className={cn(ROW, "font-medium")}><LayoutDashboardIcon className="size-4" />Dashboard</Link>
-            <Link href="/chat" className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />Ask Reflect</Link>
+            <Link href="/chat" data-pane-own="" className={cn(ROW, "font-medium")} onClick={(e) => { if (!pane || path === "/chat" || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); pane.openChat({}); close(); }}><PlusIcon className="size-4" />New Chat</Link>
           </div>
 
           <Section title="Tools">
