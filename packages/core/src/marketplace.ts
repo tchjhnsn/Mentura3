@@ -208,6 +208,15 @@ export function emailArgs(tool: ToolLike, mail: { to: string; subject: string; t
 // Plugins (Torian, 2026-11-18 21:11Z, "Skills first, apps later"): a plugin bundles connectors from the catalog with a
 // skill, instructions Ask Reflect follows while the plugin is added, as Claude's plugins bundle skills and MCP servers.
 // Apps (plugins with their own pages, made by others) are not built.
+//
+// Slots (Torian, 2026-11-19, "Appearance, Virtu and the site editor: plan"): a plugin may also fill named places in
+// Reflect's interface. Only plugins whose code ships inside Reflect fill them (web/src/components/slots.tsx); a
+// third-party plugin drawing its own interface would be an App, which is not built.
+
+/** A named place in Reflect's interface that a plugin can fill. */
+export type SlotName = "appearance.section" | "editor.panel" | "editor.component-option";
+
+export const SLOT_NAMES: readonly SlotName[] = ["appearance.section", "editor.panel", "editor.component-option"];
 
 export type MarketPlugin = {
   id: string;
@@ -223,6 +232,8 @@ export type MarketPlugin = {
   does: readonly string[];
   /** The skill: instructions Ask Reflect follows while the plugin is added. */
   skill: string;
+  /** The sections it draws in each slot it fills, in order. Absent: it fills none. */
+  slots?: Partial<Record<SlotName, readonly string[]>>;
 };
 
 export const PLUGINS: readonly MarketPlugin[] = [
@@ -262,14 +273,30 @@ export const PLUGINS: readonly MarketPlugin[] = [
     does: ["Read a Figma design when you ask", "Find or start a Canva design for a post or an event"],
     skill: "When the person asks about a design, read it through their Figma or Canva connector with connector_read and describe what matters for their task. Making or changing a design goes through connector_act and waits for Send.",
   },
+  {
+    id: "virtu", name: "Virtu", by: "Reflect", category: "design", connectors: [],
+    line: "Design system for your site: shape, type, colour roles and looks.",
+    does: ["Add Shape, Type, Colour and Looks to Appearance", "Check every change to your site's design before it is saved", "Change your site's design from Ask Reflect when you ask"],
+    skill: "When the person asks to change how their site looks, read its design with site_design and change it with set_site_design: colour roles, type, shape, ornaments and season. Every change is checked by Virtu and saved only when the check passes; when it fails, say why in plain words and suggest a change that passes. They can also change it themselves in Settings, Appearance.",
+    slots: { "appearance.section": ["shape", "type", "colour", "looks"], "editor.panel": ["design"], "editor.component-option": ["shape", "frame"] },
+  },
 ];
 
 export const pluginById = (id: string) => PLUGINS.find((p) => p.id === id);
 
-/** The plugin's connectors that are connected, and whether it can work (any one is). */
+/** The plugin's connectors that are connected, and whether it can work (any one is, or it needs none). */
 export function pluginReady(p: MarketPlugin, connected: ReadonlySet<string>): { connected: string[]; works: boolean } {
   const on = p.connectors.filter((c) => connected.has(c));
-  return { connected: on, works: on.length > 0 };
+  return { connected: on, works: p.connectors.length === 0 || on.length > 0 };
+}
+
+/**
+ * What to draw in one slot: each added plugin that fills it and whose code ships in Reflect (`shipped`), with its
+ * sections, in catalog order.
+ */
+export function slotFill(added: readonly MarketPlugin[], slot: SlotName, shipped: ReadonlySet<string>): { plugin: string; sections: string[] }[] {
+  return PLUGINS.filter((p) => added.some((a) => a.id === p.id) && shipped.has(p.id) && (p.slots?.[slot]?.length ?? 0) > 0)
+    .map((p) => ({ plugin: p.id, sections: [...p.slots![slot]!] }));
 }
 
 /** The skills of the added plugins as one block for Ask Reflect's instructions; "" when none are added. */
