@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:polis.standing",
+  "title": "Office or role",
+  "description": "Offices you hold, roles you are trusted with, boards and service. Aristotle's measure of standing is honor earned and deserved, not sought for itself.",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "title": "Role",
+      "maxLength": 300
+    },
+    "body": {
+      "type": "string",
+      "title": "Where",
+      "maxLength": 300
+    },
+    "since": {
+      "type": "string",
+      "title": "Since",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "polis",
+    "kind": "standing",
+    "noun": "standing",
+    "category": "relation",
+    "good": "external",
+    "community": "polis"
+  }
+}

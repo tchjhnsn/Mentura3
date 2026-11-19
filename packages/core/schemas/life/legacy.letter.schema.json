@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:legacy.letter",
+  "title": "Letter",
+  "description": "A letter to someone, given to them after your death. Nothing here is released before then.",
+  "type": "object",
+  "properties": {
+    "to": {
+      "type": "string",
+      "title": "To",
+      "maxLength": 300
+    },
+    "text": {
+      "type": "string",
+      "title": "Letter",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "legacy",
+    "kind": "letter",
+    "noun": "letter",
+    "category": "substance",
+    "good": "external",
+    "community": "person"
+  }
+}

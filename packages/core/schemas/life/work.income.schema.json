@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.income",
+  "title": "Income",
+  "description": "Where your money comes from, how much and how regularly. Gifts and donations count.",
+  "type": "object",
+  "properties": {
+    "source": {
+      "type": "string",
+      "title": "Source",
+      "description": "Wages from the shop, a gift from church",
+      "maxLength": 300
+    },
+    "amount": {
+      "type": "number",
+      "title": "Amount",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "per": {
+      "type": "string",
+      "title": "Per",
+      "enum": [
+        "hour",
+        "week",
+        "month",
+        "year",
+        "once"
+      ]
+    },
+    "hours": {
+      "type": "number",
+      "title": "Hours a week, when paid by the hour",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "regular": {
+      "type": "string",
+      "title": "How regular",
+      "enum": [
+        "steady",
+        "varies",
+        "once"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "income",
+    "noun": "income",
+    "category": "quantity",
+    "good": "external",
+    "community": "household"
+  }
+}

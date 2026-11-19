@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.now",
+  "title": "Right now",
+  "description": "What you can give to work right now.",
+  "type": "object",
+  "properties": {
+    "hours": {
+      "type": "number",
+      "title": "Hours a week you can give to work",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "now",
+    "noun": "hours available",
+    "category": "quantity",
+    "good": "external",
+    "community": "person"
+  }
+}

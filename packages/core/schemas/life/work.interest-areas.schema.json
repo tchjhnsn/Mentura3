@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.interest-areas",
+  "title": "Get to know you",
+  "description": "Which Get to know you areas the person finished or skipped, as comma lists of area ids, and when the card was put off.",
+  "type": "object",
+  "properties": {
+    "done": {
+      "type": "string",
+      "title": "Areas done",
+      "maxLength": 4000
+    },
+    "skipped": {
+      "type": "string",
+      "title": "Areas skipped",
+      "maxLength": 4000
+    },
+    "sorted": {
+      "type": "string",
+      "title": "Sorted",
+      "maxLength": 4000
+    },
+    "later": {
+      "type": "string",
+      "title": "Not now until",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "interest-areas",
+    "noun": "preference",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:body.measures",
+  "title": "Your body",
+  "description": "Your height, weight and the weight you want, set by you.",
+  "type": "object",
+  "properties": {
+    "height": {
+      "type": "number",
+      "title": "Height in inches",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "weight": {
+      "type": "number",
+      "title": "Weight in pounds",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "goal-weight": {
+      "type": "number",
+      "title": "Weight you want, in pounds",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "activity": {
+      "type": "string",
+      "title": "How active you are",
+      "enum": [
+        "mostly-sitting",
+        "active-some-days",
+        "active-most-days"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "body",
+    "kind": "measures",
+    "noun": "body measure",
+    "category": "quantity",
+    "good": "body",
+    "community": "person"
+  }
+}

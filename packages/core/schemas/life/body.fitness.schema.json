@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:body.fitness",
+  "title": "Fitness goal",
+  "description": "Your own goals, beyond the floor of 150 minutes of moderate activity and two days of strength a week.",
+  "type": "object",
+  "properties": {
+    "goal": {
+      "type": "string",
+      "title": "Goal",
+      "description": "Run a 5K, squat my bodyweight",
+      "maxLength": 300
+    },
+    "when": {
+      "type": "string",
+      "title": "After what, or when, you do it",
+      "description": "After work, before breakfast",
+      "maxLength": 300
+    },
+    "by": {
+      "type": "string",
+      "title": "By when",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "body",
+    "kind": "fitness",
+    "noun": "fitness",
+    "category": "quality",
+    "good": "body",
+    "community": "person"
+  }
+}

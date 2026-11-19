@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.firearm",
+  "title": "Firearm",
+  "description": "Each firearm you own: training, safe storage (especially with children in the home) and permits, which state law sets.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Firearm",
+      "maxLength": 300
+    },
+    "training": {
+      "type": "boolean",
+      "title": "Trained on it"
+    },
+    "storage": {
+      "type": "boolean",
+      "title": "Stored safely"
+    },
+    "permit": {
+      "type": "string",
+      "title": "Permit, where required",
+      "maxLength": 300
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "firearm",
+    "noun": "firearm",
+    "category": "substance",
+    "good": "body",
+    "community": "household"
+  }
+}

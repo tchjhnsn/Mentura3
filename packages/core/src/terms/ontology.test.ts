@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { APPS } from "../life";
-import { CATEGORIES, ONTOLOGY, categoryOfKind, checkOntology, nounOfKind, type Ontology } from "./ontology";
+import { CATEGORIES, COMMUNITIES, GOODS, ONTOLOGY, categoryOfKind, checkOntology, communityOfKind, goodOfKind, nounOfKind, type Ontology } from "./ontology";
 
 const KINDS = APPS.flatMap((a) => a.kinds.map((k) => `${a.id}:${k.id}`));
 const copy = (): Ontology => structuredClone(ONTOLOGY);
@@ -63,5 +63,30 @@ describe("Reflect's ontology", () => {
     const p = checkOntology(o, KINDS).problems;
     expect(p).toContain("top category position is missing");
     expect(p).toContain("top category information is not one of Aristotle's ten");
+  });
+
+  it("gives every life kind a kind of good and a community, following the apps' goods", () => {
+    for (const a of APPS)
+      for (const k of a.kinds) {
+        expect(GOODS, `${a.id}:${k.id}`).toContain(goodOfKind(a.id, k.id));
+        expect(COMMUNITIES, `${a.id}:${k.id}`).toContain(communityOfKind(a.id, k.id));
+      }
+    expect(goodOfKind("body", "health")).toBe("body");
+    expect(goodOfKind("home", "water")).toBe("body");
+    expect(goodOfKind("work", "quality")).toBe("soul");
+    expect(goodOfKind("friends", "friend")).toBe("external");
+    expect(communityOfKind("mate", "date")).toBe("union");
+    expect(communityOfKind("kin", "relative")).toBe("village");
+    expect(communityOfKind("polis", "election")).toBe("polis");
+  });
+
+  it("G1 and C1 find a good or a community outside the fixed lists", () => {
+    const o = copy();
+    const meal = o.nouns.find((n) => n.noun === "meal")! as unknown as Record<string, unknown>;
+    meal.good = "pleasure";
+    meal.community = "tribe";
+    const p = checkOntology(o, KINDS).problems;
+    expect(p).toContain("G1 meal: good pleasure is not one of body, external, soul");
+    expect(p).toContain("C1 meal: community tribe is not one of person, union, household, village, polis");
   });
 });
