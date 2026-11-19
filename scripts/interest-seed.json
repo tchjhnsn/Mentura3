@@ -1,0 +1,548 @@
+{
+"books": [
+[
+"Pride and Prejudice",
+"Jane Austen",
+"novel,classic,romance,manners"
+],
+[
+"Emma",
+"Jane Austen",
+"novel,classic,romance,manners"
+],
+[
+"Middlemarch",
+"George Eliot",
+"novel,classic,manners"
+],
+[
+"The Count of Monte Cristo",
+"Alexandre Dumas",
+"novel,classic,adventure"
+],
+[
+"Moby-Dick",
+"Herman Melville",
+"novel,classic,adventure,sea"
+],
+[
+"Crime and Punishment",
+"Fyodor Dostoevsky",
+"novel,classic,philosophy"
+],
+[
+"The Brothers Karamazov",
+"Fyodor Dostoevsky",
+"novel,classic,philosophy,faith"
+],
+[
+"Meditations",
+"Marcus Aurelius",
+"philosophy,stoicism,classic"
+],
+[
+"The Republic",
+"Plato",
+"philosophy,politics,classic"
+],
+[
+"Nicomachean Ethics",
+"Aristotle",
+"philosophy,ethics,classic"
+],
+[
+"Confessions",
+"Augustine of Hippo",
+"faith,philosophy,memoir,classic"
+],
+[
+"The Autobiography of Benjamin Franklin",
+"Benjamin Franklin",
+"memoir,founders,business,america"
+],
+[
+"Walden",
+"Henry David Thoreau",
+"nature,philosophy,america"
+],
+[
+"The Federalist Papers",
+"Alexander Hamilton",
+"politics,founders,america"
+],
+[
+"Democracy in America",
+"Alexis de Tocqueville",
+"politics,america,history"
+],
+[
+"The Wealth of Nations",
+"Adam Smith",
+"economics,business,classic"
+],
+[
+"The Prince",
+"Niccolò Machiavelli",
+"politics,leadership,classic"
+],
+[
+"The Art of War",
+"Sun Tzu",
+"strategy,leadership,classic"
+],
+[
+"Mere Christianity",
+"C. S. Lewis",
+"faith,philosophy"
+],
+[
+"The Lord of the Rings",
+"J. R. R. Tolkien",
+"fantasy,adventure,novel"
+],
+[
+"The Hobbit",
+"J. R. R. Tolkien",
+"fantasy,adventure,novel"
+],
+[
+"Dune",
+"Frank Herbert",
+"science fiction,novel,adventure"
+],
+[
+"1984",
+"George Orwell",
+"novel,politics,dystopia"
+],
+[
+"Brave New World",
+"Aldous Huxley",
+"novel,dystopia,science fiction"
+],
+[
+"To Kill a Mockingbird",
+"Harper Lee",
+"novel,america,justice"
+],
+[
+"The Great Gatsby",
+"F. Scott Fitzgerald",
+"novel,america,classic"
+],
+[
+"Sapiens",
+"Yuval Noah Harari",
+"history,science"
+],
+[
+"Guns, Germs, and Steel",
+"Jared Diamond",
+"history,science"
+],
+[
+"Thinking, Fast and Slow",
+"Daniel Kahneman",
+"psychology,science,business"
+],
+[
+"Atomic Habits",
+"James Clear",
+"habits,self-improvement,psychology"
+],
+[
+"Zero to One",
+"Peter Thiel",
+"business,startups,technology"
+],
+[
+"The Lean Startup",
+"Eric Ries",
+"business,startups"
+],
+[
+"Steve Jobs",
+"Walter Isaacson",
+"biography,business,technology"
+],
+[
+"Shoe Dog",
+"Phil Knight",
+"memoir,business,sport"
+],
+[
+"Born a Crime",
+"Trevor Noah",
+"memoir,humor"
+],
+[
+"The Pragmatic Programmer",
+"David Thomas",
+"technology,programming,craft"
+]
+],
+"podcasts": [
+[
+"Dan Carlin's Hardcore History",
+"Dan Carlin",
+"history"
+],
+[
+"The Rest Is History",
+"Goalhanger",
+"history"
+],
+[
+"Acquired",
+"Ben Gilbert and David Rosenthal",
+"business,technology,history"
+],
+[
+"Founders",
+"David Senra",
+"business,biography,startups"
+],
+[
+"All-In with Chamath, Jason, Sacks & Friedberg",
+"All-In Podcast",
+"business,technology,politics"
+],
+[
+"Lex Fridman Podcast",
+"Lex Fridman",
+"technology,science,philosophy"
+],
+[
+"Huberman Lab",
+"Andrew Huberman",
+"science,health,fitness"
+],
+[
+"The Tim Ferriss Show",
+"Tim Ferriss",
+"self-improvement,business,health"
+],
+[
+"Philosophize This!",
+"Stephen West",
+"philosophy"
+],
+[
+"Very Bad Wizards",
+"Tamler Sommers and David Pizarro",
+"philosophy,psychology"
+],
+[
+"In Our Time",
+"BBC Radio 4",
+"history,science,philosophy"
+],
+[
+"Revolutions",
+"Mike Duncan",
+"history,politics"
+],
+[
+"The History of Rome",
+"Mike Duncan",
+"history"
+],
+[
+"Song Exploder",
+"Hrishikesh Hirway",
+"music,craft"
+],
+[
+"Radiolab",
+"WNYC Studios",
+"science,stories"
+],
+[
+"Freakonomics Radio",
+"Freakonomics Radio + Stitcher",
+"economics,business,psychology"
+],
+[
+"Planet Money",
+"NPR",
+"economics,business"
+],
+[
+"How I Built This with Guy Raz",
+"Guy Raz",
+"business,startups,stories"
+],
+[
+"The Daily",
+"The New York Times",
+"news,politics"
+],
+[
+"Hidden Brain",
+"Hidden Brain Media",
+"psychology,science"
+],
+[
+"99% Invisible",
+"Roman Mars",
+"design,craft,stories"
+],
+[
+"Invest Like the Best",
+"Patrick O'Shaughnessy",
+"business,investing"
+],
+[
+"Lenny's Podcast",
+"Lenny Rachitsky",
+"business,startups,technology"
+],
+[
+"The Joe Rogan Experience",
+"Joe Rogan",
+"culture,fitness,science"
+],
+[
+"The Bible in a Year",
+"Ascension",
+"faith,history"
+],
+[
+"The Bible Project",
+"BibleProject",
+"faith,history"
+],
+[
+"Conversations with Tyler",
+"Mercatus Center",
+"economics,culture,history"
+],
+[
+"EconTalk",
+"Russ Roberts",
+"economics,philosophy"
+],
+[
+"The Knowledge Project",
+"Shane Parrish",
+"self-improvement,business,psychology"
+],
+[
+"Stuff You Should Know",
+"iHeartPodcasts",
+"science,history,stories"
+],
+[
+"Serial",
+"Serial Productions",
+"stories,justice"
+],
+[
+"The Bill Simmons Podcast",
+"The Ringer",
+"sport,basketball,culture"
+],
+[
+"Pardon My Take",
+"Barstool Sports",
+"sport,humor"
+],
+[
+"The Mel Robbins Podcast",
+"Mel Robbins",
+"self-improvement,psychology"
+],
+[
+"Making Sense with Sam Harris",
+"Sam Harris",
+"philosophy,science,politics"
+],
+[
+"Darknet Diaries",
+"Jack Rhysider",
+"technology,stories"
+]
+],
+"music": [
+[
+"Johann Sebastian Bach",
+"",
+"classical,baroque,organ"
+],
+[
+"Ludwig van Beethoven",
+"",
+"classical,piano,symphony"
+],
+[
+"Wolfgang Amadeus Mozart",
+"",
+"classical,piano,opera"
+],
+[
+"Frédéric Chopin",
+"",
+"classical,piano"
+],
+[
+"Miles Davis",
+"",
+"jazz,trumpet"
+],
+[
+"John Coltrane",
+"",
+"jazz,saxophone"
+],
+[
+"Ella Fitzgerald",
+"",
+"jazz,vocal"
+],
+[
+"Louis Armstrong",
+"",
+"jazz,trumpet,vocal"
+],
+[
+"Aretha Franklin",
+"",
+"soul,gospel,vocal"
+],
+[
+"Stevie Wonder",
+"",
+"soul,funk,piano"
+],
+[
+"Marvin Gaye",
+"",
+"soul,motown"
+],
+[
+"Mahalia Jackson",
+"",
+"gospel,vocal"
+],
+[
+"Johnny Cash",
+"",
+"country,guitar"
+],
+[
+"Dolly Parton",
+"",
+"country,vocal,guitar"
+],
+[
+"Willie Nelson",
+"",
+"country,guitar"
+],
+[
+"The Beatles",
+"",
+"rock,pop"
+],
+[
+"The Rolling Stones",
+"",
+"rock,blues,guitar"
+],
+[
+"Jimi Hendrix",
+"",
+"rock,blues,guitar"
+],
+[
+"Led Zeppelin",
+"",
+"rock,guitar"
+],
+[
+"Queen",
+"Queen (band)",
+"rock,vocal"
+],
+[
+"Bob Dylan",
+"",
+"folk,rock,guitar"
+],
+[
+"Joni Mitchell",
+"",
+"folk,guitar,vocal"
+],
+[
+"B.B. King",
+"",
+"blues,guitar"
+],
+[
+"Muddy Waters",
+"",
+"blues,guitar"
+],
+[
+"Michael Jackson",
+"",
+"pop,dance"
+],
+[
+"Prince",
+"Prince (musician)",
+"pop,funk,guitar"
+],
+[
+"Whitney Houston",
+"",
+"pop,soul,vocal"
+],
+[
+"Beyoncé",
+"",
+"pop,r&b,vocal"
+],
+[
+"Taylor Swift",
+"",
+"pop,country,guitar"
+],
+[
+"Kendrick Lamar",
+"",
+"hip hop"
+],
+[
+"Outkast",
+"",
+"hip hop,funk"
+],
+[
+"Lauryn Hill",
+"",
+"hip hop,r&b,vocal"
+],
+[
+"Radiohead",
+"",
+"rock,alternative"
+],
+[
+"Daft Punk",
+"",
+"electronic,dance"
+],
+[
+"Andrés Segovia",
+"",
+"classical,guitar"
+],
+[
+"Yo-Yo Ma",
+"Yo-Yo Ma",
+"classical,cello"
+]
+]
+}
