@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
+import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -28,8 +28,9 @@ const STEP = 16;
  * The sidebar, rebuilt on shadcn/ui's Sidebar (Torian, 2026-11-19: "rebuild the sidebar using one of the sidebars from
  * ShadCN"), after its block that collapses to icons (sidebar-07), in the inset variant: a switcher at the top for the two sides (Home, and
  * Village and polis, like a team switcher), the side's navigation in groups (the tile groups fold), recent chats, and
- * the person at the foot with their profile and Settings. On a wide screen it sits beside the page and collapses to
- * icons (the button in every header, or Cmd/Ctrl-B); its right edge still resizes it between 220 and 420 (arrow keys
+ * the person at the foot with their profile and Settings. On a wide screen it sits beside the page and, shut, leaves the
+ * screen entirely (Torian, 2026-11-19: "the sidebar needs to completely disappear when it's collapsed"; the button in
+ * every header, or Cmd/Ctrl-B, brings it back); its right edge still resizes it between 220 and 420 (arrow keys
  * too; a double click puts it back to 272). On a phone it opens as a sheet over the page. Open or shut and the width
  * are kept in a cookie on the parent domain, so the server paints the first frame with them on both hosts.
  */
@@ -73,7 +74,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   const tile = (t: SidebarTile) => item(t.href, t.label, <svg viewBox="0 0 100 100" aria-hidden="true"><path d={t.glyph} className="fill-current" fillRule="evenodd" /></svg>);
 
   return (
-    <Sidebar variant="inset" collapsible="icon" aria-label="Reflect">
+    <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
         <SideSwitcher side={side} to={to} />
       </SidebarHeader>
@@ -101,6 +102,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
                 {/* The dashboard is Home's front page for now (Torian, 2026-11-19); the journal and the calendar are in Settings. */}
                 {item("/chat", "New Chat", <PlusIcon />)}
                 {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
+                {item("/meetings", "Meetings", <VideoIcon />)}
               </SidebarMenu>
             </Group>
             {groups.map((g) => <Fold key={g.label} label={g.label}>{g.tiles.map(tile)}</Fold>)}

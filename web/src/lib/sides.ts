@@ -9,7 +9,7 @@ export type Side = "home" | "polis";
 /** Paths on the shared side. `/v` is its home page (the polis host's `/`). */
 export const SHARED_PATHS = ["/v", "/events", "/adventures", "/connect", "/p", "/life/polis"] as const;
 /** Paths that belong to neither side and open on whichever host they were asked for. */
-export const NEUTRAL_PATHS = ["/chat", "/settings", "/marketplace", "/sign-in", "/consent", "/api", "/icon", "/apple-icon"] as const;
+export const NEUTRAL_PATHS = ["/chat", "/settings", "/marketplace", "/sign-in", "/consent", "/api", "/icon", "/apple-icon", "/meetings", "/m"] as const;
 /** App folders whose every page is on the shared side, checked by the wall test (sides-wall.test.ts). */
 export const SHARED_ROUTE_DIRS = ["v", "events", "adventures", "connect", "p"] as const;
 
