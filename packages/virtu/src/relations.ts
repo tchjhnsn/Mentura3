@@ -7,6 +7,7 @@ import type { Analysis } from "./check.ts";
 import type { Finding, Permutation, Relation, RelationKind } from "./model.ts";
 import { finding, perPermutation } from "./rules.ts";
 import { decode, inGamut, linearP3ToLinearSrgb, luminance, luminanceP3 } from "./oklch.ts";
+import { nestedRadius } from "./elevation.ts";
 import { selectTokens, type Color, type Resolution, type ResolvedToken } from "./tokens.ts";
 
 type KindCheck<K extends RelationKind> = (relation: Extract<Relation, { kind: K }>, r: Resolution, a: Analysis, p: Permutation) => Finding[];
@@ -91,6 +92,40 @@ export const RELATION_KINDS: { [K in RelationKind]: KindCheck<K> } = {
     return out;
   },
 
+  "nested-radius"(rel, r) {
+    const out: Finding[] = [];
+    const named: Array<[string, string]> = [["outer", rel.outer], ["inset", rel.inset], ["inner", rel.inner]];
+    if (rel.border !== null) named.push(["border", rel.border]);
+    const sizes = new Map<string, { value: number; unit: string }>();
+    for (const [role, path] of named) {
+      const t = r.tokens.get(path);
+      if (t === undefined) {
+        out.push(finding("L2.selector-empty", `${rel.id}: the ${role} ${path} matches no token, and a rule over nothing is never false`, [rel.id, path]));
+        continue;
+      }
+      const sz = t.value?.type === "dimension" ? { value: t.value.dimension.value, unit: t.value.dimension.unit } : null;
+      if (sz === null) out.push(finding("L2.nested-radius-units", `${rel.id}: the ${role} ${path} is not a dimension, so it has no length`, [rel.id, path]));
+      else sizes.set(role, sz);
+    }
+    if (out.length > 0) return out;
+    const units = [...new Set([...sizes.values()].map((x) => x.unit))];
+    if (units.length > 1) return [finding("L2.nested-radius-units", `${rel.id}: entries mix ${units.join(" and ")}, so the inner radius cannot be worked out`, [rel.id])];
+    const v = (role: string): number => sizes.get(role)?.value ?? 0;
+    const want = nestedRadius(v("outer"), v("inset"), v("border"));
+    const unit = units[0] ?? "";
+    if (Math.abs(v("inner") - want) > rel.tolerance + 1e-9) {
+      const minus = rel.border === null ? `${rel.inset} ${round(v("inset"))}${unit}` : `${rel.inset} ${round(v("inset"))}${unit} and ${rel.border} ${round(v("border"))}${unit}`;
+      out.push(
+        finding(
+          "L2.nested-radius",
+          `${rel.id}: ${rel.inner} is ${round(v("inner"))}${unit}, but inside ${rel.outer} ${round(v("outer"))}${unit} less ${minus} it should be ${round(want)}${unit} within ${rel.tolerance}, so the two corners are not concentric`,
+          [rel.id, rel.outer, rel.inner],
+        ),
+      );
+    }
+    return out;
+  },
+
   count(rel, r, a) {
     const enumerated = a.loaded.vocabularies[rel.group];
     if (enumerated) {
@@ -141,6 +176,8 @@ function selectorsOf(rel: Relation): string[] {
       return rel.tokens;
     case "count":
       return [rel.group];
+    case "nested-radius":
+      return [rel.outer, rel.inset, rel.inner, ...(rel.border === null ? [] : [rel.border])];
   }
 }
 
@@ -198,6 +235,8 @@ function runKind(rel: Relation, r: Resolution, a: Analysis, p: Permutation): Fin
       return RELATION_KINDS.ratio(rel, r, a, p);
     case "count":
       return RELATION_KINDS.count(rel, r, a, p);
+    case "nested-radius":
+      return RELATION_KINDS["nested-radius"](rel, r, a, p);
   }
 }
 

@@ -1,0 +1,11 @@
+{
+  "virtu-season": "0",
+  "name": "northern-year",
+  "description": "A northern-hemisphere year: sprigs in spring, falling leaves in autumn, holly on cards and a ring round avatars over the winter holidays, and snow until the end of February. Nothing is drawn between seasons.",
+  "seasons": [
+    { "name": "spring", "from": "03-20", "to": "05-31", "slots": { "card": "sprig-corners" } },
+    { "name": "autumn", "from": "10-01", "to": "11-15", "slots": { "card": "leaf-corners" } },
+    { "name": "winter-holidays", "from": "12-01", "to": "01-06", "slots": { "card": "holly-corners", "avatar": "halo-around" } },
+    { "name": "winter", "from": "01-07", "to": "02-29", "slots": { "card": "snow-corners" } }
+  ]
+}

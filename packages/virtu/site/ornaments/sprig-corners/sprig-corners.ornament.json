@@ -1,0 +1,11 @@
+{
+  "virtu-ornament": "0",
+  "name": "sprig-corners",
+  "description": "A small leafy sprig at each corner, painted in the link color, reaching 6px outside the element. Still.",
+  "anchor": "corners",
+  "asset": "sprig.svg",
+  "size": 20,
+  "outset": 6,
+  "gutter": 14,
+  "color": "color.role.link"
+}

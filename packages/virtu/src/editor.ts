@@ -11,6 +11,7 @@ import { contextList } from "./carriers.ts";
 import { cssName, cssValue } from "./build.ts";
 import { isObject } from "./json.ts";
 import type { DomainId, Finding, Json, JsonObject, Loaded, Permutation, Source } from "./model.ts";
+import { lookState, type LookCatalog, type LookChoice, type LookState } from "./looks.ts";
 import { parseValue, type TokenType } from "./tokens.ts";
 
 export const EDITOR_PROTOCOL = "virtu-editor/1";
@@ -54,7 +55,17 @@ export type EditorState = {
   css: string | null;
   /** Edits refused before check, with why. */
   refused: Array<{ edit: EditorEdit; why: string }>;
+  /**
+   * The Look tab, when the host offers a catalog: the shapes, ornaments, and
+   * season calendars, the choice, its CSS, and its findings, which also count
+   * in verdict and findings above. Optional, so a host without looks speaks
+   * the protocol unchanged.
+   */
+  looks?: LookState;
 };
+
+/** The catalog and the choice a host hands the editor, and the time that picks today's season. */
+export type EditorLooks = { catalog: LookCatalog; choice: LookChoice; now?: Date; timeZone?: string };
 
 /** The token files an accepted set of edits changes, by origin (relative to the resolver document). */
 export type EditorFile = { origin: string; tree: JsonObject };
@@ -65,9 +76,12 @@ export const EDITABLE_TYPES: ReadonlySet<TokenType> = new Set<TokenType>(["color
 const byCodeUnit = (a: string, b: string): number => (a < b ? -1 : a > b ? 1 : 0);
 
 /** The panel's view of a declaration. */
-export function editorState(loaded: Loaded, refused: EditorState["refused"] = []): EditorState {
+export function editorState(loaded: Loaded, refused: EditorState["refused"] = [], looks?: EditorLooks): EditorState {
   const a = analyze(loaded);
   const outcome = check(loaded);
+  const look = looks === undefined ? undefined : lookState(a, looks.catalog, looks.choice, looks.now, looks.timeZone);
+  const findings = look === undefined ? outcome.findings : [...outcome.findings, ...look.findings];
+  const verdict = findings.some((f) => f.severity === "error") ? "fail" : "pass";
   const contexts = contextList(a).filter((c) => c.values.length > 0);
   const def = a.defaultPermutation;
   const tokens: EditorToken[] = [];
@@ -98,17 +112,19 @@ export function editorState(loaded: Loaded, refused: EditorState["refused"] = []
     const editable = type !== null && EDITABLE_TYPES.has(type) && keys.every((k) => target(loaded, path, scope === null ? null : { name: scope, value: k }) !== null);
     tokens.push({ path, type, domain, property: cssName(path), scope, values, editable });
   }
-  return {
+  const state: EditorState = {
     protocol: EDITOR_PROTOCOL,
     system: loaded.name,
     contexts: contexts.map((c) => ({ name: c.name, dialect: c.dialect, values: c.values, default: c.default })),
     tokens,
     swatches,
-    verdict: outcome.verdict,
-    findings: outcome.findings,
+    verdict,
+    findings,
     css: previewCss(loaded),
     refused,
   };
+  if (look !== undefined) state.looks = look;
+  return state;
 }
 
 /**
@@ -147,9 +163,9 @@ export function applyEdits(loaded: Loaded, edits: EditorEdit[]): { loaded: Loade
 }
 
 /** The panel's view after the edits: editorState of the edited declaration, with the refusals. */
-export function previewEdits(loaded: Loaded, edits: EditorEdit[]): EditorState {
+export function previewEdits(loaded: Loaded, edits: EditorEdit[], looks?: EditorLooks): EditorState {
   const r = applyEdits(loaded, edits);
-  return editorState(r.loaded, r.refused);
+  return editorState(r.loaded, r.refused, looks);
 }
 
 /** A token file's text as the editor writes it: two-space JSON and a final newline. */

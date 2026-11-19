@@ -42,6 +42,8 @@ export const RULES = {
   "L2.contrast-undecidable": { layer: "L2", severity: "error", summary: "Contrast cannot be decided: not a color, alpha below 1, not srgb or display-p3, or a display-p3 color outside sRGB with no hex fallback" },
   "L2.ratio": { layer: "L2", severity: "error", summary: "An entry is not the stated ratio times the one before, within the tolerance" },
   "L2.ratio-units": { layer: "L2", severity: "error", summary: "A ratio's entries are not all dimensions in one unit, or all numbers" },
+  "L2.nested-radius": { layer: "L2", severity: "error", summary: "An inner radius is not the outer radius less the inset and border (never below 0), within the tolerance, so the corners are not concentric" },
+  "L2.nested-radius-units": { layer: "L2", severity: "error", summary: "A nested radius's entries are not all dimensions in one unit" },
   "L2.count": { layer: "L2", severity: "error", summary: "A vocabulary has more entries than the stated maximum" },
   "L3.entry-unknown": { layer: "L3", severity: "error", summary: "A usage entry names no vocabulary entry" },
   "L3.situation-conflict": { layer: "L3", severity: "error", summary: "One situation maps to two entries in the same domain" },
@@ -268,6 +270,7 @@ export const DEPTH_RULES = {
   "depth.stacking": { layer: "depth", severity: "error", summary: "A surface's luminance goes against the declared stacking direction, under some permutation" },
   "depth.contrast": { layer: "depth", severity: "error", summary: "A foreground falls below its contrast floor on a level's surface, under some permutation" },
   "depth.boundary": { layer: "depth", severity: "error", summary: "A level that needs a perceivable edge reaches 3:1 against the level below with neither its surface, its border, nor its shadow (WCAG 1.4.11)" },
+  "depth.ceiling": { layer: "depth", severity: "error", summary: "A declared stack of placements runs out of levels: an entry lands on or below the one it sits on, so nothing shows it is above" },
   "depth.indistinct": { layer: "depth", severity: "warning", summary: "Two neighbouring levels have the same surface, border, and shadow under some permutation, so nothing shows which is higher" },
   "depth.undecidable": {
     layer: "depth",
@@ -284,6 +287,51 @@ export function depthFinding(rule: DepthRuleId, message: string, entities: strin
   if (permutation !== undefined && Object.keys(permutation).length > 0) f.permutation = permutation;
   return f;
 }
+
+/** Findings virtu shape check reports on shape declarations. The design is docs/design/SHAPE.md. */
+export const SHAPE_RULES = {
+  "shape.invalid": { layer: "shape", severity: "error", summary: "A shape declaration has the wrong shape, a name that is not its file name, a name another declaration has, or a nest naming a role it gives no radius" },
+  "shape.roles": { layer: "shape", severity: "error", summary: "A shape gives no radius to a role every shape must give one: control, card, dialog, avatar" },
+  "shape.order": { layer: "shape", severity: "warning", summary: "A larger surface has a smaller radius than a smaller one (control, card, dialog), so the corners read out of scale" },
+  "shape.nest": { layer: "shape", severity: "error", summary: "A role nested inside another does not have the outer radius less the inset, within 1px, so the two curves are not concentric" },
+  "shape.token-unknown": { layer: "shape", severity: "error", summary: "An edge names a token the system lacks under some permutation" },
+  "shape.token-type": { layer: "shape", severity: "error", summary: "An edge's token is not a color" },
+  "shape.edge-contrast": { layer: "shape", severity: "error", summary: "An edge that shows a component's boundary falls below 3:1 against the surface it sits on somewhere along its paint, under some permutation (WCAG 1.4.11)" },
+  "shape.motion": { layer: "shape", severity: "error", summary: "A turning edge goes round faster than once a second" },
+  "shape.undecidable": { layer: "shape", severity: "error", summary: "An edge's contrast cannot be decided: a color outside srgb and display-p3, a none component, or a translucent color" },
+} as const satisfies Record<string, RuleMeta>;
+export type ShapeRuleId = keyof typeof SHAPE_RULES;
+
+/** Findings virtu ornament check reports on ornament declarations. The design is docs/design/ORNAMENTS.md. */
+export const ORNAMENT_RULES = {
+  "ornament.invalid": { layer: "ornament", severity: "error", summary: "An ornament declaration has the wrong shape, a name that is not its file name, a name another declaration has, or a motion its anchor cannot run" },
+  "ornament.asset": { layer: "ornament", severity: "error", summary: "The SVG is missing, is not an SVG, or holds a script, an event handler, foreign content, or a reference outside itself" },
+  "ornament.budget": { layer: "ornament", severity: "error", summary: "The SVG has more bytes than the ornament's budget" },
+  "ornament.covers": { layer: "ornament", severity: "error", summary: "The part of the drawing inside the element is deeper than the gutter, so it can cover the content" },
+  "ornament.flash": { layer: "ornament", severity: "error", summary: "A twinkle flashes more than three times a second (WCAG 2.3.1)" },
+  "ornament.pace": { layer: "ornament", severity: "warning", summary: "A looping animation's cycle is shorter than a second, which draws the eye from the content" },
+  "ornament.token-unknown": { layer: "ornament", severity: "error", summary: "The ornament's color names a token the system lacks under some permutation" },
+  "ornament.token-type": { layer: "ornament", severity: "error", summary: "The ornament's color token is not a color" },
+} as const satisfies Record<string, RuleMeta>;
+export type OrnamentRuleId = keyof typeof ORNAMENT_RULES;
+
+/** Findings virtu season check reports on season declarations. The design is docs/design/SEASONS.md. */
+export const SEASON_RULES = {
+  "season.invalid": { layer: "season", severity: "error", summary: "A season declaration has the wrong shape, a name that is not its file name, a name another declaration has, a day that is not MM-DD, or two seasons of one name" },
+  "season.overlap": { layer: "season", severity: "error", summary: "Two seasons share a day, so which one shows depends on the order they are listed" },
+  "season.unknown": { layer: "season", severity: "error", summary: "A season puts an ornament on a slot, but no ornament declaration of that name is found" },
+  "season.member": { layer: "season", severity: "error", summary: "An ornament a season wears does not pass virtu ornament check, so the season does not pass either" },
+} as const satisfies Record<string, RuleMeta>;
+export type SeasonRuleId = keyof typeof SEASON_RULES;
+
+function make(meta: RuleMeta, rule: string, message: string, entities: string[], permutation?: Permutation): Finding {
+  const f: Finding = { severity: meta.severity, layer: meta.layer, rule, message, entities };
+  if (permutation !== undefined && Object.keys(permutation).length > 0) f.permutation = permutation;
+  return f;
+}
+export const shapeFinding = (rule: ShapeRuleId, message: string, entities: string[], permutation?: Permutation): Finding => make(SHAPE_RULES[rule], rule, message, entities, permutation);
+export const ornamentFinding = (rule: OrnamentRuleId, message: string, entities: string[], permutation?: Permutation): Finding => make(ORNAMENT_RULES[rule], rule, message, entities, permutation);
+export const seasonFinding = (rule: SeasonRuleId, message: string, entities: string[], permutation?: Permutation): Finding => make(SEASON_RULES[rule], rule, message, entities, permutation);
 
 export function colorFinding(rule: ColorRuleId, message: string, entities: string[], permutation?: Permutation): Finding {
   const meta: RuleMeta = COLOR_RULES[rule];

@@ -39,16 +39,37 @@ export type VirtuEditorState = {
   saved?: boolean;
   written?: string[];
   why?: string;
+  /** The Look tab, when the host offers a catalog of shapes, ornaments, and season calendars. Absent, the panel has no Look tab. */
+  looks?: VirtuEditorLooks;
 };
 
-/** How the panel reaches the host: preview a list of edits, or publish them. */
+/** What a site picked: one shape or none, an ornament per slot, and one season calendar or none. */
+export type VirtuEditorLookChoice = { shape: string | null; ornaments: Record<string, string>; season: string | null };
+
+export type VirtuEditorLooks = {
+  shapes: Array<{ name: string; description: string | null; corner: string; card: string; control: string; edge: string | null }>;
+  ornaments: Array<{ name: string; description: string | null; anchor: string; motion: string | null }>;
+  seasons: Array<{ name: string; description: string | null; seasons: Array<{ name: string; from: string; to: string; slots: Record<string, string> }> }>;
+  /** The slots a page marks with virtu-slot-<slot>. */
+  slots: string[];
+  choice: VirtuEditorLookChoice;
+  /** The season of the chosen calendar that is on today, or null. */
+  today: string | null;
+  /** The CSS the choice adds to the page. */
+  css: string;
+  findings: VirtuEditorFinding[];
+  /** Names in the choice the catalog does not have. */
+  refused: string[];
+};
+
+/** How the panel reaches the host: preview a list of edits, or publish them, with a look choice when the person changed it (absent keeps the saved one). */
 export type VirtuEditorTransport = {
-  state(edits: VirtuEditorEdit[]): Promise<VirtuEditorState>;
-  publish(edits: VirtuEditorEdit[]): Promise<VirtuEditorState>;
+  state(edits: VirtuEditorEdit[], looks?: VirtuEditorLookChoice): Promise<VirtuEditorState>;
+  publish(edits: VirtuEditorEdit[], looks?: VirtuEditorLookChoice): Promise<VirtuEditorState>;
 };
 
 export type VirtuEditorOptions = {
-  /** A URL that takes POST {"edits": [...], "publish": boolean} and answers with the state, or a transport. */
+  /** A URL that takes POST {"edits": [...], "looks"?: {...}, "publish": boolean} and answers with the state, or a transport. */
   endpoint: string | VirtuEditorTransport;
   /** Shown on the Publish button and in its result, such as "Publish to your site". */
   publishLabel?: string;
@@ -62,15 +83,16 @@ export type VirtuEditorOptions = {
 
 export type VirtuEditorHandle = { open(): void; close(): void; destroy(): void };
 
-/** A transport over fetch: POST JSON to the endpoint. */
+/** A transport over fetch: POST JSON to the endpoint. It sends looks only when the panel has a look change. */
 export function fetchTransport(endpoint: string): VirtuEditorTransport {
-  const call = async (edits: VirtuEditorEdit[], publish: boolean): Promise<VirtuEditorState> => {
-    const res = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ edits, publish }) });
-    const body = (await res.json()) as VirtuEditorState | { error: string };
-    if ("error" in body) throw new Error(body.error);
-    return body;
+  const call = async (edits: VirtuEditorEdit[], publish: boolean, looks?: VirtuEditorLookChoice): Promise<VirtuEditorState> => {
+    const body = looks === undefined ? { edits, publish } : { edits, looks, publish };
+    const res = await fetch(endpoint, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    const answer = (await res.json()) as VirtuEditorState | { error: string };
+    if ("error" in answer) throw new Error(answer.error);
+    return answer;
   };
-  return { state: (edits) => call(edits, false), publish: (edits) => call(edits, true) };
+  return { state: (edits, looks) => call(edits, false, looks), publish: (edits, looks) => call(edits, true, looks) };
 }
 
 type Mark = { el: Element; ratio: number; need: number; n: number };
@@ -148,6 +170,15 @@ textarea { font: inherit; color: inherit; width: 100%; min-height: 72px; border:
 .mark { position: fixed; border: 2px solid var(--bad); border-radius: 4px; }
 .mark span { position: absolute; top: -10px; left: -10px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--bad); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
 .hover { position: fixed; border: 2px dashed var(--accent); border-radius: 4px; pointer-events: none; z-index: 2147483645; }
+.shapes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px 0 8px; }
+.shapes button { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px 8px; border: 1px solid var(--line); border-radius: 8px; background: none; }
+.shapes button[aria-pressed=true] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); font-weight: 600; }
+.sample { width: 44px; height: 30px; border: 1.5px solid currentColor; opacity: 0.75; }
+.sample.none { border-style: dashed; opacity: 0.4; }
+select { font: inherit; color: inherit; background: var(--fill); border: 1px solid var(--line); border-radius: 6px; height: 26px; max-width: 150px; }
+.row .note { padding: 0; }
+.seg.wrap { flex-wrap: wrap; }
+.seg.wrap button { flex: 1 0 auto; padding: 0 8px; white-space: nowrap; }
 `;
 
 const ICON_PICK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>';
@@ -181,7 +212,10 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
 
   let state: VirtuEditorState | null = null;
   let edits: VirtuEditorEdit[] = [];
-  let tab: "theme" | "check" | "chat" | "code" = "theme";
+  let tab: "theme" | "look" | "check" | "chat" | "code" = "theme";
+  // The look the person picked, or null for no change from the saved one; and the season previewed on <html> (undefined follows today).
+  let look: VirtuEditorLookChoice | null = null;
+  let seasonView: string | null | undefined;
   let picking = false;
   let picked: Element | null = null;
   let openSwatches: string | null = null;
@@ -238,7 +272,7 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
 
   async function refresh(): Promise<void> {
     try {
-      const next = await transport.state(edits);
+      const next = look === null ? await transport.state(edits) : await transport.state(edits, look);
       if (destroyed) return;
       state = next;
       error = null;
@@ -254,20 +288,44 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
   }
 
   function applyCss(): void {
-    if (!state?.css) return;
-    preview.textContent = state.css;
+    const text = [state?.css ?? "", state?.looks?.css ?? ""].filter(Boolean).join("\n");
+    if (text === "" && !preview.isConnected) return;
+    preview.textContent = text;
     if (!preview.isConnected || document.head.lastElementChild !== preview) document.head.appendChild(preview);
+    applySeason();
+  }
+
+  /** The look the panel shows: the person's pick, else the saved one. */
+  function lookChoice(): VirtuEditorLookChoice | null {
+    return look ?? state?.looks?.choice ?? null;
+  }
+
+  // The season previewed on <html>, once the person has touched the Look tab; destroy restores the original.
+  function applySeason(): void {
+    if (look === null && seasonView === undefined) return;
+    const calendar = lookChoice()?.season ?? null;
+    const season = calendar === null ? null : seasonView === undefined ? (state?.looks?.today ?? null) : seasonView;
+    if (!original.has("virtu-season")) original.set("virtu-season", document.documentElement.getAttribute("data-virtu-season"));
+    if (season === null) document.documentElement.removeAttribute("data-virtu-season");
+    else document.documentElement.setAttribute("data-virtu-season", season);
+  }
+
+  function setLook(change: Partial<VirtuEditorLookChoice>): void {
+    const cur = lookChoice() ?? { shape: null, ornaments: {}, season: null };
+    look = { shape: cur.shape, ornaments: { ...cur.ornaments }, season: cur.season, ...change };
+    schedule();
   }
 
   async function publish(): Promise<void> {
-    if (busy || !state || state.verdict !== "pass" || edits.length === 0) return;
+    if (busy || !state || state.verdict !== "pass" || (edits.length === 0 && look === null)) return;
     busy = true;
     render();
     try {
-      const r = await transport.publish(edits);
+      const r = look === null ? await transport.publish(edits) : await transport.publish(edits, look);
       state = r;
       if (r.saved) {
         edits = [];
+        look = null;
         toast(r.written && r.written.length > 0 ? `Published: ${r.written.join(", ")}` : "Published");
         options.onPublished?.(r);
       } else toast(r.why ?? "Not published");
@@ -510,7 +568,8 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
 
   function checkTab(): string {
     if (!state) return "";
-    const errs = state.findings.filter((f) => f.severity === "error");
+    const lookKeys = new Set((state.looks?.findings ?? []).map((f) => JSON.stringify(f)));
+    const errs = state.findings.filter((f) => f.severity === "error" && !lookKeys.has(JSON.stringify(f)));
     const parts: string[] = [`<h3>In the system</h3>`];
     if (errs.length === 0) parts.push(`<p class="empty">Every rule holds under every context.</p>`);
     for (const f of errs) {
@@ -518,15 +577,56 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
       parts.push(`<div class="finding">${esc(f.message)}${where}</div>`);
     }
     for (const r of state.refused) parts.push(`<div class="finding">Not applied: ${esc(r.edit.token)}: ${esc(r.why)}</div>`);
+    if (state.looks) {
+      const lookErrs = state.looks.findings.filter((f) => f.severity === "error");
+      parts.push(`<h3>Look</h3>`);
+      if (lookErrs.length === 0 && state.looks.refused.length === 0) parts.push(`<p class="empty">The look holds under every context.</p>`);
+      for (const f of lookErrs) {
+        const where = f.permutation ? ` <span class="note">${esc(Object.entries(f.permutation).map(([k, v]) => `${k}=${v}`).join(", "))}</span>` : "";
+        parts.push(`<div class="finding">${esc(f.message)}${where}</div>`);
+      }
+      for (const r of state.looks.refused) parts.push(`<div class="finding">Not applied: ${esc(r)}</div>`);
+    }
     parts.push(`<h3>On this page</h3>`);
     if (marks.length === 0) parts.push(`<p class="empty">All text on this page reaches its contrast minimum.</p>`);
     for (const m of marks) parts.push(`<div class="finding"><span class="n">${m.n}</span>${esc(describe(m.el))}: ${m.ratio.toFixed(2)}:1, needs ${m.need}:1</div>`);
     return parts.join("");
   }
 
+  function lookTab(): string {
+    const L = state?.looks;
+    const c = lookChoice();
+    if (!L || !c) return "";
+    const parts: string[] = [`<h3>Shape</h3><div class="shapes" role="group" aria-label="Shape">`];
+    parts.push(`<button type="button" data-shape="" aria-pressed="${c.shape === null}"><span class="sample none"></span>None</button>`);
+    for (const s of L.shapes) parts.push(`<button type="button" data-shape="${esc(s.name)}" aria-pressed="${c.shape === s.name}" title="${esc(s.description ?? "")}"><span class="sample" style="border-radius:${esc(s.card)}"></span>${esc(s.name)}</button>`);
+    parts.push(`</div>`);
+    parts.push(`<h3>Ornaments</h3>`);
+    for (const slot of L.slots) {
+      const cur = c.ornaments[slot] ?? "";
+      const o = L.ornaments.find((x) => x.name === cur);
+      const hint = o ? `<span class="note">${esc([o.anchor, o.motion].filter(Boolean).join(", "))}</span>` : "";
+      parts.push(`<div class="row"><span class="name">${esc(slot)}</span>${hint}<select data-slot="${esc(slot)}" aria-label="Ornament on ${esc(slot)}"><option value="">None</option>${L.ornaments.map((x) => `<option value="${esc(x.name)}"${x.name === cur ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>`);
+    }
+    parts.push(`<p class="note">Drawn on elements with the class virtu-slot-&lt;slot&gt;.</p>`);
+    parts.push(`<h3>Season</h3><div class="seg" role="group" aria-label="Season calendar">`);
+    parts.push(`<button type="button" data-calendar="" class="${c.season === null ? "on" : ""}" aria-pressed="${c.season === null}">None</button>`);
+    for (const s of L.seasons) parts.push(`<button type="button" data-calendar="${esc(s.name)}" class="${c.season === s.name ? "on" : ""}" aria-pressed="${c.season === s.name}" title="${esc(s.description ?? "")}">${esc(s.name)}</button>`);
+    parts.push(`</div>`);
+    const cal = L.seasons.find((s) => s.name === c.season);
+    if (cal) {
+      const shown = seasonView === undefined ? L.today : seasonView;
+      const opts: Array<[string, string | null, string]> = [["Off", null, "No season drawn"], ...cal.seasons.map((s): [string, string | null, string] => [s.name, s.name, `${s.from} to ${s.to}`])];
+      parts.push(`<div class="ctxname">Preview${L.today ? ` (today: ${esc(L.today)})` : ""}</div><div class="seg wrap" role="group" aria-label="Preview a season">${opts.map(([label, v, title]) => `<button type="button" data-season="${esc(v ?? "")}" class="${shown === v ? "on" : ""}" aria-pressed="${shown === v}" title="${esc(title)}">${esc(label)}</button>`).join("")}</div>`);
+      if (cal.description) parts.push(`<p class="note">${esc(cal.description)}</p>`);
+    }
+    return parts.join("");
+  }
+
   function codeTab(): string {
-    if (edits.length === 0) return `<p class="empty">No changes yet. Publish writes the token files your changes touch.</p>`;
-    return `<pre>${esc(JSON.stringify(edits, null, 2))}</pre><button class="link" type="button" data-discard>Discard changes</button>`;
+    if (edits.length === 0 && look === null) return `<p class="empty">No changes yet. Publish writes the token files your changes touch.</p>`;
+    const shown = look === null ? edits : { edits, looks: look };
+    return `<pre>${esc(JSON.stringify(shown, null, 2))}</pre><button class="link" type="button" data-discard>Discard changes</button>`;
   }
 
   function chatTab(): string {
@@ -540,10 +640,12 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
     if (panel.hidden) return;
     const errors = state?.findings.filter((f) => f.severity === "error").length ?? 0;
     const chip = verdict === "pass" ? "Passes" : verdict === "fail" ? `${errors} fail${errors === 1 ? "s" : ""}` : "…";
-    const canPublish = verdict === "pass" && edits.length > 0 && !busy && (state?.refused.length ?? 0) === 0;
-    const tabs: Array<[typeof tab, string]> = [["theme", "Theme"], ["check", `Check${marks.length > 0 ? ` (${marks.length})` : ""}`], ...(options.ask ? ([["chat", "Chat"]] as Array<[typeof tab, string]>) : []), ["code", "Code"]];
+    const changed = edits.length > 0 || look !== null;
+    const canPublish = verdict === "pass" && changed && !busy && (state?.refused.length ?? 0) === 0 && (state?.looks?.refused.length ?? 0) === 0;
+    if (tab === "look" && !state?.looks) tab = "theme";
+    const tabs: Array<[typeof tab, string]> = [["theme", "Theme"], ...(state?.looks ? ([["look", "Look"]] as Array<[typeof tab, string]>) : []), ["check", `Check${marks.length > 0 ? ` (${marks.length})` : ""}`], ...(options.ask ? ([["chat", "Chat"]] as Array<[typeof tab, string]>) : []), ["code", "Code"]];
     const scroll = shadow.querySelector(".body")?.scrollTop ?? 0;
-    panel.innerHTML = `<div class="grab"></div><header><h2>Customize</h2><button type="button" class="chip ${verdict ?? ""}" data-tab="check">${chip}</button><button type="button" class="publish" data-publish ${canPublish ? "" : "disabled"} title="${verdict === "fail" ? "Fix what fails first" : edits.length === 0 ? "No changes yet" : ""}">${busy ? "Publishing…" : esc(options.publishLabel ?? "Publish")}</button><button type="button" class="icon ${picking ? "on" : ""}" data-picker aria-label="Pick an element on the page" aria-pressed="${picking}">${ICON_PICK}</button><button type="button" class="icon" data-close aria-label="Close">${ICON_CLOSE}</button></header><nav>${tabs.map(([k, l]) => `<button type="button" data-tab="${k}" class="${tab === k ? "on" : ""}">${esc(l)}</button>`).join("")}</nav><div class="body">${tab === "theme" ? themeTab() : tab === "check" ? checkTab() : tab === "chat" ? chatTab() : codeTab()}</div>`;
+    panel.innerHTML = `<div class="grab"></div><header><h2>Customize</h2><button type="button" class="chip ${verdict ?? ""}" data-tab="check">${chip}</button><button type="button" class="publish" data-publish ${canPublish ? "" : "disabled"} title="${verdict === "fail" ? "Fix what fails first" : !changed ? "No changes yet" : ""}">${busy ? "Publishing…" : esc(options.publishLabel ?? "Publish")}</button><button type="button" class="icon ${picking ? "on" : ""}" data-picker aria-label="Pick an element on the page" aria-pressed="${picking}">${ICON_PICK}</button><button type="button" class="icon" data-close aria-label="Close">${ICON_CLOSE}</button></header><nav>${tabs.map(([k, l]) => `<button type="button" data-tab="${k}" class="${tab === k ? "on" : ""}">${esc(l)}</button>`).join("")}</nav><div class="body">${tab === "theme" ? themeTab() : tab === "look" ? lookTab() : tab === "check" ? checkTab() : tab === "chat" ? chatTab() : codeTab()}</div>`;
     const body = shadow.querySelector(".body");
     if (body) body.scrollTop = scroll;
   }
@@ -570,6 +672,17 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
         drawMarks();
         render();
       });
+    } else if (d["shape"] !== undefined) setLook({ shape: d["shape"] || null });
+    else if (d["calendar"] !== undefined) {
+      seasonView = undefined;
+      setLook({ season: d["calendar"] || null });
+    } else if (d["season"] !== undefined) {
+      seasonView = d["season"] || null;
+      applySeason();
+      requestAnimationFrame(() => {
+        scan();
+        drawMarks();
+      });
     } else if (d["sw"]) openSwatches = openSwatches === d["sw"] ? null : d["sw"];
     else if (d["pick"] && d["alias"]) {
       const t = token(d["pick"]);
@@ -583,6 +696,13 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
       return;
     } else if ("discard" in d) {
       edits = [];
+      look = null;
+      seasonView = undefined;
+      if (original.has("virtu-season")) {
+        const v = original.get("virtu-season") ?? null;
+        if (v === null) document.documentElement.removeAttribute("data-virtu-season");
+        else document.documentElement.setAttribute("data-virtu-season", v);
+      }
       void refresh();
     } else if ("ask" in d && options.ask && state) {
       const area = shadow.querySelector<HTMLTextAreaElement>("[data-prompt]");
@@ -599,6 +719,14 @@ export function mountVirtuEditor(options: VirtuEditorOptions): VirtuEditorHandle
   panel.addEventListener("change", (ev) => {
     const el = ev.target as HTMLInputElement;
     const d = el.dataset;
+    if (d["slot"] !== undefined) {
+      const ornaments = { ...(lookChoice()?.ornaments ?? {}) };
+      if (el.value) ornaments[d["slot"]] = el.value;
+      else delete ornaments[d["slot"]];
+      setLook({ ornaments });
+      render();
+      return;
+    }
     const path = d["dim"] ?? d["dur"] ?? d["font"] ?? d["num"] ?? d["custom"];
     const t = token(path);
     if (!t) return;
