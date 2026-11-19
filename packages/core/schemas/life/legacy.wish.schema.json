@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:legacy.wish",
+  "title": "Before I die",
+  "description": "What you want to do, see or make before you die.",
+  "type": "object",
+  "properties": {
+    "what": {
+      "type": "string",
+      "title": "What",
+      "maxLength": 300
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "legacy",
+    "kind": "wish",
+    "noun": "end",
+    "category": "relation",
+    "good": "soul",
+    "community": "person"
+  }
+}

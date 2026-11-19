@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and being built one PR at a time. Built: step 1, the ontology and its check. Not built: steps 2 to 5.
+Status: proposed on 2026-11-19 and being built one PR at a time. Built: steps 1 and 2, the ontology with its check, and a JSON Schema for every life record kind. Not built: steps 3 to 5, and nothing reads the schemas yet.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -60,7 +60,7 @@ Three readings of Aristotle shaped the mapping:
 - A choice is filed under doing, because choice is the origin of action (*Nicomachean Ethics* VI.2, 1139a31).
 - An end is filed under relation, because it is that for the sake of which (*Physics* II.3).
 
-Good itself is not one category. It is said in as many ways as being (*Nicomachean Ethics* I.6, 1096a23), so the three kinds of goods become a separate relation in step 2.
+Good itself is not one category. It is said in as many ways as being (*Nicomachean Ethics* I.6, 1096a23), so the three kinds of goods became a separate field in step 2: each noun names its `good` (body, external or soul) and its `community` (person, union, household, village or polis), and the check refuses any other value (G1 and C1).
 
 A noun names what a record is about, not the record. Naive learned this the hard way (EE-125): its `product` noun had named the card rather than the thing.
 
@@ -85,7 +85,14 @@ What is not built yet:
 One PR each:
 
 1. **The ontology and its check.** Built.
-2. **A JSON Schema for each record type,** generated from `life.ts` and `life-body.ts`. Each type carries its noun, its category, its kind of good (body, external or soul, *Nicomachean Ethics* I.8, 1098b12) and its community (person, union, household, village or polis, *Politics* I.2).
+2. **A JSON Schema for each record type,** generated from `life.ts` and `life-body.ts`. Each type carries its noun, its category, its kind of good (body, external or soul, *Nicomachean Ethics* I.8, 1098b12) and its community (person, union, household, village or polis, *Politics* I.2). Built: `packages/core/src/life-schemas.ts` derives them and `pnpm schemas` in `web/` writes them to `packages/core/schemas/life/<app>.<kind>.schema.json` (`--check` fails on a stale file).
+
+   How goods and communities were assigned:
+   - Goods follow the apps' grouping in `REFLECT_UI_2026-11-12.md`: Body and Home are goods of the body, and the rest are external.
+   - Virtue, craft, interest, preference and end are goods of the soul even though Work and Legacy keep them, because the goods of the soul are its virtues and activities (1098b14).
+   - Home's money and property (budget, belongings, purchases, life changes) are external, because Aristotle counts wealth as an external good (1099a31-b2).
+   - Communities (*Politics* I.2): the union is the couple (seeking a mate, dates, 1252a26). The household meets everyday wants: needs, meals, firearms, ways of getting around, belongings, purchases, the basket, income, the budget, life changes and the estate plan (1252b13). The village is the colony of the household: relatives beyond it, and the place one lives (1252b17). The polis holds work, credentials, ventures, friends and friend groups, admired people, citizenship, standing, duties and elections, since friendship and exchange hold the city together (*Nicomachean Ethics* VIII.1, 1155a22; V.5, 1132b33). The rest belong to the person alone.
+   - The noun `payment card` lists `home:card`, which `life.ts` describes as a small card on Home for a time (a widget), not a payment card. It is filed as external and the person's until the noun is corrected.
 3. **Lean proofs,** with no Mathlib, following NTS and Naive:
    - every noun has exactly one category;
    - `serves` links between intents and ends form no cycle (*Nicomachean Ethics* I.2: the chain of ends cannot go on without limit);

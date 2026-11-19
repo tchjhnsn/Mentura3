@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:polis.election",
+  "title": "Election",
+  "description": "Elections coming and past, and whether you voted.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Election",
+      "maxLength": 300
+    },
+    "day": {
+      "type": "string",
+      "title": "Day",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "how": {
+      "type": "string",
+      "title": "How I will vote",
+      "enum": [
+        "early-in-person",
+        "on-election-day",
+        "by-mail"
+      ]
+    },
+    "when": {
+      "type": "string",
+      "title": "The day I will vote",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "place": {
+      "type": "string",
+      "title": "Where",
+      "description": "Polling place, or where I mail it",
+      "maxLength": 300
+    },
+    "note": {
+      "type": "string",
+      "title": "What is on the ballot, and how I decided",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "polis",
+    "kind": "election",
+    "noun": "election",
+    "category": "doing",
+    "good": "external",
+    "community": "polis"
+  }
+}

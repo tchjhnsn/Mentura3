@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.imagined",
+  "title": "Imagined work",
+  "description": "Work that does not exist yet, as you imagine it.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name it",
+      "description": "What someone doing it would be called",
+      "maxLength": 300
+    },
+    "what": {
+      "type": "string",
+      "title": "What it is",
+      "maxLength": 20000
+    },
+    "who": {
+      "type": "string",
+      "title": "Who it serves",
+      "maxLength": 20000
+    },
+    "take": {
+      "type": "string",
+      "title": "What it would take to exist",
+      "maxLength": 20000
+    },
+    "learning": {
+      "type": "string",
+      "title": "Learning toward it",
+      "maxLength": 4000
+    },
+    "main": {
+      "type": "string",
+      "title": "Main aim",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "imagined",
+    "noun": "work",
+    "category": "doing",
+    "good": "external",
+    "community": "polis"
+  }
+}

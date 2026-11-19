@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.grocery-run",
+  "title": "Next grocery run",
+  "description": "The day you mean to shop for food.",
+  "type": "object",
+  "properties": {
+    "day": {
+      "type": "string",
+      "title": "Day",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "grocery-run",
+    "noun": "purchase",
+    "category": "doing",
+    "good": "external",
+    "community": "household"
+  }
+}

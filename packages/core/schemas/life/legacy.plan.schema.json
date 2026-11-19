@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:legacy.plan",
+  "title": "Plan",
+  "description": "The will, life insurance, guardians for children, power of attorney, beneficiaries, end-of-life wishes. Revisit at each life event.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "What",
+      "enum": [
+        "will",
+        "life-insurance",
+        "guardians-for-children",
+        "power-of-attorney",
+        "beneficiaries",
+        "end-of-life-wishes",
+        "other"
+      ]
+    },
+    "who": {
+      "type": "string",
+      "title": "Who is named",
+      "maxLength": 300
+    },
+    "where": {
+      "type": "string",
+      "title": "Where it is kept",
+      "maxLength": 300
+    },
+    "reviewed": {
+      "type": "string",
+      "title": "Last reviewed",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "legacy",
+    "kind": "plan",
+    "noun": "estate plan",
+    "category": "having",
+    "good": "external",
+    "community": "household"
+  }
+}

@@ -7,6 +7,8 @@
 //   U4  every noun reaches exactly one top category
 //   B1  each top category's BFO class is the label of its IRI
 //   K1  every life record kind is listed by exactly one noun, and K2 every listed kind exists
+//   G1  every noun names its kind of good: body, external or soul (Nicomachean Ethics I.8, 1098b12)
+//   C1  every noun names its community: person, union, household, village or polis (Politics I.2)
 // Pure: it reads nothing and is given the ontology and the kinds.
 import ontologyJson from "./ontology.json" with { type: "json" };
 
@@ -20,6 +22,8 @@ export type Noun = {
   status: "kept" | "retired";
   app: string | null;
   broader: string[];
+  good: Good;
+  community: Community;
   kinds: string[];
 };
 export type Ontology = { version: string; note: string; top_categories: TopCategory[]; nouns: Noun[] };
@@ -44,6 +48,20 @@ export const BFO_LABELS: ReadonlyMap<string, string> = new Map([
 export const CATEGORIES = ["substance", "quantity", "quality", "relation", "place", "time", "position", "having", "doing", "being affected"] as const;
 export type Category = (typeof CATEGORIES)[number];
 
+/**
+ * The three kinds of goods (Nicomachean Ethics I.8, 1098b12-14): goods of the body (health, strength), external goods
+ * (wealth, friends, standing) and goods of the soul, which are goods most properly (the virtues and their activity).
+ */
+export const GOODS = ["body", "external", "soul"] as const;
+export type Good = (typeof GOODS)[number];
+
+/**
+ * The communities, from the smallest (Politics I.2, 1252a24-1253a1): the person alone, the union of man and woman, the
+ * household for everyday wants, the village of several households, and the polis, the complete community.
+ */
+export const COMMUNITIES = ["person", "union", "household", "village", "polis"] as const;
+export type Community = (typeof COMMUNITIES)[number];
+
 export type Verdict = { problems: string[]; categoryOf: Map<string, string> };
 
 /** Checks the ontology against the rules above. `kinds` is every life record kind as `app:kind`. */
@@ -62,6 +80,13 @@ export function checkOntology(o: Ontology, kinds: readonly string[]): Verdict {
   for (const n of live) {
     if (tops.has(n.noun) || nouns.has(n.noun)) problems.push(`${n.noun}: a top category and a noun, or two nouns, share this name`);
     nouns.set(n.noun, n);
+  }
+  for (const n of live) {
+    // The JSON is typed by the shape the check holds it to, so read the two fields as plain values here.
+    const good: unknown = n.good;
+    const community: unknown = n.community;
+    if (!(GOODS as readonly unknown[]).includes(good)) problems.push(`G1 ${n.noun}: good ${String(good)} is not one of ${GOODS.join(", ")}`);
+    if (!(COMMUNITIES as readonly unknown[]).includes(community)) problems.push(`C1 ${n.noun}: community ${String(community)} is not one of ${COMMUNITIES.join(", ")}`);
   }
   const retired = new Set(o.nouns.filter((n) => n.status === "retired").map((n) => n.noun));
   for (const n of live) {
@@ -122,4 +147,16 @@ export function categoryOfKind(app: string, kind: string, o: Ontology = ONTOLOGY
   if (!n) return null;
   const c = categories(o).get(n.noun);
   return (CATEGORIES as readonly string[]).includes(c ?? "") ? (c as Category) : null;
+}
+
+/** The kind of good a life record kind is, from its noun, or null when no noun lists it. */
+export function goodOfKind(app: string, kind: string, o: Ontology = ONTOLOGY): Good | null {
+  const g: unknown = nounOfKind(app, kind, o)?.good;
+  return (GOODS as readonly unknown[]).includes(g) ? (g as Good) : null;
+}
+
+/** The community a life record kind belongs to, from its noun, or null when no noun lists it. */
+export function communityOfKind(app: string, kind: string, o: Ontology = ONTOLOGY): Community | null {
+  const c: unknown = nounOfKind(app, kind, o)?.community;
+  return (COMMUNITIES as readonly unknown[]).includes(c) ? (c as Community) : null;
 }

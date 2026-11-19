@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.card",
+  "title": "Home card",
+  "description": "A small card on Home for a time, such as a word a day or a checklist.",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Title",
+      "maxLength": 300
+    },
+    "tile": {
+      "type": "string",
+      "title": "Tile",
+      "maxLength": 4000
+    },
+    "start": {
+      "type": "string",
+      "title": "Starts",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "end": {
+      "type": "string",
+      "title": "Ends",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "card": {
+      "type": "string",
+      "title": "Card",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "card",
+    "noun": "payment card",
+    "category": "having",
+    "good": "external",
+    "community": "person"
+  }
+}

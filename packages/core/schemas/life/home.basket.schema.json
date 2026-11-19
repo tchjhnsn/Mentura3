@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.basket",
+  "title": "In the basket",
+  "description": "A meal in the week's basket.",
+  "type": "object",
+  "properties": {
+    "meal": {
+      "type": "string",
+      "title": "Meal",
+      "maxLength": 4000
+    },
+    "week": {
+      "type": "string",
+      "title": "Week of",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "basket",
+    "noun": "choice",
+    "category": "doing",
+    "good": "body",
+    "community": "household"
+  }
+}

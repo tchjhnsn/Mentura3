@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.inspiration",
+  "title": "Inspiration",
+  "description": "A job, a company or imagined work that inspires you, with what draws you to it and why.",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "title": "What it is",
+      "maxLength": 4000
+    },
+    "title": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "type": {
+      "type": "string",
+      "title": "Kind of work",
+      "enum": [
+        "job",
+        "career",
+        "venture",
+        "company",
+        "role",
+        "other"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "title": "Role",
+      "maxLength": 4000
+    },
+    "draws": {
+      "type": "string",
+      "title": "What draws me to it",
+      "maxLength": 20000
+    },
+    "origins": {
+      "type": "string",
+      "title": "Where that comes from",
+      "pattern": "^(chance|nature|compulsion|habit|reasoning|spirit|appetite)(,(chance|nature|compulsion|habit|reasoning|spirit|appetite))*$"
+    },
+    "end": {
+      "type": "string",
+      "title": "For the sake of what",
+      "maxLength": 20000
+    },
+    "learning": {
+      "type": "string",
+      "title": "Learning toward it",
+      "maxLength": 4000
+    },
+    "main": {
+      "type": "string",
+      "title": "Main aim",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "inspiration",
+    "noun": "inspiration",
+    "category": "relation",
+    "good": "external",
+    "community": "person"
+  }
+}

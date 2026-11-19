@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.craft",
+  "title": "Craft",
+  "description": "A craft from Scholē's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "title": "Which craft",
+      "maxLength": 4000
+    },
+    "title": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "why": {
+      "type": "string",
+      "title": "What drew me",
+      "maxLength": 20000
+    },
+    "how": {
+      "type": "string",
+      "title": "How I learned it",
+      "maxLength": 4000
+    },
+    "stage": {
+      "type": "string",
+      "title": "Where I am",
+      "enum": [
+        "novice",
+        "advanced-beginner",
+        "competent",
+        "proficient",
+        "expert"
+      ]
+    },
+    "made": {
+      "type": "string",
+      "title": "What I have made",
+      "maxLength": 20000
+    },
+    "vouch": {
+      "type": "string",
+      "title": "Who vouches",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "craft",
+    "noun": "craft",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}
