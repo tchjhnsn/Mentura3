@@ -102,3 +102,58 @@ One PR each:
    Built in `lean/` (see `lean/README.md`): the ontology is generated into Lean from `ontology.json` by `scripts/ontology-lean.ts` with a certificate the kernel checks by `decide`; serves links and choices are abstract models with checkers whose success gives well-foundedness, no cycle and a telos for every choice; the communities form a strict total order. Not built: generating a plan from a person's records and checking it, which waits for step 2, and running `lake build` in CI.
 4. **The action registry moved from `web/` into core,** so the CLI and an MCP server over a vault get the same routes as the app, the way Naive's router serves its CLI, MCP and API.
 5. **The life stages as the framework's lifecycle,** like Naive's phases: the Ventures of a Lifetime statechart in `packages/core/src/lifetime.ts`, with soft gates (decided 2026-11-12).
+6. **The presentation gate,** proposed and not built. Torian asked on 2026-11-19: "how should a man present himself before others given any given circumstance?" He wants the context of the public viewing asked whenever anything enters public view, in person or online, with Aristotle, Dale Carnegie and C. S. Lewis as his teachers. He sees it as the personal form of Naive's publication gate (EE-025), so it is modelled on that gate.
+
+## Step 6: the presentation gate
+
+### What Aristotle gives
+
+- **Fittingness.** *To prepon* (*Rhetoric* III.7): what is said and how it is said should fit the speaker, the subject and the audience.
+- **The six circumstances of an action** (*Nicomachean Ethics* III.1, 1111a3-6): who acts, what is done, about what or to whom, by what means, for what end, and how. *Nicomachean Ethics* II.6 (1106b21) puts the mean the same way: at the right time, about the right things, toward the right people, for the right end, and in the right way.
+- **The occasion.** *Rhetoric* I.3 gives three kinds: deliberating about the future, judging the past, and praise or ceremony.
+- **Ethos** (*Rhetoric* II.1): the audience trusts good sense, good character and goodwill. Carnegie's principles mostly concern goodwill. Lewis's chapter on pride in *Mere Christianity* ("The Great Sin") is Aristotle's boaster seen from the other side.
+- **The virtues of social life** (*Nicomachean Ethics* IV.6-9), each a mean:
+  - friendliness, between flattery and quarrelsomeness;
+  - truthfulness about oneself, between boasting and false modesty;
+  - wit, between buffoonery and boorishness;
+  - a sense of shame.
+
+  Greatness of soul (IV.3) adds the measure for honour.
+- **Two empty categories filled.** Position (how one carries oneself) and having (what one wears or carries) are the categories that cover in-person presentation.
+
+### What Naive already has
+
+Naive's publication policy (`publication-policy.schema.json` in tchjhnsn/naive) gives every channel:
+- a destination;
+- an audience;
+- guidelines;
+- rules for who may publish what, with a person always approving;
+- checks;
+- a preview.
+
+### What the personal version adds
+
+It has no field for the end (the purpose) or for the speaker's role. Those are the two the personal version needs.
+
+### The design
+
+- **A personal publication policy** in Naive's format: `presentation-policy.json` in the vault, shaped like Naive's publication policy, and kept as Reflect's own copy as decided for the ontology.
+  - Its channels are the person's own: the personal site (tcjcafe.com through Settings, Your site, Your own site on GitHub), the Reflect profile, social accounts, email, and **in person**, a channel with no destination URL.
+  - The approver is always the person.
+- **Two new fields on a channel's rule:**
+  - `role`: the speaker's role there, such as founder, friend, citizen or son.
+  - `end`: what the appearance is for.
+- **A presentation record** (noun `presentation`, category doing) for each appearance. It holds:
+  - the channel;
+  - the six circumstances;
+  - the occasion kind;
+  - the audience, with the person's relation to them;
+  - the virtue at stake, and the two faults it sits between;
+  - afterwards, how it went.
+- **The gate itself.** A publishing action held by the runner (`holds` in `packages/core/src/registry.ts`) stays held until its presentation record names the end, the role and the audience, and the person approves it. An agent may draft and check, but it never approves, as in Naive.
+- **Shared with Naive.** `end` and `role` are proposed for Naive's channel rules too, as Naive's own change in its own PR. A venture speaks as someone for some end as well.
+
+### Not built
+
+- The policy, the record, the gate and the Naive proposal.
+- The first test is tcjcafe.com. The founder scholarship thread is auditing it against the six circumstances.
