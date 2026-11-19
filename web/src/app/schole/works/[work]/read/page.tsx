@@ -19,11 +19,12 @@ import { audiobookFor } from "@/server/audio";
 import { gutenbergEditions } from "@/server/free";
 import { Menu } from "../../../browse/category-menu";
 import { matchSections } from "@reflect/core/listening";
+import { outsideFetch } from "@/server/outside";
 
 export const metadata: Metadata = { title: "Reading" };
 export const dynamic = "force-dynamic";
 
-const cached = (url: string) => fetch(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
+const cached = (url: string) => outsideFetch()(url, { headers: { "user-agent": "reflect-app" }, next: { revalidate: 86400 } });
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 
 /**

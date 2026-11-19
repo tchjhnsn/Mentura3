@@ -5,6 +5,7 @@ import { isCalTile, type CalEvent, type CalTile } from "@reflect/core/calendar";
 import { feedEvents as toCalEvents, feedUrl, parseIcs, type IcsCalendar } from "@reflect/core/ics";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
+import { outsideFetch } from "@/server/outside";
 
 // Calendar subscriptions (migration 0043, `@reflect/core/ics`): calendars the person subscribes to by their iCalendar
 // address, read-only in Reflect's calendar. The address is a secret, so it is sealed and never logged or shown after
@@ -41,7 +42,7 @@ export async function fetchIcs(raw: string): Promise<string> {
     if (privateHost(url.hostname)) throw new Error("That address is not a public calendar.");
     let res: Response;
     try {
-      res = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(TIMEOUT_MS), headers: { accept: "text/calendar, text/plain;q=0.5" }, cache: "no-store" });
+      res = await outsideFetch({ timeoutMs: TIMEOUT_MS })(url, { redirect: "manual", headers: { accept: "text/calendar, text/plain;q=0.5" }, cache: "no-store" });
     } catch {
       throw new Error(`${url.hostname} did not answer in time.`);
     }

@@ -1,12 +1,12 @@
 // Where a place is, from OpenStreetMap's Nominatim (its usage policy: at most one request a second, a named client,
 // results attributed). Only the place's words are sent, nothing about the person. Null when it cannot be found.
+import { outsideFetch } from "@/server/outside";
 export async function geocode(place: string): Promise<{ lat: number; lon: number; name: string } | null> {
   const q = place.trim().slice(0, 200);
   if (!q) return null;
   try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q, format: "jsonv2", limit: "1" })}`, {
+    const r = await outsideFetch({ timeoutMs: 8000 })(`https://nominatim.openstreetmap.org/search?${new URLSearchParams({ q, format: "jsonv2", limit: "1" })}`, {
       headers: { "user-agent": "Reflect/1.0 (personal planning app)", accept: "application/json" },
-      signal: AbortSignal.timeout(8000),
     });
     if (!r.ok) return null;
     const [hit] = (await r.json()) as { lat: string; lon: string; display_name: string }[];

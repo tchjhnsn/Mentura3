@@ -3,6 +3,7 @@
 // free and need no key. Answers are cached for a day; a failed fetch gives null, never a guess.
 import { parseNri, tidyName, waterRecord, type CountyRisk, type Place, type WaterSystem } from "@reflect/core/public-data";
 import { lifeRecords } from "./life-store";
+import { outsideFetch } from "@/server/outside";
 
 const NRI = "https://services.arcgis.com/XG15cJAlne2vxtgt/arcgis/rest/services/National_Risk_Index_Counties/FeatureServer/0/query";
 const EF = "https://data.epa.gov/efservice";
@@ -11,7 +12,7 @@ const HAZARD_FIELDS = ["AVLN", "CFLD", "CWAV", "DRGT", "ERQK", "HAIL", "HWAV", "
 
 async function getJson(url: string): Promise<unknown> {
   try {
-    const r = await fetch(url, { next: { revalidate: DAY }, signal: AbortSignal.timeout(15_000) });
+    const r = await outsideFetch({ timeoutMs: 15_000 })(url, { next: { revalidate: DAY } });
     return r.ok ? await r.json() : null;
   } catch {
     return null;

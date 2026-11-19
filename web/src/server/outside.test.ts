@@ -56,6 +56,12 @@ describe("outside calls", () => {
     expect(out).toBe("timed out after 20 ms");
   });
 
+  it("does not repeat a POST unless asked", async () => {
+    const s = script(503, 200);
+    expect((await outsideFetch({ ...fast, fetcher: s.fetcher })("https://x.test/h", { method: "POST" })).status).toBe(503);
+    expect(s.seen).toHaveLength(1);
+  });
+
   it("outsideFetch rejects only when no answer came", async () => {
     await expect(outsideFetch({ ...fast, retries: 1, fetcher: script("throw", "throw").fetcher })("https://x.test/f")).rejects.toBeTruthy();
     expect((await outsideFetch({ ...fast, retries: 0, fetcher: script(500).fetcher })("https://x.test/g")).status).toBe(500);
