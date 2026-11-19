@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { areaOf, itemsIn } from "@reflect/core/interest-catalogue";
 import { requireUser } from "@/server/session";
-import { myInterests } from "@/server/interests-store";
+import { myAreas, myInterests } from "@/server/interests-store";
 import { Pick } from "./pick";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +17,7 @@ export default async function PickPage({ params }: { params: Promise<{ area: str
   const area = areaOf(id);
   if (!area) notFound();
   const user = await requireUser();
-  const picked = (await myInterests(user.id)).filter((i) => i.area === area.id).map((i) => i.ref);
-  return <Pick area={area} items={itemsIn(area.id)} initial={picked} />;
+  const [mine, areas] = await Promise.all([myInterests(user.id), myAreas(user.id)]);
+  const picked = mine.filter((i) => i.area === area.id).map((i) => i.ref);
+  return <Pick area={area} items={itemsIn(area.id)} initial={picked} initialGenres={areas.genres} initialEras={areas.eras} />;
 }

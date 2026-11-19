@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ExternalLink } from "lucide-react";
-import { areaOf, itemOf, related } from "@reflect/core/interest-catalogue";
+import { areaOf, itemOf, related, topicsOf } from "@reflect/core/interest-catalogue";
 import { MODES, sentence } from "@reflect/core/interests";
 import { Button } from "@/components/ui/button";
 import { SidebarButton } from "@/components/sidebar";
@@ -85,10 +85,10 @@ export default async function InterestPage({ params }: { params: Promise<{ ref: 
         </section>
       ) : null}
 
-      {item.tags.length ? (
+      {topicsOf(item).length ? (
         <section className="grid gap-2">
           <h2 className="text-lg font-semibold">What it is about</h2>
-          <p className="text-muted-foreground text-[15px]">{item.tags.join(", ")}</p>
+          <p className="text-muted-foreground text-[15px]">{topicsOf(item).join(", ")}</p>
         </section>
       ) : null}
 

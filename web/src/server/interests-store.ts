@@ -2,7 +2,7 @@
 // (`@reflect/core/life`; levels in `@reflect/core/interests`, things in `@reflect/core/interest-catalogue`). Writes go
 // through the action registry (./actions/interests.ts) so they are in the change log.
 import { COMMITMENT, DEPTH, MODES, SKILL, SOURCES, isStep, type Interest, type Mode } from "@reflect/core/interests";
-import { AREAS, itemOf, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
+import { AREAS, ERAS, GENRES, itemOf, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
 import { lifeRecords, type LifeRecord } from "./life-store";
 
 export type MyInterest = Interest & { id: string; area: AreaId | null; modes: Mode[]; item: CatalogItem | null; createdAt: string };
@@ -34,11 +34,12 @@ export async function myInterest(userId: string, ref: string): Promise<MyInteres
   return (await myInterests(userId)).find((i) => i.ref === ref) ?? null;
 }
 
-export type MyAreas = { done: AreaId[]; skipped: AreaId[]; sorted: boolean; later: string | null };
+export type MyAreas = { done: AreaId[]; skipped: AreaId[]; sorted: boolean; later: string | null; genres: string[]; eras: string[] };
 const areaIds = (v: unknown) => list(v).filter((x): x is AreaId => AREAS.some((a) => a.id === x));
 
-/** Which Get to know you areas the person finished or skipped, whether they sorted, and until when the card waits. */
+/** Which Get to know you areas the person finished or skipped, whether they sorted, until when the card waits, and the music genres and eras they chose. */
 export async function myAreas(userId: string): Promise<MyAreas> {
   const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "interest-areas");
-  return { done: areaIds(r?.body.done), skipped: areaIds(r?.body.skipped), sorted: r?.body.sorted === "yes", later: r?.body.later ? String(r.body.later) : null };
+  return { done: areaIds(r?.body.done), skipped: areaIds(r?.body.skipped), sorted: r?.body.sorted === "yes", later: r?.body.later ? String(r.body.later) : null,
+    genres: list(r?.body.genres).filter((g) => GENRES.some((x) => x.id === g)), eras: list(r?.body.eras).filter((e) => ERAS.some((x) => x.id === e)) };
 }

@@ -24,3 +24,20 @@ describe("interest catalogue", () => {
     for (const o of out) { expect(picks).not.toContain(o.item.id); expect(picks).toContain(o.because.id); }
   });
 });
+
+describe("music genres and eras", () => {
+  it("opens newest first, filters by genre and era, and every musician has an era and a genre", async () => {
+    const { ERAS, GENRES, eraIndex, filterMusic, topicsOf } = await import("./interest-catalogue");
+    const music = itemsIn("music");
+    for (const m of music) {
+      expect(eraIndex(m)).toBeLessThan(ERAS.length);
+      expect(GENRES.some((g) => g.tags.some((t) => m.tags.includes(t)))).toBe(true);
+      expect(topicsOf(m).some((t) => /\d0s|before/.test(t))).toBe(false);
+    }
+    const all = filterMusic(music, [], []);
+    expect(eraIndex(all[0]!)).toBe(0);
+    const hip = filterMusic(music, ["hip-hop"], ["2010s"]);
+    expect(hip.length).toBeGreaterThan(2);
+    for (const m of hip) { expect(m.tags).toContain("hip hop"); expect(m.tags).toContain("2010s"); }
+  });
+});

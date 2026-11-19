@@ -23,26 +23,33 @@ const slug = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().rep
 const wiki = async (title) => {
   const j = await get(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title.replace(/ /g, "_"))}`);
   if (!j || j.type === "disambiguation") return null;
-  return { name: j.title, line: j.description ?? null, image: j.thumbnail?.source ?? null, page: j.content_urls?.desktop?.page ?? null };
+  // A lead image that is a signature or a drawing (SVG) is no picture of the person; a tinted tile is better.
+  const img = j.thumbnail?.source ?? null;
+  return { name: j.title, line: j.description ?? null, image: img && !/ignature|\.svg/i.test(img) ? img : null, page: j.content_urls?.desktop?.page ?? null };
 };
+// --only music (or books, podcasts) rebuilds that area and keeps the others as they are.
+const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : null;
+const kept = only ? JSON.parse(readFileSync("packages/core/src/interest-items.json", "utf8")).filter((x) => x.area !== only) : [];
 const out = [];
-for (const [title, by, tags] of seed.books) {
+for (const [title, by, tags] of only && only !== "books" ? [] : seed.books) {
   const j = await get(`https://openlibrary.org/search.json?title=${encodeURIComponent(title)}&author=${encodeURIComponent(by)}&limit=1&fields=key,cover_i,first_publish_year`);
   const d = j?.docs?.[0];
   const person = await wiki(by);
   out.push({ id: `b-${slug(title)}`, area: "books", title, by, tags: tags.split(","), image: d?.cover_i ? `https://covers.openlibrary.org/b/id/${d.cover_i}-M.jpg` : null, link: d?.key ? `https://openlibrary.org${d.key}` : null, year: d?.first_publish_year ?? null, people: person ? [{ ...person, role: "author" }] : [] });
   process.stdout.write(d?.cover_i ? "." : "x");
 }
-for (const [title, by, tags] of seed.podcasts) {
+for (const [title, by, tags] of only && only !== "podcasts" ? [] : seed.podcasts) {
   const j = await get(`https://itunes.apple.com/search?term=${encodeURIComponent(title)}&media=podcast&entity=podcast&limit=3`);
   const d = j?.results?.find((r) => r.collectionName?.toLowerCase().includes(title.toLowerCase().slice(0, 12))) ?? j?.results?.[0];
   out.push({ id: `p-${slug(title)}`, area: "podcasts", title, by, tags: tags.split(","), image: d?.artworkUrl600 ?? null, link: d?.collectionViewUrl?.split("?")[0] ?? null, feed: d?.feedUrl ?? null, people: [] });
   process.stdout.write(d ? "." : "x");
 }
-for (const [name, page, tags] of seed.music) {
+for (const [name, page, tags] of only && only !== "music" ? [] : seed.music) {
+  await wait(250);
   const w = await wiki(page || name);
   out.push({ id: `m-${slug(name)}`, area: "music", title: name, by: w?.line ?? "", tags: tags.split(","), image: w?.image ?? null, link: w?.page ?? null, people: w ? [{ ...w, role: "musician" }] : [] });
   process.stdout.write(w?.image ? "." : "x");
 }
-writeFileSync("packages/core/src/interest-items.json", JSON.stringify(out, null, 1) + "\n");
-console.log(`\n${out.length} items, ${out.filter((x) => !x.image).length} without an image`);
+const all = [...kept.filter((x) => x.area === "books"), ...out.filter((x) => x.area === "books"), ...kept.filter((x) => x.area === "podcasts"), ...out.filter((x) => x.area === "podcasts"), ...kept.filter((x) => x.area === "music"), ...out.filter((x) => x.area === "music")];
+writeFileSync("packages/core/src/interest-items.json", JSON.stringify(all, null, 1) + "\n");
+console.log(`\n${all.length} items, ${all.filter((x) => !x.image).length} without an image`);
