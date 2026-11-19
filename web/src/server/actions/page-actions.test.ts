@@ -119,6 +119,8 @@ const ROUTED: Record<string, string[]> = {
   "events/actions.ts#newEventAction": ["host_event"],
   "events/actions.ts#goingAction": ["going_to_event"],
   "events/actions.ts#setPartAction": ["set_event_part"],
+  // Meetings: + New meeting
+  "meetings/actions.ts#newMeetingAction": ["schedule_meeting"],
   // Meals
   "meals/actions.ts#addMealAction": ["add_meal"],
   "meals/actions.ts#saveMealAction": ["change_record"],
