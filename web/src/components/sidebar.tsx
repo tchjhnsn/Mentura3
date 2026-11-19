@@ -1,65 +1,124 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PinIcon, PinOffIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
-import { usePane } from "./pane-context";
+import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
 
-const KEY = "reflect.sidebar.pinned";
-const WIDE = "(min-width: 1600px)";
 const ROW = "hover:bg-accent flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm transition";
+const STEP = 16;
+/** From this width the sidebar sits beside the page; narrower, it slides over it. */
+const DOCK = "(min-width: 1024px)";
 
 type State = { open: boolean; toggle: () => void };
 const Ctx = createContext<State | null>(null);
 
 /**
- * The sidebar (Torian, 2026-11-17 08:52Z, on every page from 09:23Z): kept once for the whole app, opened from the
- * button at the left of every page's header. It slides over the empty left margin without moving the page. On a
- * phone it covers the page with a light dim behind; a tap outside, Esc or opening another page closes it. At 1600 px
- * and wider, where the margin holds it, it can be pinned open, remembered in this browser only.
+ * The sidebar (Torian, 2026-11-17; docked and resizable from 2026-11-19, "the experience the third pane operates by
+ * needs to be how our entire sidebar operates"). At 1024 px and wider it sits at the left and the page narrows to make
+ * room (`--side-w` on the root, read by `body` in globals.css); the handle on its right edge resizes it between 220
+ * and 420 (arrow keys too), and a double click puts it back to 272. The button at the left of every page's header and
+ * the one in the sidebar open and close it. Open or shut and the width are kept in a cookie, so the server paints the
+ * first frame with them and it stays as the person left it. Narrower than 1024 it slides over the page with a light
+ * dim behind; a tap outside, Esc or opening another page closes it there.
  */
-export function SidebarProvider({ groups, chats, me, children }: { groups: SidebarGroup[]; chats: SidebarChat[]; /** The person's name and profile, for their face at the foot. */ me?: { name: string; href: string } | null; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const [pinned, setPinned] = useState(false);
+export function SidebarProvider({ groups, chats, me, initial, children }: { groups: SidebarGroup[]; chats: SidebarChat[]; /** The person's name and profile, for their face at the foot. */ me?: { name: string; href: string } | null; /** From the cookie (./sidebar-state.ts). */ initial: SideState; children: ReactNode }) {
+  // Docked: beside the page on a wide screen, kept in the cookie. Over: slid over the page on a narrow one, for a moment.
+  const [docked, setDocked] = useState(initial.open);
+  const [over, setOver] = useState(false);
+  const [width, setWidth] = useState(initial.width);
+  const [wide, setWide] = useState(true);
   const path = usePathname();
+  const live = useRef({ docked, width });
+  live.current = { docked, width };
   useEffect(() => {
-    try { if (localStorage.getItem(KEY) === "1" && window.matchMedia(WIDE).matches) { setPinned(true); setOpen(true); } } catch {}
+    const m = window.matchMedia(DOCK);
+    const on = () => { setWide(m.matches); if (m.matches) setOver(false); };
+    on();
+    m.addEventListener("change", on);
+    return () => m.removeEventListener("change", on);
   }, []);
-  // Opening another page closes it, unless it is pinned.
-  useEffect(() => { if (!pinned) setOpen(false); }, [path]); // eslint-disable-line react-hooks/exhaustive-deps
+  // On a narrow screen, opening another page closes it.
+  useEffect(() => { setOver(false); }, [path]);
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape" && !pinned) setOpen(false); };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOver(false); };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [pinned]);
-  const pin = (on: boolean) => { setPinned(on); try { localStorage.setItem(KEY, on ? "1" : "0"); } catch {} };
-  const shut = () => { pin(false); setOpen(false); };
-  const close = () => { if (!pinned) setOpen(false); };
-  // New Chat opens the second pane beside the page (Panes design guide); on the chat page itself it is a link.
-  const pane = usePane();
+  }, []);
+  // The page narrows by the sidebar's width while it is docked.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--side-w", docked ? `${width}px` : "0px");
+  }, [docked, width]);
+  const save = (o: boolean, w: number) => { document.cookie = `${SIDE_COOKIE}=${o ? 1 : 0}.${w}; path=/; max-age=31536000; samesite=lax`; };
+  const dock = (o: boolean) => { setDocked(o); save(o, live.current.width); };
+  const open = wide ? docked : over;
+  const toggle = () => (wide ? dock(!docked) : setOver((v) => !v));
+  const shut = () => (wide ? dock(false) : setOver(false));
+  const clamp = (w: number) => Math.round(Math.max(SIDE_MIN, Math.min(SIDE_MAX, w)));
+  const resize = (w: number) => { const n = clamp(w); setWidth(n); save(live.current.docked, n); };
+  const drag = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
+    document.body.style.userSelect = "none";
+    const move = (ev: PointerEvent) => setWidth(clamp(ev.clientX));
+    const up = (ev: PointerEvent) => {
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerup", up);
+      document.body.style.userSelect = "";
+      resize(ev.clientX);
+    };
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerup", up);
+  };
 
   return (
-    <Ctx.Provider value={{ open, toggle: () => (open ? shut() : setOpen(true)) }}>
+    <Ctx.Provider value={{ open, toggle }}>
       {children}
-      {open && !pinned ? <div aria-hidden="true" onClick={close} className="fixed inset-0 z-40 bg-black/20 min-[1600px]:bg-transparent" /> : null}
-      <nav id="sidebar" aria-label="Reflect" inert={!open} className={cn("bg-background fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r shadow-lg transition-transform duration-200 min-[1600px]:shadow-none", open ? "translate-x-0" : "-translate-x-full")}>
+      {over && !wide ? <div aria-hidden="true" onClick={() => setOver(false)} className="fixed inset-0 z-40 bg-black/20" /> : null}
+      <nav id="sidebar" aria-label="Reflect" inert={!open}
+        style={{ ["--side" as string]: `${width}px` }}
+        className={cn(
+          "bg-background fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r shadow-lg transition-transform duration-200",
+          "lg:z-30 lg:w-[var(--side)] lg:shadow-none",
+          over ? "translate-x-0" : "-translate-x-full",
+          docked ? "lg:translate-x-0" : "lg:-translate-x-full",
+        )}>
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize the sidebar"
+          aria-valuemin={SIDE_MIN}
+          aria-valuemax={SIDE_MAX}
+          aria-valuenow={width}
+          tabIndex={open ? 0 : -1}
+          onPointerDown={drag}
+          onDoubleClick={() => resize(SIDE_DEFAULT)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") { e.preventDefault(); resize(width + STEP); }
+            if (e.key === "ArrowLeft") { e.preventDefault(); resize(width - STEP); }
+          }}
+          className="group absolute inset-y-0 -right-1.5 z-10 hidden w-3 cursor-col-resize touch-none outline-none lg:block"
+        >
+          <span className="group-hover:bg-primary/50 group-focus-visible:bg-primary absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors group-hover:w-0.5 group-focus-visible:w-0.5" />
+          <span className="bg-muted-foreground/40 absolute top-1/2 left-1/2 h-8 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100" />
+        </div>
         <div className="flex items-center justify-between gap-2 px-3 pt-4 pb-2">
           <Button variant="ghost" size="icon" aria-label="Close the sidebar" onClick={shut}><PanelLeftIcon /></Button>
-          <Button variant="ghost" size="icon" className="hidden min-[1600px]:inline-flex" aria-label={pinned ? "Unpin the sidebar" : "Keep the sidebar open"} aria-pressed={pinned} onClick={() => pin(!pinned)}>{pinned ? <PinOffIcon /> : <PinIcon />}</Button>
         </div>
 
         <div className="grid flex-1 content-start gap-5 overflow-y-auto px-3 pb-4">
           <div className="grid gap-0.5">
             <Link href="/" className={cn(ROW, "font-medium")}><HomeIcon className="size-4" />Home</Link>
             <Link href="/dashboard" className={cn(ROW, "font-medium")}><LayoutDashboardIcon className="size-4" />Dashboard</Link>
-            <Link href="/chat" data-pane-own="" className={cn(ROW, "font-medium")} onClick={(e) => { if (!pane || path === "/chat" || e.metaKey || e.ctrlKey || e.shiftKey) return; e.preventDefault(); pane.openChat({}); close(); }}><PlusIcon className="size-4" />New Chat</Link>
+            <Link href="/chat" className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />New Chat</Link>
           </div>
 
           <Section title="Tools">
@@ -110,7 +169,7 @@ export function SidebarButton({ className }: { className?: string }) {
   const s = useContext(Ctx);
   if (!s) return null;
   return (
-    <Button data-embed-hide="" variant="ghost" size="icon" className={className} aria-label={s.open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={s.open} aria-controls="sidebar" onClick={s.toggle}>
+    <Button variant="ghost" size="icon" className={cn(className, s.open && "lg:hidden")} aria-label={s.open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={s.open} aria-controls="sidebar" onClick={s.toggle}>
       <PanelLeftIcon />
     </Button>
   );
