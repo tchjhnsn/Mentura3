@@ -1,0 +1,300 @@
+{
+  "dir": "site",
+  "name": "reflect-site",
+  "description": "The design of a personal site on Reflect. Its owner changes the color roles and the type in the Virtu editor on the site itself; contrast is checked on every change.",
+  "medium": "screen",
+  "domains": {
+    "color": {
+      "kind": "governed",
+      "cells": {
+        "vocabulary": "color.role",
+        "context": null,
+        "machine": null
+      }
+    },
+    "typography": {
+      "kind": "governed",
+      "cells": {
+        "vocabulary": "type",
+        "context": null,
+        "machine": null
+      }
+    },
+    "iconography": {
+      "kind": "excluded",
+      "reason": "Reflect's own icons are used on every site; a site does not choose them."
+    },
+    "space": {
+      "kind": "excluded",
+      "reason": "The site templates set the layout; a site's owner does not change spacing."
+    },
+    "depth": {
+      "kind": "excluded",
+      "reason": "Sites are flat: no shadows or layers to choose."
+    },
+    "motion": {
+      "kind": "excluded",
+      "reason": "Sites do not animate."
+    },
+    "semantics": {
+      "kind": "excluded",
+      "reason": "Labels on a site are Reflect's, not the owner's."
+    },
+    "state": {
+      "kind": "excluded",
+      "reason": "Loading and empty states are Reflect's."
+    },
+    "time": {
+      "kind": "excluded",
+      "reason": "Dates on a site are written by Reflect."
+    }
+  },
+  "vocabularies": {},
+  "contexts": {},
+  "machines": {},
+  "relations": [
+    {
+      "id": "text-contrast",
+      "subkind": "stated",
+      "description": null,
+      "kind": "contrast",
+      "foreground": [
+        "color.role.foreground",
+        "color.role.muted-foreground",
+        "color.role.link"
+      ],
+      "background": [
+        "color.role.background",
+        "color.role.muted"
+      ],
+      "min": 4.5
+    },
+    {
+      "id": "button-text",
+      "subkind": "stated",
+      "description": null,
+      "kind": "contrast",
+      "foreground": [
+        "color.role.primary-foreground"
+      ],
+      "background": [
+        "color.role.primary"
+      ],
+      "min": 4.5
+    },
+    {
+      "id": "button-edge",
+      "subkind": "stated",
+      "description": null,
+      "kind": "contrast",
+      "foreground": [
+        "color.role.primary"
+      ],
+      "background": [
+        "color.role.background"
+      ],
+      "min": 3
+    }
+  ],
+  "usage": [
+    {
+      "situation": "body copy",
+      "entry": "color.role.foreground"
+    },
+    {
+      "situation": "dates and other secondary text",
+      "entry": "color.role.muted-foreground"
+    },
+    {
+      "situation": "a link in a post",
+      "entry": "color.role.link"
+    },
+    {
+      "situation": "the site's main button, such as Subscribe",
+      "entry": "color.role.primary"
+    },
+    {
+      "situation": "a page or post title",
+      "entry": "type.family.display"
+    }
+  ],
+  "resolver": {
+    "path": "site/tokens.resolver.json",
+    "modifiers": {},
+    "order": [
+      {
+        "kind": "set",
+        "name": "site",
+        "sources": [
+          {
+            "origin": "tokens/palette.tokens.json",
+            "tree": {
+              "$description": "The swatches a person picks a role's color from in the editor. Roles alias these.",
+              "palette": {
+                "$type": "color",
+                "stone": {
+                  "50": {
+                    "$value": "#fafaf9"
+                  },
+                  "100": {
+                    "$value": "#f4f3f1"
+                  },
+                  "200": {
+                    "$value": "#e6e4e0"
+                  },
+                  "300": {
+                    "$value": "#d3d0ca"
+                  },
+                  "500": {
+                    "$value": "#8a857c"
+                  },
+                  "700": {
+                    "$value": "#4f4b45"
+                  },
+                  "800": {
+                    "$value": "#36332f"
+                  },
+                  "900": {
+                    "$value": "#1f1d1a"
+                  },
+                  "950": {
+                    "$value": "#121110"
+                  }
+                },
+                "ink": {
+                  "100": {
+                    "$value": "#e6edfb"
+                  },
+                  "300": {
+                    "$value": "#9db6ef"
+                  },
+                  "500": {
+                    "$value": "#3d6bdc"
+                  },
+                  "700": {
+                    "$value": "#24479e"
+                  },
+                  "900": {
+                    "$value": "#142857"
+                  }
+                },
+                "moss": {
+                  "100": {
+                    "$value": "#e4f2e6"
+                  },
+                  "300": {
+                    "$value": "#9fcda7"
+                  },
+                  "500": {
+                    "$value": "#3f8f4f"
+                  },
+                  "700": {
+                    "$value": "#2a5f35"
+                  },
+                  "900": {
+                    "$value": "#17361e"
+                  }
+                },
+                "clay": {
+                  "100": {
+                    "$value": "#fbe9e1"
+                  },
+                  "300": {
+                    "$value": "#efb49b"
+                  },
+                  "500": {
+                    "$value": "#c8613b"
+                  },
+                  "700": {
+                    "$value": "#8a3d22"
+                  },
+                  "900": {
+                    "$value": "#4c2112"
+                  }
+                },
+                "plum": {
+                  "100": {
+                    "$value": "#f3e7f6"
+                  },
+                  "300": {
+                    "$value": "#d3a7de"
+                  },
+                  "500": {
+                    "$value": "#9a4fb0"
+                  },
+                  "700": {
+                    "$value": "#683279"
+                  },
+                  "900": {
+                    "$value": "#3a1b44"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "origin": "tokens/site.tokens.json",
+            "tree": {
+              "$description": "A personal site's design: what its owner changes in the editor. Reflect stores the owner's edits, not this file.",
+              "color": {
+                "role": {
+                  "$type": "color",
+                  "background": {
+                    "$value": "{palette.stone.50}"
+                  },
+                  "foreground": {
+                    "$value": "{palette.stone.950}"
+                  },
+                  "muted": {
+                    "$value": "{palette.stone.100}"
+                  },
+                  "muted-foreground": {
+                    "$value": "{palette.stone.700}"
+                  },
+                  "border": {
+                    "$value": "{palette.stone.200}"
+                  },
+                  "primary": {
+                    "$value": "{palette.stone.900}"
+                  },
+                  "primary-foreground": {
+                    "$value": "{palette.stone.50}"
+                  },
+                  "link": {
+                    "$value": "{palette.ink.700}"
+                  }
+                }
+              },
+              "type": {
+                "family": {
+                  "$type": "fontFamily",
+                  "body": {
+                    "$value": [
+                      "ui-sans-serif",
+                      "system-ui",
+                      "sans-serif"
+                    ]
+                  },
+                  "display": {
+                    "$value": [
+                      "ui-serif",
+                      "Georgia",
+                      "serif"
+                    ]
+                  }
+                },
+                "weight": {
+                  "$type": "fontWeight",
+                  "heading": {
+                    "$value": 600
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "findings": []
+}

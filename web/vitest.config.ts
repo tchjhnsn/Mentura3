@@ -5,9 +5,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@reflect/core": fileURLToPath(new URL("../packages/core/src", import.meta.url)),
+      "@reflect/virtu": fileURLToPath(new URL("../packages/virtu/src", import.meta.url)),
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
   server: { fs: { allow: [".."] } },
-  test: { include: ["src/**/*.test.ts", "src/**/*.test.tsx", "../packages/core/src/**/*.test.ts", "../packages/cli/*.test.ts"] },
+  test: { include: ["src/**/*.test.ts", "src/**/*.test.tsx", "../packages/core/src/**/*.test.ts", "../packages/cli/*.test.ts", "../packages/virtu/*.test.ts"] },
 });

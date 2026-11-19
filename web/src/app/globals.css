@@ -143,3 +143,31 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 /* A published post (src/app/p/[key]/[slug]): the journal's book face at 18px in a 680px column. */
 .writing.post-body { font-size: 1.125rem; }
 .writing.post-body h2 { scroll-margin-top: 4.5rem; }
+
+/* A person's site in its own design (src/app/p/[key]/layout.tsx): the Virtu properties of the owner's design, made in the
+   editor on the site (packages/virtu/site), take the place of the app's colors and type inside the site. */
+.site-design {
+  --background: var(--virtu-color-role-background);
+  --foreground: var(--virtu-color-role-foreground);
+  --card: var(--virtu-color-role-background);
+  --card-foreground: var(--virtu-color-role-foreground);
+  --popover: var(--virtu-color-role-background);
+  --popover-foreground: var(--virtu-color-role-foreground);
+  --muted: var(--virtu-color-role-muted);
+  --muted-foreground: var(--virtu-color-role-muted-foreground);
+  --secondary: var(--virtu-color-role-muted);
+  --secondary-foreground: var(--virtu-color-role-foreground);
+  --accent: var(--virtu-color-role-muted);
+  --accent-foreground: var(--virtu-color-role-foreground);
+  --primary: var(--virtu-color-role-primary);
+  --primary-foreground: var(--virtu-color-role-primary-foreground);
+  --border: var(--virtu-color-role-border);
+  --input: var(--virtu-color-role-border);
+  --ring: var(--virtu-color-role-primary);
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--virtu-type-family-body);
+}
+.site-design :is(h1, h2, h3) { font-family: var(--virtu-type-family-display); font-weight: var(--virtu-type-weight-heading); }
+.site-design :is(p, li) > a:not([data-slot]) { color: var(--virtu-color-role-link); }
