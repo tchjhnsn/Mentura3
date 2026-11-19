@@ -22,7 +22,7 @@ vi.mock("../life-store", () => ({
   },
 }));
 
-const { pickInterest, setInterest, setInterestArea } = await import("./interests");
+const { interests, pickInterest, setInterest, setInterestArea } = await import("./interests");
 const { myAreas, myInterests } = await import("../interests-store");
 const ctx = { userId: "me" };
 const logged = (actionId: string, before: unknown, after: unknown) => ({ id: "c", userId: "me", actionId, source: "page" as const, tier: "own" as const, input: {}, before, after, status: "done" as const, preview: null, createdAt: new Date(), undoneAt: null });
@@ -67,5 +67,22 @@ describe("interests", () => {
     expect(await myAreas("me")).toEqual({ done: ["books"], skipped: ["podcasts"], sorted: true, later: "2026-11-26" });
     await setInterestArea.undo!(ctx, logged("set_interest_area", b, r));
     expect(await myAreas("me")).toEqual({ done: ["books"], skipped: [], sorted: false, later: null });
+  });
+
+  it("reads interests by path: all, a mode, an area, one thing, and nothing", async () => {
+    await pickInterest.run(ctx, { ref: "b-meditations", picked: true });
+    await setInterest.run(ctx, { ref: "b-meditations", know_depth: "studies" });
+    const all = await interests.run(ctx, { path: "" }) as { count: number; interests: { says: string[] }[]; areas: { offered: string[] } };
+    expect(all.count).toBe(1);
+    expect(all.interests[0]!.says).toEqual(["You follow Meditations: studies it."]);
+    expect(all.areas.offered).toEqual(["books", "podcasts"]);
+    expect(await interests.run(ctx, { path: "know" })).toMatchObject({ mode: "know", interests: [{ ref: "b-meditations" }] });
+    expect(await interests.run(ctx, { path: "make" })).toMatchObject({ interests: [] });
+    expect(await interests.run(ctx, { path: "books" })).toMatchObject({ area: "books", interests: [{ ref: "b-meditations" }] });
+    const one = await interests.run(ctx, { path: "b-meditations" }) as { interest: { ref: string }; thing: { title: string }; more_like_it: unknown[] };
+    expect(one.interest.ref).toBe("b-meditations");
+    expect(one.thing.title).toBe("Meditations");
+    expect(await interests.run(ctx, { path: "b-emma" })).toMatchObject({ interest: null, thing: { title: "Emma" } });
+    expect(await interests.run(ctx, { path: "nope" })).toMatchObject({ error: expect.stringContaining("Nothing at 'nope'") });
   });
 });
