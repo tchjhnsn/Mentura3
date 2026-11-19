@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.work",
+  "title": "Work",
+  "description": "Each piece of work you do, paid or unpaid: a job, a venture, keeping a home.",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "title": "Role",
+      "description": "Electrician, founder, raising our children",
+      "maxLength": 300
+    },
+    "where": {
+      "type": "string",
+      "title": "Where or for whom",
+      "maxLength": 300
+    },
+    "paid": {
+      "type": "string",
+      "title": "Paid",
+      "enum": [
+        "paid",
+        "unpaid"
+      ]
+    },
+    "hours": {
+      "type": "number",
+      "title": "Hours a week",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "since": {
+      "type": "string",
+      "title": "Since",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "keep": {
+      "type": "string",
+      "title": "Would you keep doing it if your needs were met another way?",
+      "enum": [
+        "yes",
+        "no",
+        "not-sure"
+      ]
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "work",
+    "noun": "work",
+    "category": "doing",
+    "good": "external",
+    "community": "polis"
+  }
+}

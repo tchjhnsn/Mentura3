@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:mate.seeking",
+  "title": "What I am looking for",
+  "description": "Must-haves, dealbreakers and hopes; your ideals about marriage and household; the household you intend.",
+  "type": "object",
+  "properties": {
+    "must": {
+      "type": "string",
+      "title": "Must-haves",
+      "maxLength": 20000
+    },
+    "never": {
+      "type": "string",
+      "title": "Dealbreakers",
+      "maxLength": 20000
+    },
+    "hopes": {
+      "type": "string",
+      "title": "Hopes",
+      "maxLength": 20000
+    },
+    "ideals": {
+      "type": "string",
+      "title": "Ideals about marriage and household",
+      "maxLength": 20000
+    },
+    "household": {
+      "type": "string",
+      "title": "The household I intend",
+      "maxLength": 20000
+    },
+    "where": {
+      "type": "string",
+      "title": "Where I meet people",
+      "description": "Church, introductions, events, groups, apps",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "mate",
+    "kind": "seeking",
+    "noun": "seeking a mate",
+    "category": "doing",
+    "good": "external",
+    "community": "union"
+  }
+}

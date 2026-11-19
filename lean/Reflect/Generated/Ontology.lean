@@ -99,8 +99,8 @@ inductive Noun
   | «need»
   /-- credential (kept; app work; kinds work:credential). A licence, degree or certificate held Standard: Credential (CTDL). -/
   | «credential»
-  /-- payment card (kept; app home; kinds home:card). A card one pays with Standard: ISO/IEC 7812. -/
-  | «paymentCard»
+  /-- home card (kept; app home; kinds home:card). A small card the person puts on Home for a time, such as a word a day or a checklist Standard: ours. -/
+  | «homeCard»
   /-- means of getting around (kept; app home; kinds home:way). A way one gets to work and essentials: a car, the bus, walking Standard: ours. -/
   | «meansOfGettingAround»
   /-- estate plan (kept; app legacy; kinds legacy:plan). A will, insurance, guardians, power of attorney, beneficiaries Standard: Estate planning. -/
@@ -170,7 +170,7 @@ def Noun.name : Noun → String
   | .«homePlace» => "home place"
   | .«need» => "need"
   | .«credential» => "credential"
-  | .«paymentCard» => "payment card"
+  | .«homeCard» => "home card"
   | .«meansOfGettingAround» => "means of getting around"
   | .«estatePlan» => "estate plan"
   | .«work» => "work"
@@ -183,7 +183,7 @@ def Noun.name : Noun → String
   | .«lifeChange» => "life change"
 
 /-- [D] Every noun, once. -/
-def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«paymentCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«lifeChange»]
+def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«lifeChange»]
 
 /-- [D] The nouns a noun names in broader. -/
 def Noun.broaderNouns : Noun → List Noun
@@ -219,7 +219,7 @@ def Noun.broaderNouns : Noun → List Noun
   | .«homePlace» => []
   | .«need» => []
   | .«credential» => []
-  | .«paymentCard» => []
+  | .«homeCard» => [.«artifact»]
   | .«meansOfGettingAround» => []
   | .«estatePlan» => []
   | .«work» => []
@@ -265,7 +265,7 @@ def Noun.broaderCategories : Noun → List Category
   | .«homePlace» => [.«place»]
   | .«need» => [.«having»]
   | .«credential» => [.«having»]
-  | .«paymentCard» => [.«having»]
+  | .«homeCard» => []
   | .«meansOfGettingAround» => [.«having»]
   | .«estatePlan» => [.«having»]
   | .«work» => [.«doing»]
@@ -311,7 +311,7 @@ def Noun.rank : Noun → Nat
   | .«homePlace» => 0
   | .«need» => 0
   | .«credential» => 0
-  | .«paymentCard» => 0
+  | .«homeCard» => 1
   | .«meansOfGettingAround» => 0
   | .«estatePlan» => 0
   | .«work» => 0
@@ -357,7 +357,7 @@ def Noun.category : Noun → Category
   | .«homePlace» => .«place»
   | .«need» => .«having»
   | .«credential» => .«having»
-  | .«paymentCard» => .«having»
+  | .«homeCard» => .«substance»
   | .«meansOfGettingAround» => .«having»
   | .«estatePlan» => .«having»
   | .«work» => .«doing»

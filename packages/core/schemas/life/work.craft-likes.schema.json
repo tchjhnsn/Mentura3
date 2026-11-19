@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.craft-likes",
+  "title": "What drew me",
+  "description": "Answers to Scholē's Discover crafts activities, as comma lists of activity ids, and the photo picker's picks: worlds (craft group ids) and crafts (craft ids).",
+  "type": "object",
+  "properties": {
+    "likes": {
+      "type": "string",
+      "title": "Like it",
+      "maxLength": 4000
+    },
+    "unsure": {
+      "type": "string",
+      "title": "Not sure",
+      "maxLength": 4000
+    },
+    "nots": {
+      "type": "string",
+      "title": "Not for me",
+      "maxLength": 4000
+    },
+    "worlds": {
+      "type": "string",
+      "title": "Worlds picked",
+      "maxLength": 4000
+    },
+    "picks": {
+      "type": "string",
+      "title": "Crafts picked",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "craft-likes",
+    "noun": "preference",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}

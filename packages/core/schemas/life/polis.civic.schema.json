@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:polis.civic",
+  "title": "Where I am a citizen",
+  "description": "Citizenship and residence, your districts and who represents you.",
+  "type": "object",
+  "properties": {
+    "citizenship": {
+      "type": "string",
+      "title": "Citizenship",
+      "maxLength": 300
+    },
+    "residence": {
+      "type": "string",
+      "title": "Residence",
+      "description": "City, county and state",
+      "maxLength": 300
+    },
+    "registered": {
+      "type": "boolean",
+      "title": "Registered to vote"
+    },
+    "districts": {
+      "type": "string",
+      "title": "Districts",
+      "maxLength": 20000
+    },
+    "representatives": {
+      "type": "string",
+      "title": "Representatives",
+      "maxLength": 20000
+    },
+    "causes": {
+      "type": "string",
+      "title": "Questions I care about",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "polis",
+    "kind": "civic",
+    "noun": "citizenship",
+    "category": "relation",
+    "good": "external",
+    "community": "polis"
+  }
+}
