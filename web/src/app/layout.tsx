@@ -3,14 +3,15 @@ import type { CSSProperties, ReactNode } from "react";
 import { Inter, Newsreader } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RememberPage } from "@/components/settings-panel";
-import { SidebarProvider, type SidebarGroup } from "@/components/sidebar";
+import { SidebarProvider, type SidebarGroup, type SidebarPlaces, type SidebarTile } from "@/components/sidebar";
 import { SIDE_COOKIE, sideOf } from "@/components/sidebar-state";
 import { CHAT_PROMPT, readChatPart } from "@reflect/core/chat-journal";
 import { GROUPS } from "@reflect/core/plan";
 import { listEntries } from "@/server/journal-store";
 import { currentUser } from "@/server/session";
 import { selfOf } from "@/server/profile-store";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { cookieDomain, polisOrigin, siteUrl } from "@/server/site";
 import { APPEARANCE_BUTTON_COOKIE, LOOK_COOKIE, appearanceButtonOn, lookOf, themeOf, themeVars } from "@/lib/themes";
 import { AppearanceButton } from "@/components/appearance-button";
 import { AppearanceSlot } from "@/components/slots";
@@ -22,8 +23,12 @@ const serif = Newsreader({ subsets: ["latin"], variable: "--font-serif", display
 
 export const metadata = { title: "Reflect", description: "Your life, in your own records." };
 
-// The sidebar's tiles, in the main dashboard's three groups.
-const GROUPED: SidebarGroup[] = GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.flatMap((id) => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; }) }));
+const tileOf = (id: string): SidebarTile[] => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; };
+/** Standing and Polis live on the shared side (doc "Private and shared Reflect plan", 2026-11-19). */
+const POLIS_TILES = ["standing", "polis"];
+// Home's sidebar keeps the main dashboard's groups, less the tiles that moved to Village and polis.
+const GROUPED: SidebarGroup[] = GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.filter((id) => !POLIS_TILES.includes(id)).flatMap(tileOf) }));
+const POLIS: SidebarTile[] = POLIS_TILES.flatMap(tileOf);
 
 /** Every page in shadcn's look (src/app/globals.css), with the sidebar kept once for the whole app when someone is signed in. */
 export default async function RootLayout({ children, modal }: { children: ReactNode; /** Settings over the page (app/@modal). */ modal: ReactNode }) {
@@ -36,6 +41,10 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   const look = lookOf(jar.get(LOOK_COOKIE)?.value);
   // The sidebar, open or shut and how wide (src/components/sidebar.tsx), so the first frame already leaves it room.
   const side = sideOf(jar.get(SIDE_COOKIE)?.value);
+  // Which host this page came in on: Home's, or the shared side's own (src/lib/sides.ts).
+  const polis = polisOrigin();
+  const host = ((await headers()).get("host") ?? "").split(":")[0]!.toLowerCase();
+  const places: SidebarPlaces = { hostSide: polis && host === new URL(polis).hostname ? "polis" : "home", home: siteUrl(), polis, cookieDomain: cookieDomain() };
   const today = new Date().toISOString().slice(0, 10);
   const theme = themeOf(look.theme, today);
   // The Appearance button (src/components/appearance-button.tsx): on this device when turned on, and only for someone signed in.
@@ -47,7 +56,7 @@ export default async function RootLayout({ children, modal }: { children: ReactN
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
-        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me} initial={side}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage />{button}</TooltipProvider>
+        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} polisTiles={POLIS} places={places} chats={chats} me={me} initial={side}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage />{button}</TooltipProvider>
       </body>
     </html>
   );

@@ -3,14 +3,18 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
+import { hrefOn, sideOfPath, type Side } from "@/lib/sides";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
+export type SidebarTile = SidebarGroup["tiles"][number];
+/** Where the two sides are served (src/lib/sides.ts): `polis` is null when both share one host. */
+export type SidebarPlaces = { hostSide: Side; home: string; polis: string | null; cookieDomain: string | null };
 
 const ROW = "hover:bg-accent flex min-h-10 items-center gap-3 rounded-lg px-3 py-2 text-sm transition";
 const STEP = 16;
@@ -30,7 +34,7 @@ const Ctx = createContext<State | null>(null);
  * first frame with them and it stays as the person left it. Narrower than 1024 it slides over the page with a light
  * dim behind; a tap outside, Esc or opening another page closes it there.
  */
-export function SidebarProvider({ groups, chats, me, initial, children }: { groups: SidebarGroup[]; chats: SidebarChat[]; /** The person's name and profile, for their face at the foot. */ me?: { name: string; href: string } | null; /** From the cookie (./sidebar-state.ts). */ initial: SideState; children: ReactNode }) {
+export function SidebarProvider({ groups, polisTiles, places, chats, me, initial, children }: { groups: SidebarGroup[]; /** Standing and Polis, on the shared side. */ polisTiles: SidebarTile[]; places: SidebarPlaces; chats: SidebarChat[]; /** The person's name and profile, for their face at the foot. */ me?: { name: string; href: string } | null; /** From the cookie (./sidebar-state.ts). */ initial: SideState; children: ReactNode }) {
   // Docked: beside the page on a wide screen, kept in the cookie. Over: slid over the page on a narrow one, for a moment.
   const [docked, setDocked] = useState(initial.open);
   const [over, setOver] = useState(false);
@@ -57,7 +61,11 @@ export function SidebarProvider({ groups, chats, me, initial, children }: { grou
   useEffect(() => {
     document.documentElement.style.setProperty("--side-w", docked ? `${width}px` : "0px");
   }, [docked, width]);
-  const save = (o: boolean, w: number) => { document.cookie = `${SIDE_COOKIE}=${o ? 1 : 0}.${w}; path=/; max-age=31536000; samesite=lax`; };
+  const save = (o: boolean, w: number) => { document.cookie = `${SIDE_COOKIE}=${o ? 1 : 0}.${w}; path=/; max-age=31536000; samesite=lax${places.cookieDomain ? `; domain=${places.cookieDomain}` : ""}`; };
+  // Which side this page is on (doc "Private and shared Reflect plan", 2026-11-19): everything on the polis host is
+  // the shared side; on a shared host the path says, and a page on neither side keeps Home's sidebar.
+  const side: Side = places.hostSide === "polis" ? "polis" : sideOfPath(path) ?? "home";
+  const to = (p: string) => hrefOn(p, places.hostSide, places);
   const dock = (o: boolean) => { setDocked(o); save(o, live.current.width); };
   const open = wide ? docked : over;
   const toggle = () => (wide ? dock(!docked) : setOver((v) => !v));
@@ -116,49 +124,64 @@ export function SidebarProvider({ groups, chats, me, initial, children }: { grou
         </div>
 
         <div className="grid flex-1 content-start gap-5 overflow-y-auto px-3 pb-4">
-          <div className="grid gap-0.5">
-            <Link href="/" className={cn(ROW, "font-medium")}><HomeIcon className="size-4" />Home</Link>
-            <Link href="/dashboard" className={cn(ROW, "font-medium")}><LayoutDashboardIcon className="size-4" />Dashboard</Link>
-            <Link href="/chat" className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />New Chat</Link>
-          </div>
+          {side === "polis" ? (
+            <>
+              <div className="grid gap-0.5">
+                <Go href={to("/v")} className={cn(ROW, "font-medium")}><LandmarkIcon className="size-4" />Village and polis</Go>
+                <Go href={to("/chat")} className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />New Chat</Go>
+              </div>
+              <Section title="Gather">
+                <Go href={to("/events")} className={ROW}><CalendarDaysIcon className="text-muted-foreground size-4" />Events</Go>
+                <Go href={to("/adventures")} className={ROW}><CompassIcon className="text-muted-foreground size-4" />Adventures</Go>
+              </Section>
+              <Section title="The polis">
+                {polisTiles.map((t) => <TileRow key={t.id} t={t} href={to(t.href)} />)}
+              </Section>
+            </>
+          ) : (
+            <>
+              <div className="grid gap-0.5">
+                <Go href={to("/")} className={cn(ROW, "font-medium")}><HomeIcon className="size-4" />Home</Go>
+                <Go href={to("/dashboard")} className={cn(ROW, "font-medium")}><LayoutDashboardIcon className="size-4" />Dashboard</Go>
+                <Go href={to("/chat")} className={cn(ROW, "font-medium")}><PlusIcon className="size-4" />New Chat</Go>
+              </div>
 
-          <Section title="Tools">
-            <Link href="/journal" className={ROW}><NotebookPenIcon className="text-muted-foreground size-4" />Journal</Link>
-            <Link href="/calendar" className={ROW}><CalendarIcon className="text-muted-foreground size-4" />Calendar</Link>
-            <Link href="/events" className={ROW}><CalendarDaysIcon className="text-muted-foreground size-4" />Events</Link>
-          </Section>
+              <Section title="Tools">
+                <Go href={to("/journal")} className={ROW}><NotebookPenIcon className="text-muted-foreground size-4" />Journal</Go>
+                <Go href={to("/calendar")} className={ROW}><CalendarIcon className="text-muted-foreground size-4" />Calendar</Go>
+              </Section>
 
-          <Section title="Lenses">
-            <Link href="/journal/log" className={ROW}><ScrollTextIcon className="text-muted-foreground size-4" />Log</Link>
-            <Link href="/life/legacy" className={ROW}><HourglassIcon className="text-muted-foreground size-4" />Legacy</Link>
-            <Link href="/journal/qualities" className={ROW}><SparklesIcon className="text-muted-foreground size-4" />Qualities</Link>
-            <Link href="/adventures" className={ROW}><CompassIcon className="text-muted-foreground size-4" />Adventures</Link>
-          </Section>
+              <Section title="Lenses">
+                <Go href={to("/journal/log")} className={ROW}><ScrollTextIcon className="text-muted-foreground size-4" />Log</Go>
+                <Go href={to("/life/legacy")} className={ROW}><HourglassIcon className="text-muted-foreground size-4" />Legacy</Go>
+                <Go href={to("/journal/qualities")} className={ROW}><SparklesIcon className="text-muted-foreground size-4" />Qualities</Go>
+              </Section>
 
-          {groups.map((g) => (
-            <Section key={g.label} title={g.label}>
-              {g.tiles.map((t) => (
-                <Link key={t.id} href={t.href} className={ROW}>
-                  <svg viewBox="0 0 100 100" aria-hidden="true" className="text-muted-foreground size-4 shrink-0"><path d={t.glyph} className="fill-current" fillRule="evenodd" /></svg>
-                  {t.label}
-                </Link>
+              {groups.map((g) => (
+                <Section key={g.label} title={g.label}>
+                  {g.tiles.map((t) => <TileRow key={t.id} t={t} href={to(t.href)} />)}
+                </Section>
               ))}
-            </Section>
-          ))}
+            </>
+          )}
 
           {chats.length ? (
             <Section title="Recent chats">
               {chats.map((c) => (
-                <Link key={c.id} href={`/chat/history/${c.id}`} className={ROW}><MessageSquareIcon className="text-muted-foreground size-4 shrink-0" /><span className="truncate">{c.title}</span></Link>
+                <Go key={c.id} href={to(`/chat/history/${c.id}`)} className={ROW}><MessageSquareIcon className="text-muted-foreground size-4 shrink-0" /><span className="truncate">{c.title}</span></Go>
               ))}
-              <Link href="/chat/history" className={cn(ROW, "text-muted-foreground")}>All chats</Link>
+              <Go href={to("/chat/history")} className={cn(ROW, "text-muted-foreground")}>All chats</Go>
             </Section>
           ) : null}
         </div>
 
         <div className="grid gap-0.5 border-t p-3">
-          {me ? <Link href={me.href} className={ROW} title="Your profile"><Face name={me.name} size={24} /><span className="truncate">{me.name}</span></Link> : null}
-          <Link href="/settings" className={ROW}><SettingsIcon className="text-muted-foreground size-4" />Settings</Link>
+          {me ? <Go href={to(me.href)} className={ROW} title="Your profile"><Face name={me.name} size={24} /><span className="truncate">{me.name}</span></Go> : null}
+          {/* The other side, like Cursor's Dashboard item: a different experience on its own host. */}
+          {side === "polis"
+            ? <Go href={to("/")} className={ROW}><HomeIcon className="text-muted-foreground size-4" />Home</Go>
+            : <Go href={to("/v")} className={ROW}><LandmarkIcon className="text-muted-foreground size-4" />Village and polis</Go>}
+          <Go href={to("/settings")} className={ROW}><SettingsIcon className="text-muted-foreground size-4" />Settings</Go>
         </div>
       </nav>
     </Ctx.Provider>
@@ -173,6 +196,20 @@ export function SidebarButton({ className }: { className?: string }) {
     <Button variant="ghost" size="icon" className={cn(className, s.open && "lg:hidden")} aria-label={s.open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={s.open} aria-controls="sidebar" onClick={s.toggle}>
       <PanelLeftIcon />
     </Button>
+  );
+}
+
+/** A link that stays in the app on its own host and is a plain link to the other host. */
+function Go({ href, className, title, children }: { href: string; className?: string; title?: string; children: ReactNode }) {
+  return /^https?:/.test(href) ? <a href={href} className={className} title={title}>{children}</a> : <Link href={href} className={className} title={title}>{children}</Link>;
+}
+
+function TileRow({ t, href }: { t: SidebarTile; href: string }) {
+  return (
+    <Go href={href} className={ROW}>
+      <svg viewBox="0 0 100 100" aria-hidden="true" className="text-muted-foreground size-4 shrink-0"><path d={t.glyph} className="fill-current" fillRule="evenodd" /></svg>
+      {t.label}
+    </Go>
   );
 }
 

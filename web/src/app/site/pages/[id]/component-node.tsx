@@ -3,13 +3,17 @@
 import { createContext, useContext, type ComponentType } from "react";
 import { Node, mergeAttributes, NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import {
-  AtSignIcon, ClockIcon, ImageIcon, ImagesIcon, LayersIcon, LinkIcon, ListIcon, MessageSquareIcon, MinusIcon,
-  MousePointerClickIcon, MusicIcon, QuoteIcon, Trash2Icon, UserIcon, VideoIcon, type LucideProps,
+  AtSignIcon, ClockIcon, FrameIcon, ImageIcon, ImagesIcon, LayersIcon, LinkIcon, ListIcon, MessageSquareIcon, MinusIcon,
+  MousePointerClickIcon, MusicIcon, QuoteIcon, SquareRoundCornerIcon, Trash2Icon, UserIcon, VideoIcon, type LucideProps,
 } from "lucide-react";
-import { checkComponent, componentByName, looseTag, parseTag, safeUrl, serializeTag, type PropSpec, type Props } from "@reflect/core/site-page";
+import { checkComponent, componentByName, isVisual, looseTag, parseTag, safeUrl, serializeTag, type PropSpec, type Props } from "@reflect/core/site-page";
 import type { PublishablePart } from "@/server/part-share";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+
+/** A plain name for a catalog name: "holly-corners" is "Holly corners". */
+const plainName = (name: string) => (name.charAt(0).toUpperCase() + name.slice(1)).replace(/-/g, " ");
 
 /** Each library component's icon. */
 export const ICONS: Record<string, ComponentType<LucideProps>> = {
@@ -19,6 +23,38 @@ export const ICONS: Record<string, ComponentType<LucideProps>> = {
 
 /** The parts the person may publish, so a Part block can name what it shows. */
 export const PartsContext = createContext<PublishablePart[]>([]);
+
+/**
+ * What the person's plugins add to a selected block (editor.component-option): with Virtu, Shape and Frame, picked
+ * from its catalog. Null without a plugin that fills the slot, and then a block has no such options.
+ */
+export type BlockLooks = { options: string[]; shapes: string[]; frames: string[]; edged: string[] };
+export const LooksContext = createContext<BlockLooks | null>(null);
+
+/** The classes a surface takes under a block shape, as the renderer gives them (packages/virtu/src/blocks.ts). */
+const surfaceOf = (shape: unknown, looks: BlockLooks | null) =>
+  typeof shape === "string" && looks?.shapes.includes(shape) ? ["virtu-shape-card", ...(looks.edged.includes(shape) ? ["virtu-edge"] : [])] : [];
+
+/** One option on a block's bar: an icon that opens the catalog's names, None first. */
+function LookOption({ label, Icon, names, value, set }: { label: string; Icon: ComponentType<LucideProps>; names: string[]; value: unknown; set: (v: string | undefined) => void }) {
+  const cur = typeof value === "string" ? value : "";
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="ghost" size="sm" className={cn("h-7 gap-1 px-2 text-xs", !cur && "opacity-60 group-hover/c:opacity-100")} aria-label={cur ? `${label}: ${plainName(cur)}` : label}>
+          <Icon />{cur ? <span className="hidden sm:inline">{plainName(cur)}</span> : null}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuLabel>{label}</DropdownMenuLabel>
+        <DropdownMenuRadioGroup value={cur} onValueChange={(v) => set(v || undefined)}>
+          <DropdownMenuRadioItem value="">None</DropdownMenuRadioItem>
+          {names.map((n) => <DropdownMenuRadioItem key={n} value={n}>{plainName(n)}</DropdownMenuRadioItem>)}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 const FIELD = "placeholder:text-muted-foreground/60 w-full rounded-md bg-transparent px-2 py-1 text-sm outline-none focus-visible:bg-muted/60";
 
@@ -65,6 +101,7 @@ function ComponentView({ node, updateAttributes, deleteNode, selected }: NodeVie
   const props = (node.attrs.props ?? {}) as Props;
   const spec = componentByName(name);
   const parts = useContext(PartsContext);
+  const looks = useContext(LooksContext);
   const Icon = ICONS[name] ?? LayersIcon;
   if (!spec) return <NodeViewWrapper data-drag-handle className="text-destructive my-3 text-sm">Not in the library</NodeViewWrapper>;
   let problem: string | null = null;
@@ -80,24 +117,35 @@ function ComponentView({ node, updateAttributes, deleteNode, selected }: NodeVie
     updateAttributes({ props: next });
   };
   const part = name === "Part" ? parts.find((p) => p.source === props.source) : null;
-  const fields = Object.entries(spec.props).filter(([k]) => !(name === "Part" && k === "source"));
+  // Shape and frame are the plugin's options on the bar, not fields; without the plugin they are not offered at all.
+  const fields = Object.entries(spec.props).filter(([k, p]) => !(name === "Part" && k === "source") && !p.look);
   const src = safeUrl(props.src);
+  const options = looks && isVisual(name) ? looks.options : [];
+  const shape = typeof props.shape === "string" && looks?.shapes.includes(props.shape) ? props.shape : null;
+  const frame = typeof props.frame === "string" && looks?.frames.includes(props.frame) ? props.frame : null;
+  const surface = surfaceOf(shape, looks);
   return (
-    <NodeViewWrapper data-site-component={name} className={cn("not-prose group/c my-4 rounded-xl border bg-card transition", selected && "ring-ring/50 ring-2")} contentEditable={false}>
-      <div className="flex items-center gap-2 px-3 py-2">
-        <Icon className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-        <span className="text-sm font-medium">{name === "Part" && part ? part.label : spec.label}</span>
-        {name === "Part" && part && part.state !== "shared" ? <span className="text-muted-foreground text-xs">{part.state === "waiting" ? "Waiting for the household's OK" : "Not shared"}</span> : null}
-        {name === "Part" && !part ? <span className="text-muted-foreground text-xs italic">This part is no longer shared.</span> : null}
-        <Button type="button" variant="ghost" size="icon" className="ml-auto size-7 opacity-60 group-hover/c:opacity-100" aria-label={`Remove ${spec.label}`} onClick={() => deleteNode()}><Trash2Icon /></Button>
+    <NodeViewWrapper data-site-component={name} contentEditable={false}
+      className={cn("not-prose group/c my-4", shape && `virtu-block-shape-${shape}`, frame && `virtu-block-frame-${frame}`)}>
+      <div className={cn("bg-card rounded-xl border transition", selected && "ring-ring/50 ring-2", surface)}>
+        <div className="flex items-center gap-1 py-2 pr-2 pl-3" role="toolbar" aria-label={`${spec.label} options`}>
+          <Icon className="text-muted-foreground mr-1 size-4 shrink-0" aria-hidden="true" />
+          <span className="min-w-0 truncate text-sm font-medium">{name === "Part" && part ? part.label : spec.label}</span>
+          {name === "Part" && part && part.state !== "shared" ? <span className="text-muted-foreground text-xs">{part.state === "waiting" ? "Waiting for the household's OK" : "Not shared"}</span> : null}
+          {name === "Part" && !part ? <span className="text-muted-foreground text-xs italic">This part is no longer shared.</span> : null}
+          <span className="ml-auto" />
+          {options.includes("shape") ? <LookOption label="Shape" Icon={SquareRoundCornerIcon} names={looks!.shapes} value={props.shape} set={set("shape")} /> : null}
+          {options.includes("frame") ? <LookOption label="Frame" Icon={FrameIcon} names={looks!.frames} value={props.frame} set={set("frame")} /> : null}
+          <Button type="button" variant="ghost" size="icon" className="size-7 opacity-60 group-hover/c:opacity-100" aria-label={`Remove ${spec.label}`} onClick={() => deleteNode()}><Trash2Icon /></Button>
+        </div>
+        {name === "Photo" && src ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt={typeof props.alt === "string" ? props.alt : ""} className={cn("mx-3 mb-2 max-h-72 w-[calc(100%-1.5rem)] rounded-lg object-cover", surface)} />
+        ) : null}
+        {fields.length ? <div className="grid gap-1 px-1 pb-2">{fields.map(([k, p]) => <Field key={k} k={k} spec={p} value={props[k]} set={set(k)} />)}</div>
+          : <p className="text-muted-foreground px-3 pb-3 text-sm">{spec.line}</p>}
+        {problem && Object.keys(props).length ? <p className="text-muted-foreground px-3 pb-2 text-xs">{problem}</p> : null}
       </div>
-      {name === "Photo" && src ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt={typeof props.alt === "string" ? props.alt : ""} className={cn("mx-3 mb-2 max-h-72 rounded-lg object-cover", props.shape === "round" ? "aspect-square w-40 rounded-full" : "w-[calc(100%-1.5rem)]")} />
-      ) : null}
-      {fields.length ? <div className="grid gap-1 px-1 pb-2">{fields.map(([k, p]) => <Field key={k} k={k} spec={p} value={props[k]} set={set(k)} />)}</div>
-        : <p className="text-muted-foreground px-3 pb-3 text-sm">{spec.line}</p>}
-      {problem && Object.keys(props).length ? <p className="text-muted-foreground px-3 pb-2 text-xs">{problem}</p> : null}
     </NodeViewWrapper>
   );
 }
