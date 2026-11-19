@@ -322,3 +322,18 @@ export async function setPrep(hostId: string, meetingId: string, prep: unknown):
   await db().query("UPDATE meeting SET prep_sealed = $3, updated_at = now() WHERE id = $1 AND host_user = $2", [meetingId, hostId, seal(hostId, JSON.stringify(after))]);
   return { before, after };
 }
+
+/**
+ * Takes back a meeting the person just scheduled (Undo of schedule_meeting): removed while nothing else was put in it
+ * (no guest invited, no notes, follow-ups or prep), else cancelled, so nothing a guest was sent or the host wrote is lost.
+ */
+export async function unscheduleMeeting(hostId: string, meetingId: string): Promise<"removed" | "cancelled"> {
+  await hostRow(hostId, meetingId);
+  const r = await db().query(
+    `DELETE FROM meeting m WHERE m.id = $1 AND m.host_user = $2 AND m.notes_sealed IS NULL AND m.prep_sealed IS NULL
+        AND NOT EXISTS (SELECT 1 FROM meeting_guest g WHERE g.meeting_id = m.id)
+        AND NOT EXISTS (SELECT 1 FROM meeting_followup f WHERE f.meeting_id = m.id)`, [meetingId, hostId]);
+  if ((r.rowCount ?? 0) > 0) return "removed";
+  await setCancelled(hostId, meetingId, true);
+  return "cancelled";
+}
