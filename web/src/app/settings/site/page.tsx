@@ -63,9 +63,9 @@ export default async function SiteSettings() {
           <p className="text-muted-foreground px-4 text-xs">{TEMPLATES.find((t) => t.id === site.template)!.line}</p>
         </section>
 
-        {/* The site's colors and type are changed on the site itself, in the Virtu editor (src/components/site-design-editor.tsx). */}
+        {/* The site's colors, type, shape and looks are changed in Appearance once Virtu is added (src/components/slots.tsx). */}
         <Group title="Look" id="look">
-          <Row href={`${href}?customize=1`} icon={<PaletteIcon />} label="Colors and type" sub="Change them on your site, where you see them" />
+          <Row href="/settings/appearance" icon={<PaletteIcon />} label="Colors and type" sub="Change them in Appearance, with Virtu" />
         </Group>
 
         <Group title="Address" id="address">

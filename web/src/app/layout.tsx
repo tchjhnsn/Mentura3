@@ -11,7 +11,9 @@ import { listEntries } from "@/server/journal-store";
 import { currentUser } from "@/server/session";
 import { selfOf } from "@/server/profile-store";
 import { cookies } from "next/headers";
-import { LOOK_COOKIE, lookOf, themeOf, themeVars } from "@/lib/themes";
+import { APPEARANCE_BUTTON_COOKIE, LOOK_COOKIE, appearanceButtonOn, lookOf, themeOf, themeVars } from "@/lib/themes";
+import { AppearanceButton } from "@/components/appearance-button";
+import { AppearanceSlot } from "@/components/slots";
 import { GLYPHS, hrefOf, MINE } from "./home-tiles";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
@@ -34,7 +36,10 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   const look = lookOf(jar.get(LOOK_COOKIE)?.value);
   // The sidebar, open or shut and how wide (src/components/sidebar.tsx), so the first frame already leaves it room.
   const side = sideOf(jar.get(SIDE_COOKIE)?.value);
-  const theme = themeOf(look.theme, new Date().toISOString().slice(0, 10));
+  const today = new Date().toISOString().slice(0, 10);
+  const theme = themeOf(look.theme, today);
+  // The Appearance button (src/components/appearance-button.tsx): on this device when turned on, and only for someone signed in.
+  const button = user && appearanceButtonOn(jar.get(APPEARANCE_BUTTON_COOKIE)?.value) ? <AppearanceButton look={look} today={today} site={<AppearanceSlot userId={user.id} />} /> : null;
   return (
     <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={{ ...themeVars(theme), ...(user && side.open ? { "--side-w": `${side.width}px` } : {}) } as CSSProperties}
       className={`${sans.variable} ${serif.variable}${look.mode === "dark" ? " dark" : ""}`} suppressHydrationWarning>
@@ -42,7 +47,7 @@ export default async function RootLayout({ children, modal }: { children: ReactN
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
-        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me} initial={side}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage /></TooltipProvider>
+        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me} initial={side}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage />{button}</TooltipProvider>
       </body>
     </html>
   );

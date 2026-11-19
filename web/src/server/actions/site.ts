@@ -1,6 +1,6 @@
 // The person's own site and blog as actions (doc "Personal site and blog design guide", 2026-11-18): Ask Reflect
 // reads what is on the site (its template, address, posts and subscriber count) and changes its template and its
-// design (colors and type, checked by Virtu like the Customize panel on the site). Publishing
+// design (colors and type, checked by Virtu like its sections in Settings, Appearance). Publishing
 // and unpublishing are a tap on the work's page only, never offered to a model (page-actions.test.ts says why).
 import { z } from "zod";
 import { TEMPLATES, isTemplate, readingMinutes, type TemplateId } from "@reflect/core/site";
@@ -61,7 +61,7 @@ const DESIGN_EDIT = z.object({
 export const siteDesignAction = action({
   id: "site_design",
   title: "Read the site's design",
-  description: "Read the design of the person's own site, which they also change in the Customize panel on the site: each color role and type token with its value, the palette swatches a color can take, and whether Virtu's check passes (body text, secondary text and links at 4.5:1 on the background and muted surfaces, button text at 4.5:1, buttons at 3:1 on the background).",
+  description: "Read the design of the person's own site, which they also change in Settings, Appearance (with the Virtu plugin) or with the Appearance button on their site: each color role and type token with its value, the palette swatches a color can take, and whether Virtu's check passes (body text, secondary text and links at 4.5:1 on the background and muted surfaces, button text at 4.5:1, buttons at 3:1 on the background).",
   tier: "read",
   on: ["chat", "mcp"],
   input: z.object({}),
@@ -72,7 +72,7 @@ export const siteDesignAction = action({
       swatches: s.swatches.map((w) => ({ token: `{${w.path}}`, css: w.css })),
       verdict: s.verdict,
       failing: s.findings.filter((f) => f.severity === "error").map((f) => f.message),
-      customize: `${profileHref({ id: userId, handle: (await profileSettings(userId)).handle })}?customize=1`,
+      change_at: "/settings/appearance",
     };
   },
 });

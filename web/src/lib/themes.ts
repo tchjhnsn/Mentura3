@@ -71,5 +71,14 @@ export function themeVars(t: Theme): Record<string, string> {
   return { "--h": String(t.hue), "--c": String(t.chroma), "--t": String(t.tint), "--pl": String(t.light) };
 }
 
+/**
+ * The Appearance button (Torian, 2026-11-19): a round button on every page that opens Appearance as a sheet. Turned on
+ * in Settings, Appearance, and kept per device in this cookie, like the look.
+ */
+export const APPEARANCE_BUTTON_COOKIE = "reflect-appearance-button";
+
+/** Whether the cookie turns the Appearance button on. */
+export const appearanceButtonOn = (raw: string | undefined) => raw === "on";
+
 /** A swatch color for a theme, for pickers. */
 export const swatchOf = (t: Theme) => (t.chroma ? `oklch(${t.light} ${t.chroma} ${t.hue})` : "oklch(0.205 0 0)");
