@@ -3,6 +3,8 @@ import { TileAdventures } from "@/app/adventures/in-tile";
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
 import { kindOf, shown } from "@reflect/core/life";
+import { waterDays } from "@reflect/core/home";
+import { householdOf } from "@/server/household-store";
 import { recipeOf } from "@reflect/core/recipes";
 import { ThingHeader } from "@/components/headers";
 import { COLUMN, Group, Row } from "@/components/list-rows";
@@ -15,7 +17,7 @@ import { foodMoney } from "@/server/spending-store";
 import { RecipeArt } from "./recipe-art";
 import { ReceiptPicker } from "./receipt-picker";
 
-export const metadata: Metadata = { title: "Food" };
+export const metadata: Metadata = { title: "Food and water" };
 export const dynamic = "force-dynamic";
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const COURSE = { main: 0, side: 1, bread: 2 } as const;
@@ -31,6 +33,10 @@ export default async function FoodPage() {
   const today = new Date().toISOString().slice(0, 10);
   const month = today.slice(0, 7);
   const [v, likes, f, home] = await Promise.all([mealsView(user.id, today), likesOf(user.id), foodMoney(user.id, month), lifeRecords(user.id, "home")]);
+  // Water is part of this tile since 2026-11-19 (Torian: combine food and water); its own page stays at /life/home?k=water.
+  const people = Math.max(1, (await householdOf(user.id).catch(() => null))?.members.length ?? 1);
+  const gallons = home.find((r) => r.kind === "water")?.body.gallons;
+  const waterLeft = waterDays(typeof gallons === "number" ? gallons : null, people);
   // Who meets the need and how, which the income plan reads; each opens one choice on its own page.
   const need = kindOf("home", "food")!;
   const met = home.find((r) => r.kind === "food")?.body ?? {};
@@ -56,10 +62,10 @@ export default async function FoodPage() {
 
   return (
     <main className={PAGE}>
-      <ThingHeader search={false} back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Food" />
+      <ThingHeader search={false} back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Food and water" />
       <div className={COLUMN}>
         <div className="flex items-baseline justify-between gap-4">
-          <h1 id="page-title" className="text-3xl font-bold tracking-tight">Food</h1>
+          <h1 id="page-title" className="text-3xl font-bold tracking-tight">Food and water</h1>
           <Link href="/meals/list" className="text-muted-foreground hover:text-foreground text-sm">Basket {items}</Link>
         </div>
 
@@ -77,7 +83,7 @@ export default async function FoodPage() {
             <span className="flex items-center gap-2"><span aria-hidden="true" className="bg-primary size-2.5 rounded-full" />Groceries {money(f.spent.groceries)}</span>
             <span className="flex items-center gap-2"><span aria-hidden="true" className="size-2.5 rounded-full bg-amber-500" />Eating out {money(f.spent.eatingOut)}</span>
           </div>
-          <p className="text-muted-foreground text-xs">{f.from === "set" ? `${money(f.allot)} a month, from your income plan.` : `The USDA low-cost plan for ${f.people} ${f.people === 1 ? "person" : "people"}. Tap the amount to set your own.`}{f.spent.count ? "" : " Spending comes from the receipts you add."}</p>
+          <p className="text-muted-foreground text-xs">{f.from === "set" ? `${money(f.allot)} a month, from your budget.` : `The USDA low-cost plan for ${f.people} ${f.people === 1 ? "person" : "people"}. Tap the amount to set your own.`}{f.spent.count ? "" : " Spending comes from the receipts you add."}</p>
         </section>
 
         <Link href={hours ? "/meals/week" : "/meals/start?q=hours&one=1"} className="bg-card hover:bg-accent grid gap-2 rounded-2xl border px-5 py-4 transition">
@@ -117,7 +123,10 @@ export default async function FoodPage() {
             {facts.map((x) => <Row key={x.key} href={`/life/home/set?k=food&f=${x.key}&to=/meals`} label={x.label} value={shown(x, met) ?? "Not said"} />)}
           </Group>
         ) : null}
-        <TileAdventures userId={user.id} tiles={["food"]} />
+        <Group title="Water" id="water">
+          <Row href="/life/home?k=water" label="Water at home" value={waterLeft !== null ? `${waterLeft} ${waterLeft === 1 ? "day" : "days"} stored` : "Not said"} />
+        </Group>
+        <TileAdventures userId={user.id} tiles={["food", "water"]} />
       </div>
     </main>
   );

@@ -103,7 +103,8 @@ export default async function LifeAppPage({ params, searchParams }: { params: Pr
   const tile = kind ? Object.entries(TILE_KIND).find(([, t]) => t.app === app && t.kind === kind.id)?.[0] : undefined;
   return (
     <main className={PAGE}>
-      {tile && tile !== "work" ? <TileHeader tile={app} label={kind!.plural} /> : app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : app === "home" ? <TileHeader tile={app} label="The household" part={kind?.plural ?? null} workspace="/group/household" /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
+      {/* Income opens inside Ergon (Torian, 2026-11-19); the Budget tile is /plan. */}
+      {tile && tile !== "work" && tile !== "income" ? <TileHeader tile={app} label={kind!.plural} /> : app === "work" ? <WorkHeader on={(kind?.id as WorkTab | undefined) ?? null} /> : app === "home" ? <TileHeader tile={app} label="The household" part={kind?.plural ?? null} workspace="/group/household" /> : <TileHeader tile={app} label={a.label} part={kind?.plural ?? null} />}
       {removed ? (
         <form action={restoreLifeAction.bind(null, removed, back)} className="bg-muted mt-4 flex items-center justify-between gap-3 rounded-lg px-4 py-2 text-sm">
           <span>Removed.</span><Button type="submit" variant="outline" size="sm">Undo</Button>

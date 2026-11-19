@@ -30,7 +30,7 @@ export default async function HouseholdPage({ searchParams }: { searchParams: Pr
       <div className={COLUMN}>
         <div className="grid gap-1 text-center">
           <h1 id="page-title" className="text-xl font-semibold tracking-tight">{h ? ARRANGEMENT_LABEL[arrangement(h.members)] : "Household"}</h1>
-          {c ? <p className="text-muted-foreground text-sm">{c.adults} {c.adults === 1 ? "adult" : "adults"}, {c.children} {c.children === 1 ? "child" : "children"}, which your income plan uses</p> : null}
+          {c ? <p className="text-muted-foreground text-sm">{c.adults} {c.adults === 1 ? "adult" : "adults"}, {c.children} {c.children === 1 ? "child" : "children"}, which your budget uses</p> : null}
         </div>
 
         {!h ? (

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { planOf } from "@/server/plan";
 
-export const metadata: Metadata = { title: "Income plan" };
+export const metadata: Metadata = { title: "Budget" };
 export const dynamic = "force-dynamic";
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const LINK = "underline underline-offset-2";
@@ -59,12 +59,12 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const b = budgetView(plan, budget, s);
   return (
     <main className={PAGE}>
-      <ThingHeader back="/" backLabel="Home" crumbs={[{ label: "Home", href: "/" }]} title="Income plan" />
+      <ThingHeader back="/" backLabel="Home" crumbs={[{ label: "Budget", href: "/plan" }]} title="Budget" />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
         <div className="grid content-start gap-8">
           <div className="grid gap-3">
             <div className="flex flex-wrap items-start justify-between gap-4">
-              <h1 id="page-title" className="text-lg font-semibold tracking-tight">Income plan</h1>
+              <h1 id="page-title" className="text-lg font-semibold tracking-tight">Budget</h1>
               <Button asChild><Link href={change}>Change a cost</Link></Button>
             </div>
             <nav aria-label="Step" className="flex flex-wrap gap-2 text-sm">
@@ -91,15 +91,16 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
             );
           })}
 
-          <section id="budget" aria-label="Budget" className="grid scroll-mt-6 gap-3">
-            <DashHead title="Budget">
+          <section id="budget" aria-label="Allotments" className="grid scroll-mt-6 gap-3">
+            <DashHead title="Allotments">
               <Link href={`/chat?q=${encodeURIComponent("Help me set my monthly budget for each tile.")}`} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><SparklesIcon className="size-4" />New Chat</Link>
             </DashHead>
             <p className="text-muted-foreground -mt-2 text-sm">
               {money(b.allotted)} a month allotted of {money(b.takeHome)} after taxes; {b.leftToAllot >= 0 ? `${money(b.leftToAllot)} left to allot` : `${money(-b.leftToAllot)} more allotted than comes in`}.
             </p>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {b.tiles.map((t) => <BudgetCard key={t.tile} t={t} />)}
+              {/* Income is what is allotted, not a thing to allot to. */}
+              {b.tiles.filter((t) => t.tile !== "income").map((t) => <BudgetCard key={t.tile} t={t} />)}
             </div>
           </section>
 
