@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and being built one PR at a time. Built: steps 1, 2, 3 and 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: step 4, and nothing reads the schemas yet.
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and nothing reads the schemas yet.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 

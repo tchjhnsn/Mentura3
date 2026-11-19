@@ -129,3 +129,20 @@ describe("the action registry", () => {
     expect(ACTIONS.map((a) => a.id).sort()).toEqual([...new Set([...CHAT_TOOLS, ...MCP_TOOLS])].sort());
   });
 });
+
+// The actions a vault offers (@reflect/core/vault-actions, Reflect framework plan step 4) are the app's under the same
+// names: the same title, words, tier and surfaces, and inputs with the same fields, required the same way.
+describe("the vault's actions in the app", () => {
+  it("match the app's entries", async () => {
+    const { z } = await import("zod");
+    const { VAULT_ACTIONS } = await import("@reflect/core/vault-actions");
+    for (const v of VAULT_ACTIONS) {
+      const a = actionById(v.id);
+      expect(a, v.id).toBeDefined();
+      expect({ id: a!.id, title: a!.title, description: a!.description, tier: a!.tier, on: a!.on }).toEqual({ id: v.id, title: v.title, description: v.description, tier: v.tier, on: v.on });
+      const app = a!.input ? (z.toJSONSchema(a!.input, { io: "input" }) as { properties?: object; required?: string[] }) : { properties: {}, required: [] };
+      const core = v.input?.json ?? { properties: {}, required: [] };
+      expect([Object.keys(app.properties ?? {}), app.required ?? []], v.id).toEqual([Object.keys(core.properties), core.required]);
+    }
+  });
+});
