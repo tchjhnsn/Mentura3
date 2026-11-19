@@ -104,7 +104,7 @@ export default async function MeetingPage({ params, searchParams }: { params: Pr
         {cancelled ? <p className="bg-muted rounded-lg px-4 py-2 text-sm">This meeting was cancelled.{host ? " Restore it from More." : ""}</p> : null}
 
         <div className="grid gap-2">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="grid min-w-0 gap-1">
               <h1 id="page-title" className="min-w-0 text-2xl font-bold tracking-tight break-words sm:text-3xl">{m.title}</h1>
               <p className={cn("text-sm", m.state === "live" ? "text-primary font-medium" : "text-muted-foreground")}>{stateLine(m)}</p>
