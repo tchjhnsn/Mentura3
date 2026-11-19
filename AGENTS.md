@@ -16,6 +16,7 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 | `packages/cli/` | the `reflect` command over an instance in a folder (`init`, `write`, `add`, `close`, `list`, `check`); see `packages/cli/README.md` |
 | `action/` | the GitHub Action an instance repository runs: refuses a public repository, checks the vault and records hand-written changes |
 | `packages/core/` | the headless core: the person's stores, journal and packs, in plain TypeScript that runs in Node with no database; see `packages/core/README.md` |
+| `packages/virtu/` | the Virtu design system's editor and check, vendored from tchjhnsn/design-system-theory, and the personal site's design system (`site/`); see `packages/virtu/README.md` |
 | `web/` | the Reflect web app (Next.js), one interface over the core; see `web/README.md` |
 | `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts |
 | `README.md` | overview |

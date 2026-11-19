@@ -1,0 +1,103 @@
+{
+  "virtu": "0",
+  "name": "reflect-site",
+  "description": "The design of a personal site on Reflect. Its owner changes the color roles and the type in the Virtu editor on the site itself; contrast is checked on every change.",
+  "medium": "screen",
+  "tokens": "tokens.resolver.json",
+  "domains": {
+    "color": {
+      "vocabulary": "color.role",
+      "context": null,
+      "machine": null
+    },
+    "typography": {
+      "vocabulary": "type",
+      "context": null,
+      "machine": null
+    },
+    "iconography": {
+      "excluded": "Reflect's own icons are used on every site; a site does not choose them."
+    },
+    "space": {
+      "excluded": "The site templates set the layout; a site's owner does not change spacing."
+    },
+    "depth": {
+      "excluded": "Sites are flat: no shadows or layers to choose."
+    },
+    "motion": {
+      "excluded": "Sites do not animate."
+    },
+    "semantics": {
+      "excluded": "Labels on a site are Reflect's, not the owner's."
+    },
+    "state": {
+      "excluded": "Loading and empty states are Reflect's."
+    },
+    "time": {
+      "excluded": "Dates on a site are written by Reflect."
+    }
+  },
+  "relations": [
+    {
+      "id": "text-contrast",
+      "kind": "contrast",
+      "subkind": "stated",
+      "foreground": [
+        "color.role.foreground",
+        "color.role.muted-foreground",
+        "color.role.link"
+      ],
+      "background": [
+        "color.role.background",
+        "color.role.muted"
+      ],
+      "min": 4.5
+    },
+    {
+      "id": "button-text",
+      "kind": "contrast",
+      "subkind": "stated",
+      "foreground": [
+        "color.role.primary-foreground"
+      ],
+      "background": [
+        "color.role.primary"
+      ],
+      "min": 4.5
+    },
+    {
+      "id": "button-edge",
+      "kind": "contrast",
+      "subkind": "stated",
+      "foreground": [
+        "color.role.primary"
+      ],
+      "background": [
+        "color.role.background"
+      ],
+      "min": 3
+    }
+  ],
+  "usage": [
+    {
+      "situation": "body copy",
+      "entry": "color.role.foreground"
+    },
+    {
+      "situation": "dates and other secondary text",
+      "entry": "color.role.muted-foreground"
+    },
+    {
+      "situation": "a link in a post",
+      "entry": "color.role.link"
+    },
+    {
+      "situation": "the site's main button, such as Subscribe",
+      "entry": "color.role.primary"
+    },
+    {
+      "situation": "a page or post title",
+      "entry": "type.family.display"
+    }
+  ]
+}

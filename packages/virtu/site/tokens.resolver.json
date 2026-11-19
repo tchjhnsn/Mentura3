@@ -1,0 +1,23 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/resolver.json",
+  "version": "2025.10",
+  "name": "reflect-site",
+  "sets": {
+    "site": {
+      "description": "The palette and the site's roles and type.",
+      "sources": [
+        {
+          "$ref": "tokens/palette.tokens.json"
+        },
+        {
+          "$ref": "tokens/site.tokens.json"
+        }
+      ]
+    }
+  },
+  "resolutionOrder": [
+    {
+      "$ref": "#/sets/site"
+    }
+  ]
+}

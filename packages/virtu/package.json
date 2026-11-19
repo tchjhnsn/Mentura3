@@ -1,0 +1,7 @@
+{
+  "name": "@reflect/virtu",
+  "private": true,
+  "type": "module",
+  "exports": { "./*": "./src/*.ts", "./site.json": "./site/site.loaded.json" },
+  "engines": { "node": ">=22.18" }
+}

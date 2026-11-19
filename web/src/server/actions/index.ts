@@ -31,7 +31,7 @@ import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction 
 import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
 import { dashboardAction, setDashboardCardAction } from "./dashboard";
 import { dashboardToday, setMorningBriefAction } from "./dashboard-today";
-import { setSiteTemplateAction, siteAction } from "./site";
+import { setSiteDesignAction, setSiteTemplateAction, siteAction, siteDesignAction } from "./site";
 import { connectorActAction, connectorReadAction, connectorsAction, pluginsAction, siteEditAction, siteFilesAction } from "./marketplace";
 import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
@@ -82,7 +82,7 @@ export const ACTIONS: readonly Action[] = [
   eventsAction, eventAction,
   importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
-  siteAction, setSiteTemplateAction,
+  siteAction, setSiteTemplateAction, siteDesignAction, setSiteDesignAction,
   connectorsAction, connectorReadAction, connectorActAction, siteFilesAction, siteEditAction, pluginsAction,
   ...PAGE_ACTIONS,
 ];
