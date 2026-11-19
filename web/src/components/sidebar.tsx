@@ -110,7 +110,7 @@ export function SidebarButton({ className }: { className?: string }) {
   const s = useContext(Ctx);
   if (!s) return null;
   return (
-    <Button variant="ghost" size="icon" className={className} aria-label={s.open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={s.open} aria-controls="sidebar" onClick={s.toggle}>
+    <Button data-embed-hide="" variant="ghost" size="icon" className={className} aria-label={s.open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={s.open} aria-controls="sidebar" onClick={s.toggle}>
       <PanelLeftIcon />
     </Button>
   );

@@ -92,6 +92,8 @@
 body { isolation: isolate; }
 /* The second pane (src/components/pane.tsx): from 1024 px the page narrows by its width instead of sitting under it. */
 @media (min-width: 1024px) { body { padding-right: var(--pane-w, 0px); } }
+html[data-embed] body { padding-right: 0; }
+html[data-embed] [data-embed-hide] { display: none; }
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--pattern); opacity: var(--o, 0); }
 /* The same backgrounds as small previews in the picker (src/components/look-picker.tsx), a little stronger. */
 .bg-swatch::before { content: ""; position: absolute; inset: 0; background-color: var(--pattern); opacity: min(1, calc(var(--o, 0) * 2)); }
