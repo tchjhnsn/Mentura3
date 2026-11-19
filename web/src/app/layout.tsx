@@ -40,6 +40,8 @@ export default async function RootLayout({ children, modal }: { children: ReactN
     <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={{ ...themeVars(theme), ...(user && pane.open ? { "--pane-w": `${pane.width}px` } : {}) } as CSSProperties}
       className={`${sans.variable} ${serif.variable}${look.mode === "dark" ? " dark" : ""}`} suppressHydrationWarning>
       <head>
+        {/* Inside the pane's page tab (src/components/pane.tsx), Reflect draws without its own sidebar button or pane room. */}
+        <script dangerouslySetInnerHTML={{ __html: "if(window.self!==window.top)document.documentElement.dataset.embed='1'" }} />
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
