@@ -45,7 +45,9 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
     <Provider open={open} onOpenChange={onOpen} style={{ "--sidebar-width": `${width}px` } as CSSProperties}>
       <Nav groups={groups} polisTiles={polisTiles} places={places} chats={chats} me={me} width={width} onWidth={setWidth} onResized={resize} />
       {/* The page beside it. Not a <main>: every page has its own. */}
-      <div data-page="" className="relative flex min-w-0 flex-1 flex-col">{children}</div>
+      {/* overflow-x-clip: a header's background reaches past its sides (BAR in ./headers.tsx); clipped here it stops at the
+          sidebar's edge instead of painting over the sidebar's top (2026-11-19). */}
+      <div data-page="" className="relative flex min-w-0 flex-1 flex-col overflow-x-clip">{children}</div>
     </Provider>
   );
 }
@@ -181,7 +183,7 @@ function Person({ me, to }: { me: { name: string; href: string }; to: (p: string
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-            <Face name={me.name} size={32} />
+            <span className="ring-sidebar-border shrink-0 rounded-full ring-1"><Face name={me.name} size={32} /></span>
             <span className="truncate text-sm font-medium">{me.name}</span>
             <ChevronsUpDownIcon className="ml-auto" />
           </SidebarMenuButton>
