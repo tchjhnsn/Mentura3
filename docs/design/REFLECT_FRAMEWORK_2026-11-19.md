@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and being built one PR at a time. Built: steps 1, 2 and 5, the ontology with its check, a JSON Schema for every life record kind, and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: steps 3 and 4, and nothing reads the schemas yet.
+Status: proposed on 2026-11-19 and being built one PR at a time. Built: steps 1, 2, 3 and 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: step 4, and nothing reads the schemas yet.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -93,10 +93,12 @@ One PR each:
    - Home's money and property (budget, belongings, purchases, life changes) are external, because Aristotle counts wealth as an external good (1099a31-b2).
    - Communities (*Politics* I.2): the union is the couple (seeking a mate, dates, 1252a26). The household meets everyday wants: needs, meals, firearms, ways of getting around, belongings, purchases, the basket, income, the budget, life changes and the estate plan (1252b13). The village is the colony of the household: relatives beyond it, and the place one lives (1252b17). The polis holds work, credentials, ventures, friends and friend groups, admired people, citizenship, standing, duties and elections, since friendship and exchange hold the city together (*Nicomachean Ethics* VIII.1, 1155a22; V.5, 1132b33). The rest belong to the person alone.
    - Step 1 named `home:card` a payment card. It is a Home card, a small card shown on Home for a time (`src/home-cards.ts`), so its noun is now `home card`, an artifact, external and the person's.
-3. **Lean proofs,** with no Mathlib, following NTS and Naive:
+3. **Lean proofs,** built, with no Mathlib, following NTS and Naive:
    - every noun has exactly one category;
    - `serves` links between intents and ends form no cycle (*Nicomachean Ethics* I.2: the chain of ends cannot go on without limit);
    - every chosen means reaches a stated telos;
    - the communities nest.
+
+   Built in `lean/` (see `lean/README.md`): the ontology is generated into Lean from `ontology.json` by `scripts/ontology-lean.ts` with a certificate the kernel checks by `decide`; serves links and choices are abstract models with checkers whose success gives well-foundedness, no cycle and a telos for every choice; the communities form a strict total order. Not built: generating a plan from a person's records and checking it, which waits for step 2, and running `lake build` in CI.
 4. **The action registry moved from `web/` into core,** so the CLI and an MCP server over a vault get the same routes as the app, the way Naive's router serves its CLI, MCP and API.
 5. **The life stages as the framework's lifecycle,** like Naive's phases: the Ventures of a Lifetime statechart in `packages/core/src/lifetime.ts`, with soft gates (decided 2026-11-12).
