@@ -8,7 +8,7 @@ import type { UIMessage } from "ai";
 import { CHAT_PROMPT, isChatId, readChatPart } from "@reflect/core/chat-journal";
 import { listEntries } from "@/server/journal-store";
 
-export const metadata: Metadata = { title: "Ask" };
+export const metadata: Metadata = { title: "New Chat" };
 export const dynamic = "force-dynamic";
 
 /** The plus button's chat (docs/design/REFLECT_UI_2026-11-12.md section 5), in shadcn's look with AI Elements. It is not saved to the journal yet. */
@@ -17,7 +17,7 @@ export default async function ChatPage({ searchParams }: { searchParams: Promise
   // Changes held for the person's Keep or Send (Ask Reflect plan, step 3), most of all those their own AI asked for
   // over MCP, which have no chat to show them in: they wait at the top of Ask.
   const pending: Waiting[] = await pendingChanges({ userId: user.id })
-    .then((list) => list.map((p) => ({ ...approvalCard({ change: p.id, title: p.title, preview: p.preview, tier: p.tier === "outside" ? "outside" : "shared" }), from: p.source === "mcp" ? "from your AI" : p.source === "workflow" ? "from a plan" : "from Ask" })))
+    .then((list) => list.map((p) => ({ ...approvalCard({ change: p.id, title: p.title, preview: p.preview, tier: p.tier === "outside" ? "outside" : "shared" }), from: p.source === "mcp" ? "from your AI" : p.source === "workflow" ? "from a plan" : "from a chat" })))
     .catch((err: Error) => {
       console.error(`reflect: could not read held changes: ${err.message}`);
       return [];

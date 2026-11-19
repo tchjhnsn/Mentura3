@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 const CARD_LABEL: Record<string, string> = {
   ...Object.fromEntries(DASH_CARDS.map((c) => [c.id, c.title])),
-  ask: "Ask Reflect", "household-people": "Household, who is doing what", "household-calendar": "Household, this week", "household-money": "Household budget",
+  ask: "New Chat", "household-people": "Household, who is doing what", "household-calendar": "Household, this week", "household-money": "Household budget",
 };
 const seconds = (ms: number | null) => (ms === null ? "None yet" : ms < 10_000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms / 1000)} s`);
 

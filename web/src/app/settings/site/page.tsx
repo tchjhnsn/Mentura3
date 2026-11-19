@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, MailIcon, SendIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, MailIcon, PaletteIcon, SendIcon } from "lucide-react";
 import { TEMPLATES, type TemplateId } from "@reflect/core/site";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -62,6 +62,11 @@ export default async function SiteSettings() {
           </div>
           <p className="text-muted-foreground px-4 text-xs">{TEMPLATES.find((t) => t.id === site.template)!.line}</p>
         </section>
+
+        {/* The site's colors and type are changed on the site itself, in the Virtu editor (src/components/site-design-editor.tsx). */}
+        <Group title="Look" id="look">
+          <Row href={`${href}?customize=1`} icon={<PaletteIcon />} label="Colors and type" sub="Change them on your site, where you see them" />
+        </Group>
 
         <Group title="Address" id="address">
           <li className="grid gap-2 px-4 py-3"><CopyLink path={href} /></li>

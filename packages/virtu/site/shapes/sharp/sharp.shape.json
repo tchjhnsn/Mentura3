@@ -1,0 +1,9 @@
+{
+  "virtu-shape": "0",
+  "name": "sharp",
+  "description": "Square corners everywhere, with a thin muted rule as the edge. Reads technical and printed, like a ledger or a newspaper.",
+  "corner": "round",
+  "radius": { "control": 0, "field": 0, "card": 0, "dialog": 0, "avatar": 0 },
+  "nest": [{ "outer": "card", "inner": "control", "inset": 8 }],
+  "edge": { "width": 1, "style": "solid", "color": "color.role.muted-foreground", "on": "color.role.background", "boundary": true }
+}

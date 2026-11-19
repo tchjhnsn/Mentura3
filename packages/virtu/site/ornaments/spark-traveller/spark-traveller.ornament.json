@@ -1,0 +1,12 @@
+{
+  "virtu-ornament": "0",
+  "name": "spark-traveller",
+  "description": "A small four-point star in the link color that travels round the element's border every eight seconds. Without offset-path support, or with reduced motion, it rests at the top left corner.",
+  "anchor": "along",
+  "asset": "spark.svg",
+  "size": 12,
+  "outset": 0,
+  "gutter": 6,
+  "color": "color.role.link",
+  "motion": { "kind": "travel", "duration": 8000 }
+}

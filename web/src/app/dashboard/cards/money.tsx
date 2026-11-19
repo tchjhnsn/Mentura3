@@ -23,7 +23,7 @@ export async function MoneyCard({ ctx }: { ctx: Ctx }) {
             <span className="flex items-center justify-between gap-2 text-lg font-semibold">Set your budget<ChevronRightIcon className="text-muted-foreground size-5 transition group-hover:translate-x-0.5" /></span>
             <span className="text-muted-foreground text-sm">{v.takeHome > 0 ? `Decide what each part of life gets from ${money(v.takeHome)} take-home a month.` : "Decide what each part of life gets a month."}</span>
           </Link>
-          <Link href={BUDGET_ASK} className="text-muted-foreground hover:text-foreground w-fit text-sm underline-offset-4 hover:underline">Ask Reflect to help</Link>
+          <Link href={BUDGET_ASK} className="text-muted-foreground hover:text-foreground w-fit text-sm underline-offset-4 hover:underline">Get help in a new chat</Link>
         </div>
       </Section>
     );

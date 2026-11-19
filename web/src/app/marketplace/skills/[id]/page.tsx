@@ -26,11 +26,11 @@ export default async function SkillPage({ params, searchParams }: { params: Prom
         <div className="flex items-start justify-between gap-3">
           <div className="grid gap-1">
             <h1 id="page-title" className="text-2xl font-semibold tracking-tight">{s.name}</h1>
-            <p className="text-muted-foreground text-sm">{s.enabled ? "On. Ask Reflect follows it when a request fits." : "Off. Ask Reflect does not use it."}</p>
+            <p className="text-muted-foreground text-sm">{s.enabled ? "On. Reflect follows it when a request fits." : "Off. Reflect does not use it."}</p>
           </div>
           <form action={toggleSkillAction.bind(null, s.id, !s.enabled)}><Button type="submit" variant="outline" size="sm">{s.enabled ? "Turn off" : "Turn on"}</Button></form>
         </div>
-        {one(sp.saved) ? <p className="bg-muted rounded-xl px-4 py-3 text-sm" role="status">Saved. Ask Reflect uses it from your next message.</p> : null}
+        {one(sp.saved) ? <p className="bg-muted rounded-xl px-4 py-3 text-sm" role="status">Saved. Reflect uses it from your next message.</p> : null}
         <SkillForm skill={s} error={one(sp.error)} />
         <form action={removeSkillAction.bind(null, s.id)}><Button type="submit" variant="ghost" className="text-destructive px-0">Remove skill</Button></form>
       </div>

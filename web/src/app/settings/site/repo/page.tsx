@@ -47,7 +47,7 @@ export default async function RepoPage({ searchParams }: { searchParams: Promise
             </a>
             <form action={linkRepoAction}><input type="hidden" name="repo" value={linked.repo} /><Button type="submit" variant="outline" className="w-full">Check the repository again</Button></form>
             <form action={unlinkRepoAction}><Button type="submit" variant="ghost" className="w-full">Stop publishing here</Button></form>
-            <p className="text-muted-foreground text-center text-xs">Ask Reflect can read any file in it and change one after you tap Send.</p>
+            <p className="text-muted-foreground text-center text-xs">Reflect can read any file in it and change one after you tap Send.</p>
           </div>
         ) : !github ? (
           <Button asChild size="lg" className="w-full"><Link href="/marketplace/github"><GitBranchIcon />Connect GitHub</Link></Button>

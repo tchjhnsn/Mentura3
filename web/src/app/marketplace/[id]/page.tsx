@@ -101,7 +101,7 @@ export default async function ConnectorPage({ params, searchParams }: { params: 
                 </ul>
               ) : <p className="text-muted-foreground text-sm">It offers no tools.</p>
             ) : <p className="text-muted-foreground text-sm">{toolsError}</p>}
-            <p className="text-muted-foreground text-xs">Ask Reflect can read with these when you ask, and waits for your Send before anything that changes something.</p>
+            <p className="text-muted-foreground text-xs">Reflect can read with these when you ask, and waits for your Send before anything that changes something.</p>
           </section>
         ) : null}
 

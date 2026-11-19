@@ -82,7 +82,7 @@ export function AskBar({ suggestions }: { suggestions: string[] }) {
   return (
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
       <form onSubmit={(e) => { e.preventDefault(); ask(q); }} className="bg-card focus-within:ring-ring/50 flex items-center gap-2 rounded-2xl border p-2 pl-4 shadow-xs focus-within:ring-[3px]">
-        <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder={messages.length ? "Ask a follow-up" : "Ask Reflect or tell it what to do"} aria-label="Ask Reflect" aria-keyshortcuts="Meta+K Control+K /" className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent py-2 text-base outline-none" />
+        <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} placeholder={messages.length ? "Ask a follow-up" : "Start a new chat or tell Reflect what to do"} aria-label="New Chat" aria-keyshortcuts="Meta+K Control+K /" className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent py-2 text-base outline-none" />
         <MicButton onText={setQ} />
         {mac !== null && !q && !busy ? (
           <kbd className="text-muted-foreground bg-muted hidden shrink-0 rounded-md border px-1.5 py-0.5 font-sans text-xs lg:inline-block" aria-hidden="true">{mac ? "⌘K" : "Ctrl K"}</kbd>
@@ -108,13 +108,13 @@ export function AskBar({ suggestions }: { suggestions: string[] }) {
             {status === "submitted" ? <p role="status" className="text-muted-foreground shimmer text-sm">Thinking</p> : null}
             {error ? (
               <div role="alert" className="text-muted-foreground flex flex-wrap items-center gap-3 text-sm">
-                <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
+                <span>The chat could not answer just now. Your apps are all still there.</span>
                 <Button size="sm" variant="outline" onClick={() => void regenerate()}>Try again</Button>
               </div>
             ) : null}
           </CardContent>
           <div className="flex flex-wrap items-center justify-between gap-2 border-t px-4 py-2">
-            <span className="text-muted-foreground text-xs">Ask Reflect is an AI and can be wrong.</span>
+            <span className="text-muted-foreground text-xs">Replies come from an AI and can be wrong.</span>
             <span className="flex items-center gap-1">
               <Button size="sm" variant="ghost" onClick={continueInChat} disabled={busy}><MessageSquareIcon />Continue in chat</Button>
               <Button size="icon-sm" variant="ghost" aria-label="Close the answer" onClick={close}><XIcon /></Button>

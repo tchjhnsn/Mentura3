@@ -1,0 +1,11 @@
+{
+  "virtu-ornament": "0",
+  "name": "holly-corners",
+  "description": "Holly leaves with red berries at each corner, in the drawing's own colors, swaying gently on a four-second cycle. Reduced motion leaves it still.",
+  "anchor": "corners",
+  "asset": "holly.svg",
+  "size": 24,
+  "outset": 8,
+  "gutter": 16,
+  "motion": { "kind": "sway", "duration": 4000 }
+}

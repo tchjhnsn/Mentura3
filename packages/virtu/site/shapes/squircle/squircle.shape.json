@@ -1,0 +1,11 @@
+{
+  "virtu-shape": "0",
+  "name": "squircle",
+  "description": "Continuous corners, the squircle of app icons, where the browser supports corner-shape, and plain round corners of the same radius elsewhere. Avatars stay circles.",
+  "corner": "squircle",
+  "radius": { "control": 10, "field": 10, "card": 20, "dialog": 28, "avatar": "full" },
+  "nest": [
+    { "outer": "card", "inner": "control", "inset": 10 },
+    { "outer": "dialog", "inner": "card", "inset": 8 }
+  ]
+}

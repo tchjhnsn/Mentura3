@@ -1,0 +1,11 @@
+{
+  "virtu-shape": "0",
+  "name": "soft",
+  "description": "Small radii that grow with the surface: 4px controls, 12px cards, 16px dialogs, round avatars. No edge; surfaces and shadows show the boundaries.",
+  "corner": "round",
+  "radius": { "control": 4, "field": 4, "card": 12, "dialog": 16, "avatar": "full" },
+  "nest": [
+    { "outer": "card", "inner": "control", "inset": 8 },
+    { "outer": "dialog", "inner": "card", "inset": 4 }
+  ]
+}

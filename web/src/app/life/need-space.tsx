@@ -119,7 +119,7 @@ export async function NeedSpace({ userId, kind }: { userId: string; kind: Kind }
             {sub ? <span className="text-muted-foreground text-sm">{sub}</span> : null}
           </div>
           </div>
-          <Button asChild><Link href={`/chat?q=${encodeURIComponent(ASK[kind.id] ?? `Help me with ${kind.plural.toLowerCase()}.`)}`}><SparklesIcon />Ask Reflect</Link></Button>
+          <Button asChild><Link href={`/chat?q=${encodeURIComponent(ASK[kind.id] ?? `Help me with ${kind.plural.toLowerCase()}.`)}`}><SparklesIcon />New Chat</Link></Button>
         </div>
         {checks.length ? (
           <ul className="flex flex-wrap gap-2" aria-label="The standard">

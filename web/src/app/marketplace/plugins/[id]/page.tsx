@@ -54,10 +54,10 @@ export default async function PluginPage({ params, searchParams }: { params: Pro
           </div>
         </section>
 
-        {one(sp.added) ? <p className="bg-muted rounded-xl px-4 py-3 text-sm" role="status">{ready.works ? `${p.name} is added. Ask Reflect follows it from your next message.` : `${p.name} is added. Connect ${p.connectors.map((c) => marketById(c)?.name ?? c).join(" or ")} below for it to work.`}</p> : null}
+        {one(sp.added) ? <p className="bg-muted rounded-xl px-4 py-3 text-sm" role="status">{ready.works ? `${p.name} is added. Reflect follows it from your next message.` : `${p.name} is added. Connect ${p.connectors.map((c) => marketById(c)?.name ?? c).join(" or ")} below for it to work.`}</p> : null}
 
         <section className="grid gap-2">
-          <h2 className="text-lg font-semibold">What Ask Reflect does with it</h2>
+          <h2 className="text-lg font-semibold">What Reflect does with it</h2>
           <ul className="grid list-disc gap-1 pl-5">{p.does.map((d) => <li key={d}>{d}</li>)}</ul>
         </section>
 
@@ -85,7 +85,7 @@ export default async function PluginPage({ params, searchParams }: { params: Pro
         <section className="grid gap-2">
           <h2 className="text-lg font-semibold">Its skill</h2>
           <p className="bg-muted/40 rounded-2xl border px-4 py-3 text-sm leading-relaxed">{p.skill}</p>
-          <p className="text-muted-foreground text-xs">While it is added, Ask Reflect follows this. Anything that changes something in your accounts still waits for your Send.</p>
+          <p className="text-muted-foreground text-xs">While it is added, Reflect follows this. Anything that changes something in your accounts still waits for your Send.</p>
         </section>
       </div>
     </main>

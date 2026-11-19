@@ -25,7 +25,7 @@ export function BriefView({ initial }: { initial: Brief }) {
           </span>
         ))}
       </p>
-      <Button type="button" variant="ghost" size="icon" className="text-muted-foreground size-8 shrink-0" onClick={refresh} disabled={pending} aria-label="Write the brief again" title={brief.by === "plain" ? "Ask Reflect to write it" : "Write it again"}>
+      <Button type="button" variant="ghost" size="icon" className="text-muted-foreground size-8 shrink-0" onClick={refresh} disabled={pending} aria-label="Write the brief again" title={brief.by === "plain" ? "Have Reflect write it" : "Write it again"}>
         <RefreshCwIcon className={cn("size-4", pending && "animate-spin")} />
       </Button>
     </div>

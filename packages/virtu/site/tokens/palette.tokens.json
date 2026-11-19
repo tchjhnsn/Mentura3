@@ -1,0 +1,103 @@
+{
+  "$description": "The swatches a person picks a role's color from in the editor. Roles alias these.",
+  "palette": {
+    "$type": "color",
+    "stone": {
+      "50": {
+        "$value": "#fafaf9"
+      },
+      "100": {
+        "$value": "#f4f3f1"
+      },
+      "200": {
+        "$value": "#e6e4e0"
+      },
+      "300": {
+        "$value": "#d3d0ca"
+      },
+      "500": {
+        "$value": "#8a857c"
+      },
+      "700": {
+        "$value": "#4f4b45"
+      },
+      "800": {
+        "$value": "#36332f"
+      },
+      "900": {
+        "$value": "#1f1d1a"
+      },
+      "950": {
+        "$value": "#121110"
+      }
+    },
+    "ink": {
+      "100": {
+        "$value": "#e6edfb"
+      },
+      "300": {
+        "$value": "#9db6ef"
+      },
+      "500": {
+        "$value": "#3d6bdc"
+      },
+      "700": {
+        "$value": "#24479e"
+      },
+      "900": {
+        "$value": "#142857"
+      }
+    },
+    "moss": {
+      "100": {
+        "$value": "#e4f2e6"
+      },
+      "300": {
+        "$value": "#9fcda7"
+      },
+      "500": {
+        "$value": "#3f8f4f"
+      },
+      "700": {
+        "$value": "#2a5f35"
+      },
+      "900": {
+        "$value": "#17361e"
+      }
+    },
+    "clay": {
+      "100": {
+        "$value": "#fbe9e1"
+      },
+      "300": {
+        "$value": "#efb49b"
+      },
+      "500": {
+        "$value": "#c8613b"
+      },
+      "700": {
+        "$value": "#8a3d22"
+      },
+      "900": {
+        "$value": "#4c2112"
+      }
+    },
+    "plum": {
+      "100": {
+        "$value": "#f3e7f6"
+      },
+      "300": {
+        "$value": "#d3a7de"
+      },
+      "500": {
+        "$value": "#9a4fb0"
+      },
+      "700": {
+        "$value": "#683279"
+      },
+      "900": {
+        "$value": "#3a1b44"
+      }
+    }
+  }
+}

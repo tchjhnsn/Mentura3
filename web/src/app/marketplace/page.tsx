@@ -106,7 +106,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
       <div className="mx-auto mt-6 grid w-full max-w-4xl gap-6 pb-16">
         <div className="grid gap-1">
           <h1 id="page-title" className="text-3xl font-bold tracking-tight">Marketplace</h1>
-          <p className="text-muted-foreground">Your own accounts, and skills for Ask Reflect. Reflect acts as you only for what you ask, and waits for Send before it changes anything.</p>
+          <p className="text-muted-foreground">Your own accounts, and skills for your chats. Reflect acts as you only for what you ask, and waits for Send before it changes anything.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -257,7 +257,7 @@ export default async function Marketplace({ searchParams }: { searchParams: Prom
                   ))}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">{q ? "No skill by that name." : "A skill tells Ask Reflect how you want something done: how you plan a week, the voice you write in, what to check before a decision. Write one and it is followed whenever it fits."}</p>
+                <p className="text-muted-foreground text-sm">{q ? "No skill by that name." : "A skill tells Reflect how you want something done: how you plan a week, the voice you write in, what to check before a decision. Write one and it is followed whenever it fits."}</p>
               )}
             </section>
             {added.length ? (

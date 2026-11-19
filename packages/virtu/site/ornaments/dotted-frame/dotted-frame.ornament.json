@@ -1,0 +1,11 @@
+{
+  "virtu-ornament": "0",
+  "name": "dotted-frame",
+  "description": "A frame of dots repeated along every edge, painted in the muted foreground color, sitting half outside the element.",
+  "anchor": "edges",
+  "asset": "dot.svg",
+  "size": 8,
+  "outset": 4,
+  "gutter": 4,
+  "color": "color.role.muted-foreground"
+}

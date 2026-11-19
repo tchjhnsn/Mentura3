@@ -1,0 +1,57 @@
+{
+  "$description": "A personal site's design: what its owner changes in the editor. Reflect stores the owner's edits, not this file.",
+  "color": {
+    "role": {
+      "$type": "color",
+      "background": {
+        "$value": "{palette.stone.50}"
+      },
+      "foreground": {
+        "$value": "{palette.stone.950}"
+      },
+      "muted": {
+        "$value": "{palette.stone.100}"
+      },
+      "muted-foreground": {
+        "$value": "{palette.stone.700}"
+      },
+      "border": {
+        "$value": "{palette.stone.200}"
+      },
+      "primary": {
+        "$value": "{palette.stone.900}"
+      },
+      "primary-foreground": {
+        "$value": "{palette.stone.50}"
+      },
+      "link": {
+        "$value": "{palette.ink.700}"
+      }
+    }
+  },
+  "type": {
+    "family": {
+      "$type": "fontFamily",
+      "body": {
+        "$value": [
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ]
+      },
+      "display": {
+        "$value": [
+          "ui-serif",
+          "Georgia",
+          "serif"
+        ]
+      }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "heading": {
+        "$value": 600
+      }
+    }
+  }
+}
