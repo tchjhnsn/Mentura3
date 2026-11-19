@@ -1,8 +1,8 @@
 // The person's interests from Get to know you, read from the work app's hidden kinds "interest" and "interest-areas"
 // (`@reflect/core/life`; levels in `@reflect/core/interests`, things in `@reflect/core/interest-catalogue`). Writes go
 // through the action registry (./actions/interests.ts) so they are in the change log.
-import { COMMITMENT, DEPTH, MODES, SKILL, SOURCES, isStep, type Interest, type Mode } from "@reflect/core/interests";
-import { AREAS, itemOf, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
+import { COMMITMENT, DEPTH, MODES, SKILL, SOURCES, isStep, sentence, type Interest, type Mode } from "@reflect/core/interests";
+import { AREAS, itemOf, related, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
 import { lifeRecords, type LifeRecord } from "./life-store";
 
 export type MyInterest = Interest & { id: string; area: AreaId | null; modes: Mode[]; item: CatalogItem | null; createdAt: string };
@@ -42,4 +42,33 @@ const areaIds = (v: unknown) => list(v).filter((x): x is AreaId => AREAS.some((a
 export async function myAreas(userId: string): Promise<MyAreas> {
   const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "interest-areas");
   return { done: areaIds(r?.body.done), skipped: areaIds(r?.body.skipped), sorted: r?.body.sorted === "yes", later: r?.body.later ? String(r.body.later) : null };
+}
+
+const MODE_IDS = MODES.map((m) => m.id);
+/** One interest as chat, MCP and /api/interests read it: the thing, how the person holds it in plain words, and its levels. */
+const brief = (i: MyInterest) => ({
+  ref: i.ref, title: i.title, area: i.area, modes: i.modes, source: i.source,
+  says: i.modes.map((m) => sentence(i, m)).filter((s): s is string => !!s),
+  make: i.make, do: i.do, know: i.know, href: `/me/interests/${i.ref}`,
+});
+
+/**
+ * One part of what Reflect knows the person loves, by path: '' (all, with Get to know you progress), a mode
+ * ('make', 'do', 'know'), an area ('books', 'podcasts'), or one interest by its ref (with the people behind it and
+ * more like it). Null when the path names nothing.
+ */
+export async function interestsPart(userId: string, path: string) {
+  const p = path.replace(/^\/+|\/+$/g, "");
+  const [mine, areas] = await Promise.all([myInterests(userId), myAreas(userId)]);
+  if (!p) return { count: mine.length, interests: mine.map(brief), areas: { offered: AREAS.map((a) => a.id), ...areas } };
+  if ((MODE_IDS as string[]).includes(p)) return { mode: p, interests: mine.filter((i) => i.modes.includes(p as Mode)).map(brief) };
+  if (AREAS.some((a) => a.id === p)) return { area: p, interests: mine.filter((i) => i.area === p).map(brief) };
+  const one = mine.find((i) => i.ref === p);
+  const item = one?.item ?? itemOf(p) ?? null;
+  if (!one && !item) return null;
+  return {
+    interest: one ? brief(one) : null,
+    thing: item ? { title: item.title, by: item.by, year: item.year ?? null, tags: item.tags, link: item.link, people: item.people.map((x) => ({ name: x.name, line: x.line, page: x.page })) } : null,
+    more_like_it: item ? related(item.id, 6).map((r) => ({ ref: r.id, title: r.title, by: r.by })) : [],
+  };
 }
