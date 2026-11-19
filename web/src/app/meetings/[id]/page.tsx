@@ -1,3 +1,4 @@
+import { PrepPanel } from "@/components/meetings/prep-panel";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -126,7 +127,7 @@ export default async function MeetingPage({ params, searchParams }: { params: Pr
         </div>
 
         {/* The host's private prep mounts here, inside `host ? ... : null` (prep/ builds it). */}
-        {/* PREP_PANEL */}
+        {host && (m.state === "scheduled" || m.state === "live") ? <PrepPanel meetingId={id} hostId={user.id} /> : null}
 
         {invited ? (
           <div className="bg-primary/10 grid gap-2 rounded-lg px-4 py-3 text-sm">

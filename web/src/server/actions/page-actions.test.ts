@@ -117,6 +117,11 @@ const ROUTED: Record<string, string[]> = {
   "life/build-actions.ts#answerBuildFromPage": ["answer_build_request"],
   // Events
   "events/actions.ts#newEventAction": ["host_event"],
+  "meetings/[id]/prep/actions.ts#savePrepItemAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#removePrepItemAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#setPrepMarkAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#draftPrepAction": ["set_meeting_prep"],
+  "meetings/[id]/prep/actions.ts#practiceRehearsedAction": ["set_meeting_prep"],
   "events/actions.ts#goingAction": ["going_to_event"],
   "events/actions.ts#setPartAction": ["set_event_part"],
   // Meetings: + New meeting

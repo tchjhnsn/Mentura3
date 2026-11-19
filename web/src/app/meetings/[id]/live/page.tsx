@@ -1,3 +1,4 @@
+import { PrepPanel } from "@/components/meetings/prep-panel";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -58,7 +59,7 @@ export default async function LivePage({ params }: { params: Promise<{ id: strin
               <ol className="grid list-decimal gap-1.5 pl-5 text-sm">{items.map((t, i) => <li key={i}>{t}</li>)}</ol>
             ) : <p className="text-muted-foreground text-sm">No agenda.</p>}
           </section>
-          {m.role === "host" ? <>{/* PREP_PANEL */}</> : null}
+          {m.role === "host" ? <PrepPanel meetingId={id} hostId={user.id} /> : null}
         </aside>
       </div>
     </main>

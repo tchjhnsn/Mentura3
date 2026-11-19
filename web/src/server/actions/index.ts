@@ -29,6 +29,7 @@ import { profilePageAction, setSectionAudienceAction } from "./profiles";
 import { addSocialAction, confirmSocialAction, removeSocialAction, socialsAction } from "./socials";
 import { answerBuildRequestAction, askToBuildAction, peopleToBuildWithAction } from "./build";
 import { eventAction, eventsAction, goingToEvent, hostEvent, setEventPartAction } from "./events";
+import { meetingPrepAction, setMeetingPrepAction } from "./meeting-prep";
 import { addMeetingFollowup, meetingAction, meetingsAction, scheduleMeeting, setMeetingNotes, setMeetingPartAction } from "./meetings";
 import { setDefaultAudienceAction, setHandleAction, setNameAction } from "./account";
 import { dashboardAction, setDashboardCardAction } from "./dashboard";
@@ -53,7 +54,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
   goingToEvent, hostEvent, setEventPartAction,
-  scheduleMeeting, setMeetingPartAction, setMeetingNotes, addMeetingFollowup,
+  scheduleMeeting, setMeetingPartAction, setMeetingNotes, addMeetingFollowup, setMeetingPrepAction,
   setHandleAction, setNameAction, setDefaultAudienceAction,
   keepLibraryBook, keepClaimAction, setStanceAction, takeUpItem, changeItemAction, removeItemAction, restoreItemAction, setBookWayAction,
   keepExcerpt, reviseExcerptAction, removeExcerptAction, setFinishedAction, orderWantAction, setReadingGoal,
@@ -84,7 +85,7 @@ export const ACTIONS: readonly Action[] = [
   profilePageAction, setSectionAudienceAction,
   socialsAction, addSocialAction, removeSocialAction, confirmSocialAction,
   eventsAction, eventAction,
-  meetingsAction, meetingAction,
+  meetingsAction, meetingAction, meetingPrepAction,
   importLinkedinAction, linkedinMatchesAction, linkedinConnectionsAction, removeLinkedinConnectionsAction,
   dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
   siteAction, setSiteTemplateAction, siteDesignAction, setSiteDesignAction,
