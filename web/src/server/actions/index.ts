@@ -21,6 +21,7 @@ import { changeEvent, removeEventAction, restoreEventAction } from "./calendar-e
 import { addMealAction, addToBasketAction, keepRecipeAction, planMealAction, planWeekAction, setReceiptAction, startMealPlanAction, unplanMealAction } from "./meal-plans";
 import { beliefFromWorkAction, compileEditionAction, fileWorkAction, markBeliefAction, placeBeliefAction, placeSubjectAction, saveWorkAction, sendToLearnAction, startWork } from "./journal-works";
 import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } from "./work-life";
+import { craftAct, keepCraft, saveCraftAnswers, setCraftLearned, setCraftStage, setCraftState, setCraftVouch } from "./crafts";
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
 import { connectRequestsAction, connectWithAction, profileAction, setFriendKindAction, setProfileAction } from "./connections";
@@ -47,6 +48,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   addMealAction, planMealAction, unplanMealAction, planWeekAction, startMealPlanAction, addToBasketAction, keepRecipeAction, setReceiptAction,
   startWork, saveWorkAction, fileWorkAction, beliefFromWorkAction, sendToLearnAction, markBeliefAction, placeSubjectAction, placeBeliefAction, compileEditionAction,
   toggleQuality, takeOffQuality, writeQuality, writeToward, mainAim,
+  keepCraft, setCraftState, setCraftStage, setCraftLearned, craftAct, setCraftVouch, saveCraftAnswers,
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
   goingToEvent, hostEvent, setEventPartAction,

@@ -81,6 +81,14 @@ const ROUTED: Record<string, string[]> = {
   "schole/qualities/actions.ts#toggleQualityAction": ["toggle_quality"],
   "schole/qualities/actions.ts#takeOffQualityAction": ["take_off_quality"],
   "schole/qualities/actions.ts#writeQualityAction": ["write_quality"],
+  // Crafts (Scholē landing design guide, 2026-11-19)
+  "schole/crafts/actions.ts#keepCraftAction": ["keep_craft"],
+  "schole/crafts/actions.ts#saveCraftAnswersAction": ["save_craft_answers"],
+  "schole/crafts/actions.ts#setCraftStateAction": ["set_craft_state"],
+  "schole/crafts/actions.ts#setCraftStageAction": ["set_craft_stage"],
+  "schole/crafts/actions.ts#setCraftLearnedAction": ["set_craft_learned"],
+  "schole/crafts/actions.ts#craftActAction": ["craft_act"],
+  "schole/crafts/actions.ts#setCraftVouchAction": ["set_craft_vouch"],
   // The tiles' records, quick logs and dashboards
   "life/actions.ts#addLifeAction": ["add_record"],
   "life/actions.ts#saveLifeAction": ["change_record"],
