@@ -24,39 +24,58 @@ function shared(): Pool {
 // so Promise.all over queries keeps each savepoint whole. Two store transactions open at once on one connection
 // cannot keep savepoint order; that is refused with an error rather than committed out of order.
 
+type Savepoint = { name: string; issued: boolean };
 type Scope = {
   client: Promise<PoolClient> | null;
   queue: Promise<unknown>;
-  stack: string[];
+  stack: Savepoint[];
   n: number;
 };
 
 const scopes = new AsyncLocalStorage<Scope>();
 
-/** Runs `f` after every operation queued before it on the scope's connection, one at a time. */
-function queued<T>(s: Scope, f: (c: PoolClient) => Promise<T>): Promise<T> {
-  s.client ??= shared().connect().then(async (c) => {
-    await c.query("BEGIN");
-    return c;
-  });
-  const conn = s.client;
-  const next = s.queue.then(async () => f(await conn));
+/** Runs `f` after everything queued before it on the scope, one at a time. */
+function serial<T>(s: Scope, f: () => Promise<T>): Promise<T> {
+  const next = s.queue.then(f);
   s.queue = next.catch(() => undefined);
   return next;
 }
 
+/**
+ * The scope's connection, opened with BEGIN on first use. Savepoints opened before anything touched Postgres are
+ * issued here, just before the first query that needs them, so a nested transaction that queries nothing costs nothing.
+ */
+async function connection(s: Scope): Promise<PoolClient> {
+  s.client ??= shared().connect().then(async (c) => {
+    await c.query("BEGIN");
+    return c;
+  });
+  const c = await s.client;
+  for (const sp of s.stack) {
+    if (sp.issued) continue;
+    await c.query(`SAVEPOINT ${sp.name}`);
+    sp.issued = true;
+  }
+  return c;
+}
+
+/** Runs `f` on the scope's connection, after everything queued before it. */
+const queued = <T>(s: Scope, f: (c: PoolClient) => Promise<T>): Promise<T> => serial(s, async () => f(await connection(s)));
+
 const open = (s: Scope): Promise<string> =>
-  queued(s, async (c) => {
+  serial(s, async () => {
     const name = `reflect_sp_${++s.n}`;
-    await c.query(`SAVEPOINT ${name}`);
-    s.stack.push(name);
+    s.stack.push({ name, issued: false });
     return name;
   });
 
 function close(s: Scope, name: string, keep: boolean): Promise<void> {
-  return queued(s, async (c) => {
-    if (s.stack[s.stack.length - 1] !== name) throw new Error("Two transactions were open at once on one connection.");
+  return serial(s, async () => {
+    const top = s.stack[s.stack.length - 1];
+    if (top?.name !== name) throw new Error("Two transactions were open at once on one connection.");
     s.stack.pop();
+    if (!top.issued || !s.client) return;
+    const c = await s.client;
     if (!keep) await c.query(`ROLLBACK TO SAVEPOINT ${name}`);
     await c.query(`RELEASE SAVEPOINT ${name}`);
   });
