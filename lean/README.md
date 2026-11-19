@@ -27,8 +27,11 @@ The theorems depend on no axioms beyond `propext` and `Quot.sound`, and none use
 
 `node scripts/ontology-lean.ts` writes `Reflect/Generated/Ontology.lean` from the ontology, and `--check` exits 1 when the committed file is stale. The generator is `packages/core/src/terms/ontology-lean.ts`; `ontology-lean.test.ts` fails in `cd web && pnpm test` when the file is stale. Run the generator, then `lake build`, after any change to the ontology.
 
+## CI
+
+`.github/workflows/lean.yml` runs on a pull request or a push to main that touches `lean/`, `packages/core/src/terms/`, `scripts/ontology-lean.ts` or the workflow. It runs `node scripts/ontology-lean.ts --check`, then `lake build` in `lean/` through `leanprover/lean-action`, which installs elan and the toolchain in `lean-toolchain`. Its actions are pinned to commits.
+
 ## What is not built
 
 - The Lean models of serves links and choices are abstract. No Reflect record carries a serves link or a telos yet, so nothing generates a plan from a person's records and checks it. That waits for the record types of step 2.
-- CI does not run `lake build`. The vitest test keeps the generated file current, and `lake build` is run by hand.
 - Naive's term engine, which checks each term's properties, has no counterpart here: the ontology proof covers placement only.

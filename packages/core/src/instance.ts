@@ -12,6 +12,7 @@ import { sourceProblems } from "./sources.ts";
 import { wikiProblems } from "./wiki.ts";
 import { presentationProblems } from "./files-presentations.ts";
 import { LEGACY_TEMPLATES, LIFETIME_FOLDERS, lifetimeProblems } from "./lifetime.ts";
+import { checkLifeRecords, lifeProblemLine, type LifeCheck } from "./life-check.ts";
 import { readRecord, writeRecord } from "./record-io.ts";
 import { planProblems, readPlan } from "./release.ts";
 import { rename, rmdir } from "node:fs/promises";
@@ -183,11 +184,12 @@ async function walk(root: string, dir: string): Promise<string[]> {
   return out;
 }
 
-export type CheckResult = { problems: string[]; outside: string[] };
+/** `life` is what the life record check read (./life-check.ts), null when the config could not be read. */
+export type CheckResult = { problems: string[]; outside: string[]; life: LifeCheck | null };
 
 /**
  * Check an instance. Problems fail: a config that is not one, a broken memory chain, a grant that names
- * the journal, entries or reflections. `outside` lists records written or changed without reflect (by hand, say in
+ * the journal, entries or reflections, a life record that does not match its kind's schema. `outside` lists records written or changed without reflect (by hand, say in
  * the GitHub app). That is allowed; `adopt` records them in memory. Drafts (`*.draft.json`) are the
  * reader's guesses, not records, so they are never in memory.
  */
@@ -197,7 +199,7 @@ export async function checkInstance(root: string): Promise<CheckResult> {
   try {
     config = await readConfig(root);
   } catch (e) {
-    return { problems: [(e as Error).message], outside: [] };
+    return { problems: [(e as Error).message], outside: [], life: null };
   }
   let lines: ReturnType<typeof parseMemory> = [];
   try {
@@ -213,6 +215,8 @@ export async function checkInstance(root: string): Promise<CheckResult> {
     for (const p of paths) if (typeof p === "string" && /^(journal|entries|reflections|_private)(\/|$)/.test(p)) problems.push(`${g}: a grant can never name ${p}`);
   }
   problems.push(...(await documentProblems(root, p)), ...(await lifetimeProblems(root, p)));
+  const life = await checkLifeRecords(root, p);
+  problems.push(...life.problems.map(lifeProblemLine));
   if (!p.person) {
     try {
       problems.push(...(await planProblems(root, await readPlan(root))).problems);
@@ -229,7 +233,7 @@ export async function checkInstance(root: string): Promise<CheckResult> {
     if (bytes === null) continue;
     if (shas.get(rel) !== sha256(bytes)) outside.push(rel);
   }
-  return { problems, outside: outside.sort() };
+  return { problems, outside: outside.sort(), life };
 }
 
 /** Record in memory the records written outside reflect, as they are now. */

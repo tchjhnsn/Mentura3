@@ -170,7 +170,7 @@ describe("presentations in a vault", () => {
     expect((await store.list()).map((x) => x.id)).toEqual([p.id]);
     const memory = parseMemory(await readFile(join(root, "memory.jsonl"), "utf8")).map((l) => [l.op, l.path]);
     expect(memory.slice(-2)).toEqual([["create", POLICY_FILE], ["create", "presentations/2026-11-19-personal-site.json"]]);
-    expect(await checkInstance(root)).toEqual({ problems: [], outside: [] });
+    expect(await checkInstance(root)).toMatchObject({ problems: [], outside: [] });
     expect(await presentationProblems(root, person)).toEqual([]);
   });
 

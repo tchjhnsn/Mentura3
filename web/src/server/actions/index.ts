@@ -3,7 +3,7 @@
 // cannot drift; `on` says which of them offers each action, and `tier` what it asks of the person.
 import type { Action, Surface } from "./types";
 import { GUIDE, getEntry, keepLegacyPlan, legacyStatusAction, listEntriesAction, reflectGuide, writeEntry } from "./journal";
-import { adventures, connections, household, householdPlan, meals, place, planAdventureAction } from "./life";
+import { adventures, connections, household, householdPlan, lifeSchemaAction, meals, place, planAdventureAction } from "./life";
 import { addEvent, addEventsAction, calendar } from "./calendar";
 import { browseCategory, findItem, piano, practiceDialectic, quoteBook, quoteTranscript, searchLibrary, showShelves, showWays } from "./schole";
 import { addBookAction, addBookSubjects, addCoursesAction, addCredentialAction, addInputAction, addItemAction, addLesson, learning, markSubjectAction, rateSubjectAction, recallCheck, setBookStatusAction } from "./learning";
@@ -70,7 +70,7 @@ export { GUIDE };
 
 /** Every action, in the order MCP lists them, then the chat's own. */
 export const ACTIONS: readonly Action[] = [
-  reflectGuide, householdPlan, budget, setBudget, budgetStep, adventures, planAdventureAction, household, place, connections, meals, piano, calendar, addEvent, addEventsAction,
+  reflectGuide, lifeSchemaAction, householdPlan, budget, setBudget, budgetStep, adventures, planAdventureAction, household, place, connections, meals, piano, calendar, addEvent, addEventsAction,
   listEntriesAction, writeEntry, getEntry, keepLegacyPlan, legacyStatusAction,
   learning, addBookAction, addBookSubjects, setBookStatusAction, recallCheck, addCoursesAction, addCredentialAction, rateSubjectAction, addInputAction, addItemAction, addLesson, markSubjectAction,
   ideas, keepIdeaAction,
