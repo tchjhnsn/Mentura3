@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, VideoIcon } from "lucide-react";
+import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -85,7 +85,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
             <Group>
               <SidebarMenu>
                 {item("/v", "Village and polis", <LandmarkIcon />)}
-                {item("/chat", "New Chat", <PlusIcon />)}
+                <CreateMenu to={to} done={done} />
               </SidebarMenu>
             </Group>
             <Fold label="Gather">
@@ -100,7 +100,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
             <Group>
               <SidebarMenu>
                 {/* The dashboard is Home's front page for now (Torian, 2026-11-19); the journal and the calendar are in Settings. */}
-                {item("/chat", "New Chat", <PlusIcon />)}
+                <CreateMenu to={to} done={done} />
                 {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
                 {item("/meetings", "Meetings", <VideoIcon />)}
               </SidebarMenu>
@@ -268,6 +268,45 @@ export function SidebarButton({ className }: { className?: string }) {
     <Button variant="ghost" size="icon" className={cn(className)} aria-label={open ? "Close the sidebar" : "Open the sidebar"} aria-expanded={open} onClick={s.toggleSidebar}>
       <PanelLeftIcon />
     </Button>
+  );
+}
+
+/** What Create can make (Torian, 2026-11-19: "instead of the new chat button being new chat, it should actually be a
+ * create button ... create a new journal, create a new plan, create a new playlist"). Each says what it opens: a page
+ * of its own, or a chat that drafts it with the person (plans, playlists and courses are made by the chat's actions). */
+const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = [
+  { href: "/chat", label: "Chat", what: "Ask Reflect or tell it what to do", icon: <MessageSquareIcon /> },
+  { href: "/journal/new", label: "Journal entry", what: "Write, blank or from a prompt", icon: <NotebookPenIcon /> },
+  { href: `/chat?q=${encodeURIComponent("Help me make a plan.")}`, label: "Plan", what: "Draft it in a chat, step by step", icon: <ListTodoIcon /> },
+  { href: `/chat?q=${encodeURIComponent("Make me a playlist.")}`, label: "Playlist", what: "Videos, episodes and books on a subject", icon: <ListMusicIcon /> },
+  { href: `/chat?q=${encodeURIComponent("Build me a course.")}`, label: "Course", what: "A course on anything you want to learn", icon: <GraduationCapIcon /> },
+  { href: "/schole/dialectic/debates/new", label: "Debate", what: "Argue a question with others", icon: <MessagesSquareIcon /> },
+  { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
+  { href: "/adventures/new", label: "Adventure", what: "A trip or an experience to plan", icon: <CompassIcon /> },
+  { href: "/meals/new", label: "Meal", what: "A recipe or a dish for your week", icon: <UtensilsIcon /> },
+];
+
+/** The sidebar's first button: Create, a menu of what Reflect can make. */
+function CreateMenu({ to, done }: { to: (p: string) => string; done: () => void }) {
+  return (
+    <SidebarMenuItem>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton tooltip="Create" className="font-medium"><PlusIcon /><span>Create</span></SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="bottom" className="w-72">
+          <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Create something new</DropdownMenuLabel>
+          {MAKES.map((m) => (
+            <DropdownMenuItem key={m.label} asChild>
+              <Go href={to(m.href)} onClick={done} className="flex items-start gap-2">
+                <span className="mt-0.5 [&>svg]:size-4">{m.icon}</span>
+                <span className="flex flex-col"><span className="font-medium">{m.label}</span><span className="text-muted-foreground text-xs">{m.what}</span></span>
+              </Go>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
   );
 }
 
