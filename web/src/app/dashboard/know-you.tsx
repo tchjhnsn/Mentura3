@@ -8,7 +8,7 @@ import { Cover } from "../me/cover";
 import { NotNow } from "./know-you-later";
 import { safe, type Ctx } from "./parts";
 
-const NONE: MyAreas = { done: [], skipped: [], sorted: false, later: null };
+const NONE: MyAreas = { done: [], skipped: [], sorted: false, later: null, genres: [], eras: [] };
 
 /** Where Start goes: the first area neither done nor skipped, then Sort once there are three picks to sort. */
 export function nextStep(areas: MyAreas, picks: number): { href: string; label: string } | null {

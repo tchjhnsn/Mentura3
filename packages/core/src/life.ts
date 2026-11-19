@@ -188,6 +188,7 @@ export const APPS: readonly LifeApp[] = [
       },
       {
         id: "interest", label: "Interest", plural: "Interests", title: "title", hidden: true,
+        states: [{ id: "kept", label: "Kept", active: true }, { id: "let-go", label: "Let go" }],
         intro: "Something the person makes, does or follows, from Get to know you (`@reflect/core/interests` for the levels, `@reflect/core/interest-catalogue` for the things): which modes, and for each its commitment and its skill (Make, Do) or depth (Know).",
         fields: [
           { key: "ref", label: "Which thing", kind: "text", internal: true },
@@ -205,12 +206,14 @@ export const APPS: readonly LifeApp[] = [
       },
       {
         id: "interest-areas", label: "Get to know you", plural: "Get to know you", title: "done", one: true, hidden: true,
-        intro: "Which Get to know you areas the person finished or skipped, as comma lists of area ids, and when the card was put off.",
+        intro: "Which Get to know you areas the person finished or skipped, as comma lists of area ids, when the card was put off, and the music genres and eras the person chose.",
         fields: [
           { key: "done", label: "Areas done", kind: "text", internal: true },
           { key: "skipped", label: "Areas skipped", kind: "text", internal: true },
           { key: "sorted", label: "Sorted", kind: "text", internal: true },
           { key: "later", label: "Not now until", kind: "text", internal: true },
+          { key: "genres", label: "Music genres", kind: "text", internal: true },
+          { key: "eras", label: "Music eras", kind: "text", internal: true },
         ],
       },
       {

@@ -56,7 +56,7 @@ export function Sort({ cards: initial, focus }: { cards: SortCard[]; focus: stri
   };
 
   return (
-    <main className="mx-auto grid min-h-screen max-w-5xl grid-cols-[minmax(0,1fr)] content-start gap-5 px-4 pt-6 pb-28 sm:px-6">
+    <main className="mx-auto grid min-h-screen max-w-5xl grid-cols-[minmax(0,1fr)] content-start gap-5 px-4 pt-6 sm:px-6">
       <header className="grid gap-1">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Make, Do, Know</h1>
         <p className="text-muted-foreground text-[15px]">We placed your picks with a first guess. Move what is wrong and your dashboard changes with it.</p>
@@ -129,8 +129,8 @@ export function Sort({ cards: initial, focus }: { cards: SortCard[]; focus: stri
         </section>
       ) : null}
 
-      <footer className="bg-background/95 fixed inset-x-0 bottom-0 z-20 border-t backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
+      <footer className="bg-background/95 sticky bottom-0 z-20 -mx-4 mt-4 border-t backdrop-blur sm:-mx-6">
+        <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
           <button type="button" onClick={finish} className="text-muted-foreground hover:text-foreground text-sm">Skip sorting</button>
           <span className="flex-1" />
           <Button onClick={finish}>Done</Button>

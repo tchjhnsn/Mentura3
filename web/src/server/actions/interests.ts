@@ -5,7 +5,7 @@
 // entries, so every change is in the change log and can be undone.
 import { z } from "zod";
 import { COMMITMENT, DEPTH, MODES, SKILL } from "@reflect/core/interests";
-import { AREAS, firstMode, itemOf } from "@reflect/core/interest-catalogue";
+import { AREAS, ERAS, GENRES, firstMode, itemOf } from "@reflect/core/interest-catalogue";
 import { addLifeRecord, lifeRecords, removeLifeRecord, saveLifeRecord, setLifeField, setLifeState, type LifeRecord } from "../life-store";
 import { action, type ActionContext, type LoggedChange } from "./types";
 
@@ -98,7 +98,8 @@ export const setInterest = action({
   undo: putBack,
 });
 
-const AREA_KEYS = ["done", "skipped", "sorted", "later"] as const;
+const AREA_KEYS = ["done", "skipped", "sorted", "later", "genres", "eras"] as const;
+const GENRE_IDS = ids(GENRES), ERA_IDS = ids(ERAS);
 const areasSnap = async (userId: string) => {
   const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "interest-areas");
   return { areas: Object.fromEntries(AREA_KEYS.map((k) => [k, r?.body[k] ? String(r.body[k]) : null])) as Record<(typeof AREA_KEYS)[number], string | null> };
@@ -108,7 +109,7 @@ const csv = (v: string | null) => (v ?? "").split(",").filter(Boolean);
 export const setInterestArea = action({
   id: "set_interest_area",
   title: "Mark a Get to know you area done, skipped or open",
-  description: `Mark one area of the Get to know you card (${AREA_IDS.join(", ")}) as done, skipped or open again; mark sorting done with sorted; or put the whole card off until a date (later, YYYY-MM-DD; null brings it back).`,
+  description: `Mark one area of the Get to know you card (${AREA_IDS.join(", ")}) as done, skipped or open again; mark sorting done with sorted; or put the whole card off until a date (later, YYYY-MM-DD; null brings it back); keep the music genres (${GENRE_IDS.join(", ")}) and eras (${ERA_IDS.join(", ")}) the person listens to, each list replacing the last.`,
   tier: "own",
   on: ["chat", "mcp"],
   input: z.object({
@@ -116,8 +117,10 @@ export const setInterestArea = action({
     as: z.enum(["done", "skipped", "open"]).optional(),
     sorted: z.boolean().optional(),
     later: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+    genres: z.array(z.enum(GENRE_IDS)).max(GENRE_IDS.length).optional(),
+    eras: z.array(z.enum(ERA_IDS)).max(ERA_IDS.length).optional(),
   }),
-  run: async ({ userId }, { area, as, sorted, later }) => {
+  run: async ({ userId }, { area, as, sorted, later, genres, eras }) => {
     const { areas } = await areasSnap(userId);
     let done = csv(areas.done), skipped = csv(areas.skipped);
     if (area && as) {
@@ -129,6 +132,8 @@ export const setInterestArea = action({
     }
     if (sorted !== undefined) await setLifeField(userId, "work", "interest-areas", "sorted", sorted ? "yes" : null);
     if (later !== undefined) await setLifeField(userId, "work", "interest-areas", "later", later);
+    if (genres) await setLifeField(userId, "work", "interest-areas", "genres", genres.join(",") || null);
+    if (eras) await setLifeField(userId, "work", "interest-areas", "eras", eras.join(",") || null);
     return { done, skipped, sorted: sorted ?? areas.sorted === "yes", later: later === undefined ? areas.later : later };
   },
   before: ({ userId }) => areasSnap(userId),
