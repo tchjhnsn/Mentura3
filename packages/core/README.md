@@ -78,6 +78,7 @@ The headless core of Reflect, in plain TypeScript with no database and no Next.j
 | `src/chat.ts` | `chatJson`: one JSON reply from gpt-oss, through Vercel AI Gateway (the web app adds the OIDC token) or Ollama. Used to read a transcript and by the CLI. |
 | `src/bundle.ts` | A bundle: one person's journal as one JSON document, the same from either host. Moving hosts is an export from one and an import into the other's empty journal. |
 | `src/theme.ts` | The app's themes. |
+| `src/audience.ts` | Who sees a record on the shared side (doc "Private and shared Reflect plan", step 3): `RECORD_AUDIENCES` (only me, people I invite, people I've met, everyone, widening in that order), `canSee(audience, viewerRelation)` for a viewer who is the owner, invited, met, signed in or anyone, and `audienceOf(kind, own)`, which gives a record with none its kind's default (an adventure: its owner and the people on it; every other kind: only the owner). The profile's three audiences (`src/profile.ts`) are among them. Kept on `life_record.audience` (web migration 0063). |
 
 Modules import each other by their `.ts` names and import JSON with `with { type: "json" }`, so Node runs them directly (`node -e 'import("./src/journal.ts")'`, Node 22.18 or later).
 

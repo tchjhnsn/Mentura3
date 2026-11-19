@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cleanChecklist, ideaById, peopleOf, toggleTile, WITH } from "@reflect/core/adventures";
 import { requireUser } from "@/server/session";
-import { lifeRecord } from "@/server/life-store";
+import { adventureRecord } from "@/server/adventures";
 import { geocode } from "@/server/geocode";
 import { fromPage } from "@/server/actions/page";
 import { addRecord, bodyFields, changeRecord, removeRecord, restoreRecord, setRecordState } from "@/server/actions/records";
@@ -13,8 +13,8 @@ import { adventureToCalendar } from "@/server/actions/adventure-calendar";
 // Each change goes through the action registry (Ask Reflect plan, step 4), so it is in the change log and can be undone.
 
 async function mine(userId: string, id: string) {
-  const r = await lifeRecord(userId, id);
-  if (!r || r.app !== "legacy" || r.kind !== "adventure") throw new Error("No such adventure.");
+  const r = await adventureRecord(userId, id);
+  if (!r) throw new Error("No such adventure.");
   return r;
 }
 
