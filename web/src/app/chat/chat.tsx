@@ -6,14 +6,12 @@
 // and a Checkpoint between turns. Cards (json-render) and held changes (Confirmation, Plan, Queue) are in
 // ./registry.tsx. Same /api/chat as before.
 import * as React from "react";
-import { Suspense } from "react";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { JSONUIProvider, Renderer, useJsonRenderMessage } from "@json-render/react";
 import { ArrowUpIcon, MessageCircleIcon, SquareIcon } from "lucide-react";
 import { usePane } from "@/components/pane-context";
-import { BackButton } from "@/components/back-button";
 import { SidebarButton } from "@/components/sidebar";
 import { MessageResponse } from "@/components/ai-elements/message";
 import { PromptInputSpeechButton } from "@/components/ai-elements/prompt-input";
@@ -154,7 +152,7 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: {
       <div className={pane ? "flex h-full flex-col gap-3 px-3 pt-3 pb-3" : "mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6"}>
         {pane ? null : (
           <div className="flex items-center justify-between">
-            <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
+            <SidebarButton className="-ml-2" />
             <span className="text-sm font-medium">{messages.length ? "Chat" : "New Chat"}</span>
             <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
           </div>

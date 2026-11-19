@@ -3,7 +3,7 @@
 import { SidebarButton } from "@/components/sidebar";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, BoldIcon, Heading2Icon, ItalicIcon, ListIcon, QuoteIcon } from "lucide-react";
+import { BoldIcon, Heading2Icon, ItalicIcon, ListIcon, QuoteIcon } from "lucide-react";
 import { DOMAINS, isDomain, type Domain } from "@reflect/core/book";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -116,7 +116,6 @@ export function Editor({ work, ideals, subjects, site }: { work: Work; ideals: I
       <header className="bg-background/90 sticky top-0 z-10 border-b backdrop-blur">
         <div className="mx-auto flex max-w-3xl items-center gap-2 px-4 py-2">
           <SidebarButton className="-ml-2" />
-          <Button asChild variant="ghost" size="icon" aria-label="Journal" onClick={() => void save()}><Link href="/journal"><ArrowLeftIcon /></Link></Button>
           <span className="text-muted-foreground hidden truncate text-sm sm:inline">{KINDS[work.kind].label} in</span>
           <select aria-label="Domain" value={domain ?? ""} onChange={(e) => void file(isDomain(e.target.value) ? e.target.value : null)}
             className="text-muted-foreground hover:text-foreground rounded-md bg-transparent px-1 py-1 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50">
