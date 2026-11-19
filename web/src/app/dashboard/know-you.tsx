@@ -8,7 +8,7 @@ import { Cover } from "../me/cover";
 import { NotNow } from "./know-you-later";
 import { safe, type Ctx } from "./parts";
 
-const NONE: MyAreas = { done: [], skipped: [], sorted: false, later: null, genres: [], eras: [] };
+const NONE: MyAreas = { done: [], skipped: [], sorted: false, later: null };
 
 /** Where Start goes: the first area neither done nor skipped, then Sort once there are three picks to sort. */
 export function nextStep(areas: MyAreas, picks: number): { href: string; label: string } | null {
@@ -57,7 +57,7 @@ export async function KnowYou({ ctx }: { ctx: Ctx }) {
                 <li key={a.id} className="shrink-0">
                   <Link href={`/me/get-to-know-you/${a.id}`} className={cn("hover:bg-muted/60 grid w-36 gap-2 rounded-lg border p-2.5", done && "border-primary/40")}>
                     <span className="flex -space-x-3">
-                      {faces.map((f) => <Cover key={f.id} src={f.image} name={f.title} round={a.id === "music"} className={cn("ring-card size-11 ring-2", !done && !picks.length && "opacity-80")} />)}
+                      {faces.map((f) => <Cover key={f.id} src={f.image} name={f.title} className={cn("ring-card size-11 ring-2", !done && !picks.length && "opacity-80")} />)}
                     </span>
                     <span className="flex items-center gap-1.5 text-sm font-medium">
                       {done ? <Check aria-label="done" className="text-primary size-4" /> : null}
@@ -86,7 +86,7 @@ export async function KnowYou({ ctx }: { ctx: Ctx }) {
               {more.map(({ item, because }) => (
                 <li key={item.id} className="w-32 shrink-0">
                   <Link href={`/me/interests/${item.id}`} className="grid gap-1.5">
-                    <Cover src={item.image} name={item.title} round={a.id === "music"} className="aspect-square w-full" />
+                    <Cover src={item.image} name={item.title} className="aspect-square w-full" />
                     <span className="line-clamp-2 text-sm leading-tight font-medium">{item.title}</span>
                     <span className="text-muted-foreground line-clamp-2 text-xs">Because you picked {because.title}</span>
                   </Link>
@@ -95,7 +95,7 @@ export async function KnowYou({ ctx }: { ctx: Ctx }) {
               {picks.map((p) => (
                 <li key={p.ref} className="w-32 shrink-0">
                   <Link href={`/me/interests/${p.ref}`} className="grid gap-1.5">
-                    <Cover src={p.item?.image ?? itemOf(p.ref)?.image} name={p.title} round={a.id === "music"} className="aspect-square w-full" />
+                    <Cover src={p.item?.image ?? itemOf(p.ref)?.image} name={p.title} className="aspect-square w-full" />
                     <span className="line-clamp-2 text-sm leading-tight font-medium">{p.title}</span>
                     <span className="text-muted-foreground text-xs">Your pick</span>
                   </Link>

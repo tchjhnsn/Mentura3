@@ -4,7 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Check, Search } from "lucide-react";
-import { AREAS, ERAS, GENRES, MIN_PICKS, becauseOf, filterMusic, related, type CatalogItem, type EraId, type GenreId } from "@reflect/core/interest-catalogue";
+import { AREAS, MIN_PICKS, becauseOf, related, type CatalogItem } from "@reflect/core/interest-catalogue";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { pickAction, setAreaAction } from "../../actions";
 type Area = (typeof AREAS)[number];
 
 /** The tile grid, the search, and the pinned row that fills as the person taps. */
-export function Pick({ area, items: all, initial, initialGenres = [], initialEras = [] }: { area: Area; items: CatalogItem[]; initial: string[]; initialGenres?: string[]; initialEras?: string[] }) {
+export function Pick({ area, items, initial }: { area: Area; items: CatalogItem[]; initial: string[] }) {
   const router = useRouter();
   const [picks, setPicks] = useState<string[]>(initial);
   // Related things moved in beside a tapped tile, by the tile they came from; they slide in once, on that tap.
@@ -23,13 +23,7 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
   const [q, setQ] = useState("");
   const [, start] = useTransition();
   const [leaving, setLeaving] = useState(false);
-  // Music starts from genres and eras: a tap on one narrows the grid at once; with none chosen, newest first.
-  const music = area.id === "music";
-  const [genres, setGenres] = useState<string[]>(initialGenres);
-  const [eras, setEras] = useState<string[]>(initialEras);
-  const items = useMemo(() => (music ? filterMusic(all, genres, eras) : all), [music, all, genres, eras]);
-  const byId = useMemo(() => new Map(all.map((i) => [i.id, i])), [all]);
-  const flip = (set: (f: (x: string[]) => string[]) => void, id: string) => set((x) => (x.includes(id) ? x.filter((y) => y !== id) : [...x, id]));
+  const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
 
   // Grid order: catalogue order, with each tapped tile's related things right after it.
   const order = useMemo(() => {
@@ -59,7 +53,7 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
   const left = MIN_PICKS - picks.length;
   const leave = (as: "done" | "skipped") => {
     setLeaving(true);
-    start(async () => { await setAreaAction({ area: area.id, as, ...(music ? { genres: genres as GenreId[], eras: eras as EraId[] } : {}) }); router.push("/dashboard"); });
+    start(async () => { await setAreaAction({ area: area.id, as }); router.push("/dashboard"); });
   };
   const preview = done ? becauseOf(picks, 3) : [];
 
@@ -79,13 +73,6 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
         <p className="text-muted-foreground text-[15px]">{area.promise}</p>
       </header>
 
-      {music ? (
-        <div className="grid gap-3">
-          <Facet label="What you listen to" options={GENRES} on={genres} flip={(id) => flip(setGenres, id)} />
-          <Facet label="When" options={ERAS} on={eras} flip={(id) => flip(setEras, id)} />
-        </div>
-      ) : null}
-
       <ul className="grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 lg:grid-cols-6">
         {order.map((it) => {
           const on = picks.includes(it.id);
@@ -93,7 +80,7 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
             <li key={it.id} className={cn(fresh.has(it.id) && "animate-in fade-in slide-in-from-left-3 duration-250")}>
               <button type="button" aria-pressed={on} onClick={() => toggle(it)} className="group grid w-full gap-1.5 text-left">
                 <span className="relative block">
-                  <Cover src={it.image} name={it.title} round={area.id === "music"} className={cn("aspect-square w-full transition-[box-shadow,opacity]", on ? "ring-primary ring-3 ring-offset-2 ring-offset-background" : "group-hover:opacity-90")} />
+                  <Cover src={it.image} name={it.title} className={cn("aspect-square w-full transition-[box-shadow,opacity]", on ? "ring-primary ring-3 ring-offset-2 ring-offset-background" : "group-hover:opacity-90")} />
                   {on ? <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 grid size-6 place-items-center rounded-full shadow"><Check className="size-4" /></span> : null}
                 </span>
                 <span className="line-clamp-2 text-sm leading-tight font-medium">{it.title}</span>
@@ -121,7 +108,7 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
               const it = byId.get(id);
               return it ? (
                 <Link key={id} href={`/me/interests/${id}`} className="animate-in fade-in zoom-in-90 shrink-0 duration-200" title={it.title}>
-                  <Cover src={it.image} name={it.title} round={area.id === "music"} className="size-14" />
+                  <Cover src={it.image} name={it.title} className="size-14" />
                 </Link>
               ) : null;
             })}
@@ -132,7 +119,7 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
               <div className="flex gap-3 overflow-x-auto">
                 {preview.map(({ item, because }) => (
                   <div key={item.id} className="flex w-56 shrink-0 items-center gap-2">
-                    <Cover src={item.image} name={item.title} round={area.id === "music"} className="size-10" />
+                    <Cover src={item.image} name={item.title} className="size-10" />
                     <span className="grid min-w-0">
                       <span className="truncate text-sm font-medium">{item.title}</span>
                       <span className="text-muted-foreground truncate text-xs">Because you picked {because.title}</span>
@@ -148,19 +135,3 @@ export function Pick({ area, items: all, initial, initialGenres = [], initialEra
   );
 }
 
-/** A row of chips that narrows the grid as it is tapped (music's genres and eras). */
-function Facet({ label, options, on, flip }: { label: string; options: readonly { id: string; label: string }[]; on: string[]; flip: (id: string) => void }) {
-  return (
-    <div className="grid gap-1.5">
-      <span className="text-muted-foreground text-xs font-medium">{label}</span>
-      <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
-        {options.map((o) => (
-          <button key={o.id} type="button" aria-pressed={on.includes(o.id)} onClick={() => flip(o.id)}
-            className={cn("shrink-0 rounded-full border px-3 py-1.5 text-sm", on.includes(o.id) ? "border-foreground bg-foreground text-background font-medium" : "hover:bg-muted")}>
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
