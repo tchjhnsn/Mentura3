@@ -49,7 +49,7 @@ export default async function GroupPage({ params }: { params: Promise<{ id: stri
             <span className="text-muted-foreground text-sm">
               {month ? "" : "Give what a need costs to see it. "}
               {covered.length ? `Covered by others: ${covered.map((l) => l.label.toLowerCase()).join(", ")}. ` : ""}
-              {s.leftToEarn !== null ? `${money(s.leftToEarn)} a year left to earn.` : "See the income plan."}
+              {s.leftToEarn !== null ? `${money(s.leftToEarn)} a year left to earn.` : "See the budget."}
             </span>
           </Link>
         ) : null}

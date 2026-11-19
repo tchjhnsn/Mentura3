@@ -217,7 +217,7 @@ function MoneyTab({ a }: { a: Adventure }) {
         <input name="budget" type="number" min={0} step={1} defaultValue={a.budget ?? ""} placeholder="Total in dollars" aria-label="Budget" className="border-input bg-background h-9 w-48 rounded-md border px-3 text-sm" />
         <Button type="submit" variant="outline" size="sm">Save</Button>
       </form>
-      <p className="text-muted-foreground text-sm">The budget counts toward the cost of the life you intend, in your <Link href="/plan" className="underline">income plan</Link>.</p>
+      <p className="text-muted-foreground text-sm">The budget counts toward the cost of the life you intend, in your <Link href="/plan" className="underline">budget</Link>.</p>
     </div>
   );
 }
