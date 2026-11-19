@@ -4,8 +4,7 @@ import { Inter, Newsreader } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { RememberPage } from "@/components/settings-panel";
 import { SidebarProvider, type SidebarGroup } from "@/components/sidebar";
-import { PaneProvider } from "@/components/pane";
-import { PANE_COOKIE, paneOf } from "@/components/pane-state";
+import { SIDE_COOKIE, sideOf } from "@/components/sidebar-state";
 import { CHAT_PROMPT, readChatPart } from "@reflect/core/chat-journal";
 import { GROUPS } from "@reflect/core/plan";
 import { listEntries } from "@/server/journal-store";
@@ -33,19 +32,17 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   // The person's theme and background (src/lib/themes.ts), painted by the server so the first frame is already theirs.
   const jar = await cookies();
   const look = lookOf(jar.get(LOOK_COOKIE)?.value);
-  // The second pane, open or shut and how wide (src/components/pane.tsx), so the first frame already leaves it room.
-  const pane = paneOf(jar.get(PANE_COOKIE)?.value);
+  // The sidebar, open or shut and how wide (src/components/sidebar.tsx), so the first frame already leaves it room.
+  const side = sideOf(jar.get(SIDE_COOKIE)?.value);
   const theme = themeOf(look.theme, new Date().toISOString().slice(0, 10));
   return (
-    <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={{ ...themeVars(theme), ...(user && pane.open ? { "--pane-w": `${pane.width}px` } : {}) } as CSSProperties}
+    <html lang="en" data-theme={theme.id} data-bg={look.bg} data-mode={look.mode} style={{ ...themeVars(theme), ...(user && side.open ? { "--side-w": `${side.width}px` } : {}) } as CSSProperties}
       className={`${sans.variable} ${serif.variable}${look.mode === "dark" ? " dark" : ""}`} suppressHydrationWarning>
       <head>
-        {/* Inside the pane's page tab (src/components/pane.tsx), Reflect draws without its own sidebar button or pane room. */}
-        <script dangerouslySetInnerHTML={{ __html: "if(window.self!==window.top)document.documentElement.dataset.embed='1'" }} />
         {look.mode === "system" ? <script dangerouslySetInnerHTML={{ __html: "(()=>{const m=matchMedia('(prefers-color-scheme: dark)');const s=()=>document.documentElement.classList.toggle('dark',m.matches);s();m.addEventListener('change',s)})()" }} /> : null}
       </head>
       <body className="min-h-screen">
-        <TooltipProvider>{user ? <PaneProvider initial={pane}><SidebarProvider groups={GROUPED} chats={chats} me={me}>{children}{modal}</SidebarProvider></PaneProvider> : <>{children}{modal}</>}<RememberPage /></TooltipProvider>
+        <TooltipProvider>{user ? <SidebarProvider groups={GROUPED} chats={chats} me={me} initial={side}>{children}{modal}</SidebarProvider> : <>{children}{modal}</>}<RememberPage /></TooltipProvider>
       </body>
     </html>
   );

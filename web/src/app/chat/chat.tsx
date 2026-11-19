@@ -139,8 +139,8 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: {
     for (const c of calls) {
       if (c.state !== "output-available" || opened.current.has(c.toolCallId) || !c.input?.path?.startsWith("/")) continue;
       opened.current.add(c.toolCallId);
-      if (paneCtl) paneCtl.openPage(c.input.path, c.input.title);
-      else window.location.assign(c.input.path);
+      // Only into a pane the person opened; never a page change they did not ask for.
+      paneCtl?.openPage(c.input.path, c.input.title);
     }
   }, [messages, paneCtl]);
   const send = (words: string) => {

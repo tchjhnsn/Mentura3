@@ -1,3 +1,4 @@
+// Not offered (2026-11-19: the third pane is off until the sidebar is right; Torian). Kept for when it returns.
 // The second pane (Panes design guide, PR 2): the chat opens one of Reflect's own pages beside itself, so "show me my
 // calendar" puts the calendar next to the conversation. The client opens it when this tool's call finishes
 // (src/app/chat/chat.tsx); nothing is stored and nothing changes.
