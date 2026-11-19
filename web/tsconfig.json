@@ -34,6 +34,9 @@
       ],
       "vitest": [
         "./node_modules/vitest"
+      ],
+      "zod": [
+        "./node_modules/zod"
       ]
     },
     "esModuleInterop": true,

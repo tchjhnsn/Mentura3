@@ -6,18 +6,22 @@ import { foodEstimate } from "@reflect/core/plan";
 import { guessKind, linesText, monthSpend, parseLines, parseRead, type Receipt, type SpendKind } from "@reflect/core/spending";
 import { visionModel } from "./chat-model";
 import { householdOf } from "./household-store";
+import { bodyOf } from "@reflect/core/life-body";
 import { addLifeRecord, lifeRecord, lifeRecords, saveLifeRecord } from "./life-store";
 
 export async function receipts(userId: string): Promise<Receipt[]> {
-  return (await lifeRecords(userId, "home")).filter((r) => r.kind === "receipt").map((r) => ({
-    id: r.id,
-    store: String(r.body.store ?? "A store"),
-    day: String(r.body.day ?? r.createdAt.slice(0, 10)),
-    total: typeof r.body.total === "number" ? r.body.total : 0,
-    kind: (r.body.spend === "eating-out" ? "eating-out" : "groceries") as SpendKind,
-    items: parseLines(String(r.body.items ?? "")),
-    confirmed: r.body.confirmed === true,
-  })).sort((a, b) => b.day.localeCompare(a.day));
+  return (await lifeRecords(userId, "home")).filter((r) => r.kind === "receipt").map((r) => {
+    const b = bodyOf("receipt", r.body);
+    return {
+      id: r.id,
+      store: b.store ?? "A store",
+      day: b.day ?? r.createdAt.slice(0, 10),
+      total: b.total ?? 0,
+      kind: b.spend ?? "groceries",
+      items: parseLines(b.items ?? ""),
+      confirmed: b.confirmed === true,
+    };
+  }).sort((a, b) => b.day.localeCompare(a.day));
 }
 
 export const receiptOf = async (userId: string, id: string) => (await receipts(userId)).find((r) => r.id === id) ?? null;
