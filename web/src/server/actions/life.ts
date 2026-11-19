@@ -13,6 +13,7 @@ import { connectionsPartOf } from "../connections-store";
 import { mealsPartOf } from "../meals-store";
 import { adventureFor, adventuresPart, planAdventure } from "../adventures";
 import { removeLifeRecord, saveLifeRecord } from "../life-store";
+import { LIFE_KIND_INPUT, LIFE_SCHEMA, lifeSchemaIn } from "@reflect/core/vault-actions";
 import { action } from "./types";
 
 const path = z.object({ path: z.string().max(200).default("") });
@@ -123,4 +124,12 @@ export const meals = action({
   input: pathSuchAs("Such as 'week' or 'list'"),
   mcp: { description: `The person's meals and their ingredients, this week's meals by day, and the shopping list scaled to the household. Fetch only the part asked about. Paths: ${MEALS_PATHS}.`, input: path },
   run: async ({ userId }, { path }) => mealsPartOf(userId, path),
+});
+
+// A life record kind's JSON Schema, declared in the core (@reflect/core/vault-actions) so a vault's CLI and MCP server
+// offer it under the same name and words.
+export const lifeSchemaAction = action({
+  ...LIFE_SCHEMA,
+  input: z.object({ kind: z.string().min(1).describe(LIFE_KIND_INPUT) }),
+  run: async (_ctx, { kind }) => lifeSchemaIn(kind),
 });

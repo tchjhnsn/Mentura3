@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and nothing reads the schemas yet.
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), and the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and only the three life kinds a vault keeps (friends, groups and offices) are checked against the schemas, since the web app keeps the rest in Postgres.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -85,7 +85,7 @@ What is not built yet:
 One PR each:
 
 1. **The ontology and its check.** Built.
-2. **A JSON Schema for each record type,** generated from `life.ts` and `life-body.ts`. Each type carries its noun, its category, its kind of good (body, external or soul, *Nicomachean Ethics* I.8, 1098b12) and its community (person, union, household, village or polis, *Politics* I.2). Built: `packages/core/src/life-schemas.ts` derives them and `pnpm schemas` in `web/` writes them to `packages/core/schemas/life/<app>.<kind>.schema.json` (`--check` fails on a stale file).
+2. **A JSON Schema for each record type,** generated from `life.ts` and `life-body.ts`. Each type carries its noun, its category, its kind of good (body, external or soul, *Nicomachean Ethics* I.8, 1098b12) and its community (person, union, household, village or polis, *Politics* I.2). Built: `packages/core/src/life-schemas.ts` derives them and `pnpm schemas` in `web/` writes them to `packages/core/schemas/life/<app>.<kind>.schema.json` (`--check` fails on a stale file). `reflect check` validates a vault's life records against them (`packages/core/src/life-check.ts`), and the `life_schema` action returns one kind's schema to the CLI, a vault's MCP server and the app's.
 
    How goods and communities were assigned:
    - Goods follow the apps' grouping in `REFLECT_UI_2026-11-12.md`: Body and Home are goods of the body, and the rest are external.
@@ -99,7 +99,7 @@ One PR each:
    - every chosen means reaches a stated telos;
    - the communities nest.
 
-   Built in `lean/` (see `lean/README.md`): the ontology is generated into Lean from `ontology.json` by `scripts/ontology-lean.ts` with a certificate the kernel checks by `decide`; serves links and choices are abstract models with checkers whose success gives well-foundedness, no cycle and a telos for every choice; the communities form a strict total order. Not built: generating a plan from a person's records and checking it, which waits for step 2, and running `lake build` in CI.
+   Built in `lean/` (see `lean/README.md`): the ontology is generated into Lean from `ontology.json` by `scripts/ontology-lean.ts` with a certificate the kernel checks by `decide`; serves links and choices are abstract models with checkers whose success gives well-foundedness, no cycle and a telos for every choice; the communities form a strict total order. Not built: generating a plan from a person's records and checking it, which waits for step 2. `.github/workflows/lean.yml` runs `lake build` and the generated file's staleness check in CI.
 4. **The action registry moved from `web/` into core,** so the CLI and an MCP server over a vault get the same routes as the app, the way Naive's router serves its CLI, MCP and API.
 5. **The life stages as the framework's lifecycle,** like Naive's phases: the Ventures of a Lifetime statechart in `packages/core/src/lifetime.ts`, with soft gates (decided 2026-11-12).
 6. **The presentation gate,** proposed and not built. Torian asked on 2026-11-19: "how should a man present himself before others given any given circumstance?" He wants the context of the public viewing asked whenever anything enters public view, in person or online, with Aristotle, Dale Carnegie and C. S. Lewis as his teachers. He sees it as the personal form of Naive's publication gate (EE-025), so it is modelled on that gate.
