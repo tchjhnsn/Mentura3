@@ -115,13 +115,9 @@ describe("running an action through the change log", () => {
     expect(changes.rows).toEqual([]);
   });
 
-  it("still returns the result when the log cannot be written", async () => {
+  it("throws when the log cannot be written, so no change goes unlogged", async () => {
     const changes = { ...memoryLog(), add: async () => { throw new Error("no table"); } };
-    const err = vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const { result, changeId } = ok(await runAction(addEvent, { userId: "u1", changes }, { title: "Dinner", day: "2026-11-20" }, "mcp"));
-    expect(result).toHaveLength(1);
-    expect(changeId).toBeNull();
-    err.mockRestore();
+    await expect(runAction(addEvent, { userId: "u1", changes }, { title: "Dinner", day: "2026-11-20" }, "mcp")).rejects.toThrow("no table");
   });
 
   it("undoes added events: removes each, marks the change undone, and refuses a second undo", async () => {
@@ -297,5 +293,16 @@ describe.skipIf(!live)("undo on Neon", () => {
     expect((await events(user, "2026-11-20", "2026-11-20")).map((e) => e.id)).toEqual([result[0]!.id]);
     await undoChange({ userId: user, changes }, changeId!);
     expect(await events(user, "2026-11-20", "2026-11-20")).toEqual([]);
+  });
+
+  it("rolls back what a run wrote when its change log cannot be kept", async () => {
+    mocks.live = true;
+    const { db } = await import("@/db/pool");
+    const { events } = await import("../calendar-store");
+    const user = randomUUID();
+    await db().query(`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt") VALUES ($1, $2, $3, false, now(), now())`, [user, "Tx Test", `${user}@example.test`]);
+    const changes = { ...memoryLog(), add: async () => { throw new Error("no table"); } };
+    await expect(runAction(addEvent, { userId: user, changes }, { title: "Dinner", day: "2026-11-21" }, "chat")).rejects.toThrow("no table");
+    expect(await events(user, "2026-11-21", "2026-11-21")).toEqual([]);
   });
 });

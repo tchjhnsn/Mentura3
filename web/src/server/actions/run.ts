@@ -3,6 +3,7 @@
 // asked for from the chat or MCP does not run: it is held with a preview until the person taps Keep or Send.
 import type { z } from "zod";
 import type { Tier } from "@reflect/core/actions";
+import { transaction } from "@/db/pool";
 import { postgresChanges } from "../action-change-store";
 import type { Action, ActionContext, ChangeLog, LoggedChange, Source } from "./types";
 import { actionById } from "./index";
@@ -22,7 +23,7 @@ export const changesOf = (ctx: ActionContext): ChangeLog => ctx.changes ?? postg
 export const holds = (tier: Tier, source: Source, origin?: Source) =>
   (tier === "shared" || tier === "outside") && (source === "chat" || source === "mcp" || (source === "workflow" && origin !== "page"));
 
-/** What runAction did: ran (with the change id, or null for a read or a log that failed), or held it unrun. */
+/** What runAction did: ran (with the change id, or null for a read), or held it unrun. */
 export type Ran<R> = { held: false; result: R; changeId: string | null } | { held: true; changeId: string; preview: string };
 
 const said = (v: unknown): string => (typeof v === "string" ? v : JSON.stringify(v));
@@ -34,9 +35,10 @@ export function plainPreview(title: string, input: unknown): string {
 
 /**
  * Run an action and keep what it changed. A read changes nothing and is not kept. A shared or outside action from the
- * chat or MCP is not run: it is kept as held, with its input and a preview, and waits for approveChange. When keeping
- * a run fails, the change has still happened, so the result is returned with no change id rather than an error; when
- * keeping a hold fails, nothing has happened, so the error is thrown.
+ * chat or MCP is not run: it is kept as held, with its input and a preview, and waits for approveChange. The run and
+ * its change log are one transaction (`transaction` in @/db/pool): when the log cannot be kept, what the run wrote in
+ * Postgres is rolled back and the error is thrown, so no change happens without its entry (and its undo). When keeping
+ * a hold fails, nothing has happened, so the error is thrown.
  */
 export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, given: ActionContext, input: z.output<S>, source: Source): Promise<Ran<R>> {
   if (a.tier === "never") throw new Error(`${a.title} is never run for a model.`);
@@ -47,16 +49,13 @@ export async function runAction<S extends z.ZodType, R>(a: Action<S, R>, given: 
     const changeId = await changesOf(ctx).hold({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: input ?? {}, preview });
     return { held: true, changeId, preview };
   }
-  const before = a.before ? await a.before(ctx, input) : undefined;
-  const result = await a.run(ctx, input);
-  const c = a.change?.(result, input, before) ?? {};
-  try {
+  return transaction(async () => {
+    const before = a.before ? await a.before(ctx, input) : undefined;
+    const result = await a.run(ctx, input);
+    const c = a.change?.(result, input, before) ?? {};
     const changeId = await changesOf(ctx).add({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: (a.logged ? a.logged(input) : input) ?? {}, before: c.before ?? null, after: c.after ?? null });
-    return { held: false, result, changeId };
-  } catch (err) {
-    console.error(`reflect: could not log ${a.id}: ${(err as Error).message}`);
-    return { held: false, result, changeId: null };
-  }
+    return { held: false as const, result, changeId };
+  });
 }
 
 /** Whether a logged change can still be undone now: own tier, an action with undo, done, and under 30 days old. */
@@ -75,8 +74,11 @@ export async function undoChange(ctx: ActionContext, id: string): Promise<{ undo
   const a = actionById(c.actionId);
   if (c.tier !== "own" || !a?.undo) throw new Error(`${a?.title ?? c.actionId} cannot be undone here.`);
   if (!canUndo(c, ctx.now ?? new Date())) throw new Error(`Changes can be undone for ${UNDO_DAYS} days; this one is older.`);
-  await a.undo(ctx, c);
-  if (!(await log.markUndone(ctx.userId, id))) throw new Error("That change was already undone.");
+  // The undo and marking it undone are one transaction: a second undo racing this one rolls back its own removal.
+  await transaction(async () => {
+    await a.undo!(ctx, c);
+    if (!(await log.markUndone(ctx.userId, id))) throw new Error("That change was already undone.");
+  });
   return { undone: c.id, title: a.title };
 }
 
@@ -96,7 +98,8 @@ async function heldOf(ctx: ActionContext, id: string): Promise<LoggedChange> {
 
 /**
  * Run a held change, as the person who owns it, when they tap Keep or Send. It runs once: claiming it moves it from
- * held to done in one step, so a second tap (or a second tab) is refused. If the run fails it goes back to held.
+ * held to done in one step, so a second tap (or a second tab) is refused. The run and keeping its before and after are
+ * one transaction; if either fails, what the run wrote is rolled back and the change goes back to held.
  * Refuses another person's change, one already made or declined, and one older than 7 days.
  */
 export async function approveChange(ctx: ActionContext, id: string): Promise<{ approved: string; title: string; result: unknown; plan?: PlanView }> {
@@ -107,20 +110,18 @@ export async function approveChange(ctx: ActionContext, id: string): Promise<{ a
   const now = ctx.now ?? new Date();
   if (!canApprove(c, now)) throw new Error(`A held change waits ${HOLD_DAYS} days; this one is older. Ask again.`);
   if (!(await log.claim(ctx.userId, id, new Date(now.getTime() - HOLD_DAYS * DAY_MS)))) throw new Error("That change was already made.");
-  let before: unknown;
   let result: unknown;
   try {
-    before = a.before ? await a.before(ctx, c.input) : undefined;
-    result = await a.run(ctx, c.input);
+    result = await transaction(async () => {
+      const before = a.before ? await a.before(ctx, c.input) : undefined;
+      const r = await a.run(ctx, c.input);
+      const made = a.change?.(r, c.input, before) ?? {};
+      await log.settle(ctx.userId, id, { before: made.before ?? null, after: made.after ?? null });
+      return r;
+    });
   } catch (err) {
     await log.release(ctx.userId, id).catch(() => undefined);
     throw err;
-  }
-  const made = a.change?.(result, c.input, before) ?? {};
-  try {
-    await log.settle(ctx.userId, id, { before: made.before ?? null, after: made.after ?? null });
-  } catch (err) {
-    console.error(`reflect: could not log ${a.id}: ${(err as Error).message}`);
   }
   // A held step of a plan: the plan goes on from the next step. The change has happened whatever the plan does next.
   const plan = c.source === "workflow" ? await resumeAfterApproval(ctx, id).catch((err: Error) => (console.error(`reflect: could not resume a plan: ${err.message}`), null)) : null;
