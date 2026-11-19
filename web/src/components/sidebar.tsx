@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, UsersRoundIcon, LandmarkIcon, LayoutDashboardIcon, HourglassIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, ScrollTextIcon, SettingsIcon, SparklesIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, CompassIcon, HomeIcon, UsersRoundIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
@@ -150,12 +150,6 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
               <Section title="Tools">
                 <Go href={to("/journal")} className={ROW}><NotebookPenIcon className="text-muted-foreground size-4" />Journal</Go>
                 <Go href={to("/calendar")} className={ROW}><CalendarIcon className="text-muted-foreground size-4" />Calendar</Go>
-              </Section>
-
-              <Section title="Lenses">
-                <Go href={to("/journal/log")} className={ROW}><ScrollTextIcon className="text-muted-foreground size-4" />Log</Go>
-                <Go href={to("/life/legacy")} className={ROW}><HourglassIcon className="text-muted-foreground size-4" />Legacy</Go>
-                <Go href={to("/journal/qualities")} className={ROW}><SparklesIcon className="text-muted-foreground size-4" />Qualities</Go>
               </Section>
 
               {groups.map((g) => (

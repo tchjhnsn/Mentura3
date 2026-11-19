@@ -39,7 +39,7 @@ export type Tile = { id: string; label: string; app: App };
 
 export const MINE: readonly Tile[] = [
   { id: "learn", label: "Scholē", app: "learn" },
-  { id: "work", label: "Work", app: "work" },
+  { id: "work", label: "Ergon", app: "work" },
   { id: "income", label: "Income", app: "work" },
   { id: "food", label: "Food", app: "home" },
   { id: "water", label: "Water", app: "home" },

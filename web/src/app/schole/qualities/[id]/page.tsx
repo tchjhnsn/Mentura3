@@ -54,7 +54,7 @@ export default async function QualityPage({ params }: { params: Promise<{ id: st
   );
   return (
     <main className={PAGE}>
-      <ThingHeader back="/journal/qualities" backLabel="Qualities" crumbs={[{ label: "Journal", href: "/journal" }, { label: "Qualities", href: "/journal/qualities" }]} title={trait.name} />
+      <ThingHeader back="/schole/qualities" backLabel="Qualities" crumbs={[{ label: "Scholē", href: "/schole" }, { label: "Qualities", href: "/schole/qualities" }]} title={trait.name} />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="grid gap-1">

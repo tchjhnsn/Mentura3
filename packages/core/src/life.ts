@@ -79,7 +79,7 @@ const need = (id: string, label: string, intro: string, standard: { text: string
 
 export const APPS: readonly LifeApp[] = [
   {
-    id: "work", label: "Work",
+    id: "work", label: "Ergon",
     intro: "Work and provide. Unpaid work counts as work, and paid work feeds your income.",
     kinds: [
       {

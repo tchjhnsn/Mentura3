@@ -19,7 +19,7 @@ export const LIFETIME_FOLDERS: readonly { path: string; title: string; guide: st
   { path: "learn/talks", title: "Talks", guide: "A note per talk you heard: a lecture, a sermon, a keynote, a debate, a video of someone speaking. Who spoke, when, where, and the subjects it covers." },
   { path: "learn/conversations", title: "Conversations", guide: "A note per conversation that fed your thinking: with whom, when, and what about, in your words. Their words stay theirs." },
   { path: "ideas", title: "Ideas", guide: "Your own ideas, the outputs of your thinking, kept apart from what you take in (learn/). Each note says the idea in your words, dated each time you restate it, and links its inputs: `from` what you say fed it, `maybe from` what you suspect did. Recommendations are a separate list, each placed from supports to opposes, with who suggested it; one becomes an input only when you say it fed the idea. `reflect idea` keeps them." },
-  { path: "work", title: "Work", guide: "Work and provide. Each venture you build is a folder here, a full Naive venture with its own provenance, so Reflect's check leaves it to Naive." },
+  { path: "work", title: "Ergon", guide: "Work and provide. Each venture you build is a folder here, a full Naive venture with its own provenance, so Reflect's check leaves it to Naive." },
   { path: "belonging/friends", title: "Friends", guide: "A note per friend: who they are to you, and what it means to you to be one." },
   { path: "belonging/groups", title: "Groups", guide: "The groups you belong to: teams, clubs, coalitions, a congregation." },
   { path: "belonging/standing", title: "Standing", guide: "Offices you hold, roles you are trusted with, the reputation you are building." },

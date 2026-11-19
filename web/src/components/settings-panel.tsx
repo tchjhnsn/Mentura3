@@ -7,7 +7,7 @@
 import { createContext, useContext, useEffect, type ComponentType, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BlocksIcon, GlobeIcon, HouseIcon, IdCardIcon, LayoutGridIcon, MapPinIcon, PaletteIcon, ShieldIcon, UserIcon, XIcon } from "lucide-react";
+import { BlocksIcon, GlobeIcon, HouseIcon, IdCardIcon, LayoutGridIcon, MapPinIcon, PaletteIcon, ShieldIcon, UserIcon, XIcon, HourglassIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,7 @@ export const SECTIONS: Section[][] = [
     { href: "/settings/account", label: "Account", icon: UserIcon, under: ["/settings/account"] },
     { href: "/settings/profile", label: "Profile", icon: IdCardIcon, under: ["/settings/profile"] },
     { href: "/settings/privacy", label: "Privacy", icon: ShieldIcon, under: ["/settings/privacy"] },
+    { href: "/settings/legacy", label: "Legacy", icon: HourglassIcon, under: ["/settings/legacy"] },
   ],
   [
     { href: "/settings/household", label: "Household", icon: HouseIcon, under: ["/settings/household", "/settings/member"] },

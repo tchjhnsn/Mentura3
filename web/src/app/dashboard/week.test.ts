@@ -47,7 +47,7 @@ describe("weekLook", () => {
   });
 
   it("names the qualities written about, and none it cannot name", () => {
-    expect(weekLook(base, { from: "2026-11-16", to: "2026-11-18" }).qualities).toEqual([{ id: "focus", name: "Focus on one thing", entries: 1, href: "/journal/qualities/focus" }]);
+    expect(weekLook(base, { from: "2026-11-16", to: "2026-11-18" }).qualities).toEqual([{ id: "focus", name: "Focus on one thing", entries: 1, href: "/schole/qualities/focus" }]);
     expect(weekLook({ ...base, traitName: () => undefined }, { from: "2026-11-16", to: "2026-11-18" }).qualities).toEqual([]);
   });
 
