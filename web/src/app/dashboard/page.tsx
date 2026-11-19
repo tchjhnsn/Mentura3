@@ -11,6 +11,7 @@ import { AskBar } from "./ask-bar";
 import { DASH_CARDS } from "./cards";
 import { Board } from "./first-run";
 import { DashBeacon } from "./beacon";
+import { KnowYou } from "./know-you";
 import { HouseholdDashboard, ScopeToggle } from "./household";
 import { MemberDashboard } from "./member";
 import { DashToaster } from "./instant";
@@ -74,6 +75,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <Suspense fallback={<BriefSkeleton />}><BriefCard ctx={ctx} /></Suspense>
         <AskBar suggestions={suggestions} />
       </section>
+
+      {ours ? null : <Suspense fallback={null}><KnowYou ctx={ctx} /></Suspense>}
 
       {ours ? <Suspense fallback={<CardSkeleton />}><HouseholdDashboard ctx={ctx} /></Suspense> : (
       <Suspense fallback={<CardSkeleton shape="hero" />}>

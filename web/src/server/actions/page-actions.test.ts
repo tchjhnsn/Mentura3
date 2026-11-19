@@ -90,6 +90,10 @@ const ROUTED: Record<string, string[]> = {
   "schole/crafts/actions.ts#setCraftLearnedAction": ["set_craft_learned"],
   "schole/crafts/actions.ts#craftActAction": ["craft_act"],
   "schole/crafts/actions.ts#setCraftVouchAction": ["set_craft_vouch"],
+  // Get to know you (design guide "Get to know you: person dashboard", 2026-11-19)
+  "me/actions.ts#pickAction": ["pick_interest"],
+  "me/actions.ts#setInterestAction": ["set_interest"],
+  "me/actions.ts#setAreaAction": ["set_interest_area"],
   // The tiles' records, quick logs and dashboards
   "life/actions.ts#addLifeAction": ["add_record"],
   "life/actions.ts#saveLifeAction": ["change_record"],

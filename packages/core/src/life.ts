@@ -187,6 +187,33 @@ export const APPS: readonly LifeApp[] = [
         ],
       },
       {
+        id: "interest", label: "Interest", plural: "Interests", title: "title", hidden: true,
+        intro: "Something the person makes, does or follows, from Get to know you (`@reflect/core/interests` for the levels, `@reflect/core/interest-catalogue` for the things): which modes, and for each its commitment and its skill (Make, Do) or depth (Know).",
+        fields: [
+          { key: "ref", label: "Which thing", kind: "text", internal: true },
+          { key: "title", label: "Name", kind: "text" },
+          { key: "area", label: "Area", kind: "text", internal: true },
+          { key: "modes", label: "Make, Do, Know", kind: "text", internal: true },
+          { key: "make_commitment", label: "Making: commitment", kind: "text", internal: true },
+          { key: "make_skill", label: "Making: skill", kind: "text", internal: true },
+          { key: "do_commitment", label: "Doing: commitment", kind: "text", internal: true },
+          { key: "do_skill", label: "Doing: skill", kind: "text", internal: true },
+          { key: "know_commitment", label: "Knowing: commitment", kind: "text", internal: true },
+          { key: "know_depth", label: "Knowing: depth", kind: "text", internal: true },
+          { key: "source", label: "How we learned it", kind: "text", internal: true },
+        ],
+      },
+      {
+        id: "interest-areas", label: "Get to know you", plural: "Get to know you", title: "done", one: true, hidden: true,
+        intro: "Which Get to know you areas the person finished or skipped, as comma lists of area ids, and when the card was put off.",
+        fields: [
+          { key: "done", label: "Areas done", kind: "text", internal: true },
+          { key: "skipped", label: "Areas skipped", kind: "text", internal: true },
+          { key: "sorted", label: "Sorted", kind: "text", internal: true },
+          { key: "later", label: "Not now until", kind: "text", internal: true },
+        ],
+      },
+      {
         id: "imagined", label: "Imagined work", plural: "Imagined", title: "name",
         intro: "Work that does not exist yet, as you imagine it.",
         fields: [
