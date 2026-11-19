@@ -84,6 +84,7 @@ const ROUTED: Record<string, string[]> = {
   // Crafts (Scholē landing design guide, 2026-11-19)
   "schole/crafts/actions.ts#keepCraftAction": ["keep_craft"],
   "schole/crafts/actions.ts#saveCraftAnswersAction": ["save_craft_answers"],
+  "schole/crafts/actions.ts#savePicksAction": ["save_craft_picks"],
   "schole/crafts/actions.ts#setCraftStateAction": ["set_craft_state"],
   "schole/crafts/actions.ts#setCraftStageAction": ["set_craft_stage"],
   "schole/crafts/actions.ts#setCraftLearnedAction": ["set_craft_learned"],

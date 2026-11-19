@@ -26,7 +26,9 @@ import { LearnHeader } from "./header";
 import { newEpisodeCards } from "@/server/new-episodes";
 import { NewEpisodeCards } from "./podcasts/new-episodes";
 import { myCrafts } from "@/server/crafts-store";
+import { lifeActs } from "@/server/life-store";
 import { YourCrafts } from "./your-crafts";
+import { FindCrafts } from "./find-crafts";
 import { Doors } from "./doors";
 import { ByWay } from "./by-way";
 
@@ -38,8 +40,8 @@ const SHELF_KEYS = ["tab", "book", "filled", "show", "sort", "removed"];
 
 type Card = { key: string; href: string; kind: string; title: string; by: string | null; image: string | null; share: number | null; where: string | null };
 
-/** The one thing the person last played: the page's largest card and its one filled button (priority guides, front page P1). */
-function Hero({ c }: { c: Card }) {
+/** The one thing the person last played: the page's largest card and its one filled button (priority guides, front page P1), outline when Find your crafts holds it. */
+function Hero({ c, outline }: { c: Card; outline?: boolean }) {
   return (
     <div className="bg-card flex gap-4 rounded-xl border p-4 shadow-xs">
       <Link href={c.href} className="shrink-0" aria-label={c.title}>
@@ -50,7 +52,7 @@ function Hero({ c }: { c: Card }) {
         <Link href={c.href} className="line-clamp-2 text-lg font-semibold leading-snug hover:underline hover:underline-offset-4">{c.title}</Link>
         <span className="text-muted-foreground truncate text-[13px]">{[c.by, c.where].filter(Boolean).join(" · ")}</span>
         {c.share !== null ? <span className="bg-muted mt-1 block h-1 max-w-xs overflow-hidden rounded-full"><span className="bg-foreground block h-full" style={{ width: `${Math.max(2, c.share * 100)}%` }} /></span> : null}
-        <div className="mt-auto pt-2"><Button asChild size="lg" className="h-10 w-full sm:w-auto sm:px-8"><Link href={c.href}>Continue</Link></Button></div>
+        <div className="mt-auto pt-2"><Button asChild size="lg" variant={outline ? "outline" : "default"} className="h-10 w-full sm:w-auto sm:px-8"><Link href={c.href}>Continue</Link></Button></div>
       </div>
     </div>
   );
@@ -201,7 +203,8 @@ function NextUp({ picks }: { picks: { c: Collection; next: CollectionItem }[] })
  * one line to Browse. New, or with nothing under way, it is the way in: what are you working toward, and
  * collections chosen by people that serve it.
  * Crafts (doc "Scholē landing design guide"): both start with Your crafts and the three doors, Making, Doing and
- * Knowing, and end with By way and By medium chips; Continue stays the one filled button.
+ * Knowing, and end with By way and By medium chips. Picker guide: with no crafts kept, Find your crafts leads and its
+ * Start is the one filled button, so Continue turns outline; with crafts kept, Your crafts leads and Continue is filled.
  */
 export default async function SpacePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -216,6 +219,14 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
   await mergeInputs(user.id).catch(() => 0);
   const today = new Date().toISOString().slice(0, 10);
   const [view, items, recent, signals, crafts] = await Promise.all([learnView(user.id), listItems(user.id), lastActivity(user.id).catch(() => new Map<string, number>()), signalsOf(user.id), myCrafts(user.id).catch(() => [])]);
+  // Projects tried per kept craft, for Your crafts; none kept means Find your crafts leads and holds the filled button.
+  const tried: Record<string, number> = {};
+  if (crafts.length) {
+    const ids = new Set(crafts.map((c) => c.record.id));
+    for (const a of await lifeActs(user.id).catch(() => [])) if (a.kind === "tried" && ids.has(a.record)) tried[a.record] = (tried[a.record] ?? 0) + 1;
+  }
+  const findFirst = !crafts.length;
+  const cardsTop = findFirst ? <FindCrafts /> : <YourCrafts crafts={crafts} tried={tried} />;
   const bookCard = (b: (typeof view.books)[number]): Card => ({
     key: b.id, kind: "Book", title: b.title, by: b.authors[0] ?? null,
     href: b.catalog?.work ? (b.place ? `/schole/works/${b.catalog.work}/read` : `/schole/works/${b.catalog.work}`) : `/schole/shelves?book=${b.id}`,
@@ -253,7 +264,7 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
       <main className={PAGE}>
         <LearnHeader on="space" />
         <div className={`mt-4 ${SPACE}`}>
-          <YourCrafts crafts={crafts} />
+          {cardsTop}
           <Doors />
           <WorkingToward aims={aims} aim={aim} />
           <section className="grid grid-cols-1 gap-4">
@@ -286,11 +297,11 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
-        <YourCrafts crafts={crafts} />
+        {cardsTop}
         <Doors />
         <section className="grid grid-cols-1 gap-3" aria-label="Continue">
           <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
-          <Hero c={last} />
+          <Hero c={last} outline={findFirst} />
         </section>
         {rest.length ? (
           <section className="grid grid-cols-1 gap-3">
