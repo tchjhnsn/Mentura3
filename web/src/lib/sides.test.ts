@@ -14,6 +14,9 @@ describe("sides", () => {
     expect(sideOfPath("/pa")).toBe("home");
     expect(sideOfPath("/chat")).toBeNull();
     expect(sideOfPath("/settings/account")).toBeNull();
+    expect(sideOfPath("/meetings/abc")).toBeNull();
+    expect(sideOfPath("/m/token")).toBeNull();
+    expect(sideOfPath("/marketplace")).toBeNull();
   });
 
   it("finds the shared host only for a custom domain", () => {
