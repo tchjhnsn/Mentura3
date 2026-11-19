@@ -3,7 +3,6 @@ import { ChevronRightIcon } from "lucide-react";
 import type { Door } from "@reflect/core/crafts";
 import { PAGE } from "@/components/page-header";
 import { ThingHeader } from "@/components/headers";
-import { RotatingName } from "./rotating-name";
 
 export type Way = { href: string; label: string; line: string };
 
@@ -18,7 +17,7 @@ export function DoorPage({ door, ways }: { door: Door; ways: readonly Way[] }) {
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1.5">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">
-            <RotatingName names={door.names} labelEn={door.label} />
+            {door.label}
           </h1>
           <p className="text-muted-foreground">{door.about}</p>
           <p className="text-muted-foreground text-xs">{door.source}</p>
