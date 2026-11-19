@@ -3,10 +3,10 @@
 // 3: which tiles open which app). Each app keeps the person's records of a few kinds, each record with a state
 // the person sets and acts they keep (a workout, a vote, a time you saw a friend). Everything is stated by the
 // person, never inferred; the journal is where they reflect on it. Pure data and arithmetic: no I/O.
-import type { Act } from "./log";
-import { ORIGINS } from "./origins";
-import { QUESTIONS } from "./recipes";
-import { BUDGET_TILES } from "./budget";
+import type { Act } from "./log.ts";
+import { ORIGINS } from "./origins.ts";
+import { QUESTIONS } from "./recipes.ts";
+import { BUDGET_TILES } from "./budget.ts";
 
 const ORIGIN_IDS: readonly string[] = ORIGINS.map((o) => o.id);
 
