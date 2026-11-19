@@ -77,7 +77,9 @@ const need = (id: string, label: string, intro: string, standard: { text: string
   acts: [{ id: "checked", label: "Checked the standard", done: "Checked the standard for" }],
 });
 
-export const APPS: readonly LifeApp[] = [
+// Declared with `as const` so `DeclaredKind` keeps each kind's field keys and kinds as literal types (`./life-body.ts` derives
+// typed bodies from them); everything else reads it through `APPS`, typed as plain `LifeApp`s.
+const DECLARED = [
   {
     id: "work", label: "Ergon",
     intro: "Work and provide. Unpaid work counts as work, and paid work feeds your income.",
@@ -658,7 +660,11 @@ export const APPS: readonly LifeApp[] = [
       },
     ],
   },
-];
+] as const satisfies readonly LifeApp[];
+
+export const APPS: readonly LifeApp[] = DECLARED;
+/** Every kind as declared, with its id, field keys, field kinds and inline choice ids as literal types. */
+export type DeclaredKind = (typeof DECLARED)[number]["kinds"][number];
 
 export function appOf(id: LifeAppId): LifeApp {
   return APPS.find((a) => a.id === id)!;

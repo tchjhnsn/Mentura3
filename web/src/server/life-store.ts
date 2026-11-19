@@ -3,6 +3,7 @@
 // them. Records belong to one person and are read only by them.
 import { randomUUID } from "node:crypto";
 import { cleanBody, isAct, isLifeApp, isState, kindOf, type ActFacts, type Body, type LifeAppId } from "@reflect/core/life";
+import { parseBody } from "@reflect/core/life-body";
 import { isRecordAudience, type RecordAudience } from "@reflect/core/audience";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
@@ -16,8 +17,20 @@ const UUID = /^[0-9a-f-]{36}$/;
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const iso = (d: unknown) => new Date(d as string).toISOString();
 
+// Records whose body was already reported, so a record read on every page is reported once per process.
+const reported = new Set<string>();
+
 function row(userId: string, r: Record<string, unknown>): LifeRecord {
-  return { id: r.id as string, app: r.app as LifeAppId, kind: r.kind as string, state: (r.state as string | null) ?? null, body: JSON.parse(open(userId, r.body_ct as string)) as Body, createdAt: iso(r.created_at), updatedAt: iso(r.updated_at) };
+  const id = r.id as string, kind = r.kind as string;
+  const body = JSON.parse(open(userId, r.body_ct as string)) as Body;
+  // A body that does not match its kind (`@reflect/core/life-body`) is reported, by kind, id and field names only,
+  // since bodies are sealed, and still returned as it is.
+  const p = parseBody(kind, body);
+  if (!p.ok && !reported.has(id)) {
+    reported.add(id);
+    console.warn(`life_record ${id} of kind ${kind} does not match its kind: ${p.problems.map((x) => `${x.field || "(body)"}: ${x.problem}`).join("; ")}`);
+  }
+  return { id, app: r.app as LifeAppId, kind, state: (r.state as string | null) ?? null, body, createdAt: iso(r.created_at), updatedAt: iso(r.updated_at) };
 }
 
 /** Every record the person keeps, in one app or in all of them, oldest first. */
