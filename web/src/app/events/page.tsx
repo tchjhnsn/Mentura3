@@ -40,7 +40,7 @@ export default async function EventsPage({ searchParams }: { searchParams: Promi
   return (
     <main className={PAGE}>
       {/* + sits beside the title on a phone, where the header's right side wraps under it, and at the right on wider screens. */}
-      <PageHeader back="/" backLabel="Home" title={<span className="flex items-center justify-between gap-2">Events<HostButton className="sm:hidden" /></span>}>
+      <PageHeader back="/v" backLabel="Village and polis" title={<span className="flex items-center justify-between gap-2">Events<HostButton className="sm:hidden" /></span>}>
         <HostButton className="hidden sm:block" />
       </PageHeader>
 

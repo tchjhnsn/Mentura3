@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { GROUPS, tileFact } from "@reflect/core/plan";
 import { ThingHeader } from "@/components/headers";
 import { COLUMN, Group, Row } from "@/components/list-rows";
@@ -27,6 +27,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function GroupPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id: gid } = await params;
+  // The village and polis is on the shared side, whose home is Village and polis (src/lib/sides.ts).
+  if (gid === "village") redirect("/v");
   const g = GROUPS.find((x) => x.id === gid);
   if (!g) notFound();
   const { facts, plan } = await dashboardFacts(user.id);
