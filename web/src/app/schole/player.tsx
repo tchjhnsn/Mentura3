@@ -482,7 +482,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
         </div>
       ) : null}
       {src && full ? (
-        <div role="dialog" aria-modal="true" aria-label={`Playing ${name}`} className="bg-background fixed inset-0 z-50 overflow-y-auto">
+        <div role="dialog" aria-modal="true" aria-label={`Playing ${name}`} data-full-player={playing ? "playing" : "paused"} className="bg-background fixed inset-0 z-50 overflow-y-auto">
           <div className="mx-auto flex min-h-full max-w-md flex-col gap-5 px-6 pt-4 pb-10">
             <div className="flex items-center justify-between">
               <Button size="icon" variant="ghost" aria-label="Leave full screen" onClick={() => setFull(false)}><ChevronDownIcon /></Button>

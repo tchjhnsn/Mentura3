@@ -173,3 +173,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 }
 .site-design :is(h1, h2, h3) { font-family: var(--virtu-type-family-display); font-weight: var(--virtu-type-weight-heading); }
 .site-design :is(p, li) > a:not([data-slot]) { color: var(--virtu-color-role-link); }
+
+/* The Appearance button (src/components/appearance-button.tsx): above Scholē's player bar while it shows, hidden while
+   the full-screen player plays (it comes back on pause) and inside the second pane's page tab. */
+body:has([data-player]) .appearance-button { bottom: 9rem; }
+@media (min-width: 640px) { body:has([data-player]) .appearance-button { bottom: 6rem; } }
+body:has([data-full-player="playing"]) .appearance-button, html[data-embed] .appearance-button { display: none; }

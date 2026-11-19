@@ -61,7 +61,14 @@ export default async function PluginPage({ params, searchParams }: { params: Pro
           <ul className="grid list-disc gap-1 pl-5">{p.does.map((d) => <li key={d}>{d}</li>)}</ul>
         </section>
 
-        <section className="grid gap-2">
+        {p.slots?.["appearance.section"] ? (
+          <section className="grid gap-2">
+            <h2 className="text-lg font-semibold">Where it shows</h2>
+            <p className="text-sm">{isAdded ? <>Its sections are in <Link href="/settings/appearance" className="underline underline-offset-2">Settings, Appearance</Link> and the Appearance button.</> : "Once added, its sections show in Settings, Appearance and the Appearance button."}</p>
+          </section>
+        ) : null}
+
+        {p.connectors.length ? <section className="grid gap-2">
           <h2 className="text-lg font-semibold">Works through</h2>
           <ul className="bg-card divide-y overflow-hidden rounded-2xl border">
             {p.connectors.map((id) => {
@@ -80,7 +87,7 @@ export default async function PluginPage({ params, searchParams }: { params: Pro
             })}
           </ul>
           <p className="text-muted-foreground text-xs">{p.connectors.length > 1 ? "Any one of these is enough." : "It works once this is connected."}</p>
-        </section>
+        </section> : null}
 
         <section className="grid gap-2">
           <h2 className="text-lg font-semibold">Its skill</h2>

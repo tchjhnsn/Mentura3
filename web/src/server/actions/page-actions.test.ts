@@ -276,6 +276,7 @@ const EXCLUDED: Record<string, string> = {
   "settings/actions.ts#savePlaceAction": SETTINGS,
   "settings/actions.ts#chooseWaterAction": SETTINGS,
   "settings/appearance/actions.ts#setLookAction": SETTINGS,
+  "settings/appearance/actions.ts#setAppearanceButtonAction": SETTINGS,
   "settings/connections/actions.ts#addFeedAction": "Connecting a calendar feed fetches an outside address; connections are made in Settings, never by a model.",
   "settings/connections/actions.ts#removeFeedAction": SETTINGS,
   "chat/actions.ts#approveFromChat": "Keep or Send on a held change is the person's tap itself; a model never approves.",
