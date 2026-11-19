@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CheckIcon, PencilIcon } from "lucide-react";
 import { markdownToHtml } from "@reflect/core/site";
-import { parsePage, partsOf, safeUrl, type Block, type Props } from "@reflect/core/site-page";
+import { parsePage, partsOf, safeUrl, type Block, type PageError, type Props } from "@reflect/core/site-page";
+import { looksUsed } from "@reflect/core/site-mdx";
 import { Face } from "@/components/dash";
 import { ServiceIcon } from "@/components/service-icon";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,11 @@ import { cn } from "@/lib/utils";
 import type { ProfilePage } from "@/server/profile-store";
 import type { Post } from "@/server/site-store";
 import { partCard, visibleParts, type PartCard } from "@/server/part-share";
+import { blockCss, blockSurface } from "@/server/site-design";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { SiteFooter, WritingList } from "./site-parts";
+import { Dress } from "./dress";
 
 /** What every component on a page may draw from. */
 export type PageContext = { p: ProfilePage; posts: Post[]; href: string; ownerId: string; isOwner: boolean; act: ReactNode; serif: boolean };
@@ -36,9 +39,9 @@ const host = (u: string) => {
 };
 
 /** The profile card: face, name and handle, and the visitor's act. Keeps the look's slot classes so the site design still applies. */
-function ProfileCard({ c }: { c: PageContext }) {
+function ProfileCard({ c, surface }: { c: PageContext; surface: string[] }) {
   return (
-    <section aria-label="Who" className="virtu-slot-card virtu-shape-card md:bg-muted/40 flex items-start gap-4 md:rounded-xl md:p-5">
+    <section aria-label="Who" className={cn("virtu-slot-card virtu-shape-card md:bg-muted/40 flex items-start gap-4 md:rounded-xl md:p-5", surface, surface.length && "bg-muted/40 p-5")}>
       {/* virtu-slot-avatar and virtu-shape-avatar: the site's look (src/server/site-design.ts) can round it and decorate it. */}
       <div className="virtu-slot-avatar virtu-shape-avatar shrink-0 rounded-full"><Face name={c.p.name} size={80} /></div>
       <div className="min-w-0 flex-1 pt-1">
@@ -68,10 +71,10 @@ function Links({ c }: { c: PageContext }) {
 }
 
 /** A shared part as a card; for the owner, a quiet line when it is no longer shared. Visitors see nothing in its place. */
-function PartView({ card, view, owner }: { card: PartCard | null; view: string; owner: boolean }) {
+function PartView({ card, view, owner, surface }: { card: PartCard | null; view: string; owner: boolean; surface: string[] }) {
   if (!card) return owner ? <p className="text-muted-foreground text-sm italic">This part is no longer shared.</p> : null;
   return (
-    <section className={cn("grid gap-2", view === "card" && "virtu-shape-card bg-muted/40 rounded-xl border p-4")}>
+    <section className={cn("grid gap-2", (view === "card" || surface.length > 0) && "virtu-shape-card bg-muted/40 rounded-xl border p-4", surface)}>
       <h3 className="font-semibold">{card.title}</h3>
       {card.lines.length ? <p className="text-muted-foreground text-sm">{card.lines.join(" · ")}</p> : null}
       {card.items.length ? <ul className="grid list-disc gap-1 pl-5 text-sm">{card.items.map((i, n) => <li key={n}>{i}</li>)}</ul> : null}
@@ -79,17 +82,20 @@ function PartView({ card, view, owner }: { card: PartCard | null; view: string; 
   );
 }
 
-/** One component, from the fixed map. A name outside the library never reaches here: the parser refuses it. */
+/**
+ * One component, from the fixed map. A name outside the library never reaches here: the parser refuses it. A visual
+ * component puts `surface` (its shape's corner and edge, from Virtu) on what it draws; Dress wraps it with the scope.
+ */
 function ComponentView({ name, props, c, parts }: { name: string; props: Props; c: PageContext; parts: Map<string, PartCard | null> }) {
+  const surface = blockSurface(props.shape);
   switch (name) {
     case "Photo": {
       const src = safeUrl(props.src);
       if (!src) return null;
-      const round = props.shape === "round";
       return (
         <figure className="grid gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={str(props.alt)} loading="lazy" className={cn("virtu-shape-photo w-full rounded-xl object-cover", round && "mx-auto aspect-square max-w-xs rounded-full")} />
+          <img src={src} alt={str(props.alt)} loading="lazy" className={cn("virtu-shape-photo w-full rounded-xl object-cover", surface)} />
           {props.caption ? <figcaption className="text-muted-foreground text-center text-sm">{str(props.caption)}</figcaption> : null}
         </figure>
       );
@@ -100,7 +106,7 @@ function ComponentView({ name, props, c, parts }: { name: string; props: Props; 
         <figure className="grid gap-2">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            {srcs.map((s, i) => <img key={i} src={s} alt="" loading="lazy" className="aspect-square w-full rounded-lg object-cover" />)}
+            {srcs.map((s, i) => <img key={i} src={s} alt="" loading="lazy" className={cn("aspect-square w-full rounded-lg object-cover", surface)} />)}
           </div>
           {props.caption ? <figcaption className="text-muted-foreground text-center text-sm">{str(props.caption)}</figcaption> : null}
         </figure>
@@ -132,13 +138,13 @@ function ComponentView({ name, props, c, parts }: { name: string; props: Props; 
     }
     case "Quote":
       return (
-        <blockquote className="border-l-2 pl-4 font-serif text-lg italic">
+        <blockquote className={cn("font-serif text-lg italic", surface.length ? "bg-muted/40 p-5" : "border-l-2 pl-4", surface)}>
           <p className="whitespace-pre-line">{str(props.text)}</p>
           {props.cite ? <footer className="text-muted-foreground mt-2 text-sm not-italic">{str(props.cite)}</footer> : null}
         </blockquote>
       );
     case "Callout":
-      return <div className="bg-muted/60 rounded-xl p-4 whitespace-pre-line">{str(props.text)}</div>;
+      return <div className={cn("bg-muted/60 rounded-xl p-4 whitespace-pre-line", surface)}>{str(props.text)}</div>;
     case "Divider":
       return <hr className="my-2" />;
     case "Button": {
@@ -156,7 +162,7 @@ function ComponentView({ name, props, c, parts }: { name: string; props: Props; 
       );
     }
     case "ProfileCard":
-      return <ProfileCard c={c} />;
+      return <ProfileCard c={c} surface={surface} />;
     case "Links":
       return <Links c={c} />;
     case "Now":
@@ -167,7 +173,7 @@ function ComponentView({ name, props, c, parts }: { name: string; props: Props; 
         </section>
       );
     case "Part":
-      return <PartView card={parts.get(str(props.source)) ?? null} view={str(props.view) || "card"} owner={c.isOwner} />;
+      return <PartView card={parts.get(str(props.source)) ?? null} view={str(props.view) || "card"} owner={c.isOwner} surface={surface} />;
     default:
       return null;
   }
@@ -186,22 +192,35 @@ async function loadParts(blocks: readonly Block[], c: PageContext): Promise<Map<
  * Markdown is escaped by markdownToHtml; a line the parser refuses is left out, so nothing outside the library is drawn.
  */
 export async function PageView({ body, c, editHref }: { body: string; c: PageContext; editHref: string | null }) {
-  const { blocks } = parsePage(body);
+  const { blocks, errors } = parsePage(body);
   const parts = await loadParts(blocks, c);
+  const looks = blockCss(looksUsed(blocks));
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-8">
+      {looks ? <style data-block-looks="">{looks}</style> : null}
       {editHref ? (
         <div className="flex justify-end">
           <Button asChild variant="ghost" size="sm" className="text-muted-foreground"><Link href={editHref}><PencilIcon />Edit page</Link></Button>
         </div>
       ) : null}
+      {c.isOwner && errors.length ? <LeftOut errors={errors} /> : null}
       {blocks.map((b, i) =>
         b.kind === "markdown" ? (
           <div key={i} className={cn("writing post-body", c.serif && "font-serif")} dangerouslySetInnerHTML={{ __html: markdownToHtml(b.text) }} />
         ) : (
-          <ComponentView key={i} name={b.name} props={b.props} c={c} parts={parts} />
+          <Dress key={i} shape={b.props.shape} frame={b.props.frame}><ComponentView name={b.name} props={b.props} c={c} parts={parts} /></Dress>
         ),
       )}
+    </div>
+  );
+}
+
+/** For the owner only: the lines visitors do not see, and why (an unknown shape or frame, a value not allowed). */
+function LeftOut({ errors }: { errors: PageError[] }) {
+  return (
+    <div className="text-muted-foreground grid gap-0.5 text-sm" role="note">
+      <p className="font-medium">Visitors do not see {errors.length === 1 ? "one line" : `${errors.length} lines`} of this page</p>
+      {errors.slice(0, 5).map((e) => <p key={e.line}>Line {e.line}: {e.message}</p>)}
     </div>
   );
 }

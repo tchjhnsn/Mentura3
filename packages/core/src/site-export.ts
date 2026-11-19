@@ -2,7 +2,10 @@
 // 2026-11-18, Export). Pure: given what anyone may see on the profile and the published posts, it returns each file
 // of the project by path. Posts are Markdown files in content/posts/ with a small front matter; the profile is
 // content/profile.json. The App Router pages read them at build time, so the site is static.
+// Since 2026-11-19 the site's Markdown pages come too (site-export-pages.ts): content/pages/*.mdx, rendered with
+// next-mdx-remote and a component map in components/reflect/, and the site's design in app/design.css.
 import type { TemplateId } from "./site";
+import { COMPONENT_CSS, MDX_REMOTE, NO_SITE, pageFiles, type ExportSite } from "./site-export-pages";
 
 export type ExportProfile = {
   name: string;
@@ -37,7 +40,7 @@ export const exportName = (p: ExportProfile) => `${(p.handle ?? p.name).toLowerC
 export const deployUrl = (repoUrl: string, name: string) => `https://vercel.com/new/clone?repository-url=${encodeURIComponent(repoUrl)}&repository-name=${encodeURIComponent(name)}`;
 
 /** Every file of the exported project, by path. */
-export function exportFiles(profile: ExportProfile, posts: readonly ExportPost[], template: TemplateId, siteUrl: string): Record<string, string> {
+export function exportFiles(profile: ExportProfile, posts: readonly ExportPost[], template: TemplateId, siteUrl: string, site: ExportSite = NO_SITE): Record<string, string> {
   const name = exportName(profile);
   const files: Record<string, string> = {};
   files["package.json"] = JSON.stringify(
@@ -45,7 +48,7 @@ export function exportFiles(profile: ExportProfile, posts: readonly ExportPost[]
       name,
       private: true,
       scripts: { dev: "next dev", build: "next build", start: "next start" },
-      dependencies: { next: "16.4.5", react: "19.3.1", "react-dom": "19.3.1", marked: "15.0.12" },
+      dependencies: { next: "16.4.5", react: "19.3.1", "react-dom": "19.3.1", marked: "15.0.12", "next-mdx-remote": MDX_REMOTE },
       devDependencies: { typescript: "5.9.3", "@types/node": "22.10.2", "@types/react": "19.3.0" },
     },
     null,
@@ -72,7 +75,15 @@ import { join } from "node:path";
 import profileJson from "@/content/profile.json";
 
 export type Post = { slug: string; title: string; kind: string; published: string; updated: string; body: string };
-export const profile = profileJson;
+export type Profile = {
+  name: string; line: string | null; handle: string | null; template: string; siteUrl: string | null;
+  socials: { label: string; url: string }[];
+  building: { name: string; line: string | null; url: string | null }[];
+  experience: { title: string | null; org: string; years: string | null }[];
+  interests: string[];
+};
+// Typed by hand: an empty list in the JSON would otherwise be typed as a list of nothing.
+export const profile = profileJson as Profile;
 
 const DIR = join(process.cwd(), "content", "posts");
 
@@ -121,11 +132,12 @@ ul.plain li { padding: 12px 0; border-bottom: 1px solid var(--line); }
 .post h1 { font-size: 2.25rem; }
 .post blockquote { margin: 0; padding-left: 16px; border-left: 3px solid var(--line); color: var(--muted); }
 footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--line); }
-`;
+${COMPONENT_CSS}`;
   files["app/layout.tsx"] = `import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { profile } from "@/lib/content";
 import "./globals.css";
+import "./design.css";
 
 export const metadata: Metadata = {
   title: profile.name,
@@ -136,15 +148,27 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className={profile.template}>{children}</body>
+      <body className={${site.css.trim() ? 'profile.template + " site-design"' : "profile.template"}}>{children}</body>
     </html>
   );
 }
 `;
   files["app/page.tsx"] = `import Link from "next/link";
 import { day, minutes, posts, profile } from "@/lib/content";
+import { page } from "@/lib/pages";
+import { MdxPage } from "@/components/reflect/mdx-page";
 
 export default function Home() {
+  // Your Home page from Reflect (content/pages/index.mdx), else the profile layout.
+  const home = page("");
+  if (home) {
+    return (
+      <main>
+        <MdxPage source={home.source} />
+        <footer className="muted small"><a href="/feed.xml">RSS</a></footer>
+      </main>
+    );
+  }
   const all = posts();
   const writing = (
     <section>
@@ -197,17 +221,33 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { marked } from "marked";
 import { day, minutes, post, posts, profile } from "@/lib/content";
+import { page, pages } from "@/lib/pages";
+import { MdxPage } from "@/components/reflect/mdx-page";
 
+// A post, or one of your pages (content/pages/<slug>.mdx). If both have the address, the post wins, as on Reflect.
 export const dynamicParams = false;
-export const generateStaticParams = () => posts().map((p) => ({ slug: p.slug }));
+export const generateStaticParams = () => [...new Set([...posts().map((p) => p.slug), ...pages().map((p) => p.path).filter((p) => p && p !== "writing")])].map((slug) => ({ slug }));
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const p = post((await params).slug);
-  return { title: p ? \`\${p.title} · \${profile.name}\` : profile.name };
+  const slug = (await params).slug;
+  const t = post(slug)?.title ?? page(slug)?.title;
+  return { title: t ? \`\${t} · \${profile.name}\` : profile.name };
 }
 
 export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const p = post((await params).slug);
+  const slug = (await params).slug;
+  const p = post(slug);
+  const pg = p ? null : page(slug);
+  if (pg) {
+    return (
+      <main>
+        <p className="small"><Link href="/">{profile.name}</Link></p>
+        <h1>{pg.title}</h1>
+        <MdxPage source={pg.source} />
+        <footer className="muted small"><Link href="/">Home</Link> · <a href="/feed.xml">RSS</a></footer>
+      </main>
+    );
+  }
   if (!p) notFound();
   return (
     <main className="post">
@@ -220,7 +260,37 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   );
 }
 `;
-  files["app/feed.xml/route.ts"] = `import { posts, profile } from "@/lib/content";
+  files["app/writing/page.tsx"] = `import Link from "next/link";
+import { day, minutes, posts, profile } from "@/lib/content";
+import { page } from "@/lib/pages";
+import { MdxPage } from "@/components/reflect/mdx-page";
+
+export const metadata = { title: "Writing · " + profile.name };
+
+/** Your Writing page from Reflect (content/pages/writing.mdx), else every post. */
+export default function Writing() {
+  const w = page("writing");
+  return (
+    <main>
+      <p className="small"><Link href="/">{profile.name}</Link></p>
+      <h1>{w?.title ?? "Writing"}</h1>
+      {w ? <MdxPage source={w.source} /> : (
+        <ul className="plain">
+          {posts().map((p) => (
+            <li key={p.slug}>
+              <Link href={"/" + p.slug}>{p.title}</Link>
+              <div className="muted small">{day(p.published)} · {minutes(p.body)} min read</div>
+            </li>
+          ))}
+        </ul>
+      )}
+      <footer className="muted small"><Link href="/">Home</Link> · <a href="/feed.xml">RSS</a></footer>
+    </main>
+  );
+}
+`;
+  Object.assign(files, pageFiles(site));
+  files["app/feed.xml/route.ts"] =`import { posts, profile } from "@/lib/content";
 
 export const dynamic = "force-static";
 const x = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -237,6 +307,8 @@ export function GET() {
 Your site and blog, exported from Reflect as a Next.js project (App Router).
 
 - Posts are Markdown files in \`content/posts/\`. Add one by adding a file with the same front matter.
+- Your pages are MDX files in \`content/pages/\` (Home is \`index.mdx\`), drawn with the components in \`components/reflect/\`. A part from Reflect is a snapshot in \`content/parts/\`, taken when you exported.
+- Your site's design (colours, type, shape, looks) is \`app/design.css\`.
 - Your name, line, links, what you are building and your experience are in \`content/profile.json\`.
 - Set \`siteUrl\` in \`content/profile.json\` to your own address so the feed links to it.
 

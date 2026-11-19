@@ -9,7 +9,8 @@ import { isSlug, RESERVED_SLUGS } from "./site";
 // The library.
 
 export type PropKind = "text" | "url" | "number" | "urls" | "choice";
-export type PropSpec = { kind: PropKind; label: string; required?: boolean; max?: number; min?: number; choices?: readonly string[] };
+/** `look` marks a value the Virtu plugin sets from the block's options bar (shape, frame), not from the block's fields. */
+export type PropSpec = { kind: PropKind; label: string; required?: boolean; max?: number; min?: number; choices?: readonly string[]; look?: boolean };
 export type GroupId = "media" | "writing" | "you" | "tiles" | "household" | "shared";
 export type ComponentSpec = { name: string; label: string; group: GroupId; line: string; props: Record<string, PropSpec> };
 
@@ -26,9 +27,26 @@ export const LIBRARY_GROUPS: readonly { id: GroupId; label: string }[] = [
 const text = (label: string, required = false, max = 500): PropSpec => ({ kind: "text", label, required, max });
 const url = (label: string, required = false): PropSpec => ({ kind: "url", label, required, max: 2000 });
 
+/*
+ * Per-block shape and frame (plan, "Virtu as a plugin": the editor.component-option slot). The names are the site's
+ * Virtu catalog (packages/virtu/site/looks.loaded.json: its shapes, and its ornaments as frames); a test in
+ * web/src/server/site-design.test.ts holds the two lists to the catalog. A visual block may carry shape="<name>" and
+ * frame="<name>" as literal values; any other name is refused here with the reason, and the renderer draws them with
+ * Virtu's own CSS (packages/virtu/src/blocks.ts).
+ */
+export const BLOCK_SHAPES = ["pill", "round", "sharp", "soft", "squircle"] as const;
+export const BLOCK_FRAMES = ["dotted-frame", "halo-around", "holly-corners", "leaf-corners", "snow-corners", "spark-traveller", "sprig-corners"] as const;
+/** The components a shape and a frame can dress: the ones that draw a surface. */
+export const VISUAL_COMPONENTS = ["Photo", "Gallery", "Quote", "Callout", "ProfileCard", "Part"] as const;
+const LOOK_PROPS: Record<string, PropSpec> = {
+  shape: { kind: "choice", label: "Shape", choices: BLOCK_SHAPES, look: true },
+  frame: { kind: "choice", label: "Frame", choices: BLOCK_FRAMES, look: true },
+};
+const dressed = (c: ComponentSpec): ComponentSpec => ((VISUAL_COMPONENTS as readonly string[]).includes(c.name) ? { ...c, props: { ...c.props, ...LOOK_PROPS } } : c);
+
 /** Every component a page may hold. Anything else is refused. */
-export const COMPONENTS: readonly ComponentSpec[] = [
-  { name: "Photo", label: "Photo", group: "media", line: "One picture, from its web address", props: { src: url("Address", true), alt: text("Description", false, 300), caption: text("Caption", false, 300), shape: { kind: "choice", label: "Shape", choices: ["square", "round"] } } },
+const BASE_COMPONENTS: ComponentSpec[] = [
+  { name: "Photo", label: "Photo", group: "media", line: "One picture, from its web address", props: { src: url("Address", true), alt: text("Description", false, 300), caption: text("Caption", false, 300) } },
   { name: "Gallery", label: "Gallery", group: "media", line: "Several pictures in a grid", props: { images: { kind: "urls", label: "Addresses", required: true, max: 24 }, caption: text("Caption", false, 300) } },
   { name: "Video", label: "Video", group: "media", line: "A video file or a YouTube or Vimeo link", props: { src: url("Address", true), caption: text("Caption", false, 300) } },
   { name: "Audio", label: "Audio", group: "media", line: "A sound file", props: { src: url("Address", true), title: text("Title", false, 200) } },
@@ -43,6 +61,10 @@ export const COMPONENTS: readonly ComponentSpec[] = [
   { name: "Now", label: "Now", group: "you", line: "What you are doing these days", props: { text: text("What you are doing", true, 500) } },
   { name: "Part", label: "Part", group: "tiles", line: "A part of a tile, your household or a shared domain", props: { source: { kind: "text", label: "Source", required: true, max: 200 }, view: { kind: "choice", label: "View", choices: ["card", "list"] } } },
 ];
+export const COMPONENTS: readonly ComponentSpec[] = BASE_COMPONENTS.map(dressed);
+
+/** Whether a component takes a shape and a frame. */
+export const isVisual = (name: string) => (VISUAL_COMPONENTS as readonly string[]).includes(name);
 
 export const componentByName = (name: string): ComponentSpec | null => COMPONENTS.find((c) => c.name === name) ?? null;
 
@@ -98,7 +120,8 @@ function checkValue(spec: PropSpec, key: string, v: PropValue): { value: PropVal
       return { value: out };
     }
     case "choice":
-      return typeof v === "string" && spec.choices?.includes(v) ? { value: v } : bad(`one of ${spec.choices?.join(", ")}.`);
+      if (typeof v === "string" && spec.choices?.includes(v)) return { value: v };
+      return spec.look && typeof v === "string" ? bad(`no ${spec.label.toLowerCase()} is named ${v}. One of ${spec.choices?.join(", ")}.`) : bad(`one of ${spec.choices?.join(", ")}.`);
   }
 }
 
