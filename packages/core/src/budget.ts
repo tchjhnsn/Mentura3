@@ -4,7 +4,7 @@
 // federal and payroll tax. Kept as one hidden Home record of kind `budget`, a money field per tile id (no
 // migration). Reflect explains trade-offs with the person's own numbers and cited public estimates; it is not a
 // licensed financial advisor and gives no personalized investment advice. Pure data and arithmetic: no I/O.
-import { GROUPS, PLAN_PATHS, partSummary, planPart, taxOn, type GroupId, type Plan, type Stage } from "./plan";
+import { GROUPS, PLAN_PATHS, partSummary, planPart, taxOn, type GroupId, type Plan, type Stage } from "./plan.ts";
 
 /** Every tile on Home, each of which gets a money allotment, with its name as Home shows it. */
 const LABELS: Record<string, string> = {

@@ -18,7 +18,8 @@ import { writeIndex } from "../core/src/catalog.ts";
 import { confirmReading, keepWikiDraft, readWikiDraft, readWikiReply, wikiOn, wikiPrompt, wikiStatus, type WikiDraft } from "../core/src/wiki.ts";
 import { planHandoff, runNaiveCapture, sendIdea } from "../core/src/naive-handoff.ts";
 import { addSource, getSource, indexSource, keepPlacements, placementLine, placementPrompt, readDraft, readPlacements, saveDraft, sourceStatus } from "../core/src/sources.ts";
-import { keepNeed, keepPassage, LEGACY_PROMPTS, legacyPrompt } from "../core/src/lifetime.ts";
+import { keepNeed, keepPassage, LEGACY_PROMPTS, legacyPrompt, lifeState, readLifeRecords } from "../core/src/lifetime.ts";
+import { needNow } from "../core/src/lifecycle.ts";
 import { lookupIsbn, readCatalogEntry, saveCatalogEntry, searchBooks, type Fetch } from "../core/src/openlibrary.ts";
 import { draftTranscript, keepCourse, listCourses, transcriptText, type Chat, type TranscriptDraft } from "../core/src/transcript.ts";
 import { chatJson } from "../core/src/chat.ts";
@@ -39,6 +40,8 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   keep how a need is met: self-provided, stocked, supplied, cared-for
   passage <region> <state> [--on YYYY-MM[-DD]] [--note <text>]
                                   keep a move in your life: provide, belonging or line
+  stage [--date YYYY-MM-DD]       where you are in each region, what your records suggest attending to
+                                  now, and what they show for the next stage (only you say it is done)
   legacy [prompt] [text]          a prompt for what you want to survive you; with text, keep it as a
                                   journal entry marked to survive you
   release                         your release plan: who may confirm your death, and what of your
@@ -300,6 +303,25 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
   }
   if (cmd === "mcp") {
     await serveStdio(process.stdin, out, async () => vault);
+    return 0;
+  }
+  if (cmd === "stage") {
+    if (layoutOf(config) !== "vault") throw new Error("stage needs a vault; this instance uses the older people/<id> layout");
+    const day = values.date ?? today();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error("--date is YYYY-MM-DD");
+    const records = await readLifeRecords(root, day);
+    const n = needNow(lifeState(records.passages), records);
+    for (const s of n.stages) out(`${s.region}: ${s.state ? `${s.label ?? s.state} since ${s.since}` : "no passage kept"}`);
+    out("\nNeed now");
+    for (const i of n.now) out(`  ${i.text} (${i.about}): ${i.because}`);
+    if (!n.now.length) out("  nothing your records point to");
+    out("\nWhat comes next, and what your records show for it");
+    for (const x of n.next) {
+      out(`  ${x.region}: ${x.label}`);
+      for (const g of x.gates) out(g.kind === "soft" ? `    [${g.shown ? "x" : " "}] ${g.text}: ${g.because}` : `    consent: ${g.text} It waits on ${g.of}.`);
+    }
+    if (!n.next.length) out("  each region is at its last stage");
+    out("\nOnly you say a stage is done: reflect passage <region> <state>");
     return 0;
   }
   if (cmd === "list") {

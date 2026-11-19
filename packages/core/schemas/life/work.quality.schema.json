@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.quality",
+  "title": "Quality I am building",
+  "description": "A quality kept in the Qualities lens, holding what was written about it.",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "title": "Which quality",
+      "maxLength": 4000
+    },
+    "title": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "quality",
+    "noun": "virtue",
+    "category": "quality",
+    "good": "soul",
+    "community": "person"
+  }
+}

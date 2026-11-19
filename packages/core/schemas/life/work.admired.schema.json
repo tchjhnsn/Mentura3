@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.admired",
+  "title": "Person who inspires me",
+  "description": "A founder, a statesman or another person whose way of working you want to learn, with the traits of theirs you chose.",
+  "type": "object",
+  "properties": {
+    "ref": {
+      "type": "string",
+      "title": "Who",
+      "maxLength": 4000
+    },
+    "title": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "traits": {
+      "type": "string",
+      "title": "Traits I want",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "admired",
+    "noun": "admired person",
+    "category": "substance",
+    "good": "external",
+    "community": "polis"
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:ventures.venture",
+  "title": "Venture",
+  "description": "A business of your own, a side business, a store, a practice.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "what": {
+      "type": "string",
+      "title": "What it sells",
+      "description": "Prints, tutoring, a food truck",
+      "maxLength": 300
+    },
+    "where": {
+      "type": "string",
+      "title": "Where it sells",
+      "enum": [
+        "shopify",
+        "etsy",
+        "stripe",
+        "square",
+        "amazon",
+        "in-person",
+        "other"
+      ]
+    },
+    "link": {
+      "type": "string",
+      "title": "Store or site",
+      "description": "https://",
+      "maxLength": 300
+    },
+    "started": {
+      "type": "string",
+      "title": "Started",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "revenue": {
+      "type": "number",
+      "title": "Brings in a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "costs": {
+      "type": "number",
+      "title": "Costs a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "ventures",
+    "kind": "venture",
+    "noun": "venture",
+    "category": "substance",
+    "good": "external",
+    "community": "polis"
+  }
+}

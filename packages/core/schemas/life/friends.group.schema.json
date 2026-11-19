@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:friends.group",
+  "title": "Group",
+  "description": "Teams, clubs, coalitions, a congregation.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "what": {
+      "type": "string",
+      "title": "What it is",
+      "maxLength": 300
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "friends",
+    "kind": "group",
+    "noun": "friend group",
+    "category": "substance",
+    "good": "external",
+    "community": "polis"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.place",
+  "title": "Where you live",
+  "description": "The county and state you live in, and the water system that serves you.",
+  "type": "object",
+  "properties": {
+    "county": {
+      "type": "string",
+      "title": "County",
+      "description": "Travis",
+      "maxLength": 300
+    },
+    "state": {
+      "type": "string",
+      "title": "State",
+      "description": "TX",
+      "maxLength": 300
+    },
+    "pwsid": {
+      "type": "string",
+      "title": "Water system id",
+      "maxLength": 300
+    },
+    "water": {
+      "type": "string",
+      "title": "Water system",
+      "maxLength": 300
+    },
+    "served": {
+      "type": "number",
+      "title": "People it serves",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "place",
+    "noun": "home place",
+    "category": "place",
+    "good": "body",
+    "community": "village"
+  }
+}

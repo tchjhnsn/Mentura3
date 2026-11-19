@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:legacy.adventure",
+  "title": "Adventure",
+  "description": "Something you want to do, such as camping, a league, travel or learning piano, with the tiles it touches.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "The adventure",
+      "description": "Go camping",
+      "maxLength": 300
+    },
+    "ref": {
+      "type": "string",
+      "title": "From the idea",
+      "maxLength": 4000
+    },
+    "tiles": {
+      "type": "string",
+      "title": "Tiles it touches",
+      "maxLength": 4000
+    },
+    "with": {
+      "type": "string",
+      "title": "With",
+      "enum": [
+        "alone",
+        "partner",
+        "family",
+        "friends",
+        "others"
+      ]
+    },
+    "place": {
+      "type": "string",
+      "title": "Where",
+      "maxLength": 4000
+    },
+    "lat": {
+      "type": "number",
+      "title": "Latitude",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lon": {
+      "type": "number",
+      "title": "Longitude",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "start": {
+      "type": "string",
+      "title": "Starts",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "end": {
+      "type": "string",
+      "title": "Ends",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "plan": {
+      "type": "string",
+      "title": "Plan",
+      "maxLength": 20000
+    },
+    "drafted": {
+      "type": "boolean",
+      "title": "Drafted by Reflect"
+    },
+    "checklist": {
+      "type": "string",
+      "title": "Checklist",
+      "maxLength": 20000
+    },
+    "budget": {
+      "type": "number",
+      "title": "Budget",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "people": {
+      "type": "string",
+      "title": "Who is going",
+      "maxLength": 4000
+    },
+    "events": {
+      "type": "string",
+      "title": "Calendar events",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "legacy",
+    "kind": "adventure",
+    "noun": "adventure",
+    "category": "doing",
+    "good": "external",
+    "community": "person"
+  }
+}

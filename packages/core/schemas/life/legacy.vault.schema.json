@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:legacy.vault",
+  "title": "What happens to my vaults",
+  "description": "Named in advance: who receives your journal and records at your death, or that they are sealed.",
+  "type": "object",
+  "properties": {
+    "to": {
+      "type": "string",
+      "title": "Handed to",
+      "description": "My children, my executor, or sealed",
+      "maxLength": 300
+    },
+    "note": {
+      "type": "string",
+      "title": "What they should know",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "legacy",
+    "kind": "vault",
+    "noun": "records",
+    "category": "substance",
+    "good": "external",
+    "community": "person"
+  }
+}
