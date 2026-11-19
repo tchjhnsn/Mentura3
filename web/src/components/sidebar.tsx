@@ -137,8 +137,8 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 }
 
 /** The two sides, like a team switcher: Home (the person and the household, private) and Village and polis (shared). */
+// Its menu opens directly below it, and the person's menu directly above theirs (Torian, 2026-11-19).
 function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
-  const { isMobile } = useSidebar();
   const SIDES = [
     { id: "home" as const, name: "Home", about: "You and your household", href: "/", icon: <HomeIcon className="size-4" /> },
     { id: "polis" as const, name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
@@ -158,7 +158,7 @@ function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
               <ChevronsUpDownIcon className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" align="start" side={isMobile ? "bottom" : "right"} sideOffset={4}>
+          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" align="start" side="bottom" sideOffset={4}>
             <DropdownMenuLabel className="text-muted-foreground text-xs">Reflect</DropdownMenuLabel>
             {SIDES.map((s) => (
               <DropdownMenuItem key={s.id} asChild className="gap-2 p-2">
@@ -178,7 +178,6 @@ function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
 
 /** The person at the foot: their face and name, opening their profile and Settings. */
 function Person({ me, to }: { me: { name: string; href: string }; to: (p: string) => string }) {
-  const { isMobile } = useSidebar();
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -189,7 +188,7 @@ function Person({ me, to }: { me: { name: string; href: string }; to: (p: string
             <ChevronsUpDownIcon className="ml-auto" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side={isMobile ? "bottom" : "right"} align="end" sideOffset={4}>
+        <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side="top" align="start" sideOffset={4}>
           <DropdownMenuLabel className="flex items-center gap-2 font-normal"><Face name={me.name} size={32} /><span className="truncate font-medium">{me.name}</span></DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Go href={to(me.href)}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
