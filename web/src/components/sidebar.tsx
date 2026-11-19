@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, WrenchIcon } from "lucide-react";
+import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, MessageSquareIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -92,17 +92,15 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
               {item("/adventures", "Adventures", <CompassIcon />)}
               {item("/v/people", "People you've met", <UsersRoundIcon />)}
             </Fold>
-            <Fold label="The polis">{polisTiles.map(tile)}</Fold>
+            <Fold label="The village and polis">{polisTiles.map(tile)}</Fold>
           </>
         ) : (
           <>
             <Group>
               <SidebarMenu>
-                {item("/", "Home", <HomeIcon />)}
-                {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
+                {/* The dashboard is Home's front page for now (Torian, 2026-11-19); the journal and the calendar are in Settings. */}
                 {item("/chat", "New Chat", <PlusIcon />)}
-                {/* The journal and the calendar on one page (2026-11-19), also in Settings. */}
-                {item("/tools", "Tools", <WrenchIcon />)}
+                {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
               </SidebarMenu>
             </Group>
             {groups.map((g) => <Fold key={g.label} label={g.label}>{g.tiles.map(tile)}</Fold>)}
@@ -137,7 +135,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 // Its menu opens directly below it, and the person's menu directly above theirs (Torian, 2026-11-19).
 function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
   const SIDES = [
-    { id: "home" as const, name: "Home", about: "You and your household", href: "/", icon: <HomeIcon className="size-4" /> },
+    { id: "home" as const, name: "Home", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
     { id: "polis" as const, name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
   ];
   const now = SIDES.find((s) => s.id === side)!;

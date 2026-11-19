@@ -25,9 +25,11 @@ export const metadata = { title: "Reflect", description: "Your life, in your own
 
 const tileOf = (id: string): SidebarTile[] => { const t = MINE.find((x) => x.id === id); const href = t && hrefOf(t); return t && href ? [{ id, label: t.label, href, glyph: GLYPHS[id] ?? "" }] : []; };
 /** Standing and Polis live on the shared side (doc "Private and shared Reflect plan", 2026-11-19). */
-const POLIS_TILES = ["standing", "polis"];
+// The village and polis group lives only on the shared side's sidebar (Torian, 2026-11-19: "I don't know why Village
+// and Polis is still in the Home app"); Home's sidebar keeps the person and the household.
+const POLIS_TILES = GROUPS.find((g) => g.id === "village")?.tiles ?? [];
 // Home's sidebar keeps the main dashboard's groups, less the tiles that moved to Village and polis.
-const GROUPED: SidebarGroup[] = GROUPS.map((g) => ({ label: g.label, tiles: g.tiles.filter((id) => !POLIS_TILES.includes(id)).flatMap(tileOf) }));
+const GROUPED: SidebarGroup[] = GROUPS.filter((g) => g.id !== "village").map((g) => ({ label: g.label, tiles: g.tiles.flatMap(tileOf) }));
 const POLIS: SidebarTile[] = POLIS_TILES.flatMap(tileOf);
 
 /** Every page in shadcn's look (src/app/globals.css), with the sidebar kept once for the whole app when someone is signed in. */
