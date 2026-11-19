@@ -161,6 +161,30 @@ export const APPS: readonly LifeApp[] = [
         acts: [{ id: "wrote", label: "Journal entry", done: "Wrote about", hidden: true }],
       },
       {
+        id: "craft", label: "Craft", plural: "Crafts", title: "title", hidden: true,
+        intro: "A craft from Scholē's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
+        fields: [
+          { key: "ref", label: "Which craft", kind: "text", internal: true },
+          { key: "title", label: "Name", kind: "text" },
+          { key: "why", label: "What drew me", kind: "long" },
+          { key: "how", label: "How I learned it", kind: "text", internal: true },
+          { key: "stage", label: "Where I am", kind: "choice", options: opts("Novice", "Advanced beginner", "Competent", "Proficient", "Expert") },
+          { key: "made", label: "What I have made", kind: "long" },
+          { key: "vouch", label: "Who vouches", kind: "text", internal: true },
+        ],
+        states: [{ id: "drawn", label: "Drawn to it" }, { id: "trying", label: "Trying it", active: true }, { id: "practising", label: "Practising", active: true }, { id: "let-go", label: "Let go" }],
+        acts: [{ id: "tried", label: "Tried it", done: "Tried" }, { id: "made", label: "Made something", done: "Made" }],
+      },
+      {
+        id: "craft-likes", label: "What drew me", plural: "What drew me", title: "likes", one: true, hidden: true,
+        intro: "Answers to Scholē's Discover crafts activities, as comma lists of activity ids.",
+        fields: [
+          { key: "likes", label: "Like it", kind: "text", internal: true },
+          { key: "unsure", label: "Not sure", kind: "text", internal: true },
+          { key: "nots", label: "Not for me", kind: "text", internal: true },
+        ],
+      },
+      {
         id: "imagined", label: "Imagined work", plural: "Imagined", title: "name",
         intro: "Work that does not exist yet, as you imagine it.",
         fields: [
