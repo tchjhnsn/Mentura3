@@ -1,0 +1,494 @@
+{
+  "cooking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Agdz-rosino-05.jpg/330px-Agdz-rosino-05.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Cooking"
+  },
+  "baking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Freshly_baked_bread_loaves.jpg/330px-Freshly_baked_bread_loaves.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Baking"
+  },
+  "pastry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Making_puff_pastry_%28butter_and_Water_dough_%29_5.jpg/330px-Making_puff_pastry_%28butter_and_Water_dough_%29_5.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Pastry"
+  },
+  "butchery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/15/Wiki_Loves_Mett_P1020898.JPG/330px-Wiki_Loves_Mett_P1020898.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Butcher"
+  },
+  "charcuterie": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Saucisson_02.JPG/330px-Saucisson_02.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Charcuterie"
+  },
+  "cheesemaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Production_of_cheese_1.jpg/330px-Production_of_cheese_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Cheesemaking"
+  },
+  "brewing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/The_Brewer_designed_and_engraved_in_the_Sixteenth._Century_by_J_Amman.png/330px-The_Brewer_designed_and_engraved_in_the_Sixteenth._Century_by_J_Amman.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Brewing"
+  },
+  "winemaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Wine_grapes_baja.jpg/330px-Wine_grapes_baja.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Winemaking"
+  },
+  "preserving-and-canning": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/PreservedFood1.jpg/330px-PreservedFood1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Home_canning"
+  },
+  "coffee-roasting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Miele%2C_IFA_2018%2C_Berlin_%28P1070083%29.jpg/330px-Miele%2C_IFA_2018%2C_Berlin_%28P1070083%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Coffee_roasting"
+  },
+  "hunting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Paul_Childerley_driven_hunt_Finland_04.png/330px-Paul_Childerley_driven_hunt_Finland_04.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Hunting"
+  },
+  "fishing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Stilts_fishermen_Sri_Lanka_02.jpg/330px-Stilts_fishermen_Sri_Lanka_02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Fishing"
+  },
+  "gardening": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Cementerio%2C_Tulc%C3%A1n%2C_Ecuador%2C_2015-07-21%2C_DD_60.JPG/330px-Cementerio%2C_Tulc%C3%A1n%2C_Ecuador%2C_2015-07-21%2C_DD_60.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Gardening"
+  },
+  "vegetable-farming": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/A_vegetable_farm.jpg/330px-A_vegetable_farm.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Vegetable_farming"
+  },
+  "orchard-keeping": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/86/Orchard_Lanes.jpg/330px-Orchard_Lanes.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Orchard"
+  },
+  "viticulture": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Wine_grapes03.jpg/330px-Wine_grapes03.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Viticulture"
+  },
+  "beekeeping": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Beekeeper_2017_Honeybee_Conservancy%2C_College_of_DuPage.jpg/330px-Beekeeper_2017_Honeybee_Conservancy%2C_College_of_DuPage.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Beekeeping"
+  },
+  "animal-husbandry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Cattle_Feedlot_near_Rocky_Ford%2C_CO_IMG_5651-2.jpg/330px-Cattle_Feedlot_near_Rocky_Ford%2C_CO_IMG_5651-2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Animal_husbandry"
+  },
+  "dairying": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/5F9A4124.jpg/330px-5F9A4124.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dairy_farming"
+  },
+  "horsemanship": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Swiss_national_stud_farm_Avenches-IMG_8518.jpg/330px-Swiss_national_stud_farm_Avenches-IMG_8518.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Horse_training"
+  },
+  "farriery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Marechal_Ferrant.jpg/330px-Marechal_Ferrant.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Farrier"
+  },
+  "dog-training": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Controlled_training_exercises_130129-F-HX529-104.jpg/330px-Controlled_training_exercises_130129-F-HX529-104.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dog_training"
+  },
+  "forestry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a3/TJ_harvesteri.jpg/330px-TJ_harvesteri.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Forestry"
+  },
+  "landscaping": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/88/Courtyard_creation_Kuching%2C_Malaysia.jpg/330px-Courtyard_creation_Kuching%2C_Malaysia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Landscaping"
+  },
+  "floristry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/24/A_Parisian_Flower_Market.jpg/330px-A_Parisian_Flower_Market.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Floristry"
+  },
+  "carpentry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/PalmercarpenterA.jpg/330px-PalmercarpenterA.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Carpentry"
+  },
+  "joinery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/Timber_Mortising_Machine.jpg/330px-Timber_Mortising_Machine.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Joinery"
+  },
+  "cabinetmaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e8/Barberini_Cabinet_MET_DP106703.jpg/330px-Barberini_Cabinet_MET_DP106703.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Cabinetry"
+  },
+  "timber-framing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Dornstetten-p01_crop.JPG/330px-Dornstetten-p01_crop.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Timber_framing"
+  },
+  "masonry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Bricklayer_J4.jpg/330px-Bricklayer_J4.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Masonry"
+  },
+  "bricklaying": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/King%27s_Cross_Central_development_Coal_Drops_Yard_wall%2C_London%2C_England.jpg/330px-King%27s_Cross_Central_development_Coal_Drops_Yard_wall%2C_London%2C_England.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Brickwork"
+  },
+  "stonecutting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Gobekli_Tepe_5.jpg/330px-Gobekli_Tepe_5.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Stonemasonry"
+  },
+  "plastering": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Stucco_plaster_tools.jpg/330px-Stucco_plaster_tools.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Plasterwork"
+  },
+  "roofing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Couvreurs_de_Brompton_-_panoramio_%28cropped%29.png/330px-Couvreurs_de_Brompton_-_panoramio_%28cropped%29.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Roofer"
+  },
+  "tiling": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Alban_chambon%2C_decorazione_in_marmo_e_ceramica%2C_dal_castello_reale_delle_ardenne%2C_houyet%2C_1905_ca._02.jpg/330px-Alban_chambon%2C_decorazione_in_marmo_e_ceramica%2C_dal_castello_reale_delle_ardenne%2C_houyet%2C_1905_ca._02.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Tile"
+  },
+  "plumbing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Pipes_various.jpg/330px-Pipes_various.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Plumbing"
+  },
+  "painting-and-decorating": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/House_painters_in_Capri_%28cropped%29.jpg/330px-House_painters_in_Capri_%28cropped%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/House_painter_and_decorator"
+  },
+  "blacksmithing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/A_blacksmith_at_work.jpg/330px-A_blacksmith_at_work.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Blacksmith"
+  },
+  "welding": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/G502_Overhead.jpg/330px-G502_Overhead.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Welding"
+  },
+  "metal-casting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f9/Molten_metal.jpg/330px-Molten_metal.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Metal_casting"
+  },
+  "jewellery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/11/Pectoral_and_Necklace_of_Sithathoryunet_with_the_Name_of_Senwosret_II_MET_DT531.jpg/330px-Pectoral_and_Necklace_of_Sithathoryunet_with_the_Name_of_Senwosret_II_MET_DT531.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Jewellery"
+  },
+  "woodturning": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Woodturning_Indonesia.jpg/330px-Woodturning_Indonesia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Woodturning"
+  },
+  "woodcarving": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Patrick-damiaens-1323207754.jpg/330px-Patrick-damiaens-1323207754.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Wood_carving"
+  },
+  "leatherwork": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Leather_working_tools_%28DSC08329%29.jpg/330px-Leather_working_tools_%28DSC08329%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Leather_crafting"
+  },
+  "saddlery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Saddle_with_shabrack_according_to_tradition_linked_with_Hetman_Miko%C5%82aj_Hieronim_Sieniawski.jpg/330px-Saddle_with_shabrack_according_to_tradition_linked_with_Hetman_Miko%C5%82aj_Hieronim_Sieniawski.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Saddle"
+  },
+  "pottery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Traditional_pottery_in_Nigeria_%28Ikpu_ite%29_19.jpg/330px-Traditional_pottery_in_Nigeria_%28Ikpu_ite%29_19.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Pottery"
+  },
+  "glassblowing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Glass_bubble.jpg/330px-Glass_bubble.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Glassblowing"
+  },
+  "stained-glass": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b8/Chartres_RosetteNord_121_DSC08241.jpg/330px-Chartres_RosetteNord_121_DSC08241.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Stained_glass"
+  },
+  "bookbinding": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Relieur_JPG01.jpg/330px-Relieur_JPG01.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Bookbinding"
+  },
+  "basketry": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Woman_weaving_baskets_near_Lake_Ossa.jpg/330px-Woman_weaving_baskets_near_Lake_Ossa.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Basket_weaving"
+  },
+  "sewing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Syende_fiskerpige.jpeg/330px-Syende_fiskerpige.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Sewing"
+  },
+  "tailoring": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/A_Tailor_at_Work_%286920059143%29.jpg/330px-A_Tailor_at_Work_%286920059143%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Tailor"
+  },
+  "dressmaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/41/Cutting_out_fabric.jpg/330px-Cutting_out_fabric.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dressmaker"
+  },
+  "spinning": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cd/Elderlyspinnera.jpg/330px-Elderlyspinnera.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Spinning_wheel"
+  },
+  "knitting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Oma_strickt_Str%C3%BCmpfe.jpg/330px-Oma_strickt_Str%C3%BCmpfe.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Knitting"
+  },
+  "crochet": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/33/Table-cloth_2008-1.jpg/330px-Table-cloth_2008-1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Crochet"
+  },
+  "embroidery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2c/Kantha_%28Quilt%29_LACMA_AC1994.131.1.jpg/330px-Kantha_%28Quilt%29_LACMA_AC1994.131.1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Embroidery"
+  },
+  "quilting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d5/Quilter_and_quilting_in_the_Bazaar_of_Nishapur_11.JPG/330px-Quilter_and_quilting_in_the_Bazaar_of_Nishapur_11.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Quilting"
+  },
+  "dyeing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Dyeing_%28Yarn%29.jpg/330px-Dyeing_%28Yarn%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dyeing"
+  },
+  "upholstery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/New_England_easy_chair.jpg/330px-New_England_easy_chair.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Upholstery"
+  },
+  "shoemaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ae/Schuhmacher-1568.png/330px-Schuhmacher-1568.png?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Shoemaking"
+  },
+  "hatmaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Edgar_Degas_-_The_Millinery_Shop_-_Google_Art_Project.jpg/330px-Edgar_Degas_-_The_Millinery_Shop_-_Google_Art_Project.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Hatmaking"
+  },
+  "drawing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Da_Vinci_Vitruve_Luc_Viatour.jpg/330px-Da_Vinci_Vitruve_Luc_Viatour.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Drawing"
+  },
+  "painting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/330px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Painting"
+  },
+  "sculpture": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Dying_gaul.jpg/330px-Dying_gaul.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Sculpture"
+  },
+  "printmaking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Hokusai%2C_The_Underwave_off_Kanagawa.jpg/330px-Hokusai%2C_The_Underwave_off_Kanagawa.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Printmaking"
+  },
+  "calligraphy": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Letter_by_Ouyang_Xiu.jpg/330px-Letter_by_Ouyang_Xiu.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Calligraphy"
+  },
+  "illumination": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Byzantium%2C_Constantinople%2C_11th_century_-_Gospel_Book_with_Commentaries_-_1942.152_-_Cleveland_Museum_of_Art.tif/lossy-page1-330px-Byzantium%2C_Constantinople%2C_11th_century_-_Gospel_Book_with_Commentaries_-_1942.152_-_Cleveland_Museum_of_Art.tif.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Illuminated_manuscript"
+  },
+  "photography": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2b/Photographer_Photographing_Nevada_Mountains.jpg/330px-Photographer_Photographing_Nevada_Mountains.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Photography"
+  },
+  "film-making": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Main_Cast_%28206644687%29.jpeg/330px-Main_Cast_%28206644687%29.jpeg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Filmmaking"
+  },
+  "architecture": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/View_of_Santa_Maria_del_Fiore_in_Florence.jpg/330px-View_of_Santa_Maria_del_Fiore_in_Florence.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Architecture"
+  },
+  "graphic-design": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/51/Graphic-designer-application-projects-collage-2.0.jpg/330px-Graphic-designer-application-projects-collage-2.0.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Graphic_design"
+  },
+  "illustration": {
+    "src": "https://upload.wikimedia.org/wikipedia/commons/4/42/Child_reading_%28Jessie_Willcox_Smith%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "page": "https://en.wikipedia.org/wiki/Illustration"
+  },
+  "electronics": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/Arduino_ftdi_chip-1.jpg/330px-Arduino_ftdi_chip-1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Electronics"
+  },
+  "soldering": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Desoldering.jpg/330px-Desoldering.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Soldering"
+  },
+  "programming": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8c/Two_women_operating_ENIAC_%28full_resolution%29.jpg/330px-Two_women_operating_ENIAC_%28full_resolution%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Programmer"
+  },
+  "networking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Internet_map_1024.jpg/330px-Internet_map_1024.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Computer_network"
+  },
+  "machining": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Wheel_Machining.jpg/330px-Wheel_Machining.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Machining"
+  },
+  "auto-mechanics": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/2008-04-17_1989_Saab_900_Turbo_getting_new_tyres.jpg/330px-2008-04-17_1989_Saab_900_Turbo_getting_new_tyres.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Auto_mechanic"
+  },
+  "3d-printing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Robot_3D_print_timelapse_on_RepRapPro_Fisher.webm/330px--Robot_3D_print_timelapse_on_RepRapPro_Fisher.webm.jpg",
+    "page": "https://en.wikipedia.org/wiki/3D_printing"
+  },
+  "robotics": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Puma_Robotic_Arm_-_GPN-2000-001817.jpg/330px-Puma_Robotic_Arm_-_GPN-2000-001817.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Robotics"
+  },
+  "caregiving": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/St_John_of_God_Hauora_Trust.jpg/330px-St_John_of_God_Hauora_Trust.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Caregiver"
+  },
+  "nursing-care": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Nurse_checks_blood_pressure.jpg/330px-Nurse_checks_blood_pressure.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Nursing"
+  },
+  "midwifery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Midwife_home_appointment.jpg/330px-Midwife_home_appointment.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Midwifery"
+  },
+  "massage": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ca/Spa_Picture_2.jpg/330px-Spa_Picture_2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Massage"
+  },
+  "herbalism": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d6/Et_assortert_utvalg_urtemedisiner_fra_apoteket_%C3%98rnen_ved_Glomdalsmuseet.jpg/330px-Et_assortert_utvalg_urtemedisiner_fra_apoteket_%C3%98rnen_ved_Glomdalsmuseet.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Herbal_medicine"
+  },
+  "barbering": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Iranian_barber.jpg/330px-Iranian_barber.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Barber"
+  },
+  "hairdressing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fd/Frisoerin_%28fcm%29.jpg/330px-Frisoerin_%28fcm%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Hairdresser"
+  },
+  "cosmetology": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bd/Elisabeth-Sigmund1957-Schweden.jpg/330px-Elisabeth-Sigmund1957-Schweden.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Cosmetology"
+  },
+  "childcare": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Daycare_Attendee.jpg/330px-Daycare_Attendee.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Child_care"
+  },
+  "sailing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Regattafeld_vor_Laboe.jpg/330px-Regattafeld_vor_Laboe.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Sailing"
+  },
+  "navigation": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/Kaart_Lezen.jpg/330px-Kaart_Lezen.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Navigation"
+  },
+  "boatbuilding": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Canoe_stitch_and_glue.jpg/330px-Canoe_stitch_and_glue.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Boat_building"
+  },
+  "selling": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/eb/Hollister%2C_Trinity_Leeds_%2812th_April_2014%29.JPG/330px-Hollister%2C_Trinity_Leeds_%2812th_April_2014%29.JPG?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Sales"
+  },
+  "merchandising": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/62/JPG_Farmers_Centre_Place_cosmetics_2013.jpg/330px-JPG_Farmers_Centre_Place_cosmetics_2013.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Visual_merchandising"
+  },
+  "bookkeeping": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4a/Macon-Knoxville_Store_Ledger%2C_1825-1831_-_DPLA_-_c3f55a1ea6756939ace0330d279f54ec.pdf/page1-330px-Macon-Knoxville_Store_Ledger%2C_1825-1831_-_DPLA_-_c3f55a1ea6756939ace0330d279f54ec.pdf.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Ledger"
+  },
+  "negotiating": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9f/Negotiations_about_Iranian_Nuclear_Program_-_Foreign_Ministers_and_other_Officials_of_P5%2B1_Iran_and_EU_in_Lausanne.jpg/330px-Negotiations_about_Iranian_Nuclear_Program_-_Foreign_Ministers_and_other_Officials_of_P5%2B1_Iran_and_EU_in_Lausanne.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Negotiation"
+  },
+  "driving": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1c/Convertible_Mercedes_Car_Driving_On_A_Highway.jpg/330px-Convertible_Mercedes_Car_Driving_On_A_Highway.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Driving"
+  },
+  "trucking": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e1/Truckdriver.jpg/330px-Truckdriver.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Truck_driver"
+  },
+  "logistics": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Warehouse_in_New_Jersey_where_trucks_deliver_granite_slabs.jpg/330px-Warehouse_in_New_Jersey_where_trucks_deliver_granite_slabs.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Logistics"
+  },
+  "singing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Ah_cricket_20122_%287364759010%29.jpg/330px-Ah_cricket_20122_%287364759010%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Singing"
+  },
+  "instrument-playing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Historical_instruments.jpg/330px-Historical_instruments.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Musical_instrument"
+  },
+  "dance": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Two_dancers.jpg/330px-Two_dancers.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dance"
+  },
+  "acting": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4e/Bernhardt_Hamlet2.jpg/330px-Bernhardt_Hamlet2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Theatre"
+  },
+  "storytelling": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/John_Everett_Millais_%281829-1896%29_-_The_Boyhood_of_Raleigh_-_N01691_-_National_Gallery.jpg/330px-John_Everett_Millais_%281829-1896%29_-_The_Boyhood_of_Raleigh_-_N01691_-_National_Gallery.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Storytelling"
+  },
+  "juggling": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Afghan_circus.jpg/330px-Afghan_circus.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Juggling"
+  },
+  "boxing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Boxing_Tournament_in_Aid_of_King_George%27s_Fund_For_Sailors_at_the_Royal_Naval_Air_Station%2C_Henstridge%2C_Somerset%2C_July_1945_A29806.jpg/330px-Boxing_Tournament_in_Aid_of_King_George%27s_Fund_For_Sailors_at_the_Royal_Naval_Air_Station%2C_Henstridge%2C_Somerset%2C_July_1945_A29806.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Boxing"
+  },
+  "wrestling": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Wrestling_at_the_2016_Summer_Olympics%2C_Gazyumov_vs_Andriitsev_6.jpg/330px-Wrestling_at_the_2016_Summer_Olympics%2C_Gazyumov_vs_Andriitsev_6.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Wrestling"
+  },
+  "martial-arts": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b3/Hanashiro_Chomo.jpg/330px-Hanashiro_Chomo.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Karate"
+  },
+  "fencing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Final_Trophee_Monal_2012_n08.jpg/330px-Final_Trophee_Monal_2012_n08.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Fencing"
+  },
+  "archery": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/ArcheryGermanyEarly1980s-2.jpg/330px-ArcheryGermanyEarly1980s-2.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Archery"
+  },
+  "marksmanship": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Skeet_masculin_aux_Jeux_olympiques_de_2024_-_%C3%89ric_Delaunay_%282%29.jpg/330px-Skeet_masculin_aux_Jeux_olympiques_de_2024_-_%C3%89ric_Delaunay_%282%29.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Shooting_sports"
+  },
+  "horse-riding": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/Horse_riding_in_coca_cola_arena_-_melbourne_show_2005.jpg/330px-Horse_riding_in_coca_cola_arena_-_melbourne_show_2005.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Equestrianism"
+  },
+  "world:food": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f8/Agdz-rosino-05.jpg/330px-Agdz-rosino-05.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Cooking"
+  },
+  "world:growing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8b/A_vegetable_farm.jpg/330px-A_vegetable_farm.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Vegetable_farming"
+  },
+  "world:building": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Bricklayer_J4.jpg/330px-Bricklayer_J4.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Masonry"
+  },
+  "world:materials": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Woodturning_Indonesia.jpg/330px-Woodturning_Indonesia.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Woodturning"
+  },
+  "world:textiles": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/02/Oma_strickt_Str%C3%BCmpfe.jpg/330px-Oma_strickt_Str%C3%BCmpfe.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Knitting"
+  },
+  "world:fine-arts": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/18/Hokusai%2C_The_Underwave_off_Kanagawa.jpg/330px-Hokusai%2C_The_Underwave_off_Kanagawa.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Printmaking"
+  },
+  "world:technical": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8f/Desoldering.jpg/330px-Desoldering.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Soldering"
+  },
+  "world:healing": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Nurse_checks_blood_pressure.jpg/330px-Nurse_checks_blood_pressure.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Nursing"
+  },
+  "world:trade": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Regattafeld_vor_Laboe.jpg/330px-Regattafeld_vor_Laboe.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Sailing"
+  },
+  "world:performance": {
+    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Two_dancers.jpg/330px-Two_dancers.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "page": "https://en.wikipedia.org/wiki/Dance"
+  }
+}

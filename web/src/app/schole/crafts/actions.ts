@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/server/session";
 import { fromPage } from "@/server/actions/page";
-import { craftAct, keepCraft, saveCraftAnswers, setCraftLearned, setCraftStage, setCraftState, setCraftVouch } from "@/server/actions/crafts";
+import { craftAct, keepCraft, saveCraftAnswers, saveCraftPicks, setCraftLearned, setCraftStage, setCraftState, setCraftVouch } from "@/server/actions/crafts";
 
 // Through the registry (Ask Reflect plan, step 4): the chat's own entries, so a change here is in the change log too.
 
@@ -24,6 +24,12 @@ export async function saveCraftAnswersAction(answers: Record<string, Answer>): P
   const user = await requireUser();
   await fromPage(saveCraftAnswers, user.id, { answers });
   revalidatePath("/schole", "layout");
+}
+
+/** Keep the worlds and crafts the person picked in the photo picker, both lists whole. */
+export async function savePicksAction(worlds: string[], picks: string[]): Promise<void> {
+  const user = await requireUser();
+  await fromPage(saveCraftPicks, user.id, { worlds, picks });
 }
 
 /** Move a kept craft to drawn, trying, practising or let go. */

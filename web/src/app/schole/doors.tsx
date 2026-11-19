@@ -1,28 +1,33 @@
 import Link from "next/link";
-import { ChevronRightIcon } from "lucide-react";
-import { DOORS } from "@reflect/core/crafts";
+import { DOORS, type DoorId } from "@reflect/core/crafts";
+import { CraftPhoto } from "./craft-photo";
+
+/** The photo behind each door, a world's: pottery for Making, bread (the household) for Doing, a circuit for Knowing. */
+const PHOTO: Record<DoorId, { id?: string; world?: string }> = {
+  making: { world: "materials" },
+  doing: { world: "food" },
+  knowing: { world: "technical" },
+};
 
 /**
- * The three doors (doc "Scholē landing design guide"): Making, Doing and Knowing, Aristotle's craft, practical wisdom
- * and science. Each is a card, never a filled button: its name turning through its languages, one line on what is
- * behind it, and the source small. The names start a little apart so the three do not turn together.
+ * The three doors (doc "Scholē landing design guide", photos from the picker design guide): Making, Doing and
+ * Knowing, Aristotle's craft, practical wisdom and science. Each is a photo card, never a filled button: the photo,
+ * its name, one line on what is behind it, and the source small.
  */
 export function Doors() {
   return (
     <section aria-labelledby="doors" className="grid grid-cols-1 gap-3">
       <h2 id="doors" className="text-xl font-semibold tracking-tight">Ways in</h2>
       <ul className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {DOORS.map((d, i) => (
+        {DOORS.map((d) => (
           <li key={d.id}>
-            <Link href={`/schole/${d.id}`} className="hover:bg-accent flex h-full items-start gap-3 rounded-xl border p-4 transition sm:flex-col sm:gap-2">
-              <span className="min-w-0 flex-1 space-y-1">
-                <span className="block text-lg leading-snug font-semibold tracking-tight">
-                  {d.label}
-                </span>
+            <Link href={`/schole/${d.id}`} className="group bg-card hover:bg-accent/40 flex h-full overflow-hidden rounded-xl border transition-colors sm:flex-col">
+              <CraftPhoto {...PHOTO[d.id]} alt="" sizes="(min-width: 640px) 33vw, 96px" className="aspect-square w-24 shrink-0 sm:aspect-[16/9] sm:w-full" />
+              <span className="min-w-0 flex-1 space-y-1 p-3 sm:p-4">
+                <span className="block text-lg leading-snug font-semibold tracking-tight group-hover:underline">{d.label}</span>
                 <span className="text-muted-foreground block text-sm">{d.line}</span>
                 <span className="text-muted-foreground block text-xs">{d.source}</span>
               </span>
-              <ChevronRightIcon aria-hidden className="text-muted-foreground mt-1 size-4 shrink-0 sm:hidden" />
             </Link>
           </li>
         ))}
