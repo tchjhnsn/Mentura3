@@ -2,11 +2,13 @@
 // the core, declared here once. The web app builds its own entries for these ids from the same declarations
 // (web/src/server/actions/journal.ts), with zod inputs for its surfaces and its Postgres store, so the app, the
 // `reflect` CLI and an MCP server over a vault (./vault-mcp.ts) offer the same actions under the same names and words.
-// Today that is the journal: the guide, listing entries, writing one and reading one.
+// Today that is the guide, the life schemas (`life_schema`, a kind's shape and where the ontology places it), and the
+// journal: listing entries, writing one and reading one.
 import { acceptLocalDate, type Entry } from "./journal.ts";
 import type { IsoDate } from "./person.ts";
 import type { Journal } from "./store.ts";
 import { int, object, str, UUID, type InputSchema, type JsonSchema } from "./input.ts";
+import { lifeKindRefs, lifeSchemaOf, type LifeSchema } from "./life-schemas.ts";
 import { checkInput, makeRunner, Refused, type Action, type ActionDecl, type ChangeLog, type Ran, type RunContext, type Source, type StandardSchema } from "./registry.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
@@ -23,6 +25,24 @@ export const REFLECT_GUIDE = {
   tier: "read",
   on: ["mcp"],
 } as const satisfies ActionDecl;
+
+export const LIFE_SCHEMA = {
+  id: "life_schema",
+  title: "A life record kind's shape",
+  description: "The JSON Schema of one kind of life record (a friend, a meal, a budget): its fields, and under x-reflect its noun, its category among Aristotle's ten, its kind of good and its community. Read it before suggesting what to keep in a record of that kind.",
+  tier: "read",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+/** How the `life_schema` action's one input is described, in the app and here. */
+export const LIFE_KIND_INPUT = "the kind as app.kind (home.meal, friends.friend) or its id alone (meal)";
+
+/** A life kind's schema for the `life_schema` action, or an error that lists the kinds. */
+export function lifeSchemaIn(kind: string): LifeSchema {
+  const s = lifeSchemaOf(kind);
+  if (!s) throw new Error(`no life kind ${kind}. The kinds are: ${lifeKindRefs().join(", ")}`);
+  return s;
+}
 
 export const LIST_ENTRIES = {
   id: "list_entries",
@@ -82,6 +102,11 @@ const vault = <O, R>(a: Action<VaultContext, InputSchema<O>, R>): VaultAction =>
 /** Every action a vault offers, in the app's registry order. */
 export const VAULT_ACTIONS: readonly VaultAction[] = [
   vault({ ...REFLECT_GUIDE, run: async () => GUIDE }),
+  vault({
+    ...LIFE_SCHEMA,
+    input: object({ kind: str({ min: 1, describe: LIFE_KIND_INPUT }) }),
+    run: async (_ctx, { kind }) => lifeSchemaIn(kind),
+  }),
   vault({
     ...LIST_ENTRIES,
     input: object({ limit: int({ min: 1, max: 200, default: 20 }) }),

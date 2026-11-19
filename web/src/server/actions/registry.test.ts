@@ -46,7 +46,7 @@ const CHAT_DIRECT = [
 ];
 const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PROFILES, ...SOCIALS, ...EVENTS, ...MEETINGS, ...LINKEDIN, ...DASHBOARD, ...SITE, ...MARKETPLACE, ...PAGE];
 const MCP_TOOLS = [
-  "reflect_guide", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
+  "reflect_guide", "life_schema", "household_plan", "budget", "set_budget", "budget_step", "adventures", "plan_adventure", "household", "place", "connections", "meals", "piano", "calendar", "add_event", "add_events",
   "list_entries", "write_entry", "get_entry", "keep_legacy_plan", "legacy_status", "learning", "add_book", "add_book_subjects", "set_book_status", "recall_check",
   "add_courses", "add_credential", "rate_subject", "add_input", "add_item", "add_lesson", "mark_subject", "ideas", "keep_idea",
   "recent_changes", "undo_change", "pending_changes", "start_plan", "plans",
@@ -108,7 +108,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
+    expect(readOnly).toEqual(["reflect_guide", "life_schema", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {

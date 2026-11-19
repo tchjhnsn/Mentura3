@@ -6,9 +6,9 @@
 // Each schema also carries, under `x-reflect`, the kind's app and id, its noun and Aristotelian category, its kind of
 // good (Nicomachean Ethics I.8, 1098b12) and its community (Politics I.2), all read from `./terms/ontology.json`.
 // `web/scripts/life-schemas.ts` writes them to `packages/core/schemas/life/<app>.<kind>.schema.json`. Pure: no I/O.
-import { APPS, type Field, type Kind, type LifeAppId } from "./life";
-import { ORIGINS } from "./origins";
-import { ONTOLOGY, categoryOfKind, communityOfKind, goodOfKind, nounOfKind, type Category, type Community, type Good, type Ontology } from "./terms/ontology";
+import { APPS, type Field, type Kind, type LifeAppId } from "./life.ts";
+import { ORIGINS } from "./origins.ts";
+import { ONTOLOGY, categoryOfKind, communityOfKind, goodOfKind, nounOfKind, type Category, type Community, type Good, type Ontology } from "./terms/ontology.ts";
 
 /** The subset of JSON Schema the life schemas use. */
 export type FieldJsonSchema = {
@@ -94,4 +94,19 @@ export function lifeSchema(app: LifeAppId, k: Kind, o: Ontology = ONTOLOGY): Lif
 /** Every life schema as the text of its file, by file name, in the apps' and kinds' declared order. */
 export function lifeSchemaFiles(o: Ontology = ONTOLOGY): Map<string, string> {
   return new Map(APPS.flatMap((a) => a.kinds.map((k) => [schemaFileName(a.id, k.id), `${JSON.stringify(lifeSchema(a.id, k, o), null, 2)}\n`] as const)));
+}
+
+/** Every life kind as `<app>.<kind>`, in the apps' and kinds' declared order. */
+export const lifeKindRefs = (): string[] => APPS.flatMap((a) => a.kinds.map((k) => `${a.id}.${k.id}`));
+
+/**
+ * One kind's schema by `<app>.<kind>` ("home.meal"), `<app>:<kind>`, or the kind's id alone ("meal"), since kind ids
+ * are unique across the apps; null when no kind matches. The `life_schema` action (./vault-actions.ts) answers with it.
+ */
+export function lifeSchemaOf(ref: string, o: Ontology = ONTOLOGY): LifeSchema | null {
+  const m = /^([a-z]+)[.:]([a-z0-9-]+)$/.exec(ref.trim());
+  for (const a of APPS) {
+    for (const k of a.kinds) if (m ? a.id === m[1] && k.id === m[2] : k.id === ref.trim()) return lifeSchema(a.id, k, o);
+  }
+  return null;
 }
