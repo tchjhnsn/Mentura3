@@ -10,7 +10,7 @@ export async function AskCardsCard({ ctx }: { ctx: Ctx }) {
   if (!cards.length) return null;
   return (
     <section className="grid gap-3">
-      <h2 className="text-lg font-semibold">From Ask Reflect</h2>
+      <h2 className="text-lg font-semibold">From your chats</h2>
       <div className="-mt-6"><HomeCards cards={cards.map((c) => cardView(c, ctx.today))} /></div>
     </section>
   );

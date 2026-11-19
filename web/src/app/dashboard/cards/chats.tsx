@@ -17,7 +17,7 @@ export async function ChatsCard({ ctx }: { ctx: Ctx }) {
             <li key={c.id}><Link href={`/chat/history/${c.id}`} className="hover:bg-accent block truncate rounded-lg px-2 py-1.5 text-sm">{c.title}</Link></li>
           ))}
         </ul>
-      ) : <Empty>Ask Reflect anything above.</Empty>}
+      ) : <Empty>Start a new chat above.</Empty>}
     </Section>
   );
 }

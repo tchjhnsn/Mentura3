@@ -30,7 +30,7 @@ export const DASH_CARDS: DashCardDef[] = [
   { id: "approvals", title: "Waiting for you", column: "main", Card: ApprovalsCard },
   { id: "today", title: "Today", column: "main", skeleton: "hero", Card: TodayCard, urgency: todayUrgency },
   { id: "people", title: "People", column: "main", skeleton: "faces", Card: PeopleCard, urgency: peopleUrgency },
-  { id: "ask-cards", title: "From Ask Reflect", column: "main", Card: AskCardsCard },
+  { id: "ask-cards", title: "From your chats", column: "main", Card: AskCardsCard },
   { id: "habits", title: "Habits", column: "main", Card: HabitsCard },
   { id: "schole", title: "Scholē", column: "main", Card: ScholeCard },
   { id: "journal", title: "Journal", column: "main", Card: JournalCard },

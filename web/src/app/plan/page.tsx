@@ -93,7 +93,7 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
 
           <section id="budget" aria-label="Budget" className="grid scroll-mt-6 gap-3">
             <DashHead title="Budget">
-              <Link href={`/chat?q=${encodeURIComponent("Help me set my monthly budget for each tile.")}`} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><SparklesIcon className="size-4" />Ask Reflect</Link>
+              <Link href={`/chat?q=${encodeURIComponent("Help me set my monthly budget for each tile.")}`} className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm"><SparklesIcon className="size-4" />New Chat</Link>
             </DashHead>
             <p className="text-muted-foreground -mt-2 text-sm">
               {money(b.allotted)} a month allotted of {money(b.takeHome)} after taxes; {b.leftToAllot >= 0 ? `${money(b.leftToAllot)} left to allot` : `${money(-b.leftToAllot)} more allotted than comes in`}.

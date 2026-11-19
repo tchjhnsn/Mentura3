@@ -15,7 +15,7 @@ const workHref = (w: WorkRef) => (w.kind === "book" ? `/schole/works/${w.work}` 
 const workLine = (w: WorkRef) => (w.kind === "book" ? [w.title, w.author].filter(Boolean).join(" by ") : [w.title, w.by].filter(Boolean).join(" by "));
 
 /**
- * A course drafted in Ask Reflect, laid out as Scholē's unit courses are: the course's name and goal, Start as the
+ * A course drafted in chat, laid out as Scholē's unit courses are: the course's name and goal, Start as the
  * one filled act (the first passage in its reader), then each unit with the works it reads and its passages. Every
  * passage is cut from a text Reflect holds and opens the reader (or the transcript) at its place, cited to its
  * edition. There are no grades and no quizzes: examiners are people.
@@ -33,7 +33,7 @@ export default async function MadeCoursePage({ params }: { params: Promise<{ key
       <ThingHeader back="/schole" crumbs={browseCrumbs("course")} title={item.title} action={start} />
       <div className="mt-6 space-y-10">
         <header className="space-y-3">
-          <p className="text-muted-foreground text-sm">Course · drafted in Ask Reflect · {plan.units.length} {plan.units.length === 1 ? "unit" : "units"} · {passages} {passages === 1 ? "passage" : "passages"}</p>
+          <p className="text-muted-foreground text-sm">Course · drafted in chat · {plan.units.length} {plan.units.length === 1 ? "unit" : "units"} · {passages} {passages === 1 ? "passage" : "passages"}</p>
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">{item.title}</h1>
           {plan.goal ? <p className="text-muted-foreground max-w-prose">{plan.goal}</p> : null}
           {first ? <Button asChild size="lg" className="rounded-full px-8"><Link href={first}>Start</Link></Button> : null}

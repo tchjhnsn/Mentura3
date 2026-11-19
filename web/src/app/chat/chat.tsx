@@ -11,7 +11,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { JSONUIProvider, Renderer, useJsonRenderMessage } from "@json-render/react";
-import { ArrowUpIcon, MessageCircleIcon, SquareIcon } from "lucide-react";
+import { ArrowUpIcon, Maximize2Icon, MessageCircleIcon, PlusIcon, SquareIcon, XIcon } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 import { SidebarButton } from "@/components/sidebar";
 import { MessageResponse } from "@/components/ai-elements/message";
@@ -79,7 +79,10 @@ export function Answer({ message, streaming }: { message: UIMessage; streaming: 
 /** A held change shown at the top of Ask, with where it was asked for. */
 export type Waiting = { change: string; title: string; preview: string; tap: "Keep" | "Send"; from: string };
 
-export function Chat({ ask, pending = [], plans = [], chatId, initial }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[]; chatId?: string; initial?: UIMessage[] } = {}) {
+/** What the second pane (src/components/pane.tsx) gives a chat it holds: its own header's buttons. */
+export type InPane = { onClose: () => void; onExpand: (id: string, messages: UIMessage[]) => void; onNew: () => void };
+
+export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[]; chatId?: string; initial?: UIMessage[]; pane?: InPane } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history. A chat
   // continued from another page (the dashboard) keeps that page's id, so it stays one conversation in the history.
   const [id] = React.useState(() => chatId ?? crypto.randomUUID());
@@ -125,12 +128,21 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial }: { ask?:
 
   return (
     <MessageScrollerProvider>
-      <div className="mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
-          <span className="text-sm font-medium">Ask</span>
-          <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
-        </div>
+      <div className={pane ? "flex h-full flex-col gap-3 px-3 pb-3" : "mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6"}>
+        {pane ? (
+          <div className="-mx-3 flex h-12 shrink-0 items-center gap-1 border-b px-2">
+            <span className="bg-muted max-w-48 truncate rounded-md px-2.5 py-1 text-sm font-medium">{messages[0] ? (wordsOf(messages[0]) || "Chat") : "New Chat"}</span>
+            <Button variant="ghost" size="icon-sm" aria-label="New chat" title="New chat" onClick={pane.onNew}><PlusIcon /></Button>
+            <Button variant="ghost" size="icon-sm" className="ml-auto" aria-label="Open as a page" title="Open as a page" onClick={() => pane.onExpand(id, messages)}><Maximize2Icon /></Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Close the pane" title="Close" onClick={pane.onClose}><XIcon /></Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
+            <span className="text-sm font-medium">{messages.length ? "Chat" : "New Chat"}</span>
+            <a href="/chat/history" className="text-muted-foreground text-sm hover:text-foreground">History</a>
+          </div>
+        )}
         <Queue pending={pending} plans={plans} />
         <div className="min-h-0 flex-1">
           {messages.length === 0 ? (
@@ -184,7 +196,7 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial }: { ask?:
                   {status === "submitted" ? <p role="status" className="text-muted-foreground shimmer text-sm">Thinking</p> : null}
                   {error ? (
                     <div role="alert" className="text-muted-foreground flex items-center gap-3 text-sm">
-                      <span>Ask Reflect could not answer just now. Your apps are all still there.</span>
+                      <span>The chat could not answer just now. Your apps are all still there.</span>
                       <Button size="sm" variant="outline" onClick={() => void regenerate()}>Try again</Button>
                     </div>
                   ) : null}
@@ -227,7 +239,7 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial }: { ask?:
           </InputGroup>
         </form>
         {/* AI disclosure (California SB 243, New York's AI companion law): always shown, beside the input. */}
-        <p className="text-muted-foreground -mt-1 text-center text-xs">Ask Reflect is an AI and can be wrong.</p>
+        <p className="text-muted-foreground -mt-1 text-center text-xs">Replies come from an AI and can be wrong.</p>
       </div>
     </MessageScrollerProvider>
   );

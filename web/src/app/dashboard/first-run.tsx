@@ -33,7 +33,7 @@ const STEPS: { href: string; icon: ReactNode; title: string; sub: string }[] = [
   { href: "/settings/connections/calendars", icon: <CalendarPlusIcon />, title: "Add your calendar", sub: "Bring in Google, Outlook or any calendar you subscribe to" },
   { href: "/plan#budget", icon: <PiggyBankIcon />, title: "Set your budget", sub: "Decide what each part of life gets a month" },
   { href: "/events", icon: <TicketIcon />, title: "Find an event", sub: "See what is on in Austin this week" },
-  { href: `/chat?q=${encodeURIComponent("What can you help me with?")}`, icon: <MessageCircleIcon />, title: "Ask Reflect something", sub: "It answers and acts across the app" },
+  { href: `/chat?q=${encodeURIComponent("What can you help me with?")}`, icon: <MessageCircleIcon />, title: "Start a new chat", sub: "It answers and acts across the app" },
 ];
 
 /** The first-run dashboard: four steps to start with, in place of a column of empty cards. */
