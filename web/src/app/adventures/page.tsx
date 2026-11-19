@@ -31,7 +31,7 @@ export default async function AdventuresPage({ searchParams }: { searchParams: P
   const hero = next ? photoOf(next) : null;
   return (
     <main className={PAGE}>
-      <SectionHeader back="/" backLabel="Home" title="Adventures" icons={
+      <SectionHeader back="/v" backLabel="Village and polis" title="Adventures" icons={
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm"><Link href="/adventures/new"><PlusIcon />Add</Link></Button>
           <Button asChild size="sm"><Link href={PLAN}><SparklesIcon />Plan with Reflect</Link></Button>

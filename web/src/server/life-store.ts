@@ -3,6 +3,7 @@
 // them. Records belong to one person and are read only by them.
 import { randomUUID } from "node:crypto";
 import { cleanBody, isAct, isLifeApp, isState, kindOf, type ActFacts, type Body, type LifeAppId } from "@reflect/core/life";
+import { isRecordAudience, type RecordAudience } from "@reflect/core/audience";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
 import { tx } from "./learn-store";
@@ -87,6 +88,28 @@ export async function setLifeState(userId: string, id: string, state: string): P
     await c.query("UPDATE life_record SET state = $3, updated_at = now() WHERE id = $1 AND user_id = $2", [id, userId, state]);
     await c.query("INSERT INTO life_record_state (id, record_id, user_id, state) VALUES ($1, $2, $3, $4)", [randomUUID(), id, userId, state]);
   });
+}
+
+/**
+ * The audiences the person set on their records (migration 0063, `@reflect/core/audience`), by record id; a record
+ * with none is left out, so `audienceOf(kind, map.get(id))` gives its kind's default. Empty before 0063 runs.
+ */
+export async function recordAudiences(userId: string): Promise<Map<string, string>> {
+  try {
+    const r = await db().query("SELECT id, audience FROM life_record WHERE user_id = $1 AND removed_at IS NULL AND audience IS NOT NULL", [userId]);
+    return new Map(r.rows.map((x) => [x.id as string, x.audience as string]));
+  } catch (e) {
+    if ((e as { code?: string }).code === "42703") return new Map();
+    throw e;
+  }
+}
+
+/** Sets who sees one of the person's records on the shared side; null puts it back to its kind's default. */
+export async function setRecordAudience(userId: string, id: string, audience: RecordAudience | null): Promise<void> {
+  if (!UUID.test(id)) throw new Error("No such record.");
+  if (audience !== null && !isRecordAudience(audience)) throw new Error("No such audience.");
+  const r = await db().query("UPDATE life_record SET audience = $3, updated_at = now() WHERE id = $1 AND user_id = $2 AND removed_at IS NULL", [id, userId, audience]);
+  if (!r.rowCount) throw new Error("No such record.");
 }
 
 /** Removes a record from view; it is kept with its removal time so it can be restored. */
