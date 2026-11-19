@@ -43,7 +43,7 @@ describe("plugins", () => {
     const { PLUGINS, marketById: byId } = await import("./marketplace");
     expect(new Set(PLUGINS.map((p) => p.id)).size).toBe(PLUGINS.length);
     for (const p of PLUGINS) {
-      expect(p.connectors.length).toBeGreaterThan(0);
+      expect(p.connectors.length > 0 || (p.slots && Object.keys(p.slots).length > 0), `${p.id} has connectors or slots`).toBeTruthy();
       for (const c of p.connectors) expect(byId(c), `${p.id} names ${c}`).toBeTruthy();
       expect(p.skill.length).toBeGreaterThan(80);
     }
@@ -57,5 +57,24 @@ describe("plugins", () => {
     const text = pluginSkills([p], new Set());
     expect(text).toContain("Launch your site (not working yet: connect Vercel or Cloudflare at /marketplace)");
     expect(pluginSkills([p], new Set(["vercel"]))).toContain("- Launch your site: When the person");
+  });
+  it("works with no connector when it needs none", async () => {
+    const { pluginById, pluginReady, pluginSkills } = await import("./marketplace");
+    const v = pluginById("virtu")!;
+    expect(pluginReady(v, new Set())).toEqual({ connected: [], works: true });
+    expect(pluginSkills([v], new Set())).toContain("- Virtu: When the person asks");
+  });
+});
+
+describe("slots", () => {
+  it("draws the sections of added plugins whose code ships, in catalog order", async () => {
+    const { PLUGINS, SLOT_NAMES, pluginById, slotFill } = await import("./marketplace");
+    for (const p of PLUGINS) for (const k of Object.keys(p.slots ?? {})) expect(SLOT_NAMES).toContain(k);
+    const v = pluginById("virtu")!;
+    const shipped = new Set(["virtu"]);
+    expect(slotFill([v], "appearance.section", shipped)).toEqual([{ plugin: "virtu", sections: ["shape", "type", "colour", "looks"] }]);
+    expect(slotFill([], "appearance.section", shipped)).toEqual([]);
+    expect(slotFill([v], "appearance.section", new Set())).toEqual([]);
+    expect(slotFill([pluginById("design-help")!, v], "editor.panel", shipped)).toEqual([{ plugin: "virtu", sections: ["design"] }]);
   });
 });

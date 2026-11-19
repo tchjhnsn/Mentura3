@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, GitBranchIcon, GlobeIcon, MailIcon, PaletteIcon, SendIcon } from "lucide-react";
+import { CheckIcon, ChevronRightIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, GitBranchIcon, GlobeIcon, HomeIcon, MailIcon, NotebookPenIcon, PaletteIcon, PlusIcon, SendIcon } from "lucide-react";
 import { TEMPLATES, type TemplateId } from "@reflect/core/site";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
-import { COLUMN, Group, Row } from "@/components/list-rows";
+import { ActionRow, COLUMN, Group, Row } from "@/components/list-rows";
 import { cn } from "@/lib/utils";
 import { requireUser } from "@/server/session";
 import { profileSettings } from "@/server/profile-store";
@@ -13,6 +13,12 @@ import { siteCanSend } from "@/server/site-connectors";
 import { profileHref } from "@/server/actions/profiles";
 import { CopyLink } from "../copy-link";
 import { setTemplateFromSettings } from "./actions";
+import { pagesOf, type PageRow } from "@/server/site-pages";
+import { addPageAction } from "@/app/site/pages/actions";
+
+/** A page's line on the Pages list: what visitors see now. */
+const pageSub = (p: PageRow) => (!p.published ? (p.path === "" ? "Shows your profile until you publish" : p.fixed ? "Lists your posts until you publish" : "Not published") : p.draft ? "Published, with changes not published" : "Published");
+const pageHref = (p: PageRow) => `/site/pages/${p.id ?? (p.path || "home")}`;
 
 export const metadata: Metadata = { title: "Your site" };
 export const dynamic = "force-dynamic";
@@ -33,7 +39,7 @@ function Thumb({ id }: { id: TemplateId }) {
 /** Settings, Your site (doc "Personal site and blog design guide", page 4): template, address, export and subscribers. */
 export default async function SiteSettings() {
   const user = await requireUser();
-  const [settings, site, posts, subs, mail] = await Promise.all([profileSettings(user.id), siteOf(user.id), postsOf(user.id), subscribersOf(user.id), siteCanSend(user.id).catch(() => ({ via: null }))]);
+  const [settings, site, posts, subs, mail, pages] = await Promise.all([profileSettings(user.id), siteOf(user.id), postsOf(user.id), subscribersOf(user.id), siteCanSend(user.id).catch(() => ({ via: null })), pagesOf(user.id).catch((): PageRow[] => [])]);
   const href = profileHref({ id: user.id, handle: settings.handle });
   return (
     <main className={PAGE}>
@@ -44,6 +50,14 @@ export default async function SiteSettings() {
           <p className="text-muted-foreground text-sm">Your profile is your site. {posts.length ? `${posts.length} ${posts.length === 1 ? "post" : "posts"} published.` : "Publish from your journal to start your blog."}</p>
           <Link href={href} className="text-primary mt-1 inline-flex items-center gap-1 text-sm font-medium">View your site <ExternalLinkIcon className="size-3.5" /></Link>
         </div>
+
+        {/* Pages in Markdown (plan "Appearance, Virtu and the site editor", PR 3): each opens in the site editor (src/app/site/pages). */}
+        <Group title="Pages" id="pages">
+          {pages.map((p) => (
+            <Row key={p.path} href={pageHref(p)} icon={p.path === "" ? <HomeIcon /> : p.path === "writing" ? <NotebookPenIcon /> : <FileTextIcon />} label={p.title} sub={pageSub(p)} value={p.fixed ? undefined : `/${p.path}`} />
+          ))}
+          <ActionRow icon={<PlusIcon />} label="Add a page" action={addPageAction} />
+        </Group>
 
         <section aria-labelledby="template" className="grid gap-2">
           <h2 id="template" className="text-muted-foreground px-4 text-sm">Template</h2>
@@ -63,9 +77,9 @@ export default async function SiteSettings() {
           <p className="text-muted-foreground px-4 text-xs">{TEMPLATES.find((t) => t.id === site.template)!.line}</p>
         </section>
 
-        {/* The site's colors and type are changed on the site itself, in the Virtu editor (src/components/site-design-editor.tsx). */}
+        {/* The site's colors, type, shape and looks are changed in Appearance once Virtu is added (src/components/slots.tsx). */}
         <Group title="Look" id="look">
-          <Row href={`${href}?customize=1`} icon={<PaletteIcon />} label="Colors and type" sub="Change them on your site, where you see them" />
+          <Row href="/settings/appearance" icon={<PaletteIcon />} label="Colors and type" sub="Change them in Appearance, with Virtu" />
         </Group>
 
         <Group title="Address" id="address">

@@ -6,6 +6,7 @@ The headless core of Reflect, in plain TypeScript with no database and no Next.j
 
 | Path | Holds |
 |---|---|
+| `src/site-page.ts` | A site page's Markdown (plan "Appearance, Virtu and the site editor", PRs 3 and 4): the component library (`COMPONENTS`, grouped Media, Writing, You, From your tiles, Household, Shared domains), and the one strict parser and serializer of its MDX subset: a component sits on its own line as a self-closing tag with literal values only (`<Photo src="https://..." alt="..." />`, `<PostList limit={3} />`, `<Part source="adventures/<id>" view="card" />`). Expressions, spreads, imports, exports, children and tags outside the library are refused with the line they are on (`parsePage`, `checkPage`); addresses must be https, http or a site path. The site editor and the public renderer both use it. Also Home's and Writing's templates (`homeTemplate`: the profile card, the person's line, the latest posts, links), page paths (`isPagePath`), part sources (`parseSource`: `adventures/`, `ventures/`, `household/`) and the access rule for parts on a public page (`mayShowPart`: the owner shared it, and a household part also has the household creator's OK). |
 | `src/structure.ts`, `src/onboarding.json` | The onboarding questions and the stances a hold can take, as typed values. |
 | `src/person.ts`, `src/onboarding.ts` | The person's stores as pure functions over `PersonState`, and the onboarding reducer Me still uses. |
 | `src/journal.ts`, `src/packs.ts`, `src/reflect.ts` | Entries and prompts, prompt packs, and reflecting with frames. |

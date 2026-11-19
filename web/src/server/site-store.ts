@@ -96,6 +96,10 @@ export async function publishWork(userId: string, workId: string, slugWanted: st
   if (slugWanted && (!isSlug(want) || RESERVED_SLUGS.includes(want))) throw new Error("An address uses lowercase letters, numbers and hyphens.");
   const taken = (await db().query("SELECT slug FROM post WHERE user_id = $1 AND unpublished_at IS NULL AND work_id <> $2", [userId, workId])).rows.map((r) => r.slug as string);
   if (slugWanted && taken.includes(want)) throw new Error("Another post has that address.");
+  // A page of the site (migration 0062) keeps its address too, so a new post never hides it.
+  const pages = (await db().query("SELECT path FROM site_page WHERE site_user_id = $1 AND removed_at IS NULL", [userId]).catch(() => ({ rows: [] as { path: string }[] }))).rows.map((r) => r.path as string);
+  if (slugWanted && pages.includes(want) && cur?.slug !== want) throw new Error("A page of your site has that address.");
+  taken.push(...pages.filter((p) => p !== cur?.slug));
   const slug = freeSlug(want, [...taken, ...RESERVED_SLUGS]);
   if (cur) {
     const r = await db().query("UPDATE post SET slug = $3, title = $4, body = $5, updated_at = now() WHERE id = $1 AND user_id = $2 RETURNING *", [cur.id, userId, slug, title, w.body]);

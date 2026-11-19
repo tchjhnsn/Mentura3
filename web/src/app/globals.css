@@ -90,8 +90,6 @@
 /* Backgrounds (src/lib/themes.ts): a quiet pattern behind every page in the theme's color. Cards and bars stay solid,
    so nothing moves and text keeps its contrast. */
 body { isolation: isolate; }
-/* The docked sidebar (src/components/sidebar.tsx): from 1024 px the page narrows by its width instead of sitting under it. */
-@media (min-width: 1024px) { body { padding-left: var(--side-w, 0px); } }
 body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background-color: var(--pattern); opacity: var(--o, 0); }
 /* The same backgrounds as small previews in the picker (src/components/look-picker.tsx), a little stronger. */
 .bg-swatch::before { content: ""; position: absolute; inset: 0; background-color: var(--pattern); opacity: min(1, calc(var(--o, 0) * 2)); }
@@ -173,3 +171,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 }
 .site-design :is(h1, h2, h3) { font-family: var(--virtu-type-family-display); font-weight: var(--virtu-type-weight-heading); }
 .site-design :is(p, li) > a:not([data-slot]) { color: var(--virtu-color-role-link); }
+
+/* The Appearance button (src/components/appearance-button.tsx): above Scholē's player bar while it shows, hidden while
+   the full-screen player plays (it comes back on pause) and inside the second pane's page tab. */
+body:has([data-player]) .appearance-button { bottom: 9rem; }
+@media (min-width: 640px) { body:has([data-player]) .appearance-button { bottom: 6rem; } }
+body:has([data-full-player="playing"]) .appearance-button, html[data-embed] .appearance-button { display: none; }

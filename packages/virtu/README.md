@@ -6,7 +6,7 @@ The engine and the panel of the Virtu editor (tchjhnsn/design-system-theory, `do
 
 | Path | Holds |
 |---|---|
-| `src/` | Virtu's files, unchanged: `editor.ts` (what the theme panel shows, applying edits, check), `editor-ui.ts` (the panel, mounted in the browser), `build.ts` (`previewCss`), `check.ts` and what they import. `load.ts` reads a system from disk and is used only by `snapshot.ts` and the tests. Do not edit them here: change Virtu and copy them again |
+| `src/` | Virtu's files, unchanged: `editor.ts` (what the theme panel shows, applying edits, check), `editor-ui.ts` (the panel, mounted in the browser; Reflect uses its transport and types for the Appearance sections in `web/src/components/virtu-sections.tsx` and no longer mounts the panel), `build.ts` (`previewCss`), `check.ts` and what they import. `load.ts` reads a system from disk and is used only by `snapshot.ts` and the tests. Do not edit them here: change Virtu and copy them again |
 | `site/` | The personal site's system: `virtu.json` (color and type governed, the other domains excluded with why, three contrast relations), `tokens.resolver.json`, `tokens/palette.tokens.json` (the swatches) and `tokens/site.tokens.json` (the roles and type every site starts from) |
 | `site/shapes/`, `site/ornaments/`, `site/seasons/` | The looks a site picks from in the editor's Look tab: Virtu's registry items with their colors moved onto the site's roles (surface to background, text to foreground, muted text to muted-foreground, accent to link). Every one passes against the site system (`site.test.ts`) |
 | `site/looks.loaded.json` | Those looks as the engine reads them, each ornament with its SVG; `snapshot.ts` writes it too |
