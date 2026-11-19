@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "Reflect's nouns, in Naive's ontology format (Torian, 2026-11-19: Reflect's own copy, Naive's format). The top categories are Aristotle's ten Categories (Categories 4, 1b25-2a4), each mapped to a class of BFO (ISO/IEC 21838-2). A noun names what a record is about, not the record. Each noun names what it is a kind of in broader (SKOS broader): another noun or a top category, and every noun reaches exactly one top category. app is the life app a noun belongs to, or null when it is shared; kinds lists the life record kinds (app:kind in packages/core/src/life.ts) about it, and every kind is listed by exactly one noun. packages/core/src/terms/ontology.ts checks it.",
+  "note": "Reflect's nouns, in Naive's ontology format (Torian, 2026-11-19: Reflect's own copy, Naive's format). The top categories are Aristotle's ten Categories (Categories 4, 1b25-2a4), each mapped to a class of BFO (ISO/IEC 21838-2). A noun names what a record is about, not the record. Each noun names what it is a kind of in broader (SKOS broader): another noun or a top category, and every noun reaches exactly one top category. app is the life app a noun belongs to, or null when it is shared; kinds lists the life record kinds (app:kind in packages/core/src/life.ts) about it, and every kind is listed by exactly one noun. good is the kind of good the noun is: body, external or soul (Nicomachean Ethics I.8, 1098b12). community is the community it belongs to: person, union, household, village or polis (Politics I.2). packages/core/src/terms/ontology.ts checks it.",
   "top_categories": [
     {
       "name": "substance",
@@ -114,6 +114,8 @@
       "broader": [
         "substance"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": []
     },
     {
@@ -126,6 +128,8 @@
       "broader": [
         "substance"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": []
     },
     {
@@ -138,6 +142,8 @@
       "broader": [
         "substance"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": []
     },
     {
@@ -150,6 +156,8 @@
       "broader": [
         "community"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "work:household"
       ]
@@ -164,6 +172,8 @@
       "broader": [
         "community"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "friends:group"
       ]
@@ -178,6 +188,8 @@
       "broader": [
         "community"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "ventures:venture"
       ]
@@ -192,6 +204,8 @@
       "broader": [
         "person"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "friends:friend"
       ]
@@ -206,6 +220,8 @@
       "broader": [
         "person"
       ],
+      "good": "external",
+      "community": "village",
       "kinds": [
         "kin:relative"
       ]
@@ -220,6 +236,8 @@
       "broader": [
         "person"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "work:admired"
       ]
@@ -234,6 +252,8 @@
       "broader": [
         "artifact"
       ],
+      "good": "body",
+      "community": "household",
       "kinds": [
         "home:meal"
       ]
@@ -248,6 +268,8 @@
       "broader": [
         "artifact"
       ],
+      "good": "body",
+      "community": "household",
       "kinds": [
         "home:firearm"
       ]
@@ -262,6 +284,8 @@
       "broader": [
         "artifact"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "home:belonging"
       ]
@@ -276,6 +300,8 @@
       "broader": [
         "artifact"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "legacy:letter"
       ]
@@ -290,6 +316,8 @@
       "broader": [
         "artifact"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "legacy:vault"
       ]
@@ -304,6 +332,8 @@
       "broader": [
         "quantity"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "work:income"
       ]
@@ -318,6 +348,8 @@
       "broader": [
         "quantity"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "home:budget"
       ]
@@ -332,6 +364,8 @@
       "broader": [
         "quantity"
       ],
+      "good": "body",
+      "community": "person",
       "kinds": [
         "body:measures"
       ]
@@ -346,6 +380,8 @@
       "broader": [
         "quantity"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "work:now"
       ]
@@ -360,6 +396,8 @@
       "broader": [
         "quality"
       ],
+      "good": "soul",
+      "community": "person",
       "kinds": [
         "work:quality"
       ]
@@ -374,6 +412,8 @@
       "broader": [
         "quality"
       ],
+      "good": "soul",
+      "community": "person",
       "kinds": [
         "work:craft"
       ]
@@ -388,6 +428,8 @@
       "broader": [
         "quality"
       ],
+      "good": "body",
+      "community": "person",
       "kinds": [
         "body:health"
       ]
@@ -402,6 +444,8 @@
       "broader": [
         "quality"
       ],
+      "good": "body",
+      "community": "person",
       "kinds": [
         "body:fitness"
       ]
@@ -416,6 +460,8 @@
       "broader": [
         "quality"
       ],
+      "good": "soul",
+      "community": "person",
       "kinds": [
         "work:interest"
       ]
@@ -430,6 +476,8 @@
       "broader": [
         "quality"
       ],
+      "good": "soul",
+      "community": "person",
       "kinds": [
         "work:craft-likes",
         "work:interest-areas",
@@ -446,6 +494,8 @@
       "broader": [
         "relation"
       ],
+      "good": "soul",
+      "community": "person",
       "kinds": [
         "legacy:wish"
       ]
@@ -460,6 +510,8 @@
       "broader": [
         "relation"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "work:inspiration"
       ]
@@ -474,6 +526,8 @@
       "broader": [
         "relation"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "polis:civic"
       ]
@@ -488,6 +542,8 @@
       "broader": [
         "relation"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "polis:standing"
       ]
@@ -502,6 +558,8 @@
       "broader": [
         "relation"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "polis:duty"
       ]
@@ -516,6 +574,8 @@
       "broader": [
         "place"
       ],
+      "good": "body",
+      "community": "village",
       "kinds": [
         "home:place"
       ]
@@ -530,6 +590,8 @@
       "broader": [
         "having"
       ],
+      "good": "body",
+      "community": "household",
       "kinds": [
         "home:food",
         "home:water",
@@ -548,20 +610,24 @@
       "broader": [
         "having"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "work:credential"
       ]
     },
     {
-      "noun": "payment card",
+      "noun": "home card",
       "level": "life",
-      "meaning": "A card one pays with",
-      "standard": "ISO/IEC 7812",
+      "meaning": "A small card the person puts on Home for a time, such as a word a day or a checklist",
+      "standard": "ours",
       "status": "kept",
       "app": "home",
       "broader": [
-        "having"
+        "artifact"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "home:card"
       ]
@@ -576,6 +642,8 @@
       "broader": [
         "having"
       ],
+      "good": "body",
+      "community": "household",
       "kinds": [
         "home:way"
       ]
@@ -590,6 +658,8 @@
       "broader": [
         "having"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "legacy:plan"
       ]
@@ -604,6 +674,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "work:work",
         "work:imagined"
@@ -619,6 +691,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "home:receipt",
         "home:grocery-run"
@@ -634,6 +708,8 @@
       "broader": [
         "doing"
       ],
+      "good": "body",
+      "community": "household",
       "kinds": [
         "home:basket"
       ]
@@ -648,6 +724,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "union",
       "kinds": [
         "mate:seeking"
       ]
@@ -662,6 +740,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "union",
       "kinds": [
         "mate:date"
       ]
@@ -676,6 +756,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "polis",
       "kinds": [
         "polis:election"
       ]
@@ -690,6 +772,8 @@
       "broader": [
         "doing"
       ],
+      "good": "external",
+      "community": "person",
       "kinds": [
         "legacy:adventure"
       ]
@@ -704,6 +788,8 @@
       "broader": [
         "being affected"
       ],
+      "good": "external",
+      "community": "household",
       "kinds": [
         "home:step"
       ]

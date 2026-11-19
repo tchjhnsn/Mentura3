@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.meal",
+  "title": "Meal",
+  "description": "A meal you make: how many it serves and what goes in it, one ingredient a line.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Meal",
+      "description": "Chili",
+      "maxLength": 300
+    },
+    "serves": {
+      "type": "number",
+      "title": "Serves",
+      "description": "4",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "ingredients": {
+      "type": "string",
+      "title": "Ingredients, one a line",
+      "description": "2 cups rice",
+      "maxLength": 20000
+    },
+    "method": {
+      "type": "string",
+      "title": "How to make it",
+      "maxLength": 20000
+    },
+    "recipe": {
+      "type": "string",
+      "title": "Reflect's recipe",
+      "maxLength": 4000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "meal",
+    "noun": "meal",
+    "category": "substance",
+    "good": "body",
+    "community": "household"
+  }
+}

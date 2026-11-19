@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.way",
+  "title": "Way of getting around",
+  "description": "Each way you get to work and essentials.",
+  "type": "object",
+  "properties": {
+    "how": {
+      "type": "string",
+      "title": "Way",
+      "enum": [
+        "car",
+        "truck",
+        "motorcycle",
+        "bus-or-train",
+        "bicycle",
+        "walking",
+        "rides-from-others"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "way",
+    "noun": "means of getting around",
+    "category": "having",
+    "good": "body",
+    "community": "household"
+  }
+}

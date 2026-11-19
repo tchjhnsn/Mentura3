@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:friends.friend",
+  "title": "Friend",
+  "description": "Who they are to you, how you met, and why you call them a friend.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "met": {
+      "type": "string",
+      "title": "How you met",
+      "maxLength": 20000
+    },
+    "why": {
+      "type": "string",
+      "title": "Why you consider them a friend",
+      "maxLength": 20000
+    },
+    "habits": {
+      "type": "string",
+      "title": "Habits you share",
+      "maxLength": 20000
+    },
+    "kind": {
+      "type": "string",
+      "title": "Kind of friendship, if you use Aristotle's (Nicomachean Ethics VIII)",
+      "enum": [
+        "utility",
+        "pleasure",
+        "virtue"
+      ]
+    },
+    "every": {
+      "type": "string",
+      "title": "How often you mean to see them",
+      "enum": [
+        "every-week",
+        "every-2-weeks",
+        "every-month",
+        "every-3-months",
+        "every-6-months",
+        "every-year"
+      ]
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "friends",
+    "kind": "friend",
+    "noun": "friend",
+    "category": "substance",
+    "good": "external",
+    "community": "polis"
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:kin.relative",
+  "title": "Relative",
+  "description": "Who they are, their health, what they would want, and who would care for them.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Name",
+      "maxLength": 300
+    },
+    "relation": {
+      "type": "string",
+      "title": "Relation",
+      "description": "Mother, brother, grandfather",
+      "maxLength": 300
+    },
+    "born": {
+      "type": "string",
+      "title": "Born",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "health": {
+      "type": "string",
+      "title": "Health",
+      "maxLength": 20000
+    },
+    "wishes": {
+      "type": "string",
+      "title": "What they would want",
+      "maxLength": 20000
+    },
+    "carer": {
+      "type": "string",
+      "title": "Who provides care",
+      "enum": [
+        "me",
+        "family",
+        "paid-help",
+        "given-by-church-or-charity",
+        "no-one-yet"
+      ]
+    },
+    "matters": {
+      "type": "string",
+      "title": "What matters most to them, in their words",
+      "maxLength": 20000
+    },
+    "speaks": {
+      "type": "string",
+      "title": "Who speaks for them if they cannot",
+      "maxLength": 300
+    },
+    "where": {
+      "type": "string",
+      "title": "Where they want to be cared for",
+      "maxLength": 300
+    },
+    "asked": {
+      "type": "boolean",
+      "title": "Asked them these, not guessed"
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "kin",
+    "kind": "relative",
+    "noun": "relative",
+    "category": "substance",
+    "good": "external",
+    "community": "village"
+  }
+}

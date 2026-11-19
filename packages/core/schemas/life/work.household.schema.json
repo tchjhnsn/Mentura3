@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:work.household",
+  "title": "Intended household",
+  "description": "The household you are heading toward, which your income is measured against.",
+  "type": "object",
+  "properties": {
+    "adults": {
+      "type": "number",
+      "title": "Adults",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "working": {
+      "type": "number",
+      "title": "Of them, working",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "children": {
+      "type": "number",
+      "title": "Children",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "where": {
+      "type": "string",
+      "title": "Where",
+      "description": "County and state",
+      "maxLength": 300
+    },
+    "when": {
+      "type": "string",
+      "title": "By when",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "need": {
+      "type": "number",
+      "title": "What it needs a year before taxes",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "work",
+    "kind": "household",
+    "noun": "household",
+    "category": "substance",
+    "good": "external",
+    "community": "household"
+  }
+}

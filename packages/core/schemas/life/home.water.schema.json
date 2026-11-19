@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:life:home.water",
+  "title": "Water",
+  "description": "Where your water comes from and what is stored.",
+  "type": "object",
+  "properties": {
+    "how": {
+      "type": "string",
+      "title": "How it is met",
+      "enum": [
+        "self-provided",
+        "stocked",
+        "supplied",
+        "cared-for"
+      ]
+    },
+    "by": {
+      "type": "string",
+      "title": "By whom",
+      "enum": [
+        "self",
+        "market",
+        "nature",
+        "polis",
+        "kin",
+        "gifts"
+      ]
+    },
+    "gallons": {
+      "type": "number",
+      "title": "Gallons stored",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "stored": {
+      "type": "boolean",
+      "title": "Water stored for three days"
+    },
+    "two-weeks": {
+      "type": "boolean",
+      "title": "Water stored for two weeks"
+    },
+    "cycle": {
+      "type": "string",
+      "title": "Check the standard again",
+      "enum": [
+        "every-month",
+        "every-3-months",
+        "every-6-months",
+        "every-year"
+      ]
+    },
+    "cost": {
+      "type": "number",
+      "title": "What it costs a month",
+      "minimum": 0,
+      "exclusiveMaximum": 10000000000
+    },
+    "note": {
+      "type": "string",
+      "title": "Notes",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": true,
+  "x-reflect": {
+    "app": "home",
+    "kind": "water",
+    "noun": "need",
+    "category": "having",
+    "good": "body",
+    "community": "household"
+  }
+}
