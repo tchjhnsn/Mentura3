@@ -177,11 +177,13 @@ export const APPS: readonly LifeApp[] = [
       },
       {
         id: "craft-likes", label: "What drew me", plural: "What drew me", title: "likes", one: true, hidden: true,
-        intro: "Answers to Scholē's Discover crafts activities, as comma lists of activity ids.",
+        intro: "Answers to Scholē's Discover crafts activities, as comma lists of activity ids, and the photo picker's picks: worlds (craft group ids) and crafts (craft ids).",
         fields: [
           { key: "likes", label: "Like it", kind: "text", internal: true },
           { key: "unsure", label: "Not sure", kind: "text", internal: true },
           { key: "nots", label: "Not for me", kind: "text", internal: true },
+          { key: "worlds", label: "Worlds picked", kind: "text", internal: true },
+          { key: "picks", label: "Crafts picked", kind: "text", internal: true },
         ],
       },
       {

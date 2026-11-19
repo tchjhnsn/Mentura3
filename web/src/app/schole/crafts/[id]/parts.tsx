@@ -1,13 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
+import type { FirstProject } from "@reflect/core/crafts";
 import { CheckIcon, PlusIcon } from "lucide-react";
 import { Face } from "@/components/dash";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { craftActAction, setCraftLearnedAction, setCraftStageAction, setCraftVouchAction } from "../actions";
+import { craftActAction, setCraftLearnedAction, setCraftStageAction, setCraftStateAction, setCraftVouchAction } from "../actions";
 
 type Choice = { id: string; label: string };
 
@@ -113,5 +115,36 @@ export function AddMade({ craft, label }: { craft: string; label: string }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/**
+ * The craft's first project (Scholē picker design guide): about ten minutes, what it needs, and Start the first
+ * project, which opens its steps. Filled when it is the screen's one primary, else outline.
+ */
+export function FirstProjectCard({ href, project, primary }: { href: string; project: FirstProject; primary: boolean }) {
+  return (
+    <section aria-labelledby="first-project" className="bg-card grid gap-2 rounded-xl border p-4 sm:p-5">
+      <span className="text-muted-foreground text-xs font-medium">First project, {project.minutes} minutes</span>
+      <h2 id="first-project" className="text-lg leading-snug font-semibold tracking-tight">{project.name}</h2>
+      {project.needs ? <p className="text-muted-foreground text-sm">You need: {project.needs}</p> : null}
+      <div className="pt-1">
+        <Button asChild size="lg" variant={primary ? "default" : "outline"} className="h-10 w-full sm:w-auto sm:px-8"><Link href={href}>Start the first project</Link></Button>
+      </div>
+    </section>
+  );
+}
+
+/** After three tries: does the person practise it now? Yes moves it to practising, the screen's one filled button. */
+export function PractiseNow({ craft, label, tried }: { craft: string; label: string; tried: number }) {
+  const [pending, start] = useTransition();
+  return (
+    <section aria-labelledby="practise-now" className="bg-primary/5 border-primary/30 grid gap-2 rounded-xl border p-4 sm:p-5">
+      <h2 id="practise-now" className="text-lg leading-snug font-semibold tracking-tight">Do you practise this now?</h2>
+      <p className="text-muted-foreground text-sm">You have tried {label.toLowerCase()} {tried} times. If it is part of your life now, say so and Scholē keeps where you are with it.</p>
+      <div className="pt-1">
+        <Button type="button" size="lg" disabled={pending} onClick={() => start(async () => { await setCraftStateAction(craft, "practising"); })} className="h-10 w-full sm:w-auto sm:px-8">Yes, I practise it</Button>
+      </div>
+    </section>
   );
 }

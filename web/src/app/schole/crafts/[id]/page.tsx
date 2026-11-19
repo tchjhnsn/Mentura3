@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CONTESTS, LEARNED, STAGES, craftOf, discover, groupOf, isAlready } from "@reflect/core/crafts";
+import { CONTESTS, LEARNED, STAGES, craftOf, discover, firstProjectOf, groupOf, isAlready } from "@reflect/core/crafts";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import { friendsMet } from "@/server/connect-store";
 import { hrefOf, MINE } from "@/app/home-tiles";
 import { LEARN } from "../../crumbs";
 import { craftActAction, keepCraftAction, setCraftStateAction } from "../actions";
-import { AddMade, LearnedChoices, StageLine, VouchFaces } from "./parts";
+import { AddMade, FirstProjectCard, LearnedChoices, PractiseNow, StageLine, VouchFaces } from "./parts";
+import { CraftPhoto } from "../../craft-photo";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -23,8 +24,10 @@ const dayOf = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString("en-U
 const list = (v: unknown) => String(v ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 
 /**
- * A craft (doc "Scholē landing design guide", 2026-11-19). Not yet (drawn to it, trying it, or not kept): what drew
- * the person, Try it once, and I practise this. Already (practising): where they are on the Dreyfus five steps, how
+ * A craft (doc "Scholē landing design guide", 2026-11-19; photo and first project from the picker design guide). It
+ * leads with the craft's photo. Not yet (drawn to it, trying it, or not kept): the first project with the one filled
+ * button, Start the first project, what drew the person, how often they tried it, and I practise this; after three
+ * tries, "Do you practise this now?" takes the filled button and Start turns outline. Already (practising): where they are on the Dreyfus five steps, how
  * they learned it, what they made, which friends vouch, and the way to work in it in Ergon.
  */
 export default async function CraftPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,6 +46,9 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
   const fitness = MINE.find((t) => t.id === "fitness");
   const fitnessHref = fitness ? hrefOf(fitness) : null;
   const contest = CONTESTS.includes(craft.id);
+  const project = firstProjectOf(craft.id);
+  // After three tries, ask whether the person practises it now; that question then holds the one filled button.
+  const ask = !already && tried.length >= 3;
 
   const crumbs = [LEARN, { label: "Making", href: "/schole/making" }, { label: group.label, href: `/schole/making/${group.id}` }];
   const where = !mine ? "Not kept yet" : already ? "You practise this" : mine.state === "trying" ? "You are trying this" : "You are drawn to this";
@@ -53,8 +59,10 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">{craft.label}</h1>
-          <p className="text-muted-foreground">{where}. <Link href={`/schole/making/${group.id}`} className="underline-offset-2 hover:underline">{group.label}</Link></p>
+          <p className="text-muted-foreground">{where}{tried.length ? `, tried ${tried.length === 1 ? "once" : `${tried.length} times`}` : ""}. <Link href={`/schole/making/${group.id}`} className="underline-offset-2 hover:underline">{group.label}</Link></p>
         </div>
+
+        <CraftPhoto id={craft.id} alt={craft.label} sizes="(min-width: 800px) 768px, 100vw" className="aspect-[16/9] w-full rounded-xl sm:aspect-[21/9]" />
 
         {already ? (
           <>
@@ -97,6 +105,10 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
           </>
         ) : (
           <>
+            {ask ? <PractiseNow craft={craft.id} label={craft.label} tried={tried.length} /> : null}
+
+            {project ? <FirstProjectCard href={`/schole/crafts/${craft.id}/project`} project={project} primary={!ask} /> : null}
+
             <section aria-labelledby="drew" className="grid gap-3">
               <h2 id="drew" className="font-semibold">What drew you</h2>
               {because.length || why ? (
@@ -108,11 +120,11 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
             </section>
 
             <section aria-labelledby="try" className="grid gap-3">
-              <h2 id="try" className="font-semibold">Try it</h2>
-              {tried.length ? <p className="text-muted-foreground text-sm">You tried it {tried.length === 1 ? "once" : `${tried.length} times`}, last on {dayOf(tried[0]!.day)}.</p> : <p className="text-muted-foreground text-sm">Try it once, then see if you want more.</p>}
+              <h2 id="try" className="font-semibold">{project ? "Tried it" : "Try it"}</h2>
+              {tried.length ? <p className="text-muted-foreground text-sm">You tried it {tried.length === 1 ? "once" : `${tried.length} times`}, last on {dayOf(tried[0]!.day)}.</p> : <p className="text-muted-foreground text-sm">{project ? "Tried it another way? Count it here." : "Try it once, then see if you want more."}</p>}
               <div className="flex flex-wrap gap-2">
-                <form action={craftActAction.bind(null, craft.id, "tried", undefined)}><Button type="submit">{tried.length ? "I tried it again" : "I tried it once"}</Button></form>
-                {mine ? (
+                <form action={craftActAction.bind(null, craft.id, "tried", undefined)}><Button type="submit" variant={project || ask ? "outline" : "default"}>{tried.length ? "I tried it again" : "I tried it once"}</Button></form>
+                {ask ? null : mine ? (
                   <form action={setCraftStateAction.bind(null, craft.id, "practising")}><Button type="submit" variant="outline">I practise this</Button></form>
                 ) : (
                   <form action={keepCraftAction}><input type="hidden" name="ref" value={craft.id} /><input type="hidden" name="state" value="practising" /><Button type="submit" variant="outline">I practise this</Button></form>

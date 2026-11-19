@@ -3,7 +3,7 @@
 // go, its Dreyfus stage, how it was learned, what was tried and made, who vouches, and the Discover crafts answers
 // (kind "craft-likes"). The crafts pages run these same entries, so their changes are in the change log.
 import { z } from "zod";
-import { ACTIVITIES, CRAFT_STATES, LEARNED, STAGES, answersBody, craftOf } from "@reflect/core/crafts";
+import { ACTIVITIES, CRAFT_STATES, LEARNED, STAGES, WORLDS, answersBody, craftOf } from "@reflect/core/crafts";
 import { addLifeRecord, keepLifeAct, lifeRecords, removeLifeRecord, saveLifeRecord, setLifeField, setLifeState, type LifeRecord } from "../life-store";
 import { friendsMet } from "../connect-store";
 import { action, type ActionContext, type LoggedChange } from "./types";
@@ -199,5 +199,35 @@ export const saveCraftAnswers = action({
     const before = c.before as { answers?: Record<string, string> | null } | null;
     if (!before || !("answers" in before)) throw new Error("This change cannot be undone.");
     for (const k of ANSWER_KEYS) await setLifeField(userId, "work", "craft-likes", k, before.answers?.[k] || null);
+  },
+});
+
+/** The picker's record fields as they are, for Undo. */
+const picksSnap = async (userId: string) => {
+  const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "craft-likes");
+  return { picks: r ? { worlds: String(r.body.worlds ?? ""), picks: String(r.body.picks ?? "") } : null };
+};
+
+export const saveCraftPicks = action({
+  id: "save_craft_picks",
+  title: "Keep the person's craft picks",
+  description: `Keep what the person picked in Scholē's photo picker (/schole/discover): worlds (craft group ids: ${WORLDS.map((w) => w.id).join(", ")}) and crafts (catalogue ids such as 'carpentry'). Both lists replace what was there, in the order picked. Only the person's own picks.`,
+  tier: "own",
+  on: ["chat", "mcp"],
+  input: z.object({ worlds: z.array(z.string().max(40)).max(WORLDS.length), picks: z.array(z.string().max(80)).max(200) }),
+  run: async ({ userId }, { worlds, picks }) => {
+    const w = [...new Set(worlds)].filter((x) => WORLDS.some((y) => y.id === x));
+    const p = [...new Set(picks)].filter((x) => craftOf(x));
+    await setLifeField(userId, "work", "craft-likes", "worlds", w.join(",") || null);
+    await setLifeField(userId, "work", "craft-likes", "picks", p.join(",") || null);
+    return { worlds: w, picks: p };
+  },
+  before: ({ userId }) => picksSnap(userId),
+  change: (r, _i, before) => ({ before, after: r }),
+  undo: async ({ userId }, c) => {
+    const before = c.before as { picks?: { worlds: string; picks: string } | null } | null;
+    if (!before || !("picks" in before)) throw new Error("This change cannot be undone.");
+    await setLifeField(userId, "work", "craft-likes", "worlds", before.picks?.worlds || null);
+    await setLifeField(userId, "work", "craft-likes", "picks", before.picks?.picks || null);
   },
 });
