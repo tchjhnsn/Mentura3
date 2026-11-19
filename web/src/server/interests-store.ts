@@ -4,6 +4,7 @@
 // through the action registry (./actions/interests.ts, ./actions/crafts.ts) so they are in the change log.
 import { COMMITMENT, DEPTH, MODES, SKILL, SOURCES, isStep, sentence, type Interest, type Mode } from "@reflect/core/interests";
 import { AREAS, itemOf, related, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
+import { bodyOf } from "@reflect/core/life-body";
 import { craftAsInterest, type CraftDetails } from "@reflect/core/craft-interests";
 import { craftOf, firstProjectOf, groupOf, related as relatedCrafts } from "@reflect/core/crafts";
 import { lifeActs, lifeRecords, type LifeAct, type LifeRecord } from "./life-store";
@@ -15,15 +16,15 @@ const list = (v: unknown) => String(v ?? "").split(",").map((x) => x.trim()).fil
 
 /** One record as an Interest: modes from the record, each side's levels only when they are known steps. */
 export function interestOf(r: LifeRecord): MyInterest {
-  const b = r.body, ref = String(b.ref ?? ""), item = itemOf(ref) ?? null;
+  const b = bodyOf("interest", r.body), ref = b.ref ?? "", item = itemOf(ref) ?? null;
   const modes = list(b.modes).filter((m): m is Mode => isStep(MODES, m));
-  const c = (k: string) => (isStep(COMMITMENT, b[k]) ? b[k] : undefined);
-  const make = modes.includes("make") ? { commitment: c("make_commitment"), skill: isStep(SKILL, b.make_skill) ? b.make_skill : undefined } : undefined;
-  const doSide = modes.includes("do") ? { commitment: c("do_commitment"), skill: isStep(SKILL, b.do_skill) ? b.do_skill : undefined } : undefined;
-  const know = modes.includes("know") ? { commitment: c("know_commitment"), depth: isStep(DEPTH, b.know_depth) ? b.know_depth : undefined } : undefined;
+  const c = (v: string | undefined) => (isStep(COMMITMENT, v) ? v : undefined);
+  const make = modes.includes("make") ? { commitment: c(b.make_commitment), skill: isStep(SKILL, b.make_skill) ? b.make_skill : undefined } : undefined;
+  const doSide = modes.includes("do") ? { commitment: c(b.do_commitment), skill: isStep(SKILL, b.do_skill) ? b.do_skill : undefined } : undefined;
+  const know = modes.includes("know") ? { commitment: c(b.know_commitment), depth: isStep(DEPTH, b.know_depth) ? b.know_depth : undefined } : undefined;
   const area = AREAS.find((a) => a.id === b.area)?.id ?? item?.area ?? null;
   return {
-    id: r.id, ref, title: String(b.title ?? item?.title ?? ref), area, modes, item, createdAt: r.createdAt,
+    id: r.id, ref, title: b.title ?? item?.title ?? ref, area, modes, item, createdAt: r.createdAt,
     make, do: doSide, know, source: isStep(SOURCES, b.source) ? b.source : "told", craft: null,
   };
 }
@@ -71,7 +72,8 @@ const areaIds = (v: unknown) => list(v).filter((x): x is AreaId => AREAS.some((a
 /** Which Get to know you areas the person finished or skipped, whether they sorted, and until when the card waits. */
 export async function myAreas(userId: string): Promise<MyAreas> {
   const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "interest-areas");
-  return { done: areaIds(r?.body.done), skipped: areaIds(r?.body.skipped), sorted: r?.body.sorted === "yes", later: r?.body.later ? String(r.body.later) : null };
+  const b = bodyOf("interest-areas", r?.body);
+  return { done: areaIds(b.done), skipped: areaIds(b.skipped), sorted: b.sorted === "yes", later: b.later || null };
 }
 
 const MODE_IDS = MODES.map((m) => m.id);
