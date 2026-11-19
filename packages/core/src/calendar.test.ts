@@ -57,7 +57,7 @@ describe("the calendar for the chat", () => {
 
   it("lists each day an event falls on with its time, tile and page", () => {
     const list = agenda(occurrences([ev({ id: "w", repeat: "weekly", starts: "09:00", ends: "10:30" }), ev({ id: "record:r:day", tile: "mate", title: "Date with R", day: "2026-11-03" })], "2026-11-01", "2026-11-09"));
-    expect(list.map((x) => [x.day, x.when, x.tile_label, x.from_record])).toEqual([["2026-11-02", "09:00–10:30", "Work", false], ["2026-11-03", "All day", "Mate", true], ["2026-11-09", "09:00–10:30", "Work", false]]);
+    expect(list.map((x) => [x.day, x.when, x.tile_label, x.from_record])).toEqual([["2026-11-02", "09:00–10:30", "Ergon", false], ["2026-11-03", "All day", "Mate", true], ["2026-11-09", "09:00–10:30", "Ergon", false]]);
     expect(list[0]!.href).toBe("/calendar?day=2026-11-02");
     expect(whenOf({ starts: "18:00", ends: null })).toBe("18:00");
   });

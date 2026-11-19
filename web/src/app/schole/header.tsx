@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { SearchButton } from "@/components/search-button";
-import { CompassIcon, LibraryIcon } from "lucide-react";
+import { CompassIcon, LibraryIcon, SparklesIcon } from "lucide-react";
 import { TileHeader, TileIcon } from "@/app/life/tile-header";
 import { cn } from "@/lib/utils";
 
-export type LearnPart = "space" | "shelves" | "reading" | "claims" | "highlights" | "browse" | "notes" | "schedule" | "lists";
+export type LearnPart = "space" | "shelves" | "reading" | "claims" | "highlights" | "browse" | "notes" | "schedule" | "lists" | "qualities";
 const LIBRARY: LearnPart[] = ["shelves", "highlights", "notes", "schedule", "lists"];
-const PART: Record<LearnPart, string | null> = { space: null, shelves: "Your library", reading: "Reading", claims: "Claims", highlights: "Your library", browse: "Browse", notes: "Your library", schedule: "Your library", lists: "Your library" };
+const PART: Record<LearnPart, string | null> = { space: null, shelves: "Your library", reading: "Reading", claims: "Claims", highlights: "Your library", browse: "Browse", notes: "Your library", schedule: "Your library", lists: "Your library", qualities: "Qualities" };
 
 /**
  * Scholē's header (guide "Home, browse and library", Torian agreed 2026-11-15 23:07Z): the title, or the part open,
@@ -20,6 +20,8 @@ export function LearnHeader({ on }: { on: LearnPart }) {
       <SearchButton />
       <TileIcon label="Browse" href="/schole/browse" here={on === "browse"}><CompassIcon /></TileIcon>
       <TileIcon label="Your library" href="/schole/shelves" here={LIBRARY.includes(on)}><LibraryIcon /></TileIcon>
+      {/* Qualities moved here from the journal (Torian, 2026-11-19): Scholē is where qualities are discovered. */}
+      <TileIcon label="Qualities" href="/schole/qualities" here={on === "qualities"}><SparklesIcon /></TileIcon>
     </>} />
   );
 }

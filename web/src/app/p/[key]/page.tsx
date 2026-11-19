@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
 const EMPTY: Record<SectionId, { line: string; href: string }> = {
   socials: { line: "Add the accounts you're on.", href: "/settings/profile/socials" },
   building: { line: "Ventures you start show here.", href: "/life/ventures" },
-  qualities: { line: "Qualities you keep in Work show here.", href: "/journal/qualities" },
+  qualities: { line: "Qualities you keep in Scholē show here.", href: "/schole/qualities" },
   experience: { line: "Add your experience from LinkedIn.", href: "/settings/profile/linkedin" },
   events: { line: "Events you host or check in to show here.", href: "/events" },
   interests: { line: "Add a few interests.", href: "/settings/profile" },

@@ -78,9 +78,9 @@ const ROUTED: Record<string, string[]> = {
   "journal/actions.ts#placeSubjectAction": ["place_subject"],
   "journal/actions.ts#placeAction": ["place_belief"],
   "journal/actions.ts#compileEditionAction": ["compile_edition"],
-  "journal/qualities/actions.ts#toggleQualityAction": ["toggle_quality"],
-  "journal/qualities/actions.ts#takeOffQualityAction": ["take_off_quality"],
-  "journal/qualities/actions.ts#writeQualityAction": ["write_quality"],
+  "schole/qualities/actions.ts#toggleQualityAction": ["toggle_quality"],
+  "schole/qualities/actions.ts#takeOffQualityAction": ["take_off_quality"],
+  "schole/qualities/actions.ts#writeQualityAction": ["write_quality"],
   // The tiles' records, quick logs and dashboards
   "life/actions.ts#addLifeAction": ["add_record"],
   "life/actions.ts#saveLifeAction": ["change_record"],

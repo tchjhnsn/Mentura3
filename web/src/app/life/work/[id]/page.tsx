@@ -25,7 +25,7 @@ import { learningTowardAction, mainAction, writeTowardAction } from "../space-ac
 import { kindLabel } from "../aims";
 import { Steps } from "../steps";
 
-export const metadata: Metadata = { title: "Work" };
+export const metadata: Metadata = { title: "Ergon" };
 export const dynamic = "force-dynamic";
 const MEDIUM: Record<string, string> = Object.fromEntries(MEDIA.map((m) => [m.id, m.label]));
 
@@ -70,7 +70,7 @@ export default async function AimPage({ params }: { params: Promise<{ id: string
 
   return (
     <main className={PAGE}>
-      <ThingHeader back="/life/work" backLabel="Work" crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }]} title={title} />
+      <ThingHeader back="/life/work" backLabel="Ergon" crumbs={[{ label: "Home", href: "/" }, { label: "Ergon", href: "/life/work" }]} title={title} />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
         {letGo ? (
           <div className="bg-muted flex flex-wrap items-center justify-between gap-3 rounded-lg px-4 py-3 text-sm">

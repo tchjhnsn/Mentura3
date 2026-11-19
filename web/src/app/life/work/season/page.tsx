@@ -24,7 +24,7 @@ export default async function SeasonPage() {
   const needNote = s.need.from === "home" ? "What your needs from Home cost you a year." : s.need.from === "household" ? "What your intended household needs a year." : null;
   return (
     <main className={PAGE}>
-      <ThingHeader back="/life/work" backLabel="Work" crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }]} title="This season" />
+      <ThingHeader back="/life/work" backLabel="Ergon" crumbs={[{ label: "Home", href: "/" }, { label: "Ergon", href: "/life/work" }]} title="This season" />
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1">
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">This season</h1>

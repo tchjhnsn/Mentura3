@@ -7,7 +7,7 @@ import { requireUser } from "@/server/session";
 import { admiredOf } from "@/server/admired";
 import { signalsOf } from "@/server/recommend";
 import { entryCounts } from "@/server/qualities";
-import { JournalHeader } from "../header";
+import { LearnHeader } from "../header";
 import { toggleQualityAction } from "./actions";
 import { Faces } from "./faces";
 
@@ -26,7 +26,7 @@ export default async function QualitiesPage() {
   const suggested = suggestedQualities(admired, finished);
   return (
     <main className={PAGE}>
-      <JournalHeader on="qualities" />
+      <LearnHeader on="qualities" />
       <div className="mt-6 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-10">
         <section aria-labelledby="building" className="grid gap-3">
           <h2 id="building" className="font-semibold">What you are building</h2>
@@ -36,7 +36,7 @@ export default async function QualitiesPage() {
                 const n = counts.get(q.trait.id) ?? 0;
                 return (
                   <li key={q.trait.id}>
-                    <Link href={`/journal/qualities/${q.trait.id}`} className="hover:bg-accent grid gap-1.5 py-3 transition">
+                    <Link href={`/schole/qualities/${q.trait.id}`} className="hover:bg-accent grid gap-1.5 py-3 transition">
                       <span className="font-semibold">{q.trait.name}</span>
                       <span className="text-muted-foreground flex items-center gap-2 text-sm"><Faces people={q.from} />Seen in {q.from.map((e) => e.name).join(", ")} · {n ? `${n} ${n === 1 ? "entry" : "entries"}` : "nothing written yet"}</span>
                     </Link>
@@ -57,7 +57,7 @@ export default async function QualitiesPage() {
                     <span>{q.trait.name}</span>
                     <span className="text-muted-foreground truncate text-sm">{q.from.book.title}, {q.from.name}</span>
                   </span>
-                  <form action={toggleQualityAction.bind(null, q.from.id, q.trait.id, "/journal/qualities")}>
+                  <form action={toggleQualityAction.bind(null, q.from.id, q.trait.id, "/schole/qualities")}>
                     <button type="submit" aria-label={`Add ${q.trait.name.toLowerCase()}`} title="Add it" className="hover:bg-accent flex size-8 shrink-0 items-center justify-center rounded-full border"><PlusIcon className="size-4" /></button>
                   </form>
                 </li>

@@ -17,7 +17,7 @@ export default async function AddAimPage() {
   await requireUser();
   return (
     <main className={PAGE}>
-      <ThingHeader back="/life/work" backLabel="Work" crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }]} title="Add an aim" />
+      <ThingHeader back="/life/work" backLabel="Ergon" crumbs={[{ label: "Home", href: "/" }, { label: "Ergon", href: "/life/work" }]} title="Add an aim" />
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1">
           <h1 id="page-title" className="text-3xl font-semibold tracking-tight">Add an aim</h1>
