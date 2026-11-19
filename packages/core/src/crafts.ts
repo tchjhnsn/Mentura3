@@ -14,6 +14,9 @@
  * Pure data and arithmetic: no I/O.
  */
 
+import photos from "./craft-photos.json" with { type: "json" };
+export { FIRST_PROJECTS, firstProjectOf, type FirstProject } from "./craft-projects";
+
 export type Lang = "en" | "el" | "he" | "la" | "fr" | "de";
 /** A name in one language, with a transliteration where the script is not Latin. */
 export type Name = { lang: Lang; text: string; say?: string };
@@ -207,3 +210,88 @@ export function answersBody(answers: Record<string, Answer>): { likes: string; u
 export const nextActivity = (answers: Record<string, Answer>) => ACTIVITIES.find((a) => !answers[a.id]) ?? null;
 /** Discovery shows a result once this many are answered. */
 export const ENOUGH = 8;
+
+/* ---------- The photo picker (Scholē picker design guide: worlds, then crafts, then three matches). ---------- */
+
+
+/** A world is a craft group under a warmer display name, for the picker's first screen. */
+export type World = { id: GroupId; name: string };
+export const WORLDS: readonly World[] = [
+  { id: "food", name: "Food and drink" },
+  { id: "growing", name: "Plants and animals" },
+  { id: "building", name: "Building" },
+  { id: "materials", name: "Wood, metal and clay" },
+  { id: "textiles", name: "Fibre and fabric" },
+  { id: "fine-arts", name: "Art and image" },
+  { id: "technical", name: "Machines and code" },
+  { id: "healing", name: "Healing and care" },
+  { id: "trade", name: "Travel and trade" },
+  { id: "performance", name: "Stage and sport" },
+];
+export const worldName = (g: string) => WORLDS.find((w) => w.id === g)?.name ?? groupOf(g)?.label ?? g;
+
+/** A lead photo from Wikipedia (mostly Wikimedia Commons, free licence), with the page to credit. */
+export type CraftPhoto = { src: string; page: string };
+const PHOTOS = photos as Record<string, CraftPhoto>;
+export const craftPhoto = (id: string): CraftPhoto | undefined => PHOTOS[id];
+export const worldPhoto = (g: string): CraftPhoto | undefined => PHOTOS[`world:${g}`];
+
+const order = (id: string) => CRAFTS.findIndex((c) => c.id === id);
+const sharedActivities = (a: string, b: string) => ACTIVITIES.filter((x) => x.crafts.includes(a) && x.crafts.includes(b)).length;
+
+/** Up to four crafts most like this one: same group or sharing an activity, most shared activities first, then contests with contests. */
+export function related(id: string): string[] {
+  const self = craftOf(id);
+  if (!self) return [];
+  const near = new Set<string>(craftsIn(self.group).map((c) => c.id));
+  for (const a of ACTIVITIES) if (a.crafts.includes(id)) for (const c of a.crafts) near.add(c);
+  near.delete(id);
+  return [...near]
+    .filter((c) => craftOf(c))
+    .map((c) => ({ c, shared: sharedActivities(id, c), same: craftOf(c)!.group === self.group ? 1 : 0, kind: CONTESTS.includes(c) === CONTESTS.includes(id) ? 1 : 0 }))
+    .sort((a, b) => b.shared - a.shared || b.same - a.same || b.kind - a.kind || order(a.c) - order(b.c))
+    .slice(0, 4)
+    .map((x) => x.c);
+}
+
+export type Match = { id: string; because: string[] };
+export type MatchResult = { top: Match[]; surprise: { id: string; because: string } | null };
+
+/**
+ * Three matches from the crafts a person picked: 3 points for a picked craft, 1 for each pick it is related to.
+ * Ties go to picked crafts, then the closest relation, then catalogue order. `because` lists the picked craft ids that led to it (a picked
+ * craft lists itself first). The surprise is the best match outside every picked group, else the first craft of an
+ * unpicked world.
+ */
+export function matchCrafts(picks: readonly string[]): MatchResult {
+  const picked = [...new Set(picks)].filter((p) => craftOf(p));
+  const isPicked = new Set(picked);
+  const why = new Map<string, string[]>();
+  const score = new Map<string, number>();
+  const nearest = new Map<string, number>();
+  for (const p of picked) {
+    score.set(p, (score.get(p) ?? 0) + 3);
+    why.set(p, [p, ...(why.get(p) ?? [])]);
+    for (const [i, r] of related(p).entries()) {
+      score.set(r, (score.get(r) ?? 0) + 1);
+      nearest.set(r, Math.min(nearest.get(r) ?? 9, i));
+      why.set(r, [...(why.get(r) ?? []), p]);
+    }
+  }
+  const ranked = CRAFTS.map((c) => c.id).sort(
+    (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0) || Number(isPicked.has(b)) - Number(isPicked.has(a)) ||
+      (nearest.get(a) ?? 9) - (nearest.get(b) ?? 9) || order(a) - order(b),
+  );
+  const top = ranked.slice(0, 3).map((id) => ({ id, because: why.get(id) ?? [] }));
+  const pickedGroups = new Set(picked.map((p) => craftOf(p)!.group));
+  const topIds = new Set(top.map((t) => t.id));
+  const near = ranked.find((id) => (score.get(id) ?? 0) > 0 && !topIds.has(id) && !pickedGroups.has(craftOf(id)!.group));
+  if (near) return { top, surprise: { id: near, because: `Close to ${craftOf(why.get(near)![0]!)!.label}` } };
+  // Varied but stable: the picks choose which unpicked world, and which of its crafts, the surprise comes from.
+  const seed = [...picked].sort().join(",").split("").reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  const open = WORLDS.filter((w) => !pickedGroups.has(w.id));
+  const world = open.at(seed % Math.max(1, open.length));
+  const pool = world ? craftsIn(world.id).filter((c) => !topIds.has(c.id)) : [];
+  const first = pool.at(Math.floor(seed / 7) % Math.max(1, pool.length));
+  return { top, surprise: first && world ? { id: first.id, because: `Something new: ${world.name}` } : null };
+}

@@ -26,3 +26,12 @@ export async function myAnswers(userId: string): Promise<Record<string, Answer>>
   const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "craft-likes");
   return r ? answersFrom(r.body as { likes?: unknown; unsure?: unknown; nots?: unknown }) : {};
 }
+
+export type MyPicks = { worlds: string[]; picks: string[] };
+const list = (v: unknown) => String(v ?? "").split(",").map((x) => x.trim()).filter(Boolean);
+
+/** The worlds and crafts the person picked in the photo picker, in the order picked. */
+export async function myPicks(userId: string): Promise<MyPicks> {
+  const r = (await lifeRecords(userId, "work")).find((x) => x.kind === "craft-likes");
+  return { worlds: list(r?.body.worlds), picks: list(r?.body.picks) };
+}
