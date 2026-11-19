@@ -41,6 +41,7 @@ const CHAT_DIRECT = [
   "excerpt", "draft_course", "courses",
   "lenses", "lens", "apply_lens",
   "messages", "send_message",
+  "open_pane",
 ];
 const CHAT_TOOLS = [...CHAT_DIRECT, "set_book_status", "add_item", ...VENTURES, ...BUILD, ...CONNECT, ...PROFILES, ...SOCIALS, ...EVENTS, ...LINKEDIN, ...DASHBOARD, ...SITE, ...MARKETPLACE, ...PAGE];
 const MCP_TOOLS = [

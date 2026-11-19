@@ -11,7 +11,8 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { JSONUIProvider, Renderer, useJsonRenderMessage } from "@json-render/react";
-import { ArrowUpIcon, Maximize2Icon, MessageCircleIcon, PlusIcon, SquareIcon, XIcon } from "lucide-react";
+import { ArrowUpIcon, MessageCircleIcon, SquareIcon } from "lucide-react";
+import { usePane } from "@/components/pane-context";
 import { BackButton } from "@/components/back-button";
 import { SidebarButton } from "@/components/sidebar";
 import { MessageResponse } from "@/components/ai-elements/message";
@@ -79,8 +80,8 @@ export function Answer({ message, streaming }: { message: UIMessage; streaming: 
 /** A held change shown at the top of Ask, with where it was asked for. */
 export type Waiting = { change: string; title: string; preview: string; tap: "Keep" | "Send"; from: string };
 
-/** What the second pane (src/components/pane.tsx) gives a chat it holds: its own header's buttons. */
-export type InPane = { onClose: () => void; onExpand: (id: string, messages: UIMessage[]) => void; onNew: () => void };
+/** What the second pane (src/components/pane.tsx) gives a chat it holds: the pane draws the header, and hears the chat's id, words and title for its tab and for Open as a page. */
+export type InPane = { onState: (s: { id: string; messages: UIMessage[]; title: string }) => void };
 
 export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: { ask?: string; pending?: Waiting[]; plans?: ReturnType<typeof planCard>[]; chatId?: string; initial?: UIMessage[]; pane?: InPane } = {}) {
   // A chat's id (a uuid), made once per visit to the page; the chat is kept under it in the chat history. A chat
@@ -120,6 +121,28 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: {
       // Kept for this visit only.
     }
   };
+  // The pane hears this chat's state for its tab's title and for Open as a page.
+  const onState = pane?.onState;
+  React.useEffect(() => {
+    onState?.({ id, messages, title: (messages[0] && wordsOf(messages[0]).slice(0, 40)) || "New Chat" });
+  }, [onState, id, messages]);
+  // open_pane (src/server/actions/pane.ts): when the call finishes, the page opens in a tab beside the chat. Calls
+  // already in the conversation when it was opened (a carried chat) do not open again.
+  const paneCtl = usePane();
+  const opened = React.useRef<Set<string> | null>(null);
+  React.useEffect(() => {
+    const calls = messages.flatMap((m) => m.parts.filter((p) => p.type === "tool-open_pane")) as { toolCallId: string; state: string; input?: { path?: string; title?: string } }[];
+    if (!opened.current) {
+      opened.current = new Set(calls.map((c) => c.toolCallId));
+      return;
+    }
+    for (const c of calls) {
+      if (c.state !== "output-available" || opened.current.has(c.toolCallId) || !c.input?.path?.startsWith("/")) continue;
+      opened.current.add(c.toolCallId);
+      if (paneCtl) paneCtl.openPage(c.input.path, c.input.title);
+      else window.location.assign(c.input.path);
+    }
+  }, [messages, paneCtl]);
   const send = (words: string) => {
     if (!words.trim() || busy) return;
     void sendMessage({ text: words.trim() });
@@ -128,15 +151,8 @@ export function Chat({ ask, pending = [], plans = [], chatId, initial, pane }: {
 
   return (
     <MessageScrollerProvider>
-      <div className={pane ? "flex h-full flex-col gap-3 px-3 pb-3" : "mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6"}>
-        {pane ? (
-          <div className="-mx-3 flex h-12 shrink-0 items-center gap-1 border-b px-2">
-            <span className="bg-muted max-w-48 truncate rounded-md px-2.5 py-1 text-sm font-medium">{messages[0] ? (wordsOf(messages[0]) || "Chat") : "New Chat"}</span>
-            <Button variant="ghost" size="icon-sm" aria-label="New chat" title="New chat" onClick={pane.onNew}><PlusIcon /></Button>
-            <Button variant="ghost" size="icon-sm" className="ml-auto" aria-label="Open as a page" title="Open as a page" onClick={() => pane.onExpand(id, messages)}><Maximize2Icon /></Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Close the pane" title="Close" onClick={pane.onClose}><XIcon /></Button>
-          </div>
-        ) : (
+      <div className={pane ? "flex h-full flex-col gap-3 px-3 pt-3 pb-3" : "mx-auto flex h-screen max-w-3xl flex-col gap-3 p-4 sm:p-6"}>
+        {pane ? null : (
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1"><SidebarButton className="-ml-2" /><Suspense fallback={null}><BackButton fallback="/" label="Back" /></Suspense></span>
             <span className="text-sm font-medium">{messages.length ? "Chat" : "New Chat"}</span>
