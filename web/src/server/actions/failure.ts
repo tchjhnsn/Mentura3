@@ -1,22 +1,13 @@
-// Why an action did not happen, as tagged errors (Effect's Data.TaggedError; Effect step 2), and what a model is told.
+// Why an action did not happen, as tagged errors (Effect step 2), and what a model is told. The refusal itself is the
+// core's (@reflect/core/registry), so a vault's runner refuses with the same reasons; it carries `_tag` "Refused".
 // Reflect's own code throws errors whose message is written for the person ("No such state", "That change was already
 // undone"), so a model may repeat them. What it must not see is a database driver's message (it can name tables,
 // constraints and values) or a programming error's; those become one plain sentence and are logged here.
-import { Data } from "effect";
+import { Refused } from "@reflect/core/registry";
 import type { OutsideError } from "../outside";
 
-/** The runner's refusals, each a reason a surface can act on. */
-export type RefusedReason =
-  | "not-offered" // a never-tier action, or one no longer in the registry
-  | "no-such-change" // not this person's change, or no change by that id
-  | "already-made" // done, undone or claimed already
-  | "declined" // the person declined it
-  | "not-yet" // held, not run
-  | "not-undoable" // shared or outside, or the action has no undo
-  | "too-old"; // past the undo or hold window
-
-/** The runner refused: nothing ran. The message is for the person. */
-export class Refused extends Data.TaggedError("Refused")<{ readonly reason: RefusedReason; readonly message: string }> {}
+export { Refused };
+export type { RefusedReason } from "@reflect/core/registry";
 
 const OUTSIDE = new Set<string>(["TimedOut", "Unreachable", "Busy"]);
 const isOutside = (e: unknown): e is OutsideError => typeof e === "object" && e !== null && OUTSIDE.has(String((e as { _tag?: unknown })._tag));
