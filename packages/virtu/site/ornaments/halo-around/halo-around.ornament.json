@@ -1,0 +1,12 @@
+{
+  "virtu-ornament": "0",
+  "name": "halo-around",
+  "description": "A broken ring around the element, an avatar decoration, in the link color, 6px outside it and turning once every twelve seconds. Reduced motion stops it.",
+  "anchor": "around",
+  "asset": "halo.svg",
+  "size": 6,
+  "outset": 6,
+  "gutter": 0,
+  "color": "color.role.link",
+  "motion": { "kind": "spin", "duration": 12000 }
+}

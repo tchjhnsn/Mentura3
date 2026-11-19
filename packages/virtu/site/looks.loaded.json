@@ -1,0 +1,346 @@
+{
+  "shapes": [
+    {
+      "path": "site/shapes/pill/pill.shape.json",
+      "name": "pill",
+      "description": "Pill controls and fields, deep card and dialog corners, round avatars, and an edge whose colors turn slowly round the element once every six seconds. It stops for reduced motion and when the page pauses motion.",
+      "corner": "round",
+      "radius": {
+        "control": "full",
+        "field": "full",
+        "card": 24,
+        "dialog": 28,
+        "avatar": "full"
+      },
+      "nest": [
+        {
+          "outer": "dialog",
+          "inner": "card",
+          "inset": 2
+        }
+      ],
+      "edge": {
+        "width": 2,
+        "style": "solid",
+        "color": "color.role.foreground",
+        "on": "color.role.background",
+        "boundary": true,
+        "paint": {
+          "kind": "spin",
+          "colors": [
+            "color.role.muted-foreground",
+            "color.role.foreground"
+          ],
+          "duration": 6000
+        }
+      }
+    },
+    {
+      "path": "site/shapes/round/round.shape.json",
+      "name": "round",
+      "description": "Generous radii with a 2px edge that fades from the muted foreground color into the foreground color. Nested corners are the outer radius less the 8px inset and the edge, so they stay concentric.",
+      "corner": "round",
+      "radius": {
+        "control": 8,
+        "field": 8,
+        "card": 18,
+        "dialog": 28,
+        "avatar": "full"
+      },
+      "nest": [
+        {
+          "outer": "card",
+          "inner": "control",
+          "inset": 8
+        },
+        {
+          "outer": "dialog",
+          "inner": "card",
+          "inset": 8
+        }
+      ],
+      "edge": {
+        "width": 2,
+        "style": "solid",
+        "color": "color.role.foreground",
+        "on": "color.role.background",
+        "boundary": true,
+        "paint": {
+          "kind": "gradient",
+          "colors": [
+            "color.role.muted-foreground",
+            "color.role.foreground"
+          ],
+          "angle": 135
+        }
+      }
+    },
+    {
+      "path": "site/shapes/sharp/sharp.shape.json",
+      "name": "sharp",
+      "description": "Square corners everywhere, with a thin muted rule as the edge. Reads technical and printed, like a ledger or a newspaper.",
+      "corner": "round",
+      "radius": {
+        "control": 0,
+        "field": 0,
+        "card": 0,
+        "dialog": 0,
+        "avatar": 0
+      },
+      "nest": [
+        {
+          "outer": "card",
+          "inner": "control",
+          "inset": 8
+        }
+      ],
+      "edge": {
+        "width": 1,
+        "style": "solid",
+        "color": "color.role.muted-foreground",
+        "on": "color.role.background",
+        "boundary": true,
+        "paint": {
+          "kind": "solid"
+        }
+      }
+    },
+    {
+      "path": "site/shapes/soft/soft.shape.json",
+      "name": "soft",
+      "description": "Small radii that grow with the surface: 4px controls, 12px cards, 16px dialogs, round avatars. No edge; surfaces and shadows show the boundaries.",
+      "corner": "round",
+      "radius": {
+        "control": 4,
+        "field": 4,
+        "card": 12,
+        "dialog": 16,
+        "avatar": "full"
+      },
+      "nest": [
+        {
+          "outer": "card",
+          "inner": "control",
+          "inset": 8
+        },
+        {
+          "outer": "dialog",
+          "inner": "card",
+          "inset": 4
+        }
+      ],
+      "edge": null
+    },
+    {
+      "path": "site/shapes/squircle/squircle.shape.json",
+      "name": "squircle",
+      "description": "Continuous corners, the squircle of app icons, where the browser supports corner-shape, and plain round corners of the same radius elsewhere. Avatars stay circles.",
+      "corner": "squircle",
+      "radius": {
+        "control": 10,
+        "field": 10,
+        "card": 20,
+        "dialog": 28,
+        "avatar": "full"
+      },
+      "nest": [
+        {
+          "outer": "card",
+          "inner": "control",
+          "inset": 10
+        },
+        {
+          "outer": "dialog",
+          "inner": "card",
+          "inset": 8
+        }
+      ],
+      "edge": null
+    }
+  ],
+  "ornaments": [
+    {
+      "decl": {
+        "path": "site/ornaments/dotted-frame/dotted-frame.ornament.json",
+        "name": "dotted-frame",
+        "description": "A frame of dots repeated along every edge, painted in the muted foreground color, sitting half outside the element.",
+        "anchor": "edges",
+        "asset": "dot.svg",
+        "size": 8,
+        "outset": 4,
+        "gutter": 4,
+        "slice": null,
+        "color": "color.role.muted-foreground",
+        "motion": null,
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 8 8\"><circle cx=\"4\" cy=\"4\" r=\"2\"/></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/halo-around/halo-around.ornament.json",
+        "name": "halo-around",
+        "description": "A broken ring around the element, an avatar decoration, in the link color, 6px outside it and turning once every twelve seconds. Reduced motion stops it.",
+        "anchor": "around",
+        "asset": "halo.svg",
+        "size": 6,
+        "outset": 6,
+        "gutter": 0,
+        "slice": null,
+        "color": "color.role.link",
+        "motion": {
+          "kind": "spin",
+          "duration": 12000
+        },
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><circle cx=\"50\" cy=\"50\" r=\"47\" fill=\"none\" stroke=\"black\" stroke-width=\"4\" stroke-dasharray=\"18 7\" stroke-linecap=\"round\"/></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/holly-corners/holly-corners.ornament.json",
+        "name": "holly-corners",
+        "description": "Holly leaves with red berries at each corner, in the drawing's own colors, swaying gently on a four-second cycle. Reduced motion leaves it still.",
+        "anchor": "corners",
+        "asset": "holly.svg",
+        "size": 24,
+        "outset": 8,
+        "gutter": 16,
+        "slice": null,
+        "color": null,
+        "motion": {
+          "kind": "sway",
+          "duration": 4000
+        },
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\"><path fill=\"#2f6b3a\" d=\"M12 12C9 9 4 10 2 7c2 0 3-1 3-2 1 1 2 1 3 0 0 1 1 2 2 1-1 2 0 4 2 6zM12 12c3-3 8-2 10-5-2 0-3-1-3-2-1 1-2 1-3 0 0 1-1 2-2 1 1 2 0 4-2 6z\"/><circle cx=\"10\" cy=\"14\" r=\"2.2\" fill=\"#b3261e\"/><circle cx=\"14\" cy=\"14\" r=\"2.2\" fill=\"#b3261e\"/><circle cx=\"12\" cy=\"17\" r=\"2.2\" fill=\"#b3261e\"/></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/leaf-corners/leaf-corners.ornament.json",
+        "name": "leaf-corners",
+        "description": "A fallen maple leaf at each corner in the drawing's own autumn colors, bobbing slowly on a five-second cycle. Reduced motion leaves it still.",
+        "anchor": "corners",
+        "asset": "leaf.svg",
+        "size": 22,
+        "outset": 8,
+        "gutter": 14,
+        "slice": null,
+        "color": null,
+        "motion": {
+          "kind": "bob",
+          "duration": 5000
+        },
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 22 22\"><path fill=\"#c2571a\" d=\"M11 2l2 4 3-1-1 4 4 1-3 3 1 3-4-1-1 3-1-3-1 3-1-3-4 1 1-3-3-3 4-1-1-4 3 1z\"/><path d=\"M11 13v7\" stroke=\"#7a3a12\" stroke-width=\"1.4\" stroke-linecap=\"round\"/></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/snow-corners/snow-corners.ornament.json",
+        "name": "snow-corners",
+        "description": "A snowflake at each corner in the muted foreground color, twinkling once every 2.4 seconds, well under three flashes a second. Reduced motion leaves it still.",
+        "anchor": "corners",
+        "asset": "snowflake.svg",
+        "size": 18,
+        "outset": 6,
+        "gutter": 12,
+        "slice": null,
+        "color": "color.role.muted-foreground",
+        "motion": {
+          "kind": "twinkle",
+          "duration": 2400
+        },
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 18 18\"><g stroke=\"black\" stroke-width=\"1.5\" stroke-linecap=\"round\" fill=\"none\"><path d=\"M9 1v16M2 5l14 8M2 13l14-8\"/><path d=\"M7 2.5 9 4l2-1.5M7 15.5 9 14l2 1.5M3 7.5l2-.5-.5-2M15 10.5l-2 .5.5 2M3 10.5l2 .5-.5 2M15 7.5l-2-.5.5-2\"/></g></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/spark-traveller/spark-traveller.ornament.json",
+        "name": "spark-traveller",
+        "description": "A small four-point star in the link color that travels round the element's border every eight seconds. Without offset-path support, or with reduced motion, it rests at the top left corner.",
+        "anchor": "along",
+        "asset": "spark.svg",
+        "size": 12,
+        "outset": 0,
+        "gutter": 6,
+        "slice": null,
+        "color": "color.role.link",
+        "motion": {
+          "kind": "travel",
+          "duration": 8000
+        },
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12 12\"><path d=\"M6 0c.6 3.4 2.6 5.4 6 6-3.4.6-5.4 2.6-6 6-.6-3.4-2.6-5.4-6-6 3.4-.6 5.4-2.6 6-6z\"/></svg>\n"
+    },
+    {
+      "decl": {
+        "path": "site/ornaments/sprig-corners/sprig-corners.ornament.json",
+        "name": "sprig-corners",
+        "description": "A small leafy sprig at each corner, painted in the link color, reaching 6px outside the element. Still.",
+        "anchor": "corners",
+        "asset": "sprig.svg",
+        "size": 20,
+        "outset": 6,
+        "gutter": 14,
+        "slice": null,
+        "color": "color.role.link",
+        "motion": null,
+        "still": "show",
+        "budget": 8192
+      },
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\"><path d=\"M10 18c0-5 0-9 0-14\" stroke=\"black\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M10 9c-3 0-5-2-5-5 3 0 5 2 5 5zM10 9c3 0 5-2 5-5-3 0-5 2-5 5zM10 14c-3 0-5-2-5-4 3 0 5 1 5 4zM10 14c3 0 5-2 5-4-3 0-5 1-5 4z\"/></svg>\n"
+    }
+  ],
+  "seasons": [
+    {
+      "path": "site/seasons/northern-year/northern-year.season.json",
+      "name": "northern-year",
+      "description": "A northern-hemisphere year: sprigs in spring, falling leaves in autumn, holly on cards and a ring round avatars over the winter holidays, and snow until the end of February. Nothing is drawn between seasons.",
+      "seasons": [
+        {
+          "name": "spring",
+          "from": "03-20",
+          "to": "05-31",
+          "slots": {
+            "card": "sprig-corners"
+          }
+        },
+        {
+          "name": "autumn",
+          "from": "10-01",
+          "to": "11-15",
+          "slots": {
+            "card": "leaf-corners"
+          }
+        },
+        {
+          "name": "winter-holidays",
+          "from": "12-01",
+          "to": "01-06",
+          "slots": {
+            "card": "holly-corners",
+            "avatar": "halo-around"
+          }
+        },
+        {
+          "name": "winter",
+          "from": "01-07",
+          "to": "02-29",
+          "slots": {
+            "card": "snow-corners"
+          }
+        }
+      ]
+    }
+  ]
+}

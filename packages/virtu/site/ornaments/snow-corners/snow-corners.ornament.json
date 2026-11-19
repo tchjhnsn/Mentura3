@@ -1,0 +1,12 @@
+{
+  "virtu-ornament": "0",
+  "name": "snow-corners",
+  "description": "A snowflake at each corner in the muted foreground color, twinkling once every 2.4 seconds, well under three flashes a second. Reduced motion leaves it still.",
+  "anchor": "corners",
+  "asset": "snowflake.svg",
+  "size": 18,
+  "outset": 6,
+  "gutter": 12,
+  "color": "color.role.muted-foreground",
+  "motion": { "kind": "twinkle", "duration": 2400 }
+}

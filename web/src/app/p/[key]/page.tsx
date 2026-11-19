@@ -179,7 +179,8 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
       ) : null}
 
       <section aria-label="Who" className="mt-6 flex items-start gap-4">
-        <Face name={p.name} size={80} />
+        {/* virtu-slot-avatar and virtu-shape-avatar: the site's look (src/server/site-design.ts) can round it and decorate it. */}
+        <div className="virtu-slot-avatar virtu-shape-avatar shrink-0 rounded-full"><Face name={p.name} size={80} /></div>
         <div className="min-w-0 flex-1 pt-1">
           <h1 id="page-title" className={cn("text-3xl font-bold tracking-tight break-words", notebook && "font-serif")}>{p.name}</h1>
           {p.handle ? <p className="text-muted-foreground text-sm">@{p.handle}</p> : null}
@@ -192,7 +193,7 @@ export default async function ProfileRoute({ params, searchParams }: { params: P
 
       <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-8 md:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid content-start gap-8">{main}</div>
-        {side.length ? <aside className="md:bg-muted/40 grid content-start gap-6 border-t pt-6 md:rounded-xl md:border-t-0 md:p-5">{side}</aside> : null}
+        {side.length ? <aside className="virtu-slot-card virtu-shape-card md:bg-muted/40 grid content-start gap-6 border-t pt-6 md:rounded-xl md:border-t-0 md:p-5">{side}</aside> : null}
       </div>
 
       <SiteFooter href={href} />

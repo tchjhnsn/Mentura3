@@ -45,13 +45,14 @@ export type Machine = {
   transitions: Transition[];
 };
 
-export type RelationKind = "contrast" | "ratio" | "count";
+export type RelationKind = "contrast" | "ratio" | "count" | "nested-radius";
 export type Subkind = "stated" | "compiled";
 
 export type Relation = { id: string; subkind: Subkind; description: string | null } & (
   | { kind: "contrast"; foreground: string[]; background: string[]; min: number }
   | { kind: "ratio"; tokens: string[]; ratio: number; tolerance: number }
   | { kind: "count"; group: string; max: number }
+  | { kind: "nested-radius"; outer: string; inset: string; inner: string; border: string | null; tolerance: number }
 );
 
 export type UsageEntry = { situation: string; entry: string };
@@ -80,7 +81,7 @@ export type Resolver = {
 /** One assignment of a value to every context: context name to value. */
 export type Permutation = Readonly<Record<string, string>>;
 
-export type Layer = "load" | "L0" | "L1" | "context" | "machine" | "L2" | "L3" | "build" | "audit" | "color" | "background" | "type" | "motion" | "icons" | "space" | "depth";
+export type Layer = "load" | "L0" | "L1" | "context" | "machine" | "L2" | "L3" | "build" | "audit" | "color" | "background" | "type" | "motion" | "icons" | "space" | "depth" | "shape" | "ornament" | "season";
 export type Severity = "error" | "warning";
 
 export type Finding = {
@@ -553,6 +554,124 @@ export type DepthDecl = {
   foreground: Array<{ token: string; min: number }>;
   /** From lowest to highest. */
   levels: DepthLevel[];
+  /** Named placements: a surface that sits offset levels above whatever it is placed on, capped at the top, optionally keeping one level's shadow (src/elevation.ts). */
+  placements: DepthPlacement[];
+  /** Placements that nest from the base, in order; each must land above the one before. */
+  stacks: string[][];
+};
+
+export type DepthPlacement = {
+  name: string;
+  /** Levels above the substrate, at least 1. */
+  offset: number;
+  /** The level whose shadow the placement always shows, whatever it sits on, or null for its own level's. */
+  shadow: string | null;
 };
 
 export type DepthsResult = { ok: true; depths: DepthDecl[]; findings: Finding[] } | { ok: false; error: string };
+
+// A shape declaration, <name>.shape.json: the corner radius of each role, the
+// corner's shape, how corners nest, and an optional edge (border) with a
+// solid, gradient, or turning paint. The shape follows
+// schema/shape.schema.json. The design is docs/design/SHAPE.md.
+
+/** The corner shapes a declaration may name. round is plain border-radius; the others need CSS corner-shape and fall back to round. */
+export const CORNER_SHAPES = ["round", "squircle", "bevel", "scoop", "notch"] as const;
+export type CornerShape = (typeof CORNER_SHAPES)[number];
+/** The roles a shape gives a radius to, smallest surface first. field is optional and falls back to control. */
+export const SHAPE_ROLES = ["control", "field", "card", "dialog", "avatar"] as const;
+export type ShapeRole = (typeof SHAPE_ROLES)[number];
+/** The roles every shape must give a radius. */
+export const SHAPE_REQUIRED_ROLES: readonly ShapeRole[] = ["control", "card", "dialog", "avatar"];
+/** A radius in px, or full: half the shorter side, so a pill or a circle. */
+export type ShapeRadius = number | "full";
+export const EDGE_STYLES = ["solid", "dashed", "double", "none"] as const;
+export type EdgeStyle = (typeof EDGE_STYLES)[number];
+export type EdgePaint =
+  | { kind: "solid" }
+  | { kind: "gradient"; colors: string[]; angle: number }
+  | { kind: "spin"; colors: string[]; duration: number };
+export type ShapeEdge = {
+  /** In px. */
+  width: number;
+  style: EdgeStyle;
+  /** The color token of a solid edge, and the color a gradient or spin falls back to. */
+  color: string;
+  /** The color token of the surface the edge sits on, which a gradient or spin edge also paints inside the border. */
+  on: string;
+  /** Whether the edge must reach 3:1 against on (WCAG 1.4.11), because it is the only thing that shows the component's boundary. */
+  boundary: boolean;
+  paint: EdgePaint;
+};
+export type ShapeNest = { outer: ShapeRole; inner: ShapeRole; inset: number };
+export type ShapeDecl = {
+  path: string;
+  name: string;
+  description: string | null;
+  corner: CornerShape;
+  /** The radius of each role the declaration gives one. */
+  radius: Partial<Record<ShapeRole, ShapeRadius>>;
+  /** Roles drawn inside others, with the inset between the two edges; each must keep the curves concentric. */
+  nest: ShapeNest[];
+  edge: ShapeEdge | null;
+};
+export type ShapesResult = { ok: true; shapes: ShapeDecl[]; findings: Finding[] } | { ok: false; error: string };
+
+// An ornament declaration, <name>.ornament.json: a decoration drawn from an
+// SVG beside the declaration, at an element's corners, along its edges as a
+// frame, travelling round its border, or around it as an overlay, with an
+// optional animation that stops for reduced motion. The shape follows
+// schema/ornament.schema.json. The design is docs/design/ORNAMENTS.md.
+
+export const ORNAMENT_ANCHORS = ["corners", "edges", "along", "around"] as const;
+export type OrnamentAnchor = (typeof ORNAMENT_ANCHORS)[number];
+export const ORNAMENT_MOTIONS = ["bob", "sway", "twinkle", "travel", "spin"] as const;
+export type OrnamentMotionKind = (typeof ORNAMENT_MOTIONS)[number];
+/** The anchors each motion may run on. */
+export const MOTION_ANCHORS: Record<OrnamentMotionKind, readonly OrnamentAnchor[]> = {
+  bob: ["corners", "along", "around"],
+  sway: ["corners", "along", "around"],
+  twinkle: ["corners", "edges", "along", "around"],
+  travel: ["along"],
+  spin: ["around"],
+};
+export type OrnamentDecl = {
+  path: string;
+  name: string;
+  description: string | null;
+  anchor: OrnamentAnchor;
+  /** The SVG's file name, beside the declaration. */
+  asset: string;
+  /** The drawn size in px: the square at each corner, the frame's width along an edge, the traveller, or the ring around. */
+  size: number;
+  /** How far in px the drawing reaches outside the element's border box. */
+  outset: number;
+  /** The padding in px the ornament's class gives the element, so the part drawn inside stays off the content. */
+  gutter: number;
+  /** For an edges ornament in the SVG's own colors: the border-image slice, in the SVG's own units. */
+  slice: number | null;
+  /** A color token the SVG is painted in through a mask, or null to show the SVG's own colors. */
+  color: string | null;
+  motion: { kind: OrnamentMotionKind; duration: number } | null;
+  /** What reduced motion leaves: the first frame (show), or nothing (hide). */
+  still: "show" | "hide";
+  /** The most bytes the SVG may have. */
+  budget: number;
+};
+export type OrnamentsResult = { ok: true; ornaments: OrnamentDecl[]; findings: Finding[] } | { ok: false; error: string };
+
+// A season declaration, <name>.season.json: a calendar of named seasons, each
+// a range of days that repeats every year, with the ornament each slot (a
+// kind of element, such as card or avatar) wears while it lasts. The shape
+// follows schema/season.schema.json. The design is docs/design/SEASONS.md.
+
+export type Season = {
+  name: string;
+  /** Month and day, "MM-DD", inclusive. A season whose to is before its from wraps over the new year. */
+  from: string;
+  to: string;
+  /** Slot name to ornament name. */
+  slots: Record<string, string>;
+};
+export type SeasonDecl = { path: string; name: string; description: string | null; seasons: Season[] };
+export type SeasonsResult = { ok: true; seasons: SeasonDecl[]; findings: Finding[] } | { ok: false; error: string };

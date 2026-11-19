@@ -1,0 +1,11 @@
+{
+  "virtu-ornament": "0",
+  "name": "leaf-corners",
+  "description": "A fallen maple leaf at each corner in the drawing's own autumn colors, bobbing slowly on a five-second cycle. Reduced motion leaves it still.",
+  "anchor": "corners",
+  "asset": "leaf.svg",
+  "size": 22,
+  "outset": 8,
+  "gutter": 14,
+  "motion": { "kind": "bob", "duration": 5000 }
+}

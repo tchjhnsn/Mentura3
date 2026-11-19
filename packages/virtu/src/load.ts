@@ -4,6 +4,7 @@
 // is reported as a finding and the malformed item is dropped, so a check run
 // can still report everything else it finds.
 
+import { dayIndex } from "./calendar.ts";
 import { isObject } from "./json.ts";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
@@ -20,7 +21,30 @@ import {
   STACKING_DIRECTIONS,
   TARGET_LEVELS,
   type DepthDecl,
+  CORNER_SHAPES,
+  EDGE_STYLES,
+  MOTION_ANCHORS,
+  ORNAMENT_ANCHORS,
+  ORNAMENT_MOTIONS,
+  SHAPE_ROLES,
+  type CornerShape,
+  type EdgePaint,
+  type EdgeStyle,
+  type OrnamentAnchor,
+  type OrnamentDecl,
+  type OrnamentMotionKind,
+  type OrnamentsResult,
+  type Season,
+  type SeasonDecl,
+  type SeasonsResult,
+  type ShapeDecl,
+  type ShapeEdge,
+  type ShapeNest,
+  type ShapeRadius,
+  type ShapeRole,
+  type ShapesResult,
   type DepthLevel,
+  type DepthPlacement,
   type DepthsResult,
   type ShadowLayer,
   type SpaceAmount,
@@ -94,6 +118,11 @@ export const SPACE_SUFFIX = ".space.json";
 export const SPACE_FORMAT_VERSION = "0";
 export const DEPTH_SUFFIX = ".depth.json";
 export const DEPTH_FORMAT_VERSION = "0";
+export const SHAPE_SUFFIX = ".shape.json";
+export const ORNAMENT_SUFFIX = ".ornament.json";
+export const SEASON_SUFFIX = ".season.json";
+/** The format version of shape, ornament, and season declarations. */
+export const LOOK_FORMAT_VERSION = "0";
 export const ICONS_SUFFIX = ".icons.json";
 export const ICONS_FORMAT_VERSION = "0";
 /** Where the committed icon name lists are: data/icon-names/ at the repository's or the package's root. */
@@ -150,7 +179,7 @@ function isDomainId(value: string): value is DomainId {
 
 // Shape readers. Each reports a load.invalid finding and returns null when the
 // value does not have the expected shape.
-type InvalidRule = "load.invalid" | "color.invalid" | "build.shadcn-invalid" | "background.invalid" | "type.invalid" | "motion.invalid" | "icons.invalid" | "space.invalid" | "depth.invalid";
+type InvalidRule = "load.invalid" | "color.invalid" | "build.shadcn-invalid" | "background.invalid" | "type.invalid" | "motion.invalid" | "icons.invalid" | "space.invalid" | "depth.invalid" | "shape.invalid" | "ornament.invalid" | "season.invalid";
 const INVALID_LAYER = {
   "load.invalid": "load",
   "color.invalid": "color",
@@ -161,6 +190,9 @@ const INVALID_LAYER = {
   "icons.invalid": "icons",
   "space.invalid": "space",
   "depth.invalid": "depth",
+  "shape.invalid": "shape",
+  "ornament.invalid": "ornament",
+  "season.invalid": "season",
 } as const;
 
 function makeReader(findings: Finding[], file: string, rule: InvalidRule = "load.invalid") {
@@ -216,12 +248,15 @@ function makeReader(findings: Finding[], file: string, rule: InvalidRule = "load
 }
 
 const NAME = /^[A-Za-z0-9_-]+$/;
-const RELATION_KINDS = ["contrast", "ratio", "count"] as const;
+const RELATION_KINDS = ["contrast", "ratio", "count", "nested-radius"] as const;
 const RELATION_FIELDS: Record<(typeof RELATION_KINDS)[number], readonly string[]> = {
   contrast: ["foreground", "background", "min"],
   ratio: ["tokens", "ratio", "tolerance"],
   count: ["group", "max"],
+  "nested-radius": ["outer", "inset", "inner"],
 };
+/** Fields a relation kind may leave out. */
+const RELATION_OPTIONAL: Record<(typeof RELATION_KINDS)[number], readonly string[]> = { contrast: [], ratio: [], count: [], "nested-radius": ["border", "tolerance"] };
 
 function loadOrThrow(dir: string, overlay: Overlay): Loaded {
   const declPath = join(dir, DECLARATION_FILE);
@@ -413,7 +448,7 @@ function readRelations(value: Json | undefined, r: Reader): Relation[] {
       continue;
     }
     const fields = RELATION_FIELDS[kind];
-    if (!r.keys(o, where, ["id", "kind", "subkind", "description", ...fields], ["id", "subkind", ...fields])) continue;
+    if (!r.keys(o, where, ["id", "kind", "subkind", "description", ...fields, ...RELATION_OPTIONAL[kind]], ["id", "subkind", ...fields])) continue;
     const id = r.string(o["id"], `${where}.id`);
     const subkindRaw = o["subkind"];
     let subkind: Subkind | null = null;
@@ -443,6 +478,15 @@ function readRelations(value: Json | undefined, r: Reader): Relation[] {
       const tolerance = r.number(o["tolerance"], `${where}.tolerance`, 0);
       if (tokens !== null && ratio !== null && tolerance !== null) {
         relation = { id, subkind, description, kind, tokens, ratio, tolerance };
+      }
+    } else if (kind === "nested-radius") {
+      const outer = r.string(o["outer"], `${where}.outer`);
+      const inset = r.string(o["inset"], `${where}.inset`);
+      const inner = r.string(o["inner"], `${where}.inner`);
+      const border = o["border"] === undefined ? null : r.string(o["border"], `${where}.border`);
+      const tolerance = o["tolerance"] === undefined ? 0.5 : r.number(o["tolerance"], `${where}.tolerance`, 0);
+      if (outer !== null && inset !== null && inner !== null && (o["border"] === undefined || border !== null) && tolerance !== null) {
+        relation = { id, subkind, description, kind, outer, inset, inner, border, tolerance };
       }
     } else {
       const group = r.string(o["group"], `${where}.group`);
@@ -1639,7 +1683,7 @@ export const SPACE_MAX_STEPS = 12;
 function loadEach<T extends { name: string }>(
   files: string[],
   what: string,
-  rule: "space.invalid" | "depth.invalid",
+  rule: "space.invalid" | "depth.invalid" | "shape.invalid" | "ornament.invalid" | "season.invalid",
   read: (raw: Json, path: string, findings: Finding[]) => T | null,
 ): { ok: true; decls: T[]; findings: Finding[] } | { ok: false; error: string } {
   const decls: T[] = [];
@@ -1845,7 +1889,7 @@ function readSpace(raw: Json, path: string, findings: Finding[]): SpaceDecl | nu
   return { path, name, description, base, grid, tolerance, maxSteps, density, steps, targets };
 }
 
-const DEPTH_KEYS = ["$schema", "virtu-depth", "name", "description", "theme", "stacking", "foreground", "levels"] as const;
+const DEPTH_KEYS = ["$schema", "virtu-depth", "name", "description", "theme", "stacking", "foreground", "levels", "placements", "stacks"] as const;
 const DEPTH_REQUIRED = ["virtu-depth", "name", "stacking", "foreground", "levels"] as const;
 const LEVEL_KEYS = ["name", "surface", "shadow", "token", "border", "boundary"] as const;
 const LAYER_KEYS = ["color", "alpha", "offsetX", "offsetY", "blur", "spread"] as const;
@@ -1994,6 +2038,310 @@ function readDepth(raw: Json, path: string, findings: Finding[]): DepthDecl | nu
   // Every per-theme value names the same themes; a single value applies to all of them.
   if (stacking !== null && theme === null && !("*" in stacking)) return null;
 
+  // Placements: a surface offset levels above whatever it sits on, optionally keeping one level's shadow (src/elevation.ts).
+  const placements: DepthPlacement[] = [];
+  if (raw["placements"] !== undefined) {
+    const o = r.object(raw["placements"], "placements");
+    if (o !== null) {
+      for (const [pn, pv] of Object.entries(o)) {
+        const where = `placements.${pn}`;
+        if (!NAME.test(pn)) {
+          r.invalid(where, "a name must be letters, digits, hyphens, and underscores");
+          continue;
+        }
+        const po = r.object(pv, where);
+        if (po === null) continue;
+        r.keys(po, where, ["offset", "shadow"], ["offset"]);
+        const offset = r.number(po["offset"], `${where}.offset`, 1, true);
+        let shadow: string | null = null;
+        if (po["shadow"] !== undefined) {
+          shadow = r.string(po["shadow"], `${where}.shadow`);
+          if (shadow !== null && !levelNames.has(shadow)) {
+            r.invalid(`${where}.shadow`, `names no level; the levels are ${[...levelNames].join(", ")}`);
+            shadow = null;
+            continue;
+          }
+        }
+        if (offset !== null) placements.push({ name: pn, offset, shadow });
+      }
+    }
+  }
+  const stacks: string[][] = [];
+  if (raw["stacks"] !== undefined) {
+    const sl = raw["stacks"];
+    if (!Array.isArray(sl)) r.invalid("stacks", "must be an array of arrays of placement names");
+    else {
+      const known = new Set(placements.map((p) => p.name));
+      for (const [i, item] of sl.entries()) {
+        const where = `stacks[${i}]`;
+        const st = r.strings(item, where);
+        if (st === null) continue;
+        if (st.length === 0) {
+          r.invalid(where, "must name at least one placement");
+          continue;
+        }
+        const unknown = st.filter((x) => !known.has(x));
+        if (unknown.length > 0) {
+          r.invalid(where, `names ${unknown.join(", ")}, which no placement is`);
+          continue;
+        }
+        stacks.push(st);
+      }
+    }
+  }
+
   if (name === null || !themeOk || stacking === null) return null;
-  return { path, name, description, theme, stacking, foreground, levels };
+  return { path, name, description, theme, stacking, foreground, levels, placements, stacks };
+}
+
+// Shape, ornament, and season declarations: <name>.shape.json,
+// <name>.ornament.json, and <name>.season.json. Their shapes follow
+// schema/shape.schema.json, schema/ornament.schema.json, and
+// schema/season.schema.json; token paths are checked against the system in
+// shape.ts and ornament.ts, and a season's ornaments in season.ts.
+
+export function findShapes(paths: string[]): { ok: true; files: string[] } | { ok: false; error: string } {
+  return findFiles(paths, SHAPE_SUFFIX);
+}
+export function findOrnaments(paths: string[]): { ok: true; files: string[] } | { ok: false; error: string } {
+  return findFiles(paths, ORNAMENT_SUFFIX);
+}
+export function findSeasons(paths: string[]): { ok: true; files: string[] } | { ok: false; error: string } {
+  return findFiles(paths, SEASON_SUFFIX);
+}
+
+const SHAPE_KEYS = ["$schema", "virtu-shape", "name", "description", "corner", "radius", "nest", "edge"] as const;
+const SHAPE_REQUIRED = ["virtu-shape", "name", "radius"] as const;
+const EDGE_KEYS = ["width", "style", "color", "on", "boundary", "paint"] as const;
+
+export function loadShapes(files: string[]): ShapesResult {
+  const r = loadEach(files, "shape declaration", "shape.invalid", readShape);
+  return r.ok ? { ok: true, shapes: r.decls, findings: r.findings } : r;
+}
+
+function oneOf<T extends string>(r: Reader, value: Json | undefined, where: string, allowed: readonly T[]): T | null {
+  if (typeof value === "string" && (allowed as readonly string[]).includes(value)) return value as T;
+  return r.invalid(where, `must be one of ${allowed.join(", ")}`);
+}
+
+function readShape(raw: Json, path: string, findings: Finding[]): ShapeDecl | null {
+  const r = makeReader(findings, path, "shape.invalid");
+  if (!isObject(raw)) return r.invalid("root", "must be an object");
+  r.keys(raw, "root", SHAPE_KEYS, SHAPE_REQUIRED);
+  const { name, description } = readHeader(raw, path, r, "virtu-shape", LOOK_FORMAT_VERSION, SHAPE_SUFFIX);
+  const corner: CornerShape | null = raw["corner"] === undefined ? "round" : oneOf(r, raw["corner"], "corner", CORNER_SHAPES);
+
+  const radius: Partial<Record<ShapeRole, ShapeRadius>> = {};
+  const ro = raw["radius"] === undefined ? null : r.object(raw["radius"], "radius");
+  if (ro !== null) {
+    r.keys(ro, "radius", SHAPE_ROLES, []);
+    for (const role of SHAPE_ROLES) {
+      const v = ro[role];
+      if (v === undefined) continue;
+      if (v === "full") radius[role] = "full";
+      else if (typeof v === "number" && Number.isFinite(v) && v >= 0) radius[role] = v;
+      else r.invalid(`radius.${role}`, 'must be a number of px, at least 0, or "full"');
+    }
+  }
+
+  const nest: ShapeNest[] = [];
+  if (raw["nest"] !== undefined) {
+    const nl = raw["nest"];
+    if (!Array.isArray(nl)) r.invalid("nest", "must be an array of { outer, inner, inset }");
+    else {
+      for (const [i, item] of nl.entries()) {
+        const where = `nest[${i}]`;
+        const o = r.object(item, where);
+        if (o === null) continue;
+        r.keys(o, where, ["outer", "inner", "inset"], ["outer", "inner", "inset"]);
+        const outer = oneOf(r, o["outer"], `${where}.outer`, SHAPE_ROLES);
+        const inner = oneOf(r, o["inner"], `${where}.inner`, SHAPE_ROLES);
+        const inset = r.number(o["inset"], `${where}.inset`, 0);
+        if (outer !== null && inner !== null && outer === inner) r.invalid(where, "a role cannot nest inside itself");
+        else if (outer !== null && inner !== null && inset !== null) {
+          if (radius[outer] === undefined || radius[inner] === undefined) r.invalid(where, `names a role the radius does not give: ${[outer, inner].filter((x) => radius[x] === undefined).join(", ")}`);
+          else nest.push({ outer, inner, inset });
+        }
+      }
+    }
+  }
+
+  let edge: ShapeEdge | null = null;
+  let edgeOk = true;
+  if (raw["edge"] !== undefined) {
+    edgeOk = false;
+    const eo = r.object(raw["edge"], "edge");
+    if (eo !== null) {
+      r.keys(eo, "edge", EDGE_KEYS, ["width", "color", "on"]);
+      const token = tokenReader(r);
+      const width = r.number(eo["width"], "edge.width", 0);
+      const style: EdgeStyle | null = eo["style"] === undefined ? "solid" : oneOf(r, eo["style"], "edge.style", EDGE_STYLES);
+      const color = token(eo["color"], "edge.color");
+      const on = token(eo["on"], "edge.on");
+      let boundary = false;
+      if (eo["boundary"] !== undefined) {
+        if (typeof eo["boundary"] !== "boolean") r.invalid("edge.boundary", "must be true or false");
+        else boundary = eo["boundary"];
+      }
+      let paint: EdgePaint | null = { kind: "solid" };
+      if (eo["paint"] !== undefined) {
+        paint = null;
+        const po = r.object(eo["paint"], "edge.paint");
+        if (po !== null) {
+          const kind = oneOf(r, po["kind"], "edge.paint.kind", ["solid", "gradient", "spin"] as const);
+          if (kind === "solid") {
+            r.keys(po, "edge.paint", ["kind"], ["kind"]);
+            paint = { kind: "solid" };
+          } else if (kind !== null) {
+            r.keys(po, "edge.paint", kind === "gradient" ? ["kind", "colors", "angle"] : ["kind", "colors", "duration"], ["kind", "colors"]);
+            const colors: string[] = [];
+            const cl = po["colors"];
+            if (!Array.isArray(cl) || cl.length < 2) r.invalid("edge.paint.colors", "must be an array of at least two color token paths");
+            else for (const [i, c] of cl.entries()) {
+              const t = token(c, `edge.paint.colors[${i}]`);
+              if (t !== null) colors.push(t);
+            }
+            const ok = Array.isArray(cl) && cl.length >= 2 && colors.length === cl.length;
+            if (kind === "gradient") {
+              const angle = po["angle"] === undefined ? 135 : r.number(po["angle"], "edge.paint.angle", -360);
+              if (ok && angle !== null) paint = { kind: "gradient", colors, angle };
+            } else {
+              const duration = po["duration"] === undefined ? 6000 : r.number(po["duration"], "edge.paint.duration", 1, true);
+              if (ok && duration !== null) paint = { kind: "spin", colors, duration };
+            }
+          }
+        }
+      }
+      if (paint !== null && paint.kind !== "solid" && style !== null && style !== "solid") {
+        r.invalid("edge.style", `a ${paint.kind} paint is drawn under a transparent solid border, so the style must be solid`);
+        paint = null;
+      }
+      if (width !== null && style !== null && color !== null && on !== null && paint !== null) {
+        edge = { width, style, color, on, boundary, paint };
+        edgeOk = true;
+      }
+    }
+  }
+
+  if (name === null || corner === null || ro === null || !edgeOk) return null;
+  return { path, name, description, corner, radius, nest, edge };
+}
+
+const ORNAMENT_KEYS = ["$schema", "virtu-ornament", "name", "description", "anchor", "asset", "size", "outset", "gutter", "slice", "color", "motion", "still", "budget"] as const;
+const ORNAMENT_REQUIRED = ["virtu-ornament", "name", "anchor", "asset", "size"] as const;
+/** The default and the largest byte budget of an ornament's SVG. */
+export const ORNAMENT_BUDGET = 8192;
+export const ORNAMENT_BUDGET_MAX = 32768;
+const ASSET = /^[A-Za-z0-9_-]+\.svg$/;
+
+export function loadOrnaments(files: string[]): OrnamentsResult {
+  const r = loadEach(files, "ornament declaration", "ornament.invalid", readOrnament);
+  return r.ok ? { ok: true, ornaments: r.decls, findings: r.findings } : r;
+}
+
+function readOrnament(raw: Json, path: string, findings: Finding[]): OrnamentDecl | null {
+  const r = makeReader(findings, path, "ornament.invalid");
+  if (!isObject(raw)) return r.invalid("root", "must be an object");
+  r.keys(raw, "root", ORNAMENT_KEYS, ORNAMENT_REQUIRED);
+  const { name, description } = readHeader(raw, path, r, "virtu-ornament", LOOK_FORMAT_VERSION, ORNAMENT_SUFFIX);
+  const anchor: OrnamentAnchor | null = raw["anchor"] === undefined ? null : oneOf(r, raw["anchor"], "anchor", ORNAMENT_ANCHORS);
+  let asset = raw["asset"] === undefined ? null : r.string(raw["asset"], "asset");
+  if (asset !== null && !ASSET.test(asset)) asset = r.invalid("asset", "must be the file name of an SVG beside the declaration, such as holly.svg");
+  const size = raw["size"] === undefined ? null : r.number(raw["size"], "size", 1);
+  const outset = raw["outset"] === undefined ? 0 : r.number(raw["outset"], "outset", 0);
+  const gutter = raw["gutter"] === undefined ? 0 : r.number(raw["gutter"], "gutter", 0);
+  const color = tokenReader(r)(raw["color"], "color");
+  const colorOk = raw["color"] === undefined || color !== null;
+  // An edges ornament in the SVG's own colors is a 9-slice frame (border-image), which needs the slice; one painted in a token repeats the drawing along each edge through a mask, which takes none.
+  let slice: number | null = null;
+  let sliceOk = true;
+  if (raw["slice"] !== undefined) {
+    slice = r.number(raw["slice"], "slice", 1);
+    sliceOk = slice !== null;
+    if (anchor !== null && anchor !== "edges") sliceOk = r.invalid("slice", "only an edges ornament is sliced") !== null;
+    else if (raw["color"] !== undefined) sliceOk = r.invalid("slice", "an edges ornament painted in a color repeats its drawing along each edge and takes no slice") !== null;
+  } else if (anchor === "edges" && raw["color"] === undefined) sliceOk = r.invalid("slice", "an edges ornament in the SVG's own colors is a 9-slice frame and needs the border-image slice, in the SVG's units") !== null;
+  let motion: OrnamentDecl["motion"] = null;
+  let motionOk = true;
+  if (raw["motion"] !== undefined) {
+    motionOk = false;
+    const mo = r.object(raw["motion"], "motion");
+    if (mo !== null) {
+      r.keys(mo, "motion", ["kind", "duration"], ["kind", "duration"]);
+      const kind: OrnamentMotionKind | null = oneOf(r, mo["kind"], "motion.kind", ORNAMENT_MOTIONS);
+      const duration = r.number(mo["duration"], "motion.duration", 1, true);
+      if (kind !== null && anchor !== null && !MOTION_ANCHORS[kind].includes(anchor)) r.invalid("motion.kind", `${kind} runs on ${MOTION_ANCHORS[kind].join(", ")}, not ${anchor}`);
+      else if (kind !== null && duration !== null) {
+        motion = { kind, duration };
+        motionOk = true;
+      }
+    }
+  }
+  const still: "show" | "hide" | null = raw["still"] === undefined ? "show" : oneOf(r, raw["still"], "still", ["show", "hide"] as const);
+  const budget = raw["budget"] === undefined ? ORNAMENT_BUDGET : r.number(raw["budget"], "budget", 1, true);
+  if (budget !== null && budget > ORNAMENT_BUDGET_MAX) r.invalid("budget", `must be at most ${ORNAMENT_BUDGET_MAX} bytes`);
+  if (name === null || anchor === null || asset === null || size === null || outset === null || gutter === null || !sliceOk || !colorOk || !motionOk || still === null || budget === null || budget > ORNAMENT_BUDGET_MAX) return null;
+  return { path, name, description, anchor, asset, size, outset, gutter, slice, color, motion, still, budget };
+}
+
+const SEASON_KEYS = ["$schema", "virtu-season", "name", "description", "seasons"] as const;
+const SEASON_REQUIRED = ["virtu-season", "name", "seasons"] as const;
+
+export function loadSeasons(files: string[]): SeasonsResult {
+  const r = loadEach(files, "season declaration", "season.invalid", readSeason);
+  return r.ok ? { ok: true, seasons: r.decls, findings: r.findings } : r;
+}
+
+function readSeason(raw: Json, path: string, findings: Finding[]): SeasonDecl | null {
+  const r = makeReader(findings, path, "season.invalid");
+  if (!isObject(raw)) return r.invalid("root", "must be an object");
+  r.keys(raw, "root", SEASON_KEYS, SEASON_REQUIRED);
+  const { name, description } = readHeader(raw, path, r, "virtu-season", LOOK_FORMAT_VERSION, SEASON_SUFFIX);
+  const seasons: Season[] = [];
+  const sl = raw["seasons"];
+  const seen = new Set<string>();
+  if (sl !== undefined) {
+    if (!Array.isArray(sl) || sl.length === 0) r.invalid("seasons", "must be a non-empty array of seasons");
+    else {
+      for (const [i, item] of sl.entries()) {
+        const where = `seasons[${i}]`;
+        const o = r.object(item, where);
+        if (o === null) continue;
+        r.keys(o, where, ["name", "from", "to", "slots"], ["name", "from", "to", "slots"]);
+        let n = o["name"] === undefined ? null : r.string(o["name"], `${where}.name`);
+        if (n !== null && !NAME.test(n)) n = r.invalid(`${where}.name`, "a name must be letters, digits, hyphens, and underscores");
+        else if (n !== null && seen.has(n)) n = r.invalid(`${where}.name`, `"${n}" names another season`);
+        if (n !== null) seen.add(n);
+        const day = (key: "from" | "to"): string | null => {
+          const v = o[key];
+          if (v === undefined) return null;
+          if (typeof v !== "string" || dayIndex(v) === null) return r.invalid(`${where}.${key}`, 'must be a day of the year as "MM-DD", such as "12-01"');
+          return v;
+        };
+        const from = day("from");
+        const to = day("to");
+        const slots: Record<string, string> = {};
+        let slotsOk = false;
+        const so = o["slots"] === undefined ? null : r.object(o["slots"], `${where}.slots`);
+        if (so !== null) {
+          slotsOk = true;
+          if (Object.keys(so).length === 0) slotsOk = r.invalid(`${where}.slots`, "must give at least one slot an ornament") !== null;
+          for (const [k, v] of Object.entries(so)) {
+            if (!NAME.test(k)) {
+              slotsOk = r.invalid(`${where}.slots.${k}`, "a slot name must be letters, digits, hyphens, and underscores") !== null;
+              continue;
+            }
+            const orn = r.string(v, `${where}.slots.${k}`);
+            if (orn === null || !NAME.test(orn)) {
+              if (orn !== null) r.invalid(`${where}.slots.${k}`, "must name an ornament");
+              slotsOk = false;
+            } else slots[k] = orn;
+          }
+        }
+        if (n !== null && from !== null && to !== null && slotsOk) seasons.push({ name: n, from, to, slots });
+      }
+    }
+  }
+  if (name === null || !Array.isArray(sl)) return null;
+  return { path, name, description, seasons };
 }

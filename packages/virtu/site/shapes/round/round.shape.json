@@ -1,0 +1,19 @@
+{
+  "virtu-shape": "0",
+  "name": "round",
+  "description": "Generous radii with a 2px edge that fades from the muted foreground color into the foreground color. Nested corners are the outer radius less the 8px inset and the edge, so they stay concentric.",
+  "corner": "round",
+  "radius": { "control": 8, "field": 8, "card": 18, "dialog": 28, "avatar": "full" },
+  "nest": [
+    { "outer": "card", "inner": "control", "inset": 8 },
+    { "outer": "dialog", "inner": "card", "inset": 8 }
+  ],
+  "edge": {
+    "width": 2,
+    "style": "solid",
+    "color": "color.role.foreground",
+    "on": "color.role.background",
+    "boundary": true,
+    "paint": { "kind": "gradient", "colors": ["color.role.muted-foreground", "color.role.foreground"], "angle": 135 }
+  }
+}

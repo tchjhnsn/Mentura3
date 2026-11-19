@@ -1,0 +1,16 @@
+{
+  "virtu-shape": "0",
+  "name": "pill",
+  "description": "Pill controls and fields, deep card and dialog corners, round avatars, and an edge whose colors turn slowly round the element once every six seconds. It stops for reduced motion and when the page pauses motion.",
+  "corner": "round",
+  "radius": { "control": "full", "field": "full", "card": 24, "dialog": 28, "avatar": "full" },
+  "nest": [{ "outer": "dialog", "inner": "card", "inset": 2 }],
+  "edge": {
+    "width": 2,
+    "style": "solid",
+    "color": "color.role.foreground",
+    "on": "color.role.background",
+    "boundary": true,
+    "paint": { "kind": "spin", "colors": ["color.role.muted-foreground", "color.role.foreground"], "duration": 6000 }
+  }
+}
