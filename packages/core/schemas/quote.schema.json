@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "quote.schema.json",
+  "title": "Quote",
+  "description": "Words someone said or wrote, kept exactly, at quotes/<id>.json (schema.org Quotation), with its tags (W3C Web Annotations). packages/core/src/quotes.ts reads and checks it. docs/design/REFLECT_QUOTES_2026-11-20.md.",
+  "type": "object",
+  "required": [
+    "text",
+    "speaker",
+    "source",
+    "recorded_at",
+    "recorded_by",
+    "tags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000,
+      "description": "The exact words, never a paraphrase"
+    },
+    "speaker": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "self"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "self": {
+              "const": true
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "person": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The person record, when there is one"
+            }
+          }
+        }
+      ],
+      "description": "Who said it (schema.org creator): the person, or another by name"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "journal",
+            "conversation",
+            "book",
+            "talk",
+            "post",
+            "letter",
+            "reflect",
+            "other"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The source record or work, such as a journal file or a book's id (schema.org isPartOf)"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The place in it: page, paragraph, timestamp"
+        }
+      }
+    },
+    "said_at": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "When it was said (schema.org dateCreated)"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recorded_by": {
+      "enum": [
+        "stated",
+        "journal",
+        "conversation",
+        "import",
+        "noticed"
+      ],
+      "description": "How it came into Reflect (value-source.ts); anything but stated is proposed until the person confirms it"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tag"
+      }
+    }
+  },
+  "$defs": {
+    "tag": {
+      "type": "object",
+      "required": [
+        "id",
+        "purpose",
+        "scheme",
+        "value",
+        "created",
+        "creator"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^t[0-9]{1,4}$"
+        },
+        "purpose": {
+          "enum": [
+            "tagging",
+            "classifying",
+            "identifying",
+            "linking",
+            "commenting",
+            "assessing"
+          ],
+          "description": "The Web Annotation motivation: each scheme has one (quotes.ts SCHEMES)"
+        },
+        "scheme": {
+          "enum": [
+            "act",
+            "claim",
+            "relation",
+            "subject",
+            "domain",
+            "kind",
+            "origin",
+            "note",
+            "status"
+          ],
+          "description": "The vocabulary the value comes from, a SKOS concept scheme"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "A concept of the scheme; a claim's id for a claim tag; free text for a note"
+        },
+        "object": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "What a relation points at, the ideal a practical claim serves, or the tag a status tag confirms or withdraws"
+        },
+        "selector": {
+          "type": "object",
+          "required": [
+            "type",
+            "exact"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "TextQuoteSelector"
+            },
+            "exact": {
+              "type": "string",
+              "minLength": 1
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "suffix": {
+              "type": "string"
+            }
+          },
+          "description": "The words the tag is about (W3C Web Annotation TextQuoteSelector); left out, the whole quote"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "creator": {
+          "enum": [
+            "person",
+            "assistant"
+          ],
+          "description": "An assistant's tag counts only once the person confirms it"
+        }
+      }
+    }
+  }
+}

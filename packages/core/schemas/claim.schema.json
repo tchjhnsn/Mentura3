@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim.schema.json",
+  "title": "Claim",
+  "description": "One wording that many quotes can say, at claims/<id>.json (schema.org Claim), with the tags about the claim itself: its domain, kind, origins, subject and notes. Its appearances are the quotes whose claim tag names it, worked out, never stored. packages/core/src/quotes.ts reads and checks it.",
+  "type": "object",
+  "required": [
+    "text",
+    "created",
+    "tags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tag"
+      }
+    }
+  },
+  "$defs": {
+    "tag": {
+      "type": "object",
+      "required": [
+        "id",
+        "purpose",
+        "scheme",
+        "value",
+        "created",
+        "creator"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^t[0-9]{1,4}$"
+        },
+        "purpose": {
+          "enum": [
+            "tagging",
+            "classifying",
+            "identifying",
+            "linking",
+            "commenting",
+            "assessing"
+          ],
+          "description": "The Web Annotation motivation: each scheme has one (quotes.ts SCHEMES)"
+        },
+        "scheme": {
+          "enum": [
+            "act",
+            "claim",
+            "relation",
+            "subject",
+            "domain",
+            "kind",
+            "origin",
+            "note",
+            "status"
+          ],
+          "description": "The vocabulary the value comes from, a SKOS concept scheme"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "A concept of the scheme; a claim's id for a claim tag; free text for a note"
+        },
+        "object": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "What a relation points at, the ideal a practical claim serves, or the tag a status tag confirms or withdraws"
+        },
+        "selector": {
+          "type": "object",
+          "required": [
+            "type",
+            "exact"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "TextQuoteSelector"
+            },
+            "exact": {
+              "type": "string",
+              "minLength": 1
+            },
+            "prefix": {
+              "type": "string"
+            },
+            "suffix": {
+              "type": "string"
+            }
+          },
+          "description": "The words the tag is about (W3C Web Annotation TextQuoteSelector); left out, the whole quote"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "creator": {
+          "enum": [
+            "person",
+            "assistant"
+          ],
+          "description": "An assistant's tag counts only once the person confirms it"
+        }
+      }
+    }
+  }
+}
