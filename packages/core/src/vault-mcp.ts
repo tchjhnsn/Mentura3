@@ -2,7 +2,8 @@
 // reaches the vault's actions (./vault-actions.ts) as tools, the way it reaches the app's at /api/mcp. It speaks MCP's
 // stdio transport, JSON-RPC 2.0 one message per line, with no SDK, so the core still imports nothing: `initialize`,
 // `ping`, `tools/list` and `tools/call`. Runs from it are a model's (source `mcp`), so a shared or outside action would
-// be held, as in the app; a vault offers none yet. No resources, prompts or sampling.
+// be held, as in the app: publish_files and unpublish_files wait for the person (reflect approve). No resources,
+// prompts or sampling.
 import { createInterface } from "node:readline";
 import type { Readable } from "node:stream";
 import { GUIDE, listed, runVaultAction, VAULT_ACTIONS, type VaultContext } from "./vault-actions.ts";

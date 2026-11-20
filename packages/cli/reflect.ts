@@ -7,8 +7,9 @@ import { parseBundle } from "../core/src/bundle.ts";
 import { parseArgs } from "node:util";
 import { filesJournal } from "../core/src/files-journal.ts";
 import { filesChanges } from "../core/src/files-changes.ts";
-import { listed, runVaultAction, VAULT_ACTIONS, type VaultContext } from "../core/src/vault-actions.ts";
+import { listed, runVaultAction, VAULT_ACTIONS, vaultRunner, type VaultContext } from "../core/src/vault-actions.ts";
 import { filesPresentations } from "../core/src/files-presentations.ts";
+import { filesPublished, readVaultWork } from "../core/src/files-published.ts";
 import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
 import { lifeCheckLine } from "../core/src/life-check.ts";
@@ -160,15 +161,30 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   channel rule that matches; exits 1 when something is missing
   present after <id> [text] [--on YYYY-MM-DD]
                                   afterward, how it went (text from the argument or stdin)
+  publish <work.md> --presentation <id> [--slug <slug>] [--title <title>]
+                [--kind essay|letter|plan|memoir] [--tags a,b]
+                                  ask to write one of your Markdown works (never the journal) to
+                                  published/posts/<slug>.md, with its line in published/index.json, for
+                                  your own site to read; it waits for reflect approve, and runs only when
+                                  the presentation record passes the gate on personal-site
+  publish profile --presentation <id> [--name <name>] [--headline <line>] [--about <text>]
+                                  ask to write your public profile facts to published/profile.json
+  publish list                    what is in published/: each file, its presentation record and when you
+                                  approved it
+  unpublish <slug> | unpublish --profile
+                                  take a post or the profile out of published/ and its manifest
+  approve [<change id>]           the held changes waiting for you; with an id, approve one at the
+                                  terminal (you are the person, so a publish runs once its gate is ready)
+  decline <change id>             decline a held change; it never runs
   actions [--json]                the actions a vault offers, the same ones the app offers under the
                                   same names (today the journal's): id, tier, title and input
   act <action> [--input <json>]   run one against this vault, with its input as JSON; a change is kept
                                   in changes.jsonl
   mcp                             an MCP server over this vault on stdin and stdout, for your own AI:
                                   the same actions as tools
-  check [--adopt]                 check the instance, and each life record (a note per friend, group and
-                                  office) against its kind's schema; --adopt records hand-written
-                                  changes in memory
+  check [--adopt]                 check the instance, each life record (a note per friend, group and
+                                  office) against its kind's schema, and published/ against its schemas
+                                  and the manifest's hashes; --adopt records hand-written changes in memory
   export [--out <file>] [--moving-to <where>]
                                   the whole journal as a bundle (stdout or a file); --moving-to then
                                   records that the instance moved and refuses writes here
@@ -274,6 +290,12 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       means: { type: "string" },
       occasion: { type: "string" },
       virtue: { type: "string" },
+      presentation: { type: "string" },
+      slug: { type: "string" },
+      title: { type: "string" },
+      tags: { type: "string" },
+      headline: { type: "string" },
+      profile: { type: "boolean", default: false },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -316,7 +338,62 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
   const paths = recordPaths(layoutOf(config), config.person);
   const journal = filesJournal(root, config.person, { layout: layoutOf(config) });
   const presentations = filesPresentations(root, config.person);
-  const vault: VaultContext & { movedTo?: string } = { userId: config.person, journal, changes: filesChanges(root), presentations, ...(config.moved_to ? { movedTo: config.moved_to } : {}) };
+  const published = filesPublished(root);
+  const vault: VaultContext & { movedTo?: string } = {
+    userId: config.person,
+    journal,
+    changes: filesChanges(root),
+    presentations,
+    published,
+    readWork: (path) => readVaultWork(root, path),
+    personName: await readFile(join(root, paths.person, "person.json"), "utf8").then((t) => (JSON.parse(t) as { name?: string }).name, () => undefined),
+    ...(config.moved_to ? { movedTo: config.moved_to } : {}),
+  };
+  if (cmd === "publish") {
+    const [what] = rest;
+    if (!what) throw new Error("publish <work.md> --presentation <id>, publish profile --presentation <id>, or publish list");
+    if (what === "list") {
+      const index = await published.index();
+      for (const e of index.entries) out(`${e.path}  ${e.presentation}  ${e.channel}  approved ${e.approved_at.slice(0, 16).replace("T", " ")} by the ${e.approved_by}`);
+      if (!index.entries.length) out("nothing published yet: reflect publish <work.md> --presentation <id>");
+      return 0;
+    }
+    if (!values.presentation) throw new Error("--presentation <id> names the record that passes the gate; draft one with reflect present personal-site");
+    const input: Record<string, string> = what === "profile" ? { what: "profile", presentation: values.presentation } : { what: "post", presentation: values.presentation, file: what };
+    for (const k of ["slug", "title", "kind", "tags", "name", "headline", "about"] as const) if (values[k] !== undefined) input[k] = values[k]!;
+    const ran = await runVaultAction(vault, "publish_files", input, "cli");
+    if (!ran.held) throw new Error("publishing is always held");
+    out(`held: ${ran.changeId}\n${ran.preview}`);
+    out(ran.gate?.ready ? `Approve it: reflect approve ${ran.changeId}` : `Complete the record (reflect present personal-site --id ${values.presentation} ...), then: reflect approve ${ran.changeId}`);
+    return 0;
+  }
+  if (cmd === "unpublish") {
+    if (!values.profile && !rest[0]) throw new Error("unpublish <slug>, or unpublish --profile");
+    const input = values.profile ? { what: "profile" } : { what: "post", slug: rest[0] };
+    const ran = await runVaultAction(vault, "unpublish_files", input, "cli");
+    if (ran.held) throw new Error("unpublishing at the terminal is never held");
+    out(`removed ${(ran.result as { removed: string[] }).removed.join(", ")}`);
+    return 0;
+  }
+  if (cmd === "approve") {
+    if (!rest[0]) {
+      const list = await vaultRunner.pendingChanges(vault);
+      for (const c of list) out(`${c.id}  ${c.action}  from ${c.source}  until ${c.until.slice(0, 10)}\n  ${c.preview.split("\n").join("\n  ")}`);
+      if (!list.length) out("nothing is waiting for you");
+      return 0;
+    }
+    if (config.moved_to) throw new Error(`this instance moved to ${config.moved_to}; write there`);
+    const r = await vaultRunner.approveChange(vault, rest[0], "cli");
+    out(`approved: ${r.title}`);
+    out(typeof r.result === "string" ? r.result : JSON.stringify(r.result, null, 2));
+    return 0;
+  }
+  if (cmd === "decline") {
+    if (!rest[0]) throw new Error("decline <change id>");
+    const r = await vaultRunner.declineChange(vault, rest[0]);
+    out(`declined: ${r.title}`);
+    return 0;
+  }
   if (cmd === "act" && rest[0]) {
     let raw: unknown;
     try {

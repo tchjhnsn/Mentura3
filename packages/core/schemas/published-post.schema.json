@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "published-post.schema.json",
+  "title": "Published post front matter",
+  "description": "The YAML front matter of a post at published/posts/<slug>.md (Reflect framework plan, step 6). Each value is written as JSON, which YAML reads as it is. The body after the front matter is the work's Markdown. Only an essay, letter, plan or memoir is ever published; a journal entry never is. packages/core/src/published.ts writes and checks it.",
+  "type": "object",
+  "required": ["title", "date", "slug", "summary", "kind", "presentation", "channel"],
+  "additionalProperties": false,
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "format": "date-time", "description": "When it was first published" },
+    "updated": { "type": "string", "format": "date-time", "description": "When this version was published" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$", "description": "The file's name without .md" },
+    "summary": { "type": "string", "description": "The opening of the post, for lists and feeds" },
+    "kind": { "enum": ["essay", "letter", "plan", "memoir"] },
+    "tags": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+    "presentation": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The id of the presentation record that passed the gate" },
+    "channel": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+  }
+}

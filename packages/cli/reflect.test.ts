@@ -3,6 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { main } from "./reflect.ts";
+import { filesPublished } from "../core/src/files-published.ts";
+
+const filesPublishedOf = (dir: string) => filesPublished(dir).files();
 
 /** What `check` says of a vault that keeps no life records of the kinds a vault holds. */
 const NONE = "life records: none kept; checked belonging/friends (friends.friend), belonging/groups (friends.group), belonging/standing (polis.standing)";
@@ -749,7 +752,7 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     const listed = await run("actions");
-    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation"]);
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files"]);
     expect(JSON.parse((await run("actions", "--json")).out[0]!)[3]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
     const today = new Date().toISOString().slice(0, 10);
     const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
@@ -801,6 +804,59 @@ describe("reflect CLI", () => {
     await expect(run("present", "billboard", "--dir", dir)).rejects.toThrow(/no channel billboard/);
     await expect(run("present", "email", "--virtue", "courage", "--dir", dir)).rejects.toThrow(/--virtue is one of/);
     expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+  });
+
+  it("publishes a work and the profile to published/ only on the person's approve with a ready record, lists, checks and unpublishes", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    await mkdir(join(dir, "writing"));
+    await writeFile(join(dir, "writing", "on-craft.md"), "---\ntitle: On craft\nkind: essay\ntags: craft, work\n---\n\nThe work is the thing.\n");
+    const id = (await run("present", "personal-site", "--role", "writer", "--dir", dir)).out[0]!;
+
+    // Held, with what is still missing; approving it now is refused and writes nothing.
+    const held = await run("publish", "writing/on-craft.md", "--presentation", id, "--dir", dir);
+    const change = /^held: (\S+)/.exec(held.out[0]!)![1]!;
+    expect(held.out.join("\n")).toContain("Write published/posts/on-craft.md (\"On craft\", essay, from writing/on-craft.md)");
+    expect(held.out.join("\n")).toContain("Not ready to go out. Still needed: the end");
+    expect((await run("approve", "--dir", dir)).out[0]).toContain(`${change}  publish_files  from cli`);
+    await expect(run("approve", change, "--dir", dir)).rejects.toMatchObject({ reason: "not-presented" });
+    expect((await run("publish", "list", "--dir", dir)).out).toEqual(["nothing published yet: reflect publish <work.md> --presentation <id>"]);
+
+    // Once the record passes, the person approves at the terminal and the files are written.
+    await run("present", "personal-site", "--id", id, "--end", "share what I have thought through", "--audience", "readers", "--dir", dir);
+    const ok = await run("approve", change, "--dir", dir);
+    expect(ok.out[0]).toBe("approved: Publish to the published folder");
+    const post = await readFile(join(dir, "published", "posts", "on-craft.md"), "utf8");
+    expect(post).toContain('title: "On craft"\ndate: ');
+    expect(post).toContain(`tags: ["craft","work"]\npresentation: "${id}"\nchannel: "personal-site"\n---\n\nThe work is the thing.\n`);
+    await expect(run("approve", change, "--dir", dir)).rejects.toMatchObject({ reason: "already-made" });
+
+    const profile = await run("publish", "profile", "--presentation", id, "--headline", "Writes about craft", "--dir", dir);
+    const second = /^held: (\S+)/.exec(profile.out[0]!)![1]!;
+    expect(profile.out.at(-1)).toBe(`Approve it: reflect approve ${second}`);
+    await run("approve", second, "--dir", dir);
+    expect(JSON.parse(await readFile(join(dir, "published", "profile.json"), "utf8"))).toMatchObject({ name: "Tester", headline: "Writes about craft", presentation: id, channel: "personal-site" });
+    const list = (await run("publish", "list", "--dir", dir)).out;
+    expect(list.map((l) => l.split("  ").slice(0, 3).join("  "))).toEqual([`posts/on-craft.md  ${id}  personal-site`, `profile.json  ${id}  personal-site`]);
+    expect(list[0]).toMatch(/by the person$/);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+
+    // A hand edit to published/ fails the check; unpublishing takes the file and its line out.
+    await writeFile(join(dir, "published", "posts", "on-craft.md"), `${post}By hand.\n`);
+    const bad = await run("check", "--dir", dir);
+    expect(bad.code).toBe(1);
+    expect(bad.out).toContain("problem: published/posts/on-craft.md changed since the person approved it: its sha256 is not the manifest's");
+    expect((await run("unpublish", "on-craft", "--dir", dir)).out).toEqual(["removed published/posts/on-craft.md"]);
+    expect((await run("unpublish", "--profile", "--dir", dir)).out).toEqual(["removed published/profile.json"]);
+    expect([...(await filesPublishedOf(dir)).keys()]).toEqual(["index.json"]);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+
+    // Never the journal; a decline means it never runs.
+    await expect(run("publish", "journal/x.md", "--presentation", id, "--dir", dir)).rejects.toThrow(/never published/);
+    const third = /^held: (\S+)/.exec((await run("publish", "writing/on-craft.md", "--presentation", id, "--dir", dir)).out[0]!)![1]!;
+    expect((await run("decline", third, "--dir", dir)).out).toEqual(["declined: Publish to the published folder"]);
+    await expect(run("approve", third, "--dir", dir)).rejects.toMatchObject({ reason: "declined" });
   });
 
   it("refuses to run outside an instance", async () => {

@@ -264,6 +264,7 @@ const EXCLUDED: Record<string, string> = {
   "settings/site/actions.ts#pushSiteAction": "Pushes the person's site to their own GitHub through their GitHub connector, an outside service; it stays a tap on the page.",
   "settings/site/actions.ts#linkRepoAction": "Reads the person's own repository through their GitHub connector to link their self-hosted site; a tap on the Your own site on GitHub page.",
   "settings/site/actions.ts#unlinkRepoAction": "Stops committing posts to the person's linked repository; a setting tapped on the Your own site on GitHub page.",
+  "settings/site/actions.ts#setDataFolderAction": "Names the folder of the linked repository that gets profile.json and index.json; a setting typed on the Your own site on GitHub page.",
   "marketplace/actions.ts#addPluginAction": "Adds a plugin, whose skill then shapes every answer of Ask Reflect; the person chooses it on the plugin's page, never a model.",
   "marketplace/actions.ts#removePluginAction": "Removes a plugin the person added; a tap on the plugin's page, beside Add, so a model never changes its own instructions.",
   "marketplace/actions.ts#saveSkillAction": "Writes a skill that shapes every answer of Ask Reflect; the person writes it on the skill's page, so a model never writes its own instructions.",

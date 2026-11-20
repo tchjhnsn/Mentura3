@@ -1,11 +1,14 @@
-// A personal site the person hosts themselves, controlled from Reflect through GitHub (Torian, 2026-11-18 20:47Z).
-// Everything runs through the person's own GitHub connector from the marketplace: linking reads the repository to find
-// where its posts live; Publish commits the post there written the way the repository writes posts; Unpublish
-// removes that file; Ask Reflect reads and (after Send) writes any file. Their host redeploys on each push.
-import { cleanRepo, findPostsPlace, pickBranch, POST_FOLDERS, repoPostFile, repoPostPath, type PostsPlace } from "@reflect/core/site-repo";
-import { excerpt } from "@reflect/core/site";
+// A personal site the person hosts themselves (Torian, 2026-11-18 20:47Z), in its own repository. Reflect outputs files
+// and never the site's code (Torian, 2026-11-20 03:16Z, "Files out, no site code"): Publish delivers the post file and
+// the manifest that @reflect/core/published made through the presentation gate into the repository's content folders
+// only (the posts folder linking found, and a folder for profile.json and index.json, content/reflect unless the
+// person names another), and Unpublish takes the post and its manifest line out. Any other path is refused. Everything
+// runs through the person's own GitHub connector; their host redeploys on each push. Ask Reflect may read the
+// repository; the site's code is changed in its own repository, with Claude Code or Virtu.
+import { cleanRepo, contentPath, findPostsPlace, insideContent, pickBranch, POST_FOLDERS, type ContentPlace, type PostsPlace } from "@reflect/core/site-repo";
+import { emptyIndex, isGated, parseIndex, postPath, publishPost, slugOfPath, unpublish, type Approval, type Publication, type PublishedIndex } from "@reflect/core/published";
 import { callToolTexts, connectedTo, toolsOf, type Connection } from "./mcp-connections";
-import { postRepoPath, setPostRepoPath, siteOf, type Post, type SiteRepo } from "./site-store";
+import { postRepoPath, setPostRepoPath, siteDataFolder, siteOf, type Post, type SiteRepo } from "./site-store";
 
 const parse = (text: string): unknown => {
   try {
@@ -117,24 +120,51 @@ export async function myRepos(userId: string): Promise<string[]> {
   }
 }
 
-/** Writes one file to the site's repository as a commit on its branch (creating or replacing it). */
-export async function writeRepoFile(userId: string, path: string, content: string, message: string): Promise<{ path: string; repo: string }> {
+/** The linked repository and its content folders, or null when the site is not linked. */
+export async function contentPlaceOf(userId: string): Promise<{ site: SiteRepo; place: ContentPlace } | null> {
   const site = (await siteOf(userId)).repo;
-  if (!site) throw new Error("Your site is not linked to a repository (/settings/site/repo).");
+  if (!site) return null;
+  return { site, place: { posts: site.folder, ext: site.ext, data: await siteDataFolder(userId) } };
+}
+
+const outside = (site: SiteRepo, place: ContentPlace, path: string) =>
+  new Error(`Reflect writes only its content in ${site.repo}: posts in ${place.posts || "the top folder"}/ and profile.json and index.json in ${place.data}/. ${path} is outside them. Your site's code lives in its own repository; change it there with Claude Code or Virtu.`);
+
+/** Writes one file in the content folders as a commit on the branch. Refuses any path outside them. */
+export async function writeContentFile(userId: string, site: SiteRepo, place: ContentPlace, path: string, content: string, message: string): Promise<void> {
+  if (!insideContent(place, path)) throw outside(site, place, path);
   const c = await github(userId);
   const cur = await readRepoFile(userId, site.repo, path, site.branch);
   await callToolTexts(userId, c.id, "create_or_update_file", { ...split(site.repo), path, content, message, branch: site.branch, ...(cur?.sha ? { sha: cur.sha } : {}) });
-  return { path, repo: site.repo };
 }
 
-/** Removes one file from the site's repository as a commit. Missing files are fine. */
-export async function deleteRepoFile(userId: string, path: string, message: string): Promise<void> {
-  const site = (await siteOf(userId)).repo;
-  if (!site) return;
+/** Removes one file in the content folders as a commit. Missing files are fine; a path outside them is refused. */
+export async function deleteContentFile(userId: string, site: SiteRepo, place: ContentPlace, path: string, message: string): Promise<void> {
+  if (!insideContent(place, path)) throw outside(site, place, path);
   const c = await github(userId);
   const cur = await readRepoFile(userId, site.repo, path, site.branch);
   if (!cur) return;
   await callToolTexts(userId, c.id, "delete_file", { ...split(site.repo), path, message, branch: site.branch, ...(cur.sha ? { sha: cur.sha } : {}) });
+}
+
+/** The manifest in the repository's data folder, or an empty one. Throws on a file that is not Reflect's manifest. */
+export async function repoIndex(userId: string, site: SiteRepo, place: ContentPlace): Promise<PublishedIndex> {
+  const f = await readRepoFile(userId, site.repo, `${place.data}/index.json`, site.branch);
+  if (!f) return emptyIndex();
+  const r = parseIndex(f.text);
+  if (!r.index) throw new Error(`${place.data}/index.json in ${site.repo} is not Reflect's manifest (${r.problems[0]}); move it, or name another folder in Settings, Your site, Your own site on GitHub.`);
+  return r.index;
+}
+
+/** Delivers a publication made through the gate: its files into the content folders (the manifest last), then removals. */
+export async function deliver(userId: string, site: SiteRepo, place: ContentPlace, pub: Publication, message: string): Promise<string[]> {
+  if (!isGated(pub)) throw new Error("Only what passed the presentation gate is delivered to your site.");
+  const paths = pub.write.map((w) => contentPath(place, w.path));
+  const gone = pub.remove.map((r) => contentPath(place, r));
+  for (const p of [...paths, ...gone]) if (!insideContent(place, p)) throw outside(site, place, p);
+  for (const [i, w] of pub.write.entries()) await writeContentFile(userId, site, place, paths[i]!, w.bytes, message);
+  for (const p of gone) await deleteContentFile(userId, site, place, p, message);
+  return paths;
 }
 
 /** A file in the site's repository, for Ask Reflect: a folder's listing or a file's text. */
@@ -153,32 +183,36 @@ export async function browseRepo(userId: string, path: string): Promise<{ repo: 
   return { repo: site.repo, path: p, text: f.text.slice(0, 40_000) };
 }
 
+/** A post as the core's published/ export takes it: the same fields a vault's work gives. */
+export const postInput = (post: Post) => ({ slug: post.slug, title: post.title, kind: post.kind, body: post.body, date: post.publishedAt, updated: post.updatedAt });
+
 /**
- * Publishes a post to the site's repository when the site is linked: the file goes in the posts folder, written like
- * the posts already there. A renamed slug removes the old file. Returns the path, or null when the site is not linked.
+ * Delivers a post to the site's repository when the site is linked: the post file and the manifest the core made
+ * through the gate (`approval` is the record that passed and the person's approval), into the content folders. A
+ * renamed slug takes the old file and its manifest line out. Returns the post's path, or null when the site is not linked.
  */
-export async function publishToRepo(userId: string, post: Post): Promise<string | null> {
-  const site = (await siteOf(userId)).repo;
-  if (!site) return null;
-  const c = await github(userId);
-  const place = { folder: site.folder, ext: site.ext };
-  const path = repoPostPath(place, post.slug);
+export async function publishToRepo(userId: string, post: Post, approval: Approval): Promise<string | null> {
+  const at = await contentPlaceOf(userId);
+  if (!at) return null;
   const before = await postRepoPath(userId, post.id);
-  // An existing post shows how this repository writes front matter.
-  let sample: string | null = null;
-  const others = (await listFolder(userId, c, site.repo, site.folder, site.branch)).filter((p) => p !== path && p.endsWith(`.${site.ext}`));
-  if (others[0]) sample = (await readRepoFile(userId, site.repo, others[0], site.branch))?.text ?? null;
-  const file = repoPostFile({ slug: post.slug, title: post.title, kind: post.kind, body: post.body, summary: excerpt(post.body, 160), publishedAt: post.publishedAt, updatedAt: post.updatedAt }, sample);
-  await writeRepoFile(userId, path, file, `${before ? "Update" : "Publish"} "${post.title}" from Reflect`);
-  if (before && before !== path) await deleteRepoFile(userId, before, `Move "${post.title}" to ${path} from Reflect`);
+  const was = before ? before.slice(before.lastIndexOf("/") + 1).replace(/\.mdx?$/, "") : undefined;
+  const pub = publishPost(await repoIndex(userId, at.site, at.place), approval, postInput(post), was ? { replaces: was } : {});
+  await deliver(userId, at.site, at.place, pub, `${before ? "Update" : "Publish"} "${post.title}" from Reflect`);
+  const path = contentPath(at.place, postPath(post.slug));
   await setPostRepoPath(userId, post.id, path);
   return path;
 }
 
-/** Removes a post's file from the site's repository when it was written there. */
+/** Takes a post's file and its manifest line out of the site's repository when it was delivered there. */
 export async function unpublishFromRepo(userId: string, post: Post): Promise<void> {
   const path = await postRepoPath(userId, post.id);
-  if (!path) return;
-  await deleteRepoFile(userId, path, `Unpublish "${post.title}" from Reflect`);
+  const at = await contentPlaceOf(userId);
+  if (!path || !at) return;
+  const slug = path.slice(path.lastIndexOf("/") + 1).replace(/\.mdx?$/, "");
+  const index = await repoIndex(userId, at.site, at.place);
+  const entry = index.entries.find((e) => e.kind === "post" && slugOfPath(e.path) === slug);
+  if (entry) await deliver(userId, at.site, at.place, unpublish(index, entry.path), `Unpublish "${post.title}" from Reflect`);
+  // A post delivered before the manifest existed has no line in it; its file still goes when it is in the posts folder.
+  else if (insideContent(at.place, path)) await deleteContentFile(userId, at.site, at.place, path, `Unpublish "${post.title}" from Reflect`);
   await setPostRepoPath(userId, post.id, null);
 }

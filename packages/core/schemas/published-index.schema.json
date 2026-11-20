@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "published-index.schema.json",
+  "title": "Published index",
+  "description": "The manifest of a published/ folder (Reflect framework plan, step 6): every file that went out through the presentation gate, with its sha256, the presentation record that passed the gate, its channel, when the person approved it, and who approved it (always the person). Reflect writes it at published/index.json. A site that consumes the folder reads it; the site's repository keeps it at content/reflect/index.json unless the person names another folder. packages/core/src/published.ts writes and checks it.",
+  "type": "object",
+  "required": ["format", "entries"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "format": { "const": 1, "description": "The version of this layout" },
+    "entries": {
+      "type": "array",
+      "description": "One entry per file, sorted by path. index.json itself is not listed.",
+      "items": {
+        "type": "object",
+        "required": ["path", "kind", "sha256", "presentation", "channel", "approved_at", "approved_by"],
+        "additionalProperties": false,
+        "properties": {
+          "path": { "type": "string", "pattern": "^(profile\\.json|posts/[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?\\.md)$", "description": "The file's path inside published/" },
+          "kind": { "enum": ["post", "profile"] },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of the file's bytes, in hex" },
+          "presentation": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The id of the presentation record that passed the gate" },
+          "channel": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The presentation policy channel it went out on" },
+          "approved_at": { "type": "string", "format": "date-time" },
+          "approved_by": { "const": "person", "description": "Only the person approves; an agent may draft and check" }
+        }
+      }
+    }
+  }
+}

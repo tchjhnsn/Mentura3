@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/server/session";
 import { profileSettings } from "@/server/profile-store";
 import { profileHref } from "@/server/actions/profiles";
-import { postById, republishPost, unpublishWork } from "@/server/site-store";
-import { publishToRepo, unpublishFromRepo } from "@/server/site-repo";
+import { republishPost, unpublishWork } from "@/server/site-store";
+import { unpublishFromRepo } from "@/server/site-repo";
 import { fromPage } from "@/server/actions/page";
 import { OCCASIONS, VIRTUE_IDS } from "@reflect/core/presentation";
 import { draftPresentationAction, publishToSiteAction, SITE_CHANNEL, type Published } from "@/server/actions/presentations";
@@ -13,8 +13,9 @@ import { draftPresentationAction, publishToSiteAction, SITE_CHANNEL, type Publis
 // Publishing a journal work to the person's own site (doc "Personal site and blog design guide", 2026-11-18), through
 // the presentation gate (Reflect framework plan, step 6). The Publish sheet drafts the work's presentation record
 // (draft_presentation) and shows the gate's answer; Publish runs publish_to_site from the page, which holds it, and the
-// person's tap approves it (source page) only when the record passes the gate. Unpublish and its Undo are not gated:
-// one takes the post down, and the other puts back the post the person approved before.
+// person's tap approves it (source page) only when the record passes the gate. Unpublish is not gated: it takes the
+// post down, and its file and manifest line out of the linked repository. Its Undo puts the post back on Reflect only:
+// the repository gets files only through the gate, so the person publishes again to put it back there.
 
 export type { Published };
 const fail = (e: unknown, fallback: string) => ({ error: e instanceof Error ? e.message : fallback });
@@ -92,13 +93,11 @@ export async function unpublishWorkAction(workId: string): Promise<{ postId: str
   }
 }
 
-/** Undo of Unpublish: the post back as it was. */
+/** Undo of Unpublish: the post back on Reflect as it was. The linked repository gets it again with Publish. */
 export async function republishAction(postId: string): Promise<{ ok: true } | { error: string }> {
   const user = await requireUser();
   try {
     await republishPost(user.id, String(postId));
-    const p = await postById(user.id, String(postId));
-    if (p) await publishToRepo(user.id, p).catch(() => undefined);
     revalidatePath(profileHref({ id: user.id, handle: (await profileSettings(user.id)).handle }));
     return { ok: true };
   } catch (e) {

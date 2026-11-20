@@ -239,9 +239,9 @@ export type MarketPlugin = {
 export const PLUGINS: readonly MarketPlugin[] = [
   {
     id: "own-site", name: "Your own site", by: "Reflect", category: "build", connectors: ["github"],
-    line: "Work on the site you host yourself from Ask Reflect.",
-    does: ["Read your site's files and explain them", "Change a page, a style or a post when you ask, after you tap Send"],
-    skill: "When the person asks about or wants to change the site they host themselves, read it with site_files (start at the top folder, then the file). Make the smallest change that does what they asked, keep the site's own style and conventions, and write it with site_edit with the file's whole new text, a plain commit message and a presentation record on personal-site that passes the gate (the ready one site_files gives, when they say it covers this change, else one drafted with draft_presentation, such as role site owner and end maintain my site); it waits for their Send. Posts are published from the journal with Publish, not written here. If no repository is linked, point them to Settings, Your site, Your own site on GitHub (/settings/site/repo).",
+    line: "Read the site you host yourself from Ask Reflect; publish your posts into it.",
+    does: ["Read your site's files and explain them", "Deliver the posts you publish, and Reflect's manifest, into your site's content folders"],
+    skill: "When the person asks about the site they host themselves, read it with site_files (start at the top folder, then the file) and explain what is there. Reflect does not change a site's code or pages: never offer to, and never write to its repository with connector_act (it is refused). When they want the site changed, say that its code lives in its own repository and is changed there, with Claude Code or Virtu. Posts reach it only when the person publishes a work with Publish (publish_to_site, after its presentation record passes the gate): the post file goes to the posts folder and Reflect's manifest to content/reflect/. If no repository is linked, point them to Settings, Your site, Your own site on GitHub (/settings/site/repo).",
   },
   {
     id: "site-launch", name: "Launch your site", by: "Reflect", category: "build", connectors: ["vercel", "cloudflare"],

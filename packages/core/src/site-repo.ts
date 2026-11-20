@@ -1,8 +1,9 @@
-// A personal site the person hosts themselves, controlled from Reflect through GitHub (Torian, 2026-11-18 20:47Z:
-// "reflect should just be able to control the personal website (if it isn't hosted by reflect) through github").
-// The site's repository is theirs; Reflect writes posts into it as commits through their GitHub connector and their
-// host redeploys on push. Pure: the repository's name, where its posts live, and a post written the way that
-// repository already writes them.
+// A personal site the person hosts themselves, in its own repository (Torian, 2026-11-18 20:47Z). Since 2026-11-20
+// ("Files out, no site code") Reflect does not edit the site: it delivers the files of its published/ folder
+// (./published.ts) into the repository's content folders only, the posts folder and a folder for profile.json and
+// index.json, through the person's GitHub connector, and their host redeploys on push. The site's code is written in
+// its own repository, with Claude Code or Virtu. Pure: the repository's name, where its posts live, where each
+// published file lands, and whether a path is inside the content folders.
 
 /** "owner/name" from what someone typed: owner/name, or a github.com address. Null when it is neither. */
 export function cleanRepo(raw: unknown): string | null {
@@ -41,48 +42,6 @@ export function findPostsPlace(paths: readonly string[]): PostsPlace | null {
   return best ? { folder: best.folder, ext: extOf(byFolder.get(best.folder)!) } : null;
 }
 
-/** The keys of a Markdown file's front matter, in order, and whether its strings are single-quoted. */
-export function frontMatterStyle(text: string): { keys: string[]; quote: "'" | '"' } {
-  const m = /^---\r?\n([\s\S]*?)\r?\n---/.exec(text);
-  const lines = (m?.[1] ?? "").split(/\r?\n/).filter((l) => /^[A-Za-z_][\w-]*:/.test(l));
-  const keys = lines.map((l) => l.slice(0, l.indexOf(":")).trim());
-  const single = lines.filter((l) => /:\s*'/.test(l)).length;
-  const double = lines.filter((l) => /:\s*"/.test(l)).length;
-  return { keys, quote: single > double ? "'" : '"' };
-}
-
-export type RepoPost = { slug: string; title: string; kind: string; body: string; summary: string; publishedAt: string; updatedAt: string };
-
-const DATE = /^(publishedAt|published|date|pubDate|publishDate|created)$/;
-const UPDATED = /^(updatedAt|updated|lastmod|modified|updatedDate)$/;
-const SUMMARY = /^(summary|description|excerpt|subtitle)$/;
-
-/**
- * One post as a Markdown file written the way the repository already writes its posts: the front matter keys of an
- * existing post (title, a date, an updated date, a summary, a kind), in its order and quote style. Keys Reflect cannot
- * fill are left out. With no existing post it writes Reflect's own export format (title, kind, published, updated).
- */
-export function repoPostFile(p: RepoPost, sample: string | null): string {
-  const style = sample ? frontMatterStyle(sample) : null;
-  const keys = style?.keys.length ? style.keys : ["title", "kind", "published", "updated"];
-  const q = (s: string) => (style?.quote === "'" ? `'${s.replace(/'/g, "''")}'` : JSON.stringify(s));
-  const own = !!style?.keys.length;
-  const day = (iso: string) => (own ? q(iso.slice(0, 10)) : iso);
-  const out: string[] = [];
-  let summaryDone = false;
-  for (const k of keys) {
-    if (k === "title") out.push(`title: ${q(p.title)}`);
-    else if (DATE.test(k)) out.push(`${k}: ${day(p.publishedAt)}`);
-    else if (UPDATED.test(k)) out.push(`${k}: ${day(p.updatedAt)}`);
-    else if (SUMMARY.test(k) && !summaryDone && k !== "subtitle") {
-      out.push(`${k}: ${q(p.summary)}`);
-      summaryDone = true;
-    } else if (k === "kind" || k === "category") out.push(`${k}: ${own ? q(p.kind) : p.kind}`);
-  }
-  if (!out.some((l) => l.startsWith("title:"))) out.unshift(`title: ${q(p.title)}`);
-  return `---\n${out.join("\n")}\n---\n\n${p.body.trim()}\n`;
-}
-
 /** A post's path in the repository. */
 export const repoPostPath = (place: PostsPlace, slug: string) => `${place.folder ? `${place.folder}/` : ""}${slug}.${place.ext}`;
 
@@ -103,34 +62,39 @@ export function namesRepo(args: unknown, repo: string): boolean {
   return [a.repo, a.repository, a.full_name].some((v) => cleanRepo(v)?.toLowerCase() === want);
 }
 
-/** Each line of `a` not matched by a line of `b`, counting repeated lines, in `a`'s order. */
-function unmatched(a: readonly string[], b: readonly string[]): string[] {
-  const left = new Map<string, number>();
-  for (const l of b) left.set(l, (left.get(l) ?? 0) + 1);
-  return a.filter((l) => {
-    const n = left.get(l) ?? 0;
-    if (n === 0) return true;
-    left.set(l, n - 1);
-    return false;
-  });
+/** Where profile.json and index.json land in the site's repository unless the person names another folder. */
+export const DEFAULT_DATA_FOLDER = "content/reflect";
+
+/** A folder in a repository as someone typed it: relative, no "..", no leading or trailing slash. Null otherwise. */
+export function cleanFolder(raw: unknown): string | null {
+  const f = String(raw ?? "").trim().replace(/^\/+|\/+$/g, "");
+  if (!f || f.length > 200 || !/^[A-Za-z0-9._\/-]+$/.test(f)) return null;
+  return f.split("/").some((part) => part === "" || part === "." || part === "..") ? null : f;
+}
+
+const SLUG_PART = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
+
+/** The content folders of the site's repository: the posts folder with its extension, and the folder for the data. */
+export type ContentPlace = { posts: string; ext: "md" | "mdx"; data: string };
+
+/**
+ * Where a file of published/ lands in the site's repository: a post in the posts folder (with the folder's extension),
+ * profile.json and index.json in the data folder. Any other path is refused.
+ */
+export function contentPath(place: ContentPlace, publishedPath: string): string {
+  const post = /^posts\/([a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?)\.md$/.exec(publishedPath);
+  if (post) return repoPostPath({ folder: place.posts, ext: place.ext }, post[1]!);
+  if (publishedPath === "profile.json" || publishedPath === "index.json") return `${place.data}/${publishedPath}`;
+  throw new Error(`Reflect delivers only its posts, profile.json and index.json; ${publishedPath} is none of them.`);
 }
 
 /**
- * What a commit writing one file will change, for the person to read before Send: a new file or a change, the lines
- * added and removed, and the first few changed lines. `before` is the file as it is now, null when it is new.
+ * Whether a repository path is inside the content folders: a post file directly in the posts folder, or profile.json
+ * or index.json in the data folder. Reflect writes nothing else in the site's repository.
  */
-export function commitSummary(path: string, before: string | null, after: string, show = 6): string {
-  const lines = (t: string) => (t === "" ? [] : t.replace(/\n$/, "").split("\n"));
-  const cut = (l: string) => (l.length > 160 ? `${l.slice(0, 160)}...` : l);
-  const next = lines(after);
-  if (before === null) {
-    const shown = next.slice(0, show).map((l) => `+ ${cut(l)}`);
-    return [`New file ${path}, ${next.length} ${next.length === 1 ? "line" : "lines"}.`, ...shown, ...(next.length > show ? ["..."] : [])].join("\n");
-  }
-  if (before === after) return `${path} stays the same: the new text is the file as it is.`;
-  const prev = lines(before);
-  const removed = unmatched(prev, next);
-  const added = unmatched(next, prev);
-  const shown = [...removed.slice(0, Math.ceil(show / 2)).map((l) => `- ${cut(l)}`), ...added.map((l) => `+ ${cut(l)}`)].slice(0, show);
-  return [`Changes ${path}: ${added.length} added, ${removed.length} removed.`, ...shown, ...(added.length + removed.length > shown.length ? ["..."] : [])].join("\n");
+export function insideContent(place: ContentPlace, repoPath: string): boolean {
+  if (repoPath === `${place.data}/profile.json` || repoPath === `${place.data}/index.json`) return true;
+  const prefix = place.posts ? `${place.posts}/` : "";
+  if (!repoPath.startsWith(prefix) || !repoPath.endsWith(`.${place.ext}`)) return false;
+  return SLUG_PART.test(repoPath.slice(prefix.length, -(place.ext.length + 1)));
 }
