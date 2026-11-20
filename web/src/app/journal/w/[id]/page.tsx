@@ -9,6 +9,7 @@ import { postForWork, subscriberCount } from "@/server/site-store";
 import { siteCanSend } from "@/server/site-connectors";
 import { profileSettings } from "@/server/profile-store";
 import { profileHref } from "@/server/actions/profiles";
+import { sitePresenting, type SitePresenting } from "@/server/actions/presentations";
 import { Editor } from "./editor";
 
 export const metadata: Metadata = { title: "Journal" };
@@ -21,11 +22,12 @@ export default async function WorkPage({ params }: { params: Promise<{ id: strin
   const [work, ideals, subjects] = await Promise.all([getWork(user.id, id), idealsOf(user.id).catch(() => []), subjectNames(user.id).catch(() => [])]);
   if (!work) notFound();
   // An essay, letter, plan or memoir can go on the person's site; the journal's other kinds never show Publish.
-  let site: { base: string; post: { slug: string; href: string; updatedAt: string } | null; mail: { via: string | null; subscribers: number } } | null = null;
+  let site: { base: string; post: { slug: string; href: string; updatedAt: string } | null; mail: { via: string | null; subscribers: number }; presenting: SitePresenting | null } | null = null;
   if (isPublishable(work.kind)) {
-    const [settings, post, can, subscribers] = await Promise.all([profileSettings(user.id), postForWork(user.id, work.id).catch(() => null), siteCanSend(user.id).catch(() => ({ via: null })), subscriberCount(user.id).catch(() => 0)]);
+    // The presentation gate (Reflect framework plan, step 6): the site channel's rules and the last record on it.
+    const [settings, post, can, subscribers, presenting] = await Promise.all([profileSettings(user.id), postForWork(user.id, work.id).catch(() => null), siteCanSend(user.id).catch(() => ({ via: null })), subscriberCount(user.id).catch(() => 0), sitePresenting(user.id).catch(() => null)]);
     const base = profileHref({ id: user.id, handle: settings.handle });
-    site = { base, post: post ? { slug: post.slug, href: `${base}/${post.slug}`, updatedAt: post.updatedAt } : null, mail: { via: can.via, subscribers } };
+    site = { base, post: post ? { slug: post.slug, href: `${base}/${post.slug}`, updatedAt: post.updatedAt } : null, mail: { via: can.via, subscribers }, presenting };
   }
   return <Editor work={work} ideals={ideals} subjects={subjects} site={site} />;
 }

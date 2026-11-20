@@ -30,8 +30,9 @@ const LINKEDIN = ["import_linkedin", "linkedin_matches", "linkedin_connections",
 // The dashboard (2026-11-18): read its cards; show, hide, move or size one; what it shows as facts; the morning brief's opt-in.
 const DASHBOARD = ["dashboard", "set_dashboard_card", "dashboard_today", "set_morning_brief"];
 // The person's own site (Personal site and blog, 2026-11-18): read it; change its template and its design (the Virtu
-// editor, 2026-11-18). Publishing is a tap only.
-const SITE = ["site", "set_site_template", "site_design", "set_site_design"];
+// editor, 2026-11-18). The presentation gate (Reflect framework plan, step 6): draft and check a presentation record,
+// and ask to publish a work, which always waits for the person's approval on a page.
+const SITE = ["site", "set_site_template", "site_design", "set_site_design", "draft_presentation", "check_presentation", "publish_to_site"];
 // The marketplace (2026-11-18): the person's connectors, a tool that only reads, and one that waits for Send.
 const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "site_edit", "plugins"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
@@ -108,7 +109,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "life_schema", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
+    expect(readOnly).toEqual(["reflect_guide", "life_schema", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "check_presentation", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
@@ -125,6 +126,11 @@ describe("the action registry", () => {
     for (const id of ["budget", "set_budget", "budget_step"]) expect(actionById(id)!.description).toContain("not a licensed financial advisor");
   });
 
+  it("declares the site publish as the one publishing action, on channel personal-site, naming its presentation record", () => {
+    expect(ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes, a.tier])).toEqual([["publish_to_site", "personal-site", "outside"]]);
+    expect(Object.keys((actionById("publish_to_site")!.input as unknown as { shape: object }).shape)).toContain("presentation");
+  });
+
   it("lists every action some surface offers", () => {
     expect(ACTIONS.map((a) => a.id).sort()).toEqual([...new Set([...CHAT_TOOLS, ...MCP_TOOLS])].sort());
   });
@@ -135,14 +141,9 @@ describe("the action registry", () => {
 describe("the vault's actions in the app", () => {
   it("match the app's entries", async () => {
     const { z } = await import("zod");
-    const { VAULT_ACTIONS, VAULT_ONLY } = await import("@reflect/core/vault-actions");
+    const { VAULT_ACTIONS } = await import("@reflect/core/vault-actions");
     for (const v of VAULT_ACTIONS) {
       const a = actionById(v.id);
-      // The presentation gate's actions are the vault's alone until the app keeps presentation records.
-      if (VAULT_ONLY.includes(v.id)) {
-        expect(a, v.id).toBeUndefined();
-        continue;
-      }
       expect(a, v.id).toBeDefined();
       expect({ id: a!.id, title: a!.title, description: a!.description, tier: a!.tier, on: a!.on }).toEqual({ id: v.id, title: v.title, description: v.description, tier: v.tier, on: v.on });
       const app = a!.input ? (z.toJSONSchema(a!.input, { io: "input" }) as { properties?: object; required?: string[] }) : { properties: {}, required: [] };
