@@ -1,10 +1,11 @@
-// The person record's JSON Schema (draft 2020-12), from `PersonState` in ./person.ts: facts, relationships and holds,
+// The person record's JSON Schema (draft 2020-12), from `PersonState` in ./person.ts: facts, relationships, holds and
+// attributes (telos, ambitions, passions, values, strengths, weaknesses, puzzles, unfair advantages, constraints),
 // each with its dates and the source of its value (./value-source.ts, shared as `$defs.source`). Under `x-reflect` it
 // carries the noun person with its category, kind of good and community, read from ./terms/ontology.json as the life
 // schemas do. `web/scripts/life-schemas.ts` writes it to packages/core/schemas/person.schema.json (`pnpm schemas`,
 // `--check`). The key lists are typed against person.ts, so a key added there and not here fails the type check.
 // `personProblems` checks a record against it with ./schema-check.ts, for `reflect check` and tests. Pure: no I/O.
-import type { Fact, Hold, PersonState, Relationship } from "./person.ts";
+import { ATTRIBUTE_KINDS, CONFIDENCES, type Attribute, type Fact, type Hold, type PersonState, type Relationship } from "./person.ts";
 import { schemaProblems, type Schema } from "./schema-check.ts";
 import { categoryOfNoun, nounNamed, ONTOLOGY, type Category, type Community, type Good, type Ontology } from "./terms/ontology.ts";
 import { SOURCE_JSON_SCHEMA } from "./value-source.ts";
@@ -25,7 +26,11 @@ const source = { $ref: "#/$defs/source" } as const;
 const FACT = keysOf<Fact>()(["key", "value", "validFrom", "validTo", "recordedAt", "source", "status"]);
 const RELATIONSHIP = keysOf<Relationship>()(["name", "kind", "validFrom", "validTo", "recordedAt", "source"]);
 const HOLD = keysOf<Hold>()(["subject", "value", "validFrom", "validTo", "source"]);
-const PERSON = keysOf<PersonState>()(["facts", "relationships", "holds"]);
+const ATTRIBUTE = keysOf<Attribute>()(["kind", "text", "validFrom", "validTo", "recordedAt", "source", "status", "evidence", "confidence"]);
+const ATTRIBUTE_REQUIRED: readonly (keyof Attribute)[] = ["kind", "text", "validFrom", "validTo", "recordedAt", "source", "status"];
+const PERSON = keysOf<PersonState>()(["facts", "relationships", "holds", "attributes"]);
+/** The keys a stored person record must have: attributes came later, so an older record without them still passes. */
+const PERSON_REQUIRED = ["facts", "relationships", "holds"] as const;
 
 export type PersonSchema = Schema & {
   $schema: "https://json-schema.org/draft/2020-12/schema";
@@ -42,9 +47,9 @@ export function personSchema(o: Ontology = ONTOLOGY): PersonSchema {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: "urn:reflect:schema:person",
     title: "Person",
-    description: "What the person has said about themselves: facts, relationships and holds. Nothing is overwritten: a new value closes the open one by giving it validTo. Each value names its source.",
+    description: "What the person has said about themselves: facts, relationships, holds, and attributes (what they aim at and what they are made of: telos, ambitions, passions, values, strengths, weaknesses, puzzles, unfair advantages, constraints). Nothing is overwritten: a new value closes the open one by giving it validTo. Each value names its source.",
     type: "object",
-    required: [...PERSON],
+    required: [...PERSON_REQUIRED],
     additionalProperties: false,
     properties: {
       facts: {
@@ -98,6 +103,26 @@ export function personSchema(o: Ontology = ONTOLOGY): PersonSchema {
           },
         },
       },
+      attributes: {
+        type: "array",
+        description: `What the person aims at and is made of, the attributes of the founder's puzzle. Several of each kind may hold at once. ${ATTRIBUTE_KINDS.map((k) => `${k.id}: ${k.line} (${k.ref})`).join("; ")}.`,
+        items: {
+          type: "object",
+          required: [...ATTRIBUTE_REQUIRED],
+          additionalProperties: false,
+          properties: {
+            kind: { enum: ATTRIBUTE_KINDS.map((k) => k.id) },
+            text: textOf("The attribute in words, the person's own once confirmed."),
+            validFrom: { ...day, description: "The day it began to hold, or was first said." },
+            validTo: openDay,
+            recordedAt: { ...day, description: "The day Reflect recorded it." },
+            source,
+            status: { enum: ["proposed", "confirmed"], description: "Confirmed when stated or when the person confirmed it; an assistant's reading stays proposed." },
+            evidence: textOf("What the proposal rests on, when an assistant proposed it."),
+            confidence: { enum: [...CONFIDENCES], description: "How sure the proposer was." },
+          },
+        },
+      },
     },
     $defs: { source: SOURCE_JSON_SCHEMA as unknown as Schema },
     "x-reflect": { noun: noun.noun, category, good: noun.good, community: noun.community },
@@ -114,11 +139,12 @@ export const personSchemaFile = (o: Ontology = ONTOLOGY): string => `${JSON.stri
 export function personProblems(raw: unknown, where = "person"): string[] {
   const out = schemaProblems(personSchema(), raw, where);
   if (out.length) return out;
-  const facts = (raw as { facts: { source: { kind: string; status?: string }; status: string }[] }).facts;
-  facts.forEach((f, i) => {
-    const want = f.source.kind === "stated" ? "confirmed" : f.source.status;
-    if (f.status !== want) out.push(`${where}.facts[${i}].status is ${want}, as its source is`);
-  });
+  const rec = raw as Record<"facts" | "attributes", { source: { kind: string; status?: string }; status: string }[] | undefined>;
+  for (const key of ["facts", "attributes"] as const)
+    (rec[key] ?? []).forEach((f, i) => {
+      const want = f.source.kind === "stated" ? "confirmed" : f.source.status;
+      if (f.status !== want) out.push(`${where}.${key}[${i}].status is ${want}, as its source is`);
+    });
   return out;
 }
 

@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Built on 2026-11-20: a JSON Schema for the person record, and sources as a closed enumeration for every field value (see "Sources of a value"). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and the audit of the app's stored life records (`pnpm check:life` in `web/`) was run on the dev database on 2026-11-20 (234 of 234 stored bodies pass) and not yet on production. A vault's three life kinds (friends, groups and offices) are checked by `reflect check`, and the web app checks every kind's body against its schema before each write and on each read (`web/src/server/life-validate.ts`).
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Built on 2026-11-20: a JSON Schema for the person record, the person's attributes (telos, ambitions and the rest of the founder's puzzle, see "The person's attributes"), and sources as a closed enumeration for every field value (see "Sources of a value"). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and the audit of the app's stored life records (`pnpm check:life` in `web/`) was run on the dev database on 2026-11-20 (234 of 234 stored bodies pass) and not yet on production. A vault's three life kinds (friends, groups and offices) are checked by `reflect check`, and the web app checks every kind's body against its schema before each write and on each read (`web/src/server/life-validate.ts`).
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -83,6 +83,24 @@ Records that are themselves information, such as journal entries, reflections, A
 What is not built yet:
 
 - The term engine, which in Naive checks each term's properties label-blind, has not been copied. The check above is structural only.
+
+## The person's attributes
+
+Torian said on 2026-11-20 that the person schema must show telos, ambitions and the rest of what the founder's puzzle finds (Torian's playbook, step one, know the founder, 2026-10-30). The person record (`PersonState` in `packages/core/src/person.ts`, `person.schema.json`) now holds `attributes` beside facts, relationships and holds. Each attribute has a kind, its text, its dates, its source and its status, plus evidence and confidence when an assistant proposed it. A person has several of each kind:
+
+| Kind | What it is | Where Aristotle treats it |
+|---|---|---|
+| `telos` | the end everything else is for | Nicomachean Ethics I.7 |
+| `ambition` | what the person wants to bring about, a goal with an end | NE III.4, wish is for the end |
+| `passion` | what they love doing or thinking about for its own sake | NE X.4-5 |
+| `value` | what they hold good and will not trade away | NE I.8, the three goods |
+| `strength` | what they do well, by nature or by habit | NE II.1, II.5, a state (hexis) |
+| `weakness` | where they fall short or overdo it | NE II.6, excess and deficiency |
+| `puzzle` | the problem their life keeps working on | Metaphysics III.1, aporia |
+| `unfair-advantage` | what they have that others cannot easily get | NE I.8, external goods as instruments |
+| `constraint` | what limits what they can do now | NE III.3, deliberation is about what is in our power |
+
+A founder's puzzle report (`naive.founder-puzzle-source` v1) is read by `attributesFromPuzzle` in `packages/core/src/founder-puzzle.ts`: every attribute and the puzzle statement come in as imports, proposed, and the person confirms each one that is theirs. In a vault, `reflect attributes` lists them, `reflect attribute <kind> <text>` states one, `reflect attribute confirm <n>` and `close <n>` confirm or close one, and `reflect puzzle import <report.json>` reads a report into `person.json`. Nothing is overwritten: closing gives `validTo`. Not built: attributes in the web app (its Postgres person tables do not keep them yet), and the telos records in `telos/` and the serves links of `lean/Reflect/Telos.lean` are not yet tied to telos attributes.
 
 ## Sources of a value
 
