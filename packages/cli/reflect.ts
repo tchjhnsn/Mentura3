@@ -194,8 +194,10 @@ const USAGE = `reflect <command> [--dir <instance>]
                 [--status active|quiet|dormant|archived] [--last-activity YYYY-MM-DD]
                 [--foreshadow <one line>] [--pinned]
                 [--problem <sentence>] [--cause <sentence>] [--solution <sentence>]
+                [--type <schema.org type>] [--genre <LCGFT term>]
                                   keep a work at <end>/<id>.json (writing it at another end moves it).
                                   Problem, cause and solution are one sentence each, shown for a public work only.
+                                  Type defaults to the section's (doing takes only Action or Event).
                                   Sections: making projects, products, writing, art, crafts; knowing
                                   research, study, reading; doing service, care, civic, talks, events
   quote "<the exact words>" [--speaker <name>] [--source journal|conversation|book|talk|post|letter|reflect|other]
@@ -346,6 +348,8 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       problem: { type: "string" },
       cause: { type: "string" },
       solution: { type: "string" },
+      type: { type: "string" },
+      genre: { type: "string" },
       source: { type: "string", multiple: true },
       link: { type: "string", multiple: true },
       "last-activity": { type: "string" },
@@ -498,6 +502,8 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       title: values.title ?? "",
       section: values.section ?? "",
       disclosure: values.disclosure ?? "",
+      ...(values.type ? { type: values.type } : {}),
+      ...(values.genre ? { genre: values.genre } : {}),
       ...(values.summary ? { summary: values.summary } : {}),
       ...(values.problem ? { problem: values.problem } : {}),
       ...(values.cause ? { cause: values.cause } : {}),

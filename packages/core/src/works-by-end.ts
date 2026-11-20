@@ -44,6 +44,40 @@ export type Section = keyof typeof SECTIONS;
 export const SECTION_IDS = Object.keys(SECTIONS) as Section[];
 export const sectionsOf = (end: End): Section[] => SECTION_IDS.filter((s) => SECTIONS[s] === end);
 
+/**
+ * What kind of thing a work is, as a schema.org type (Torian, 2026-11-20 22:03Z). A closed list: the CreativeWork
+ * types a person's works fall under, Product for things sold, and Action and Event for doing, whose end is the act
+ * itself, so neither standard counts it as a work. LCGFT (the Library of Congress Genre/Form Terms) gives the finer
+ * `genre`, as the journal's kinds already do (./works.ts).
+ */
+export const WORK_TYPES = [
+  "CreativeWork", "Article", "BlogPosting", "Book", "Thesis", "ScholarlyArticle", "Report", "Dataset",
+  "SoftwareSourceCode", "SoftwareApplication", "WebSite", "VisualArtwork", "Photograph", "MusicComposition",
+  "MusicRecording", "VideoObject", "PodcastSeries", "Course", "LearningResource", "PresentationDigitalDocument",
+  "Message", "Product", "Action", "Event",
+] as const;
+export type WorkType = (typeof WORK_TYPES)[number];
+/** The types whose end is the act itself: a doing section takes only these, and the other ends never take them. */
+export const ACT_TYPES: readonly WorkType[] = ["Action", "Event"];
+/** A section's type when its work names none. */
+export const SECTION_TYPES: Record<Section, WorkType> = {
+  projects: "CreativeWork",
+  products: "Product",
+  writing: "Article",
+  art: "VisualArtwork",
+  crafts: "VisualArtwork",
+  research: "ScholarlyArticle",
+  study: "Course",
+  reading: "Book",
+  service: "Action",
+  care: "Action",
+  civic: "Action",
+  talks: "Event",
+  events: "Event",
+};
+/** A work's schema.org type: its own, else its section's. */
+export const typeOf = (r: Pick<WorkRecord, "section" | "type">): WorkType => r.type ?? SECTION_TYPES[r.section];
+
 /** How a work stands, from its sources' evidence where a source gives it (the site's own status words). */
 export const STATUSES = ["active", "quiet", "dormant", "archived"] as const;
 export type Status = (typeof STATUSES)[number];
@@ -61,6 +95,10 @@ export type WorkRecord = {
   section: Section;
   disclosure: Disclosure;
   summary?: string;
+  /** Its schema.org type (`WORK_TYPES`); when missing, its section's (`SECTION_TYPES`). */
+  type?: WorkType;
+  /** Its genre or form, as an LCGFT term such as "Essays" or "Computer programs". */
+  genre?: string;
   /** The problem the work addresses, in one sentence. */
   problem?: string;
   /** The problem's root cause, in one sentence. */
@@ -77,7 +115,7 @@ export type WorkRecord = {
 
 /** One work in published/works.json. */
 export type PublishedWork =
-  | ({ disclosure: "public"; id: string; title: string; end: End; section: Section } & Pick<WorkRecord, "summary" | "problem" | "cause" | "solution" | "sources" | "status" | "last_activity" | "pinned" | "links">)
+  | ({ disclosure: "public"; id: string; title: string; end: End; section: Section; type: WorkType } & Pick<WorkRecord, "genre" | "summary" | "problem" | "cause" | "solution" | "sources" | "status" | "last_activity" | "pinned" | "links">)
   | { disclosure: "foreshadow"; end: End; section: Section; foreshadow: string };
 
 export const RECORD_SCHEMA = recordSchema as unknown as Schema;
@@ -117,6 +155,11 @@ export function workRecordProblems(end: End, raw: unknown, at = "work"): string[
     const v = r[f];
     if (v !== undefined && !isOneSentence(v)) out.push(`${at}: ${f} must be one sentence, ending with ".", "?" or "!"`);
   }
+  if (r.type) {
+    const act = ACT_TYPES.includes(r.type);
+    if (end === "doing" && !act) out.push(`${at}: a doing work is an act, so its type is Action or Event, not ${r.type}`);
+    if (end !== "doing" && act) out.push(`${at}: ${r.type} is for doing; a ${end} work is a thing made or known`);
+  }
   return out;
 }
 
@@ -136,6 +179,8 @@ export function shownWork(end: End, id: string, r: WorkRecord): PublishedWork | 
     title: r.title.trim(),
     end,
     section: r.section,
+    type: typeOf(r),
+    ...(r.genre?.trim() ? { genre: r.genre.trim() } : {}),
     ...(r.summary?.trim() ? { summary: r.summary.trim() } : {}),
     ...(r.problem?.trim() ? { problem: r.problem.trim() } : {}),
     ...(r.cause?.trim() ? { cause: r.cause.trim() } : {}),
