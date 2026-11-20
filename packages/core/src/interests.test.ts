@@ -14,22 +14,22 @@ describe("interest levels", () => {
   });
 
   it("tells the three runners apart", () => {
-    const walker: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "now-and-then", role: "participant", skill: "copy" }, source: "told" };
-    const once: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "goal", skill: "steady", goal: { what: "one marathon", by: "2027-04-19" } }, source: "told" };
-    const lifer: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "way-of-life", role: "competitor", skill: "second-nature" }, source: "told" };
+    const walker: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "now-and-then", role: "participant", skill: "copy" }, source: "stated" };
+    const once: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "goal", skill: "steady", goal: { what: "one marathon", by: "2027-04-19" } }, source: "stated" };
+    const lifer: Interest = { ref: "wd:Q1640", title: "running", do: { commitment: "way-of-life", role: "competitor", skill: "second-nature" }, source: "stated" };
     expect(sentence(walker, "do")).toBe("You do running: now and then, at Copy, as a participant.");
     expect(sentence(once, "do")).toBe("You do running: toward a goal, at Steady, goal: one marathon by 2027-04-19.");
     expect(sentence(lifer, "do")).toBe("You do running: way of life, at Second nature, as a competitor.");
   });
 
   it("reads a boxing fan as Know, never as done", () => {
-    const fan: Interest = { ref: "wd:Q32112", title: "boxing", know: { commitment: "now-and-then", ways: ["watching"], depth: "follows", details: { footwork: "studies" } }, source: "told" };
+    const fan: Interest = { ref: "wd:Q32112", title: "boxing", know: { commitment: "now-and-then", ways: ["watching"], depth: "follows", details: { footwork: "studies" } }, source: "stated" };
     expect(sentence(fan, "know")).toBe("You follow boxing: now and then, follows it.");
     expect(sentence(fan, "make")).toBeNull();
   });
 
   it("maps a Scholē craft onto commitment and skill", () => {
-    expect(fromCraft({ ref: "baking", title: "Baking", state: "practising", stage: "Competent" })).toEqual({ ref: "craft:baking", title: "Baking", make: { commitment: "regular", skill: "precise" }, source: "told" });
+    expect(fromCraft({ ref: "baking", title: "Baking", state: "practising", stage: "Competent" })).toEqual({ ref: "craft:baking", title: "Baking", make: { commitment: "regular", skill: "precise" }, source: "stated" });
     expect(fromCraft({ ref: "joinery", title: "Joinery", state: "drawn" }).make).toEqual({ commitment: "curious", skill: undefined });
   });
 });

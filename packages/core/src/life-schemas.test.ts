@@ -81,3 +81,25 @@ describe("life schemas", () => {
     }
   });
 });
+
+describe("sources in the life schemas", () => {
+  it("every schema takes _sources from a declared field to a source, and refuses an undeclared key or a bad source", () => {
+    for (const { app, kind } of KINDS) {
+      const json = z.fromJSONSchema(JSON.parse(readFileSync(new URL(`${app}.${kind.id}.schema.json`, DIR), "utf8")));
+      const [a, b] = kind.fields;
+      const sources = { [a!.key]: { kind: "journal", entry: "e1", quote: "A line from the entry.", status: "proposed" }, ...(b ? { [b.key]: { kind: "stated" } } : {}) };
+      expect(json.safeParse({ _sources: sources }).success, `${app}:${kind.id}`).toBe(true);
+      expect(json.safeParse({ _sources: { "not-a-field": { kind: "stated" } } }).success, `${app}:${kind.id} undeclared key`).toBe(false);
+      expect(json.safeParse({ _sources: { [a!.key]: { kind: "journal", entry: "e1" } } }).success, `${app}:${kind.id} no quote`).toBe(false);
+      expect(json.safeParse({ _sources: { [a!.key]: { kind: "told" } } }).success, `${app}:${kind.id} unknown kind`).toBe(false);
+      expect(kind.fields.some((f) => f.key.startsWith("_")), `${app}:${kind.id} has a field key starting with _`).toBe(false);
+    }
+  });
+
+  it("every choice field emits enum, its option ids", () => {
+    for (const { app, kind } of KINDS) {
+      const s = lifeSchema(app, kind);
+      for (const f of kind.fields.filter((x) => x.kind === "choice")) expect(s.properties[f.key], `${app}:${kind.id}.${f.key}`).toMatchObject({ type: "string", enum: (f.options ?? []).map((o) => o.id) });
+    }
+  });
+});

@@ -36,7 +36,7 @@ describe("interests", () => {
   it("picks a book as something followed, unpicks it, picks it again, and undoes the first pick", async () => {
     const b = await pickInterest.before!(ctx, { ref: "b-meditations", picked: true });
     const r = await pickInterest.run(ctx, { ref: "b-meditations", picked: true });
-    expect((await myInterests("me"))[0]).toMatchObject({ ref: "b-meditations", area: "books", modes: ["know"], source: "told" });
+    expect((await myInterests("me"))[0]).toMatchObject({ ref: "b-meditations", area: "books", modes: ["know"], source: "stated" });
     await pickInterest.run(ctx, { ref: "b-meditations", picked: false });
     expect(await myInterests("me")).toHaveLength(0);
     await pickInterest.run(ctx, { ref: "b-meditations", picked: true });
@@ -99,7 +99,7 @@ describe("interests", () => {
 
     const mine = await myInterests("me");
     expect(mine.map((i) => i.ref)).toEqual(["b-meditations", "craft:baking"]);
-    expect(mine[1]).toMatchObject({ id: "c1", modes: ["make"], area: null, item: null, source: "told", make: { commitment: "regular", skill: "adapts" }, craft: { id: "baking", state: "practising", learned: ["experience"], made: [{ day: "2026-11-12", note: "Focaccia" }] } });
+    expect(mine[1]).toMatchObject({ id: "c1", modes: ["make"], area: null, item: null, source: "stated", make: { commitment: "regular", skill: "adapts" }, craft: { id: "baking", state: "practising", learned: ["experience"], made: [{ day: "2026-11-12", note: "Focaccia" }] } });
     expect((await myInterests("me", { crafts: false })).map((i) => i.ref)).toEqual(["b-meditations"]);
 
     const all = await interests.run(ctx, { path: "" }) as { count: number; interests: { ref: string }[] };

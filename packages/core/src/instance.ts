@@ -14,6 +14,7 @@ import { wikiProblems } from "./wiki.ts";
 import { presentationProblems } from "./files-presentations.ts";
 import { LEGACY_TEMPLATES, LIFETIME_FOLDERS, lifetimeProblems } from "./lifetime.ts";
 import { checkLifeRecords, lifeProblemLine, type LifeCheck } from "./life-check.ts";
+import { personFileProblems } from "./person-schema.ts";
 import { readRecord, writeRecord } from "./record-io.ts";
 import { planProblems, readPlan } from "./release.ts";
 import { rename, rmdir } from "node:fs/promises";
@@ -190,7 +191,8 @@ export type CheckResult = { problems: string[]; outside: string[]; life: LifeChe
 
 /**
  * Check an instance. Problems fail: a config that is not one, a broken memory chain, a grant that names
- * the journal, entries or reflections, a life record that does not match its kind's schema. `outside` lists records written or changed without reflect (by hand, say in
+ * the journal, entries or reflections, a life record that does not match its kind's schema, facts, relationships or
+ * holds in person.json that do not match the person schema. `outside` lists records written or changed without reflect (by hand, say in
  * the GitHub app). That is allowed; `adopt` records them in memory. Drafts (`*.draft.json`) are the
  * reader's guesses, not records, so they are never in memory.
  */
@@ -218,6 +220,8 @@ export async function checkInstance(root: string): Promise<CheckResult> {
   problems.push(...(await documentProblems(root, p)), ...(await lifetimeProblems(root, p)));
   const life = await checkLifeRecords(root, p);
   problems.push(...life.problems.map(lifeProblemLine));
+  const personFile = join(p.person, "person.json");
+  problems.push(...personFileProblems(await readFile(join(root, personFile), "utf8").catch(() => null), personFile));
   if (!p.person) {
     try {
       problems.push(...(await planProblems(root, await readPlan(root))).problems);

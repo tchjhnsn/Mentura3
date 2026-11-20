@@ -5,7 +5,7 @@
  * (`./interests`): drawn is Curious, trying is Tried it, practising is Regular practice, and the Dreyfus stage maps
  * onto skill (Novice Copy, Advanced beginner Steady, Competent Precise, Proficient Adapts, Expert Second nature). What
  * only a craft has (its group, what drew the person, how it was learned, who vouches, what was tried and made, its
- * first project and its page) rides along as `craft`. The source is "told": the person kept the craft themselves. Writing crafts as
+ * first project and its page) rides along as `craft`. The source is stated: the person kept the craft themselves. Writing crafts as
  * interest records is not built. Pure: no I/O.
  */
 import { CRAFT_STATES, LEARNED, STAGES, craftOf, firstProjectOf, type CraftState, type GroupId, type Learned, type Stage } from "./crafts";
