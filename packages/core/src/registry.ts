@@ -120,6 +120,13 @@ export type Action<Ctx, S extends StandardSchema = StandardSchema, R = unknown, 
   preview?(ctx: Ctx, input: InferOutput<S>): string | Promise<string>;
   /** Puts back what a logged run changed. Only own-tier actions have it; left out, the change cannot be undone. */
   undo?(ctx: Ctx, change: LoggedChange): Promise<void>;
+  /**
+   * For an action that puts something before others on only some runs (`connector_act` in the app writes to the
+   * person's site repository on some calls and to other services on most): whether this run does. Asked when the run
+   * is asked for and again when it is approved. Left out, every run of a `publishes` action does. A run it says no to
+   * is an ordinary run of the action's tier.
+   */
+  publishesIf?(ctx: Ctx, input: InferOutput<S>): boolean | Promise<boolean>;
   /** MCP's own wording, where it differs from the chat's: the same fields, other words. */
   mcp?: { description?: string; input?: Base };
 };
@@ -244,7 +251,7 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
   async function runAction<S extends StandardSchema, R>(a: Action<Ctx, S, R, StandardSchema>, given: Ctx, input: InferOutput<S>, source: Source): Promise<Ran<R>> {
     if (a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a.title} is never run for a model.` });
     const ctx: Ctx = { ...given, origin: given.origin ?? source };
-    if (a.publishes !== undefined) {
+    if (await publishing(ctx, a, input)) {
       // A publishing action never runs straight away, whoever asks: it waits for its presentation record and the person.
       const gate = await gateOf(ctx, a, input);
       const said = a.preview ? await a.preview(ctx, input) : plainPreview(a.title, input);
@@ -265,6 +272,12 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
       const changeId = await host.changes(ctx).add({ userId: ctx.userId, actionId: a.id, source, tier: a.tier, input: (a.logged ? a.logged(input) : input) ?? {}, before: c.before ?? null, after: c.after ?? null });
       return { held: false as const, result, changeId };
     });
+  }
+
+  /** Whether this run of the action publishes: it has a channel, and its `publishesIf`, if any, says this run does. */
+  async function publishing<S extends StandardSchema>(ctx: Ctx, a: Action<Ctx, S, unknown, StandardSchema>, input: InferOutput<S>): Promise<boolean> {
+    if (a.publishes === undefined) return false;
+    return a.publishesIf ? Boolean(await a.publishesIf(ctx, input)) : true;
   }
 
   /** The gate for a publishing action: the host's, or not presented when the host has none. */
@@ -323,7 +336,7 @@ export function makeRunner<Ctx extends RunContext, A extends Action<Ctx, Standar
     if (!a || a.tier === "never") throw new Refused({ reason: "not-offered", message: `${a?.title ?? c.actionId} cannot be run here.` });
     const now = ctx.now ?? new Date();
     if (!canApprove(c, now)) throw new Refused({ reason: "too-old", message: `A held change waits ${HOLD_DAYS} days; this one is older. Ask again.` });
-    if (a.publishes !== undefined) {
+    if (await publishing(ctx, a, c.input)) {
       if (AGENT_SOURCES.includes(by)) throw new Refused({ reason: "person-only", message: `Only the person approves what goes out on ${a.publishes}. An agent may draft and check, and never approves.` });
       const gate = await gateOf(ctx, a, c.input);
       if (!gate.ready) throw new Refused({ reason: "not-presented", message: gateText(gate) });

@@ -140,7 +140,12 @@ describe("the gate", () => {
 
   it("refuses a role and end no rule allows, and lists the channel's rules", () => {
     const g = gateFor(policy(), draft({ role: "citizen", end: "win an argument", audience: "anyone" }), "personal-site");
-    expect(g).toEqual({ ready: false, missing: [{ item: "rule", message: "no rule on personal-site lets you speak as citizen for that end; its rules: as founder, to show what I make and whom it serves (pages about your work); as writer, to share what I have thought through (essays and notes)" }] });
+    expect(g).toEqual({ ready: false, missing: [{ item: "rule", message: "no rule on personal-site lets you speak as citizen for that end; its rules: as founder, to show what I make and whom it serves (pages about your work); as writer, to share what I have thought through (essays and notes); as site owner, to maintain my site (changes to the site's code, design and pages)" }] });
+  });
+
+  it("lets the site owner commit a change to the site's code under the default policy", () => {
+    const g = gateFor(policy(), draft({ role: "Site owner", end: "maintain my site", audience: "anyone who looks me up" }), "personal-site");
+    expect(g).toMatchObject({ ready: true, rule: { role: "site owner", end: "maintain my site" } });
   });
 
   it("refuses a record on another channel and a channel the policy lacks", () => {

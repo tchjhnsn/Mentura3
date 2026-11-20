@@ -88,3 +88,49 @@ export const repoPostPath = (place: PostsPlace, slug: string) => `${place.folder
 
 /** The branch to write to: main, else master, else the first one listed. */
 export const pickBranch = (branches: readonly string[]): string | null => (branches.includes("main") ? "main" : branches.includes("master") ? "master" : branches[0] ?? null);
+
+/**
+ * Whether a GitHub tool's arguments name this repository ("owner/name"): `owner` with `repo`, or a whole name in
+ * `repo`, `repository` or `full_name`, in any case. It tells a write to the person's site repository, which goes
+ * public when their host redeploys, from a write anywhere else.
+ */
+export function namesRepo(args: unknown, repo: string): boolean {
+  if (!args || typeof args !== "object") return false;
+  const a = args as Record<string, unknown>;
+  const want = repo.toLowerCase();
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  if (str(a.owner) && str(a.repo) && `${str(a.owner)}/${str(a.repo)}`.toLowerCase() === want) return true;
+  return [a.repo, a.repository, a.full_name].some((v) => cleanRepo(v)?.toLowerCase() === want);
+}
+
+/** Each line of `a` not matched by a line of `b`, counting repeated lines, in `a`'s order. */
+function unmatched(a: readonly string[], b: readonly string[]): string[] {
+  const left = new Map<string, number>();
+  for (const l of b) left.set(l, (left.get(l) ?? 0) + 1);
+  return a.filter((l) => {
+    const n = left.get(l) ?? 0;
+    if (n === 0) return true;
+    left.set(l, n - 1);
+    return false;
+  });
+}
+
+/**
+ * What a commit writing one file will change, for the person to read before Send: a new file or a change, the lines
+ * added and removed, and the first few changed lines. `before` is the file as it is now, null when it is new.
+ */
+export function commitSummary(path: string, before: string | null, after: string, show = 6): string {
+  const lines = (t: string) => (t === "" ? [] : t.replace(/\n$/, "").split("\n"));
+  const cut = (l: string) => (l.length > 160 ? `${l.slice(0, 160)}...` : l);
+  const next = lines(after);
+  if (before === null) {
+    const shown = next.slice(0, show).map((l) => `+ ${cut(l)}`);
+    return [`New file ${path}, ${next.length} ${next.length === 1 ? "line" : "lines"}.`, ...shown, ...(next.length > show ? ["..."] : [])].join("\n");
+  }
+  if (before === after) return `${path} stays the same: the new text is the file as it is.`;
+  const prev = lines(before);
+  const removed = unmatched(prev, next);
+  const added = unmatched(next, prev);
+  const shown = [...removed.slice(0, Math.ceil(show / 2)).map((l) => `- ${cut(l)}`), ...added.map((l) => `+ ${cut(l)}`)].slice(0, show);
+  return [`Changes ${path}: ${added.length} added, ${removed.length} removed.`, ...shown, ...(added.length + removed.length > shown.length ? ["..."] : [])].join("\n");
+}

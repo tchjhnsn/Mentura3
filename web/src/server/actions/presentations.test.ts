@@ -175,7 +175,7 @@ describe("the site publish through the presentation gate", () => {
   });
 
   it("gives the Publish sheet the site channel's rules and the last record on it", async () => {
-    expect(await sitePresenting("u1", ctx.presentations)).toMatchObject({ rules: [{ role: "founder" }, { role: "writer" }], audience: "anyone who looks you up", repo: "tchjhnsn/tcjcafe", last: null });
+    expect(await sitePresenting("u1", ctx.presentations)).toMatchObject({ rules: [{ role: "founder" }, { role: "writer" }, { role: "site owner" }], audience: "anyone who looks you up", repo: "tchjhnsn/tcjcafe", last: null });
     await draft({ role: "writer", end: "share what I have thought through", audience: "readers" });
     expect((await sitePresenting("u1", ctx.presentations))?.last).toEqual({ role: "writer", end: "share what I have thought through", audience: "readers", relation: "" });
   });
