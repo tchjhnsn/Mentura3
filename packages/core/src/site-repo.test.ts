@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanRepo, findPostsPlace, frontMatterStyle, pickBranch, repoPostFile, repoPostPath } from "./site-repo";
+import { cleanRepo, commitSummary, findPostsPlace, frontMatterStyle, namesRepo, pickBranch, repoPostFile, repoPostPath } from "./site-repo";
 
 const post = { slug: "on-craft", title: "On craft", kind: "essay", body: "The work.\n", summary: "About the work.", publishedAt: "2026-11-18T20:00:00.000Z", updatedAt: "2026-11-18T21:00:00.000Z" };
 
@@ -33,5 +33,21 @@ describe("site repository", () => {
     expect(pickBranch(["dev", "master"])).toBe("master");
     expect(pickBranch(["main", "master"])).toBe("main");
     expect(pickBranch([])).toBeNull();
+  });
+
+  it("tells whether a GitHub tool's arguments name the site's repository", () => {
+    expect(namesRepo({ owner: "TchJhnsn", repo: "tcjcafe", path: "a" }, "tchjhnsn/tcjcafe")).toBe(true);
+    expect(namesRepo({ repo: "https://github.com/tchjhnsn/tcjcafe.git" }, "tchjhnsn/tcjcafe")).toBe(true);
+    expect(namesRepo({ full_name: "tchjhnsn/tcjcafe" }, "tchjhnsn/tcjcafe")).toBe(true);
+    expect(namesRepo({ owner: "tchjhnsn", repo: "other" }, "tchjhnsn/tcjcafe")).toBe(false);
+    expect(namesRepo({ title: "tchjhnsn/tcjcafe" }, "tchjhnsn/tcjcafe")).toBe(false);
+    expect(namesRepo(null, "tchjhnsn/tcjcafe")).toBe(false);
+  });
+
+  it("says what a commit of one file will change", () => {
+    expect(commitSummary("app/page.tsx", null, "a\nb\n")).toBe("New file app/page.tsx, 2 lines.\n+ a\n+ b");
+    expect(commitSummary("app/page.tsx", "a\nb\nc\n", "a\nB\nc\nd\n")).toBe("Changes app/page.tsx: 2 added, 1 removed.\n- b\n+ B\n+ d");
+    expect(commitSummary("x.md", "same", "same")).toBe("x.md stays the same: the new text is the file as it is.");
+    expect(commitSummary("x.md", null, "1\n2\n3\n4", 2)).toBe("New file x.md, 4 lines.\n+ 1\n+ 2\n...");
   });
 });

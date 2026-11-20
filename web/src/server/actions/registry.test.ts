@@ -126,9 +126,13 @@ describe("the action registry", () => {
     for (const id of ["budget", "set_budget", "budget_step"]) expect(actionById(id)!.description).toContain("not a licensed financial advisor");
   });
 
-  it("declares the site publish as the one publishing action, on channel personal-site, naming its presentation record", () => {
-    expect(ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes, a.tier])).toEqual([["publish_to_site", "personal-site", "outside"]]);
-    expect(Object.keys((actionById("publish_to_site")!.input as unknown as { shape: object }).shape)).toContain("presentation");
+  it("declares the site publish, the site edit and the connector act as publishing on channel personal-site, each naming its presentation record", () => {
+    expect(ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes, a.tier, Boolean(a.publishesIf)])).toEqual([
+      ["connector_act", "personal-site", "outside", true],
+      ["site_edit", "personal-site", "outside", false],
+      ["publish_to_site", "personal-site", "outside", false],
+    ].sort((x, y) => ACTIONS.findIndex((a) => a.id === x[0]) - ACTIONS.findIndex((a) => a.id === y[0])));
+    for (const id of ["publish_to_site", "site_edit", "connector_act"]) expect(Object.keys((actionById(id)!.input as unknown as { shape: object }).shape)).toContain("presentation");
   });
 
   it("lists every action some surface offers", () => {
