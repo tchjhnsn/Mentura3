@@ -4,7 +4,8 @@
 // `reflect` CLI and an MCP server over a vault (./vault-mcp.ts) offer the same actions under the same names and words.
 // Today that is the guide, the life schemas (`life_schema`, a kind's shape and where the ontology places it), the
 // journal (listing entries, writing one and reading one) and the presentation gate's drafting and checking
-// (./presentation.ts, Reflect framework plan step 6), which the app does not offer yet.
+// (./presentation.ts, Reflect framework plan step 6), which the app offers over its Postgres presentations
+// (web/src/server/actions/presentations.ts).
 import { acceptLocalDate, type Entry } from "./journal.ts";
 import type { IsoDate } from "./person.ts";
 import type { Journal } from "./store.ts";
@@ -79,7 +80,7 @@ export const DRAFT_PRESENTATION = {
   description:
     "Draft or update the record of one appearance before others, in person or in public view, in the person's own words: the channel (from their presentation policy), who acts and in what role, what, about what or to whom, by what means, for what end, how, the occasion (deliberative, judicial or ceremonial), the audience and their relation to them, and the virtue at stake. Give id to update a draft; a field left out stays, an empty one clears. Returns what the gate still needs. Drafting never approves.",
   tier: "own",
-  on: ["mcp"],
+  on: ["chat", "mcp"],
 } as const satisfies ActionDecl;
 
 export const CHECK_PRESENTATION = {
@@ -87,7 +88,7 @@ export const CHECK_PRESENTATION = {
   title: "Check a presentation",
   description: "Whether a presentation record is ready to pass the gate on its channel, or what it still needs (the end, the role, the audience, a channel rule that matches), with the channel's checks and how to preview it. Checking never approves.",
   tier: "read",
-  on: ["mcp"],
+  on: ["chat", "mcp"],
 } as const satisfies ActionDecl;
 
 /** A gate verdict as an action returns it. */
@@ -199,12 +200,6 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
     run: async ({ presentations }, { id }) => checkPresentationIn(presentations, id),
   }),
 ];
-
-/**
- * The vault's actions the app does not offer yet: the presentation gate's, whose records have no Postgres store. Every
- * other vault action is one of the app's, under the same id and words (web/src/server/actions/registry.test.ts).
- */
-export const VAULT_ONLY: readonly string[] = [DRAFT_PRESENTATION.id, CHECK_PRESENTATION.id];
 
 export const vaultActionById = (id: string): VaultAction | undefined => VAULT_ACTIONS.find((a) => a.id === id);
 

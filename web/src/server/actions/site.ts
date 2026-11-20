@@ -1,7 +1,8 @@
 // The person's own site and blog as actions (doc "Personal site and blog design guide", 2026-11-18): Ask Reflect
 // reads what is on the site (its template, address, posts and subscriber count) and changes its template and its
-// design (colors and type, checked by Virtu like its sections in Settings, Appearance). Publishing
-// and unpublishing are a tap on the work's page only, never offered to a model (page-actions.test.ts says why).
+// design (colors and type, checked by Virtu like its sections in Settings, Appearance). Publishing a work is
+// publish_to_site (./presentations.ts), which goes through the presentation gate and only the person approves;
+// unpublishing is a tap on the work's page only (page-actions.test.ts says why).
 import { z } from "zod";
 import { TEMPLATES, isTemplate, readingMinutes, type TemplateId } from "@reflect/core/site";
 import { profileSettings } from "../profile-store";

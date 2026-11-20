@@ -2,17 +2,20 @@
 // change log, an own-tier change can be undone by the same person within 30 days, and a shared or outside action
 // asked for from the chat or MCP does not run: it is held with a preview until the person taps Keep or Send.
 // The runner is the core's (@reflect/core/registry, Reflect framework plan step 4); this file is the app's host for
-// it: the Postgres change log, the Postgres transaction, the app's registry, and the plans a held step resumes.
+// it: the Postgres change log, the Postgres transaction, the app's registry, the plans a held step resumes, and the
+// presentation gate (Reflect framework plan, step 6) over the person's presentations in Postgres, so a publishing
+// action (`publishes`, such as publish_to_site) waits for a record that passes the gate and the person's approval.
 import type { z } from "zod";
 import { makeRunner, type Ran } from "@reflect/core/registry";
 import { transaction } from "@/db/pool";
 import { postgresChanges } from "../action-change-store";
+import { postgresPresentations, presentationGate } from "../presentation-store";
 import type { Action, ActionContext, ChangeLog, LoggedChange, Source } from "./types";
 import { actionById } from "./index";
 import { resumeAfterApproval, stopAfterDecline, type PlanView } from "./workflows";
 
 export { HOLD_DAYS, UNDO_DAYS } from "./limits";
-export { canApprove, holds, plainPreview, type Pending, type Ran } from "@reflect/core/registry";
+export { canApprove, gateText, holds, plainPreview, type Gate, type Pending, type Ran } from "@reflect/core/registry";
 
 export const changesOf = (ctx: ActionContext): ChangeLog => ctx.changes ?? postgresChanges;
 
@@ -32,6 +35,9 @@ const runner = makeRunner<ActionContext, Action, { plan: PlanView }>({
   afterDecline: async (ctx, c, title) => {
     if (c.source === "workflow") await stopAfterDecline(ctx, c.id, title).catch((err: Error) => console.error(`reflect: could not stop a plan: ${err.message}`));
   },
+  // A publishing action names its presentation record by id in its input's `presentation` field, as in a vault.
+  gate: (ctx, channel, input) =>
+    presentationGate(ctx.presentations ?? postgresPresentations(ctx.userId), input && typeof input === "object" ? (input as { presentation?: unknown }).presentation : undefined, channel),
 });
 
 /**

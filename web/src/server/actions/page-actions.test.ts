@@ -4,6 +4,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import * as vaultActions from "@reflect/core/vault-actions";
 import { actionById } from "./index";
 
 const APP = join(__dirname, "..", "..", "app");
@@ -48,6 +49,10 @@ const ROUTED: Record<string, string[]> = {
   "p/[key]/actions.ts#connectFromProfile": ["connect_with"],
   "p/[key]/actions.ts#setAudienceFromProfile": ["set_section_audience"],
   "settings/site/actions.ts#setTemplateFromSettings": ["set_site_template"],
+  // The Publish sheet, through the presentation gate (Reflect framework plan, step 6): draft the record, then publish,
+  // which is held and runs only on the person's tap with a record that passes the gate.
+  "journal/w/[id]/publish-actions.ts#draftSitePresentationAction": ["draft_presentation"],
+  "journal/w/[id]/publish-actions.ts#publishWorkAction": ["publish_to_site"],
   // Settings, Account (Profiles and accounts, 2026-11-18)
   "settings/account/actions.ts#saveHandleAction": ["set_handle"],
   "settings/account/actions.ts#saveNameAction": ["set_name"],
@@ -265,9 +270,8 @@ const EXCLUDED: Record<string, string> = {
   "marketplace/actions.ts#toggleSkillAction": "Turns one of the person's skills on or off; a switch beside the skill, so a model never changes its own instructions.",
   "marketplace/actions.ts#removeSkillAction": "Removes one of the person's skills; a tap on the skill's page, so a model never changes its own instructions.",
   "settings/site/actions.ts#deploySiteAction": "Deploys the person's site to their own Vercel through their Vercel connector, an outside service; it stays a tap on the page.",
-  "journal/w/[id]/publish-actions.ts#publishWorkAction": PUBLISH,
-  "journal/w/[id]/publish-actions.ts#unpublishWorkAction": PUBLISH,
-  "journal/w/[id]/publish-actions.ts#republishAction": PUBLISH,
+  "journal/w/[id]/publish-actions.ts#unpublishWorkAction": "Taking a post down from the person's site removes what is public; it stays the person's tap on the work's page and is not gated, since nothing new goes before others.",
+  "journal/w/[id]/publish-actions.ts#republishAction": "Undo of Unpublish puts back the post the person approved through the presentation gate before; it stays a tap on the toast.",
   "schole/actions.ts#publishQuoteAction": PUBLISH,
   "schole/actions.ts#unpublishQuoteAction": PUBLISH,
   "schole/actions.ts#publishLessonAction": PUBLISH,
@@ -410,7 +414,13 @@ describe("every page action is on the registry", () => {
     // Registry entries by their exported name, from the files of this folder.
     const idOf = new Map<string, string>();
     for (const f of readdirSync(__dirname).filter((n) => n.endsWith(".ts") && !n.endsWith(".test.ts"))) {
-      for (const m of readFileSync(join(__dirname, f), "utf8").matchAll(/export const (\w+) = action\(\{\s*id: "(\w+)"/g)) idOf.set(m[1]!, m[2]!);
+      const src = readFileSync(join(__dirname, f), "utf8");
+      for (const m of src.matchAll(/export const (\w+) = action\(\{\s*id: "(\w+)"/g)) idOf.set(m[1]!, m[2]!);
+      // An entry built from a core declaration (@reflect/core/vault-actions), such as draft_presentation, by its spread.
+      for (const m of src.matchAll(/export const (\w+) = action\(\{\s*\.\.\.(\w+),/g)) {
+        const decl = (vaultActions as Record<string, unknown>)[m[2]!] as { id?: string } | undefined;
+        if (decl?.id) idOf.set(m[1]!, decl.id);
+      }
     }
     for (const a of list.filter((x) => x.key in ROUTED && !(x.key in DIRECT))) {
       const src = readFileSync(join(APP, a.file), "utf8");
