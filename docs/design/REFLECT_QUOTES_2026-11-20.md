@@ -154,3 +154,13 @@ Torian, 2026-11-20 06:51Z: "go". Step 1, the core:
 - Lean: `lean/Reflect/Quotes.lean`.
 
 One change from the shape above: a tag's target is the quote or claim whose file holds it, so a tag carries no `target` field.
+
+Torian, 2026-11-20 08:57Z: "go". Steps 2 to 4, the app:
+
+- Migration 0065: tables `quote` and `quote_tag`, both append-only by trigger. A tag sits on a quote or on a claim (`learn_claim` stays the claim); `legacy` names the older row a quote or tag came from, unique per person, so copying runs again without doubling.
+- `web/src/server/quotes-store.ts`: reads and writes quotes and tags, each checked by the core. The first read of a person's quotes copies their stances (a Reflect quote with claim and act tags), claim sources (a journal quote linked to the work), domains, kinds and origins (tags on the claim) once, under a lock.
+- The claims, book and log stores now write and read quotes and tags; the older stance, source, domain, kind and origin tables are no longer written.
+- Learn: the shelves say "You said so", "You said not" and "You asked", and a claim opens `/schole/claims/<id>`: what you said over time, who else says it, and its domain, kind, origins and the ideal it serves.
+- Actions `keep_quote`, `tag_quote` and `read_quotes` on MCP, with the core's inputs. A tag from anywhere but a page is the assistant's and comes in proposed.
+
+Not built: dropping the older tables (they stay as the backfill's source), and a page to keep a quote by hand.

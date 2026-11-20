@@ -453,10 +453,9 @@ export const vaultActionById = (id: string): VaultAction | undefined => VAULT_AC
 /**
  * The vault's actions the app does not offer under the same name: the app keeps works in Postgres and publishes one
  * with publish_to_site (web/src/server/actions/presentations.ts), which writes the same bytes through the same core
- * functions (./published.ts). The quote actions are the vault's only until the app keeps quotes
- * (docs/design/REFLECT_QUOTES_2026-11-20.md, step 2).
+ * functions (./published.ts).
  */
-export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id, KEEP_QUOTE.id, TAG_QUOTE.id, READ_QUOTES.id];
+export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id];
 
 /** An action as the CLI lists it and an MCP server offers it: its declaration and its input's JSON Schema. */
 export type Listed = ActionDecl & { input: JsonSchema };

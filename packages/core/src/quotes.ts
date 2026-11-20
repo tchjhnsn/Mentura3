@@ -290,7 +290,9 @@ export function claimView(claimId: string, claim: ClaimRecord, quotes: readonly 
     if ("self" in q.speaker) mine.push(s);
     else others.push({ ...s, speaker: q.speaker.name });
   }
-  const order = (a: Saying, b: Saying) => a.when.localeCompare(b.when) || a.quote.localeCompare(b.quote);
+  // By the day it was said, then by when it was kept, so two quotes of one day keep their order.
+  const at = new Map(quotes.map(({ id, record }) => [id, record.recorded_at]));
+  const order = (a: Saying, b: Saying) => a.when.localeCompare(b.when) || (at.get(a.quote) ?? "").localeCompare(at.get(b.quote) ?? "") || a.quote.localeCompare(b.quote);
   mine.sort(order);
   others.sort(order);
   return { claim: claimId, text: claim.text, mine, now: mine.filter((s) => s.said !== null).at(-1) ?? null, others };
@@ -300,7 +302,7 @@ export function claimView(claimId: string, claim: ClaimRecord, quotes: readonly 
 export function appearances(claimId: string, quotes: readonly VaultQuote[]): VaultQuote[] {
   return quotes
     .filter(({ record }) => quoteStatus(record) === "confirmed" && liveTags(record).some((t) => t.status === "confirmed" && t.scheme === "claim" && t.value === claimId))
-    .sort((a, b) => when(a.record).localeCompare(when(b.record)) || a.id.localeCompare(b.id));
+    .sort((a, b) => when(a.record).localeCompare(when(b.record)) || a.record.recorded_at.localeCompare(b.record.recorded_at) || a.id.localeCompare(b.id));
 }
 
 /**

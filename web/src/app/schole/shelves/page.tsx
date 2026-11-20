@@ -35,7 +35,9 @@ type Tab = "shelves" | "claims";
 const BOOK = "M8 4 h84 v92 h-84 z";
 const SUBJ = "M50 4 A46 46 0 1 1 49.99 4 Z";
 const STATUS = [["want", "Want to read"], ["reading", "Reading"], ["read", "Read"]] as const;
-const STANCE_LABEL: Record<string, string> = { belief: "Belief", disbelief: "Disbelief", suspension: "Suspension of judgment" };
+// What the person said, never what they believe inside (docs/design/REFLECT_QUOTES_2026-11-20.md; SAID_AS in the core).
+const STANCE_LABEL: Record<string, string> = { belief: "You said so", disbelief: "You said not", suspension: "You asked" };
+const SAY_LABEL: Record<string, string> = { belief: "Say so", disbelief: "Say not", suspension: "Ask" };
 const TONE: Record<ShelfTone, string> = { known: "fill-foreground", learning: "fill-tone-thought", registered: "fill-tone-unstated" };
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const Note = ({ children }: { children: ReactNode }) => <p className="text-muted-foreground text-sm">{children}</p>;
@@ -326,7 +328,7 @@ function Claims({ claims, works }: { claims: ClaimOut[] | null; works: Map<strin
   if (!claims) return <Note>Claims are not set up on this database yet.</Note>;
   return (
     <section className="space-y-4">
-      <Note>What you believe, disbelieve, or suspend judgment on, with who holds each view. Your latest stance counts; earlier ones are kept.</Note>
+      <Note>What you have said about each claim, and who else holds it. Each time you say it is kept as a quote; the latest counts. Open a claim to see everything you said.</Note>
       {STANCES.map((st) => {
         const here = claims.filter((c) => c.stance?.stance === st.id);
         return (
@@ -339,13 +341,13 @@ function Claims({ claims, works }: { claims: ClaimOut[] | null; works: Map<strin
               {here.map((c, i) => (
                 <div key={c.id} className={cn("flex flex-wrap items-center justify-between gap-3 py-3", i > 0 && "border-t")}>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium">{c.text}</p>
+                    <Link href={`/schole/claims/${c.id}`} className="text-sm font-medium hover:underline">{c.text}</Link>
                     <p className="text-muted-foreground text-xs">{[c.subject?.name, c.holders.map((h) => (h.citation ? `${h.name} (${h.citation})` : h.name)).join("; ")].filter(Boolean).join(" · ") || "No holder named"}
                       {works.get(c.id) ? <> · from <Link href={`/journal/w/${works.get(c.id)!.workId}`} className="underline underline-offset-2">{works.get(c.id)!.title}</Link></> : null}</p>
                   </div>
                   <form action={setStanceAction} className="flex flex-wrap gap-2">
                     <input type="hidden" name="claim" value={c.id} />
-                    {STANCES.filter((x) => x.id !== st.id).map((x) => <Button key={x.id} size="sm" variant="outline" name="stance" value={x.id}>{STANCE_LABEL[x.id]}</Button>)}
+                    {STANCES.filter((x) => x.id !== st.id).map((x) => <Button key={x.id} size="sm" variant="outline" name="stance" value={x.id}>{SAY_LABEL[x.id]}</Button>)}
                   </form>
                 </div>
               ))}
@@ -361,7 +363,7 @@ function Claims({ claims, works }: { claims: ClaimOut[] | null; works: Map<strin
             <label className="block space-y-1.5 text-sm font-medium">Subject (optional)<Input name="subject" maxLength={120} /></label>
             <label className="block space-y-1.5 text-sm font-medium">Who holds it, one per line: name | citation<Textarea name="holders" rows={2} /></label>
             <div className="flex flex-wrap gap-2">
-              {STANCES.map((x) => <Button key={x.id} size="sm" variant="outline" name="stance" value={x.id}>Keep as {(STANCE_LABEL[x.id] ?? x.id).toLowerCase()}</Button>)}
+              {STANCES.map((x) => <Button key={x.id} size="sm" variant="outline" name="stance" value={x.id}>Keep and {(SAY_LABEL[x.id] ?? x.id).toLowerCase()}</Button>)}
             </div>
           </form>
         </CardContent>
