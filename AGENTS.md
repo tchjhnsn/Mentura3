@@ -27,7 +27,7 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 
 - Python project: see `pyproject.toml` / `requirements.txt` for dependencies.
 - `cd web && pnpm test` runs the core's, the CLI's and the web app's tests (the Neon ones only with `DATABASE_URL`); `pnpm typecheck` type-checks them.
-- The Number Theory of the Soul (the element table, its Lean model and the labeling reader) left Reflect on 2026-11-11 for its own repository. Nothing here imports it.
+- The Number Theory of the Soul (the element table, its Lean model and the labeling reader) left Reflect on 2026-11-11 for its own repository. Nothing here imports it. The boundary (decided 2026-11-20): NTS models the inner mind; Reflect records what is observed, what the person says and does. A stated belief, telos or value is kept here as a statement with its source; the inner state is NTS's (`docs/design/REFLECT_FRAMEWORK_2026-11-19.md`, "Reflect and NTS").
 
 ## Rules
 
