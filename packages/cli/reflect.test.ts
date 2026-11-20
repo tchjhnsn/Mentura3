@@ -806,6 +806,24 @@ describe("reflect CLI", () => {
     expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
+  it("keeps the person's attributes: stated, imported from a founder's puzzle as proposed, confirmed and closed", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    expect((await run("attributes", "--dir", dir)).out[0]).toMatch(/^none yet/);
+    expect((await run("attribute", "telos", "A", "good", "life", "--dir", dir)).out).toEqual(["kept: telos, A good life"]);
+    await expect(run("attribute", "dream", "x", "--dir", dir)).rejects.toThrow(/kind is telos/);
+    const report = join(dir, "..", `${dir.split("/").pop()}-puzzle.json`);
+    await writeFile(report, JSON.stringify({ kind: "naive.founder-puzzle-source", version: 1, reported_by: { assistant: "Claude", reported_at: "2026-10-30" }, puzzle: { statement: "One end for a life" }, attributes: { ambitions: [{ text: "Run a marathon", confidence: "high" }] } }));
+    expect((await run("puzzle", "import", report, "--dir", dir)).out[0]).toMatch(/^proposed 2 attribute/);
+    await rm(report);
+    expect((await run("attributes", "--dir", dir)).out).toEqual(["Telos", "  1. A good life  (yours)", "Ambitions", "  3. Run a marathon  (proposed, founder's puzzle, Claude, 2026-10-30)", "Puzzles", "  2. One end for a life  (proposed, founder's puzzle, Claude, 2026-10-30)"]);
+    expect((await run("attribute", "confirm", "3", "--dir", dir)).out).toEqual(["confirmed 3"]);
+    expect((await run("attribute", "close", "2", "--dir", dir)).out).toEqual(["closed 2"]);
+    expect((await run("attributes", "--dir", dir)).out).toEqual(["Telos", "  1. A good life  (yours)", "Ambitions", "  3. Run a marathon  (yours)"]);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+  });
+
   it("keeps works by their end and publishes works.json on the person's approve: public in full, foreshadowed without a name, private never", async () => {
     const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
     dirs.push(dir);
