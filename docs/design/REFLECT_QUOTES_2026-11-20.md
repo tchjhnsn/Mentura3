@@ -2,7 +2,7 @@
 
 Torian, 2026-11-20 05:30Z: "claims, instances, or these other things are actually just tags on a quote. Let's look at schema.org and other standards." 05:38Z, on the proposal below: "Yes, sounds good."
 
-This is the design. Nothing in it is built yet. Each point says Decided (Torian said so) or Proposed (my recommendation, standing until he says otherwise).
+This is the design. Step 1 (the core) is built; steps 2 to 4 are not (see "Built" at the end). Each point says Decided (Torian said so) or Proposed (my recommendation, standing until he says otherwise).
 
 ## The idea
 
@@ -141,3 +141,16 @@ The old tables are append-only and stay readable. Nothing is deleted. The plan:
 - **Degree.** Should a stance carry how strongly it was said ("I'm fairly sure")? Proposed: no field. The words carry it, and a `hedging` act could be added to the act scheme later if needed.
 - **Deeds against words.** Should Reflect show a deed that goes against a stated claim (says thrift matters, spends freely)? Proposed: later, only as a question the person is shown, never a verdict.
 - **Shared claims.** Are claims private to each person, or in a catalog people share, so two people can see they say the same thing? Proposed: private for now. A shared catalog belongs to the village and polis side.
+
+## Built
+
+Torian, 2026-11-20 06:51Z: "go". Step 1, the core:
+
+- `packages/core/src/quotes.ts`: records, tags, vocabularies (`SCHEMES`), checks, `quoteStatus`, `liveTags`, `claimView`, `appearances`, `appendOnlyProblems`.
+- `packages/core/schemas/quote.schema.json` and `claim.schema.json`.
+- `packages/core/src/files-quotes.ts`: `quotes/` and `claims/` in a vault, with references checked; `reflect check` checks them.
+- CLI: `reflect quote`, `quotes`, `tag`, `claims`, `claim <id>`.
+- MCP: `keep_quote`, `tag_quote`, `read_quotes`. An assistant's quote and tags come in proposed; only the person confirms or withdraws.
+- Lean: `lean/Reflect/Quotes.lean`.
+
+One change from the shape above: a tag's target is the quote or claim whose file holds it, so a tag carries no `target` field.

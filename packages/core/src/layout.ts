@@ -34,7 +34,7 @@ export function recordPaths(layout: Layout, personId: string): RecordPaths {
   const person = layout === "vault" ? "" : join("people", personId);
   const at = (p: string) => (person ? join(person, p) : p);
   const journal = at(layout === "vault" ? "journal" : "entries");
-  const dirs = layout === "vault" ? [...LIFETIME_DIRS, "telos", "intents", "ideas", "sources", "wiki", "presentations", "published", "making", "knowing", "doing"] : ["intents", "telos"];
+  const dirs = layout === "vault" ? [...LIFETIME_DIRS, "telos", "intents", "ideas", "sources", "wiki", "presentations", "published", "making", "knowing", "doing", "quotes", "claims"] : ["intents", "telos"];
   return {
     person,
     journal,

@@ -752,7 +752,7 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     const listed = await run("actions");
-    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files"]);
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files", "keep_quote", "tag_quote", "read_quotes"]);
     expect(JSON.parse((await run("actions", "--json")).out[0]!)[3]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
     const today = new Date().toISOString().slice(0, 10);
     const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
