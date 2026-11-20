@@ -1,5 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { filesChanges } from "@reflect/core/files-changes";
+import { filesJournal } from "@reflect/core/files-journal";
+import { filesPresentations } from "@reflect/core/files-presentations";
+import { filesPublished, readVaultWork } from "@reflect/core/files-published";
+import { initInstance } from "@reflect/core/instance";
+import { draftPresentationIn, runVaultAction, vaultRunner } from "@reflect/core/vault-actions";
 import type { Presentation } from "@reflect/core/presentation";
 import { defaultPolicy } from "@reflect/core/presentation";
 import type { Presentations } from "../presentation-store";
@@ -27,11 +36,12 @@ vi.mock("../mcp-connections", () => ({
     return { texts: ["ok"], resources: [], structured: null };
   },
 }));
-const post = { id: "p1", workId: "", slug: "on-craft", kind: "essay", title: "On craft", body: "The work is the thing.", publishedAt: "2026-11-19T20:00:00.000Z", updatedAt: "2026-11-19T20:00:00.000Z" };
+const post = { id: "p1", workId: "", slug: "on-craft", kind: "essay", title: "On craft", body: "The work is the thing.\n\nIt asks for care.", publishedAt: "2026-11-19T21:00:00.000Z", updatedAt: "2026-11-19T21:00:00.000Z" };
 const published: string[] = [];
 vi.mock("../site-store", () => ({
   siteOf: async () => ({ template: "plain", domain: null, domainCheckedAt: null, repo: { repo: "tchjhnsn/tcjcafe", branch: "main", folder: "app/blog/posts", ext: "mdx" } }),
   postRepoPath: async () => repoPathOf,
+  siteDataFolder: async () => "content/reflect",
   setPostRepoPath: async (_u: string, _p: string, path: string | null) => { repoPathOf = path; },
   publishWork: async (_u: string, workId: string) => (published.push(workId), { ...post, workId }),
   subscribersToMail: async () => [],
@@ -121,7 +131,7 @@ describe("the site publish through the presentation gate", () => {
       if (!ran.held) continue;
       expect(ran.gate).toMatchObject({ ready: false, missing: [{ item: "presentation" }] });
       expect(ran.preview).toContain('Publish "On craft" to your site');
-      expect(ran.preview).toContain("committed to tchjhnsn/tcjcafe on main");
+      expect(ran.preview).toContain("committed to the content folders of tchjhnsn/tcjcafe on main");
       expect(ran.preview).toContain("On personal-site. Not ready to go out.");
     }
     expect(committed()).toEqual([]);
@@ -140,9 +150,10 @@ describe("the site publish through the presentation gate", () => {
 
     const ok = await approveChange(ctx, ran.changeId, "page");
     expect(ok.result).toMatchObject({ slug: "on-craft", href: "/p/torian/on-craft", repo: "app/blog/posts/on-craft.mdx" });
-    expect(committed()).toHaveLength(1);
+    expect(committed().map((c) => c.args.path)).toEqual(["app/blog/posts/on-craft.mdx", "content/reflect/index.json"]);
     expect(committed()[0]!.args).toMatchObject({ owner: "tchjhnsn", repo: "tcjcafe", branch: "main", message: 'Publish "On craft" from Reflect' });
     expect(files["app/blog/posts/on-craft.mdx"]).toContain('title: "On craft"');
+    expect(files["app/blog/posts/on-craft.mdx"]).toContain(`presentation: "${d.id}"`);
     expect(published).toEqual([WORK]);
     expect(ctx.changes.rows.find((r) => r.id === ran.changeId)).toMatchObject({ status: "done", after: { repo: "app/blog/posts/on-craft.mdx", presentation: d.id } });
   });
@@ -175,8 +186,34 @@ describe("the site publish through the presentation gate", () => {
   });
 
   it("gives the Publish sheet the site channel's rules and the last record on it", async () => {
-    expect(await sitePresenting("u1", ctx.presentations)).toMatchObject({ rules: [{ role: "founder" }, { role: "writer" }, { role: "site owner" }], audience: "anyone who looks you up", repo: "tchjhnsn/tcjcafe", last: null });
+    expect(await sitePresenting("u1", ctx.presentations)).toMatchObject({ rules: [{ role: "founder" }, { role: "writer" }], audience: "anyone who looks you up", repo: "tchjhnsn/tcjcafe", last: null });
     await draft({ role: "writer", end: "share what I have thought through", audience: "readers" });
     expect((await sitePresenting("u1", ctx.presentations))?.last).toEqual({ role: "writer", end: "share what I have thought through", audience: "readers", relation: "" });
   });
+
+  it("writes the same bytes as a vault: the post file and the manifest, for the same work, record and approval", async () => {
+    const d = await draft({ role: "writer", end: "share what I have thought through", audience: "readers of my site", relation: "a stranger to most" });
+    const ran = await runAction(publishToSiteAction, ctx, { work_id: WORK, email: false, presentation: d.id }, "chat");
+    if (!ran.held) throw new Error("a publish is always held");
+    await approveChange(ctx, ran.changeId, "page");
+
+    // The same work in a vault: a Markdown file with the work's title and kind, and the same record.
+    const dir = await mkdtemp(join(tmpdir(), "reflect-same-bytes-"));
+    dirs.push(dir);
+    await initInstance(dir, "Torian");
+    await mkdir(join(dir, "writing"));
+    await writeFile(join(dir, "writing", "on-craft.md"), `---\ntitle: "On craft"\nkind: essay\n---\n\n${post.body}\n`);
+    const vault = { userId: "Torian", now, journal: filesJournal(dir, "Torian"), changes: filesChanges(dir), presentations: filesPresentations(dir, "Torian"), published: filesPublished(dir), readWork: (p: string) => readVaultWork(dir, p) };
+    const v = await draftPresentationIn(vault.presentations, { channel: "personal-site", role: "writer", end: "share what I have thought through", audience: "readers of my site", relation: "a stranger to most" }, now);
+    expect(v.id).toBe(d.id);
+    const held = await runVaultAction(vault, "publish_files", { what: "post", file: "writing/on-craft.md", presentation: v.id }, "cli");
+    if (!held.held) throw new Error("a publish is always held");
+    await vaultRunner.approveChange(vault, held.changeId, "cli");
+
+    expect(await readFile(join(dir, "published", "posts", "on-craft.md"), "utf8")).toBe(files["app/blog/posts/on-craft.mdx"]);
+    expect(await readFile(join(dir, "published", "index.json"), "utf8")).toBe(files["content/reflect/index.json"]);
+  });
 });
+
+const dirs: string[] = [];
+afterAll(async () => Promise.all(dirs.map((d) => rm(d, { recursive: true, force: true }))));

@@ -34,7 +34,7 @@ const DASHBOARD = ["dashboard", "set_dashboard_card", "dashboard_today", "set_mo
 // and ask to publish a work, which always waits for the person's approval on a page.
 const SITE = ["site", "set_site_template", "site_design", "set_site_design", "draft_presentation", "check_presentation", "publish_to_site"];
 // The marketplace (2026-11-18): the person's connectors, a tool that only reads, and one that waits for Send.
-const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "site_edit", "plugins"];
+const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "plugins"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
 const CHAT_DIRECT = [
   "practice_dialectic", "adventures", "plan_adventure", "calendar", "add_event", "add_events", "household_plan", "budget", "set_budget", "budget_step", "household", "place", "connections", "meals", "piano",
@@ -126,13 +126,12 @@ describe("the action registry", () => {
     for (const id of ["budget", "set_budget", "budget_step"]) expect(actionById(id)!.description).toContain("not a licensed financial advisor");
   });
 
-  it("declares the site publish, the site edit and the connector act as publishing on channel personal-site, each naming its presentation record", () => {
-    expect(ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes, a.tier, Boolean(a.publishesIf)])).toEqual([
-      ["connector_act", "personal-site", "outside", true],
-      ["site_edit", "personal-site", "outside", false],
-      ["publish_to_site", "personal-site", "outside", false],
-    ].sort((x, y) => ACTIONS.findIndex((a) => a.id === x[0]) - ACTIONS.findIndex((a) => a.id === y[0])));
-    for (const id of ["publish_to_site", "site_edit", "connector_act"]) expect(Object.keys((actionById(id)!.input as unknown as { shape: object }).shape)).toContain("presentation");
+  it("declares only the site publish as publishing on channel personal-site, naming its presentation record, and offers no action that edits the site's code", () => {
+    expect(ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes, a.tier])).toEqual([["publish_to_site", "personal-site", "outside"]]);
+    expect(Object.keys((actionById("publish_to_site")!.input as unknown as { shape: object }).shape)).toContain("presentation");
+    expect(actionById("site_edit")).toBeUndefined();
+    expect(actionById("site_files")?.tier).toBe("read");
+    for (const a of ACTIONS) expect(a.description, a.id).not.toMatch(/site_edit|maintain my site/);
   });
 
   it("lists every action some surface offers", () => {
@@ -145,8 +144,8 @@ describe("the action registry", () => {
 describe("the vault's actions in the app", () => {
   it("match the app's entries", async () => {
     const { z } = await import("zod");
-    const { VAULT_ACTIONS } = await import("@reflect/core/vault-actions");
-    for (const v of VAULT_ACTIONS) {
+    const { VAULT_ACTIONS, VAULT_ONLY } = await import("@reflect/core/vault-actions");
+    for (const v of VAULT_ACTIONS.filter((x) => !VAULT_ONLY.includes(x.id))) {
       const a = actionById(v.id);
       expect(a, v.id).toBeDefined();
       expect({ id: a!.id, title: a!.title, description: a!.description, tier: a!.tier, on: a!.on }).toEqual({ id: v.id, title: v.title, description: v.description, tier: v.tier, on: v.on });

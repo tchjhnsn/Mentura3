@@ -1,7 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanRepo, commitSummary, findPostsPlace, frontMatterStyle, namesRepo, pickBranch, repoPostFile, repoPostPath } from "./site-repo";
-
-const post = { slug: "on-craft", title: "On craft", kind: "essay", body: "The work.\n", summary: "About the work.", publishedAt: "2026-11-18T20:00:00.000Z", updatedAt: "2026-11-18T21:00:00.000Z" };
+import { cleanFolder, cleanRepo, contentPath, DEFAULT_DATA_FOLDER, findPostsPlace, insideContent, namesRepo, pickBranch, repoPostPath } from "./site-repo";
 
 describe("site repository", () => {
   it("cleans a repository name or address", () => {
@@ -20,14 +18,6 @@ describe("site repository", () => {
     expect(findPostsPlace(["README.md", "docs/guide.md"])).toBeNull();
   });
 
-  it("writes a post the way the repository writes its posts", () => {
-    const sample = "---\ntitle: 'The Everything Ecosystem'\nsubtitle: 'A treatise'\npublishedAt: '2026-03-23'\nsummary: 'Ecosystems.'\nstatus: 'version 2.0'\n---\n\nText";
-    expect(frontMatterStyle(sample)).toEqual({ keys: ["title", "subtitle", "publishedAt", "summary", "status"], quote: "'" });
-    expect(repoPostFile({ ...post, title: "It's craft" }, sample)).toBe("---\ntitle: 'It''s craft'\npublishedAt: '2026-11-18'\nsummary: 'About the work.'\n---\n\nThe work.\n");
-    expect(repoPostFile(post, null)).toBe('---\ntitle: "On craft"\nkind: essay\npublished: 2026-11-18T20:00:00.000Z\nupdated: 2026-11-18T21:00:00.000Z\n---\n\nThe work.\n');
-    expect(repoPostFile(post, "---\ndate: \"x\"\n---\n")).toBe('---\ntitle: "On craft"\ndate: "2026-11-18"\n---\n\nThe work.\n');
-  });
-
   it("names the post's path and the branch", () => {
     expect(repoPostPath({ folder: "app/blog/posts", ext: "mdx" }, "on-craft")).toBe("app/blog/posts/on-craft.mdx");
     expect(pickBranch(["dev", "master"])).toBe("master");
@@ -44,10 +34,16 @@ describe("site repository", () => {
     expect(namesRepo(null, "tchjhnsn/tcjcafe")).toBe(false);
   });
 
-  it("says what a commit of one file will change", () => {
-    expect(commitSummary("app/page.tsx", null, "a\nb\n")).toBe("New file app/page.tsx, 2 lines.\n+ a\n+ b");
-    expect(commitSummary("app/page.tsx", "a\nb\nc\n", "a\nB\nc\nd\n")).toBe("Changes app/page.tsx: 2 added, 1 removed.\n- b\n+ B\n+ d");
-    expect(commitSummary("x.md", "same", "same")).toBe("x.md stays the same: the new text is the file as it is.");
-    expect(commitSummary("x.md", null, "1\n2\n3\n4", 2)).toBe("New file x.md, 4 lines.\n+ 1\n+ 2\n...");
+  it("delivers published/ only into the content folders, and refuses any other path", () => {
+    const place = { posts: "app/blog/posts", ext: "mdx" as const, data: DEFAULT_DATA_FOLDER };
+    expect(contentPath(place, "posts/on-craft.md")).toBe("app/blog/posts/on-craft.mdx");
+    expect(contentPath(place, "index.json")).toBe("content/reflect/index.json");
+    expect(contentPath(place, "profile.json")).toBe("content/reflect/profile.json");
+    for (const p of ["app/page.tsx", "posts/../app/page.tsx", "posts/a/b.md", "notes.json"]) expect(() => contentPath(place, p)).toThrow(/delivers only/);
+    expect(insideContent(place, "app/blog/posts/on-craft.mdx")).toBe(true);
+    expect(insideContent(place, "content/reflect/index.json")).toBe(true);
+    for (const p of ["app/page.tsx", "app/blog/posts/on-craft.md", "app/blog/posts/sub/x.mdx", "app/blog/posts/../page.mdx", "content/reflect/other.json", "package.json"]) expect(insideContent(place, p), p).toBe(false);
+    expect(cleanFolder("/content/reflect/")).toBe("content/reflect");
+    for (const f of ["", "../x", "a/../b", "a//b", "a b"]) expect(cleanFolder(f), f).toBeNull();
   });
 });

@@ -380,13 +380,8 @@ export function defaultPolicy(person: string): PresentationPolicy {
         destination: "your own site, saved to GitHub (Settings, Your site, Your own site on GitHub)",
         audience: "anyone who looks you up",
         guidelines: GUIDES,
-        // A change to the site's own code or pages (a fix, a new section) is neither a work shown nor an essay: the site
-        // owner keeping it in order is its own rule, so a plain commit can pass the gate.
-        rules: rulesOf(
-          ["founder", "show what I make and whom it serves", "pages about your work"],
-          ["writer", "share what I have thought through", "essays and notes"],
-          ["site owner", "maintain my site", "changes to the site's code, design and pages"],
-        ),
+        // Reflect writes files to the site (posts, the profile and the manifest), never the site's code.
+        rules: rulesOf(["founder", "show what I make and whom it serves", "pages about your work"], ["writer", "share what I have thought through", "essays and notes"]),
         checks: CHECKS,
         preview: "The page as built, before it is saved",
         platform: "github",
