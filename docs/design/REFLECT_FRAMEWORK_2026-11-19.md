@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Built on 2026-11-20: a JSON Schema for the person record, the person's attributes (telos, ambitions and the rest of the founder's puzzle, see "The person's attributes"), and sources as a closed enumeration for every field value (see "Sources of a value"). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and the audit of the app's stored life records (`pnpm check:life` in `web/`) was run on the dev database on 2026-11-20 (234 of 234 stored bodies pass) and not yet on production. A vault's three life kinds (friends, groups and offices) are checked by `reflect check`, and the web app checks every kind's body against its schema before each write and on each read (`web/src/server/life-validate.ts`).
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Decided on 2026-11-20: Reflect models what is observed and NTS the inner mind (see "Reflect and NTS"). Built on 2026-11-20: a JSON Schema for the person record, the person's attributes (telos, ambitions and the rest of the founder's puzzle, see "The person's attributes"), and sources as a closed enumeration for every field value (see "Sources of a value"). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and the audit of the app's stored life records (`pnpm check:life` in `web/`) was run on the dev database on 2026-11-20 (234 of 234 stored bodies pass) and not yet on production. A vault's three life kinds (friends, groups and offices) are checked by `reflect check`, and the web app checks every kind's body against its schema before each write and on each read (`web/src/server/life-validate.ts`).
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -33,6 +33,25 @@ flowchart TB
   end
   reg --> app
   app --> pg
+```
+
+## Reflect and NTS: what is observed and what is inside
+
+Torian decided this on 2026-11-20 (05:09Z and 05:11Z). Number Theory of the Soul (NTS, its own repository) models the inner mind. Reflect's schema of a life models what can be observed: what the person says and what they do, in words, deeds and things made.
+
+- **A stated belief, telos or value belongs in Reflect** as a statement the person made. "I believe marriage is a covenant" is kept as what was said, on a day, from a source Reflect can name (`SOURCE_KINDS`). The belief as a state of mind, and how it formed, belongs to NTS.
+- **Nothing inner is inferred here.** Reflect keeps only what is stated, or proposed and then confirmed by the person. That is the rule the person record already follows.
+- **The person is not split into soul and body in this schema.** The inner soul is NTS's subject. The goods axis keeps "soul" because it names what a record is good for (virtue, craft, interests), not a model of the mind.
+- **Claims and beliefs get a schema** as recorded statements and stances, with no inner-state fields.
+- **The two stay apart.** NTS does not import Reflect and Reflect does not import NTS. If NTS reads Reflect, it reads only what the person grants it.
+
+```mermaid
+flowchart LR
+  P["The person"] --> W["Words and deeds: what is said, done, made"]
+  W --> R["Reflect: recorded, dated, sourced"]
+  P --> M["The inner mind"]
+  M --> N["NTS: models states and their formation"]
+  R -. "only what the person grants" .-> N
 ```
 
 ## The ontology
