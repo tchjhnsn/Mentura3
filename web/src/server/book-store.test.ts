@@ -63,13 +63,13 @@ describe.skipIf(!live)("the book on Neon", () => {
     expect(chapter.entries.find((e) => e.id === ideal)).toMatchObject({ holders: [{ name: "Aristotle", citation: "Politics I.2" }], origins: ["nature", "reasoning"] });
     expect(chapter.entries.find((e) => e.id === q)!.serves?.text).toBe("A family eats together.");
     expect((await idealsOf(user)).map((i) => i.text).sort()).toEqual(["A family eats together.", "Children are best raised by both parents."]);
-    const raw = (await db().query("SELECT circumstances_ct FROM claim_kind WHERE user_id = $1", [user])).rows.map((r) => r.circumstances_ct ?? "").join(" ");
+    const raw = (await db().query("SELECT detail_ct FROM quote_tag WHERE user_id = $1", [user])).rows.map((r) => r.detail_ct ?? "").join(" ");
     expect(raw).not.toContain("baby");
-    await expect(db().query("UPDATE claim_kind SET kind = 'ideal' WHERE user_id = $1", [user])).rejects.toThrow(/append-only/);
+    await expect(db().query("UPDATE quote_tag SET value = 'ideal' WHERE user_id = $1", [user])).rejects.toThrow(/append-only/);
     await fileWork(user, w, null);
     expect((await getWork(user, w))!.domain).toBeNull();
     await fileWork(user, w, "household");
     expect((await domainView(user, "household")).works.map((x) => x.id)).toEqual([w]);
     await expect(fileWork(user, w, "romance")).rejects.toThrow(/domain/);
-  });
+  }, 30_000);
 });

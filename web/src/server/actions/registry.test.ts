@@ -33,6 +33,8 @@ const DASHBOARD = ["dashboard", "set_dashboard_card", "dashboard_today", "set_mo
 // editor, 2026-11-18). The presentation gate (Reflect framework plan, step 6): draft and check a presentation record,
 // and ask to publish a work, which always waits for the person's approval on a page.
 const SITE = ["site", "set_site_template", "site_design", "set_site_design", "draft_presentation", "check_presentation", "publish_to_site"];
+// Quotes and their tags (docs/design/REFLECT_QUOTES_2026-11-20.md): keep a quote, tag a quote or claim, read them.
+const QUOTES = ["keep_quote", "tag_quote", "read_quotes"];
 // The marketplace (2026-11-18): the person's connectors, a tool that only reads, and one that waits for Send.
 const MARKETPLACE = ["connectors", "connector_read", "connector_act", "site_files", "plugins"];
 // The chat offers its own tools directly and reaches every other chat action through find_actions and act.
@@ -65,6 +67,7 @@ const MCP_TOOLS = [
   ...LINKEDIN,
   ...DASHBOARD,
   ...SITE,
+  ...QUOTES,
   ...MARKETPLACE,
   ...PAGE,
 ];
@@ -109,7 +112,7 @@ describe("the action registry", () => {
     const tools = mcpTools();
     const readOnly = Object.keys(tools).filter((n) => tools[n]!.annotations?.readOnlyHint === true);
     expect(readOnly).toEqual(actionsOn("mcp").filter((a) => a.tier === "read").map((a) => a.id));
-    expect(readOnly).toEqual(["reflect_guide", "life_schema", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "check_presentation", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
+    expect(readOnly).toEqual(["reflect_guide", "life_schema", "household_plan", "budget", "adventures", "household", "place", "connections", "meals", "piano", "calendar", "list_entries", "get_entry", "legacy_status", "learning", "ideas", "recent_changes", "pending_changes", "plans", "home_cards", "excerpt", "courses", "lenses", "lens", "apply_lens", "messages", "venture_files", "draft_naive_venture", "people_to_build_with", "connect_requests", "profile", "profile_page", "socials", "events", "event", "meetings", "meeting", "meeting_prep", "linkedin_matches", "linkedin_connections", "dashboard", "dashboard_today", "site", "site_design", "check_presentation", "read_quotes", "connectors", "connector_read", "site_files", "plugins", "life", "interests"]);
   });
 
   it("offers the Home card actions on both surfaces, reading for free and changing only the person's own record", () => {
