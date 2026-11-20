@@ -3,11 +3,11 @@
 // them. Records belong to one person and are read only by them.
 import { randomUUID } from "node:crypto";
 import { cleanBody, isAct, isLifeApp, isState, kindOf, type ActFacts, type Body, type LifeAppId } from "@reflect/core/life";
-import { parseBody } from "@reflect/core/life-body";
 import { isRecordAudience, type RecordAudience } from "@reflect/core/audience";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
 import { tx } from "./learn-store";
+import { auditBodies, checkLifeBody, checkLifeInput, storedProblems, type KindAudit } from "./life-validate";
 
 export type LifeRecord = { id: string; app: LifeAppId; kind: string; state: string | null; body: Body; createdAt: string; updatedAt: string };
 export type LifeAct = ActFacts & { id: string; note: string | null; at: string };
@@ -23,12 +23,12 @@ const reported = new Set<string>();
 function row(userId: string, r: Record<string, unknown>): LifeRecord {
   const id = r.id as string, kind = r.kind as string;
   const body = JSON.parse(open(userId, r.body_ct as string)) as Body;
-  // A body that does not match its kind (`@reflect/core/life-body`) is reported, by kind, id and field names only,
-  // since bodies are sealed, and still returned as it is.
-  const p = parseBody(kind, body);
-  if (!p.ok && !reported.has(id)) {
+  // A body that does not match its kind's schema (./life-validate.ts) is a warning, by kind, id and field names only,
+  // since bodies are sealed, and is still returned as it is. Only a new write is refused.
+  const problems = storedProblems(r.app as string, kind, body);
+  if (problems.length && !reported.has(id)) {
     reported.add(id);
-    console.warn(`life_record ${id} of kind ${kind} does not match its kind: ${p.problems.map((x) => `${x.field || "(body)"}: ${x.problem}`).join("; ")}`);
+    console.warn(`life_record ${id} of kind ${String(r.app)}.${kind} does not match its schema: ${problems.map((x) => `${x.field || "(body)"}: ${x.problem}`).join("; ")}`);
   }
   return { id, app: r.app as LifeAppId, kind, state: (r.state as string | null) ?? null, body, createdAt: iso(r.created_at), updatedAt: iso(r.updated_at) };
 }
@@ -50,7 +50,9 @@ export async function addLifeRecord(userId: string, app: string, kind: string, r
   if (!isLifeApp(app)) throw new Error("No such app.");
   const k = kindOf(app, kind);
   if (!k) throw new Error("No such kind.");
+  checkLifeInput(app, k, raw);
   const body = cleanBody(k, raw);
+  checkLifeBody(app, k, body);
   if (!k.one && body[k.title] === undefined) throw new Error(`Give it a ${k.fields.find((f) => f.key === k.title)!.label.toLowerCase()}.`);
   const first = isState(k, state) ? state : k.states?.[0]?.id ?? null;
   return tx(async (c) => {
@@ -70,7 +72,10 @@ export async function saveLifeRecord(userId: string, id: string, raw: Record<str
   const r = await lifeRecord(userId, id);
   if (!r) throw new Error("No such record.");
   const k = kindOf(r.app, r.kind)!;
+  // Only the fields this save changes are refused: one sent back as stored, in an older shape, is dropped by cleanBody.
+  checkLifeInput(r.app, k, raw, r.body);
   const body = cleanBody(k, raw);
+  checkLifeBody(r.app, k, body);
   if (!k.one && body[k.title] === undefined) throw new Error(`Give it a ${k.fields.find((f) => f.key === k.title)!.label.toLowerCase()}.`);
   await db().query("UPDATE life_record SET body_ct = $3, updated_at = now() WHERE id = $1 AND user_id = $2", [id, userId, seal(userId, JSON.stringify(body))]);
 }
@@ -163,6 +168,24 @@ export async function lifeActs(userId: string, recordId?: string): Promise<LifeA
     recordId ? [userId, recordId] : [userId],
   );
   return r.rows.map((x) => ({ id: x.id as string, record: x.record_id as string, kind: x.kind as string, day: x.day as string, minutes: (x.minutes as number | null) ?? null, amount: x.amount === null ? null : Number(x.amount), note: x.note_ct ? open(userId, x.note_ct as string) : null, at: iso(x.created_at) }));
+}
+
+/**
+ * A read-only audit of every stored life record, removed ones included (Restore puts them back unchecked): per kind,
+ * how many bodies pass their schema and which fields fail. It opens each body to check it and returns no value. For
+ * `web/scripts/check-life-records.ts`, run by whoever holds the database and the data key.
+ */
+export async function auditLifeRecords(): Promise<KindAudit[]> {
+  const r = await db().query("SELECT user_id, app, kind, body_ct FROM life_record ORDER BY app, kind, id");
+  return auditBodies(r.rows.map((x) => {
+    let body: unknown;
+    try {
+      body = JSON.parse(open(x.user_id as string, x.body_ct as string));
+    } catch {
+      body = null;
+    }
+    return { app: x.app as string, kind: x.kind as string, body };
+  }));
 }
 
 /** Every state change the person kept, for the log. */
