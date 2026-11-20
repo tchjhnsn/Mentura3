@@ -19,7 +19,7 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 | `packages/virtu/` | the Virtu design system's editor and check, vendored from tchjhnsn/design-system-theory, and the personal site's design system (`site/`); see `packages/virtu/README.md` |
 | `lean/` | Lean 4 proofs with no Mathlib (`cd lean && lake build`): every ontology noun has one category, serves links form no cycle, every choice reaches a telos, the communities nest, every source of a value but stated starts proposed; CI builds them (`.github/workflows/lean.yml`); see `lean/README.md` |
 | `web/` | the Reflect web app (Next.js), one interface over the core; see `web/README.md` |
-| `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts, and `REFLECT_FRAMEWORK_2026-11-19.md` the plan for Reflect as a framework for a life, with Aristotle's Categories as its ontology |
+| `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts, `REFLECT_FRAMEWORK_2026-11-19.md` the plan for Reflect as a framework for a life, with Aristotle's Categories as its ontology, and `REFLECT_QUOTES_2026-11-20.md` the design for claims and beliefs as tags on quotes |
 | `README.md` | overview |
 | `pyproject.toml` | dependencies and scripts |
 

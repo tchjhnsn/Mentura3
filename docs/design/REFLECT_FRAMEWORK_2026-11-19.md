@@ -42,7 +42,7 @@ Torian decided this on 2026-11-20 (05:09Z and 05:11Z). Number Theory of the Soul
 - **A stated belief, telos or value belongs in Reflect** as a statement the person made. "I believe marriage is a covenant" is kept as what was said, on a day, from a source Reflect can name (`SOURCE_KINDS`). The belief as a state of mind, and how it formed, belongs to NTS.
 - **Nothing inner is inferred here.** Reflect keeps only what is stated, or proposed and then confirmed by the person. That is the rule the person record already follows.
 - **The person is not split into soul and body in this schema.** The inner soul is NTS's subject. The goods axis keeps "soul" because it names what a record is good for (virtue, craft, interests), not a model of the mind.
-- **Claims and beliefs get a schema** as recorded statements and stances, with no inner-state fields.
+- **Claims and beliefs get a schema** as recorded statements and stances, with no inner-state fields. The design is `REFLECT_QUOTES_2026-11-20.md`: a quote is the record, and claims, stances, domains and origins are tags on it (W3C Web Annotation, schema.org Quotation and Claim).
 - **The two stay apart.** NTS does not import Reflect and Reflect does not import NTS. If NTS reads Reflect, it reads only what the person grants it.
 
 ```mermaid
