@@ -26,7 +26,8 @@ export async function fromPage<S extends z.ZodType, R>(a: Action<S, R>, userId: 
   }
   const ran = await runAction(a, { userId }, parsed as z.output<S>, "page");
   if (ran.held) {
-    if (a.publishes === undefined) throw new Error("That waits for a tap on its card in Ask.");
+    // Only a run that publishes carries a gate (an action with `publishesIf` may not publish on this run).
+    if (ran.gate === undefined) throw new Error("That waits for a tap on its card in Ask.");
     const result = (await approveOnPage(userId, ran.changeId, ran.gate)) as R;
     return opts?.change ? { result, changeId: ran.changeId } : result;
   }

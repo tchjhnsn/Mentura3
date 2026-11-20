@@ -123,6 +123,38 @@ describe("the core runner", () => {
     expect(ctx.list).toEqual(["posted about"]);
   });
 
+  it("gates only the runs publishesIf says publish, and asks again at approval", async () => {
+    const log = memoryLog();
+    const asked: unknown[] = [];
+    const act: Action<Ctx, ReturnType<typeof addInput>, string> = {
+      id: "act", title: "Act", description: "Acts.", tier: "outside", on: ["chat"], publishes: "personal-site", input: addInput(),
+      publishesIf: ({ list }, { name }) => name === "site" && !list.includes("unlinked"),
+      run: async ({ list }, { name }) => (list.push(`acted ${name}`), name),
+    };
+    const runner = makeRunner<Ctx, Action<Ctx>>({
+      changes: (c) => c.log,
+      transaction: (f) => f(),
+      actionById: (id) => (id === act.id ? (act as unknown as Action<Ctx>) : undefined),
+      gate: async (_ctx, channel, input) => (asked.push([channel, input]), { ready: false, missing: [{ item: "presentation", message: "a presentation record" }] }),
+    });
+    const ctx = { userId: "u1", log, list: [] as string[] };
+    // A run that does not publish is an ordinary outside run: held for the chat with no gate, run at once from a page.
+    const plain = await runner.runAction(act, ctx, { name: "notes" }, "chat");
+    expect(plain).toEqual({ held: true, changeId: "c1", preview: "Act.\nname: notes" });
+    expect(await runner.approveChange(ctx, "c1", "page")).toMatchObject({ result: "notes" });
+    expect(await runner.runAction(act, ctx, { name: "notes" }, "page")).toMatchObject({ held: false, result: "notes" });
+    expect(asked).toEqual([]);
+    // A run that publishes is held from any source with its gate, and an agent never approves it.
+    const site = await runner.runAction(act, ctx, { name: "site" }, "page");
+    expect(site).toMatchObject({ held: true, changeId: "c3", gate: { ready: false } });
+    await expect(runner.approveChange(ctx, "c3", "mcp")).rejects.toMatchObject({ reason: "person-only" });
+    await expect(runner.approveChange(ctx, "c3", "page")).rejects.toMatchObject({ reason: "not-presented" });
+    // Asked again at approval: once the run no longer publishes, the gate is not asked.
+    ctx.list.push("unlinked");
+    expect(await runner.approveChange(ctx, "c3", "page")).toMatchObject({ result: "site" });
+    expect(asked).toHaveLength(2);
+  });
+
   it("refuses a publishing action on a host with no presentation gate", async () => {
     const { runner, ctx } = setup();
     const post: Action<Ctx> = { id: "post", title: "Post", description: "Posts.", tier: "outside", on: [], publishes: "social", run: async () => null };

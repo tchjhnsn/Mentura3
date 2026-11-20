@@ -3,10 +3,11 @@
 // and publishing a journal work to the person's own site, the first action that `publishes` (channel personal-site).
 // Publishing is always held, from any source: the run's host (./run.ts) asks the gate for the record the input names
 // in `presentation`, and only the person approves, on a page (the Publish sheet, or Send on its card in Ask). Chat and
-// MCP may draft, check and ask to publish; their request waits for the person.
+// MCP may draft, check and ask to publish; their request waits for the person. The site repository's writes from Ask
+// (site_edit, and connector_act's GitHub writes to it, ./marketplace.ts) use the same channel, gate and helpers.
 import { z } from "zod";
 import { CHECK_PRESENTATION, checkPresentationIn, DRAFT_PRESENTATION, draftPresentationIn } from "@reflect/core/vault-actions";
-import { ID, OCCASIONS, VIRTUE_IDS, type Occasion, type VirtueId } from "@reflect/core/presentation";
+import { gateFor, ID, OCCASIONS, VIRTUE_IDS, type Occasion, type VirtueId } from "@reflect/core/presentation";
 import { excerpt } from "@reflect/core/site";
 import { postgresPresentations, type Presentations } from "../presentation-store";
 import { getWork } from "../work-store";
@@ -24,7 +25,7 @@ export const presentationsOf = (ctx: ActionContext): Presentations => ctx.presen
 /** The channel the site publish goes out on, in the person's presentation policy. */
 export const SITE_CHANNEL = "personal-site";
 
-const PRESENTATION_ID = z.string().regex(ID, "lower case letters, digits and hyphens");
+export const PRESENTATION_ID = z.string().regex(ID, "lower case letters, digits and hyphens");
 
 export const draftPresentationAction = action({
   ...DRAFT_PRESENTATION,
@@ -77,6 +78,17 @@ export async function sitePresenting(userId: string, store: Presentations = post
     repo: site?.repo?.repo ?? null,
     last: last ? { role: last.circumstances.who.role ?? "", end: last.circumstances.end ?? "", audience: last.audience?.who ?? "", relation: last.audience?.relation ?? "" } : null,
   };
+}
+
+/**
+ * The newest presentation record on the site's channel that passes the gate now, or null. One record may cover a
+ * working session of changes to the site: site_files offers it so the chat can ask the person whether it covers this
+ * change too, and names it in site_edit only when they say so.
+ */
+export async function readySiteRecord(store: Presentations): Promise<{ id: string; role: string; end: string } | null> {
+  const [policy, all] = await Promise.all([store.policy(), store.list()]);
+  const p = all.find((x) => x.channel === SITE_CHANNEL && gateFor(policy, x, SITE_CHANNEL).ready);
+  return p ? { id: p.id, role: p.circumstances.who.role ?? "", end: p.circumstances.end ?? "" } : null;
 }
 
 /** What a publish did: where the post is, and whether it reached the person's repository and their subscribers. */
