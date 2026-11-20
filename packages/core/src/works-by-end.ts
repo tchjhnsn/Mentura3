@@ -6,7 +6,8 @@
 // research). Projects is a section of Making.
 //
 // In a vault a work is one record, `<end>/<id>.json` (making/, knowing/ or doing/), so the folder says its end and
-// moving the file moves the work. The record says its section, summary, where it shows (sources: GitHub, Etsy, Behance,
+// moving the file moves the work. The record says its section, summary, the problem it addresses, that problem's root
+// cause and the proposed solution (one sentence each), where it shows (sources: GitHub, Etsy, Behance,
 // Substack, the reading list, the calendar), its status, and how much of it may be shown (disclosure). What goes out is
 // published/works.json (./published.ts), through the presentation gate: a public work in full, a foreshadowed work as
 // its end, section and one line only (no id, no title, no source), and a private work never. Pure: no I/O.
@@ -60,6 +61,12 @@ export type WorkRecord = {
   section: Section;
   disclosure: Disclosure;
   summary?: string;
+  /** The problem the work addresses, in one sentence. */
+  problem?: string;
+  /** The problem's root cause, in one sentence. */
+  cause?: string;
+  /** The proposed solution, in one sentence. */
+  solution?: string;
   sources?: WorkSource[];
   status?: Status;
   last_activity?: string;
@@ -70,7 +77,7 @@ export type WorkRecord = {
 
 /** One work in published/works.json. */
 export type PublishedWork =
-  | ({ disclosure: "public"; id: string; title: string; end: End; section: Section } & Pick<WorkRecord, "summary" | "sources" | "status" | "last_activity" | "pinned" | "links">)
+  | ({ disclosure: "public"; id: string; title: string; end: End; section: Section } & Pick<WorkRecord, "summary" | "problem" | "cause" | "solution" | "sources" | "status" | "last_activity" | "pinned" | "links">)
   | { disclosure: "foreshadow"; end: End; section: Section; foreshadow: string };
 
 export const RECORD_SCHEMA = recordSchema as unknown as Schema;
@@ -85,6 +92,20 @@ export function workOfPath(path: string): { end: End; id: string } | null {
   return m ? { end: m[1] as End, id: m[2]! } : null;
 }
 
+/** The one-sentence fields of a work: its problem, the problem's root cause and the proposed solution. */
+export const SENTENCE_FIELDS = ["problem", "cause", "solution"] as const;
+
+/**
+ * Whether a text is one sentence, by a simple rule: it ends with `.`, `?` or `!`, and nowhere before that end does one
+ * of those marks come before a space and a capital letter (which would start a second sentence). Known limitation: an
+ * abbreviation before a capital, as in "e.g. Paris" or "Dr. Smith", reads as two sentences; reword it.
+ */
+export function isOneSentence(text: string): boolean {
+  const t = text.trim();
+  if (!/[.?!]["')\]]*$/.test(t)) return false;
+  return !/[.?!]["')\]]*\s+["'(]*[A-Z]/.test(t);
+}
+
 /** What is wrong with a work record: its schema, and a section of another end than its folder's. */
 export function workRecordProblems(end: End, raw: unknown, at = "work"): string[] {
   const out = schemaProblems(RECORD_SCHEMA, raw, at);
@@ -92,6 +113,10 @@ export function workRecordProblems(end: End, raw: unknown, at = "work"): string[
   const r = raw as WorkRecord;
   if (SECTIONS[r.section] !== end) out.push(`${at}: ${r.section} is a section of ${SECTIONS[r.section]}, not ${end}; move the file to ${SECTIONS[r.section]}/`);
   if (r.disclosure === "foreshadow" && !r.foreshadow?.trim()) out.push(`${at}: a foreshadowed work needs its one line (foreshadow)`);
+  for (const f of SENTENCE_FIELDS) {
+    const v = r[f];
+    if (v !== undefined && !isOneSentence(v)) out.push(`${at}: ${f} must be one sentence, ending with ".", "?" or "!"`);
+  }
   return out;
 }
 
@@ -112,6 +137,9 @@ export function shownWork(end: End, id: string, r: WorkRecord): PublishedWork | 
     end,
     section: r.section,
     ...(r.summary?.trim() ? { summary: r.summary.trim() } : {}),
+    ...(r.problem?.trim() ? { problem: r.problem.trim() } : {}),
+    ...(r.cause?.trim() ? { cause: r.cause.trim() } : {}),
+    ...(r.solution?.trim() ? { solution: r.solution.trim() } : {}),
     ...(r.sources?.length ? { sources: r.sources } : {}),
     ...(r.status ? { status: r.status } : {}),
     ...(r.last_activity ? { last_activity: r.last_activity } : {}),

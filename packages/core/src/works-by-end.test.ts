@@ -20,9 +20,9 @@ const ok = (): Approval => ({
 });
 
 const WORKS: VaultWorkRecord[] = [
-  { end: "knowing", id: "specs-survey", record: { title: "Specs as source", section: "research", disclosure: "public", summary: "A survey." } },
+  { end: "knowing", id: "specs-survey", record: { title: "Specs as source", section: "research", disclosure: "public", summary: "A survey.", problem: "Specs drift from code." } },
   { end: "making", id: "virtu", record: { title: "Virtu", section: "projects", disclosure: "public", sources: [{ connector: "github", url: "https://github.com/tchjhnsn/design-system-theory" }], status: "active", last_activity: "2026-11-19" } },
-  { end: "making", id: "secret", record: { title: "Secret venture", section: "products", disclosure: "foreshadow", foreshadow: "A platform for founders, in stealth.", summary: "Never shown" } },
+  { end: "making", id: "secret", record: { title: "Secret venture", section: "products", disclosure: "foreshadow", foreshadow: "A platform for founders, in stealth.", summary: "Never shown", solution: "Hidden solution." } },
   { end: "doing", id: "tutoring", record: { title: "Tutoring", section: "service", disclosure: "private" } },
   { end: "making", id: "everything", record: { title: "The Everything Ecosystem", section: "projects", disclosure: "public", pinned: true, links: [{ label: "Founding essay", href: "/blog/the-everything-ecosystem" }] } },
 ];
@@ -69,7 +69,22 @@ describe("works by their end", () => {
     expect(shownWork("making", "secret", WORKS[2]!.record)).toEqual({ disclosure: "foreshadow", end: "making", section: "products", foreshadow: "A platform for founders, in stealth." });
     const shown = shownWorks(WORKS);
     expect(shown.map((w) => (w.disclosure === "public" ? w.id : `(${w.section})`))).toEqual(["everything", "virtu", "(products)", "specs-survey"]);
-    expect(JSON.stringify(shown)).not.toMatch(/Secret venture|Never shown|tutoring/);
+    expect(JSON.stringify(shown)).not.toMatch(/Secret venture|Never shown|Hidden solution|tutoring/);
+  });
+
+  it("passes problem, cause and solution through for a public work only, each one sentence", () => {
+    const pcs = { problem: " Founders lose track of what they decided. ", cause: "Decisions live in chat, not records.", solution: "Keep every decision as a record?" };
+    const pub = { title: "Naive", section: "projects", disclosure: "public", ...pcs } as const;
+    expect(workRecordProblems("making", pub)).toEqual([]);
+    expect(shownWork("making", "naive", pub)).toMatchObject({ problem: "Founders lose track of what they decided.", cause: "Decisions live in chat, not records.", solution: "Keep every decision as a record?" });
+    const fore = shownWork("making", "naive", { ...pub, disclosure: "foreshadow", foreshadow: "A framework, in stealth." });
+    expect(fore).toEqual({ disclosure: "foreshadow", end: "making", section: "projects", foreshadow: "A framework, in stealth." });
+    expect(shownWork("making", "naive", { ...pub, disclosure: "private" })).toBeNull();
+    expect(workRecordProblems("making", { ...pub, problem: "It is slow. It is also costly." })).toEqual(['work: problem must be one sentence, ending with ".", "?" or "!"']);
+    expect(workRecordProblems("making", { ...pub, cause: "No ending mark" })[0]).toMatch(/cause must be one sentence/);
+    expect(workRecordProblems("making", { ...pub, solution: "Ship it! Then measure." })[0]).toMatch(/solution must be one sentence/);
+    expect(workRecordProblems("making", { ...pub, solution: "x".repeat(301) + "." }).length).toBeGreaterThan(0);
+    expect(workRecordProblems("making", { ...pub, problem: "Version 2.0 broke the build." })).toEqual([]);
   });
 
   it("publishes works.json through the gate, passing its schema and the folder check", () => {
