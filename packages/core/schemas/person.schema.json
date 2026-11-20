@@ -1,0 +1,338 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reflect:schema:person",
+  "title": "Person",
+  "description": "What the person has said about themselves: facts, relationships and holds. Nothing is overwritten: a new value closes the open one by giving it validTo. Each value names its source.",
+  "type": "object",
+  "required": [
+    "facts",
+    "relationships",
+    "holds"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "facts": {
+      "type": "array",
+      "description": "Facts about the person (name, birthday, work), one open value per key.",
+      "items": {
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "validFrom",
+          "validTo",
+          "recordedAt",
+          "source",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the fact is about, such as name or birthday."
+          },
+          "value": {
+            "type": "string"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day the value began to hold."
+          },
+          "validTo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day the value stopped holding; null while it holds."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day Reflect recorded it."
+          },
+          "source": {
+            "$ref": "#/$defs/source"
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "confirmed"
+            ],
+            "description": "Confirmed when stated or when the person confirmed its source; only a confirmed fact is current."
+          }
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "description": "The person's named relationships, one open value per kind.",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "kind",
+          "validFrom",
+          "validTo",
+          "recordedAt",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The other person's name."
+          },
+          "kind": {
+            "enum": [
+              "closest_friend"
+            ]
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day it began."
+          },
+          "validTo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day the value stopped holding; null while it holds."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day Reflect recorded it."
+          },
+          "source": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "holds": {
+      "type": "array",
+      "description": "How the person holds something, such as partnership or children: their picks and own words. Kept with beliefs and values.",
+      "items": {
+        "type": "object",
+        "required": [
+          "subject",
+          "value",
+          "validFrom",
+          "validTo",
+          "source"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What is held, such as partnership."
+          },
+          "value": {
+            "type": "string"
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day it was said."
+          },
+          "validTo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day the value stopped holding; null while it holds."
+          },
+          "source": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "title": "Where a value came from",
+      "description": "The source a field's value was derived from (W3C PROV, wasDerivedFrom). Every kind but stated is proposed until the person confirms it.",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "The person typed it into the field",
+          "properties": {
+            "kind": {
+              "const": "stated"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A journal entry",
+          "properties": {
+            "kind": {
+              "const": "journal"
+            },
+            "entry": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The entry's id."
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The words the value was taken from, quoted exactly."
+            },
+            "grant": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The read grant the quote was taken under."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "entry",
+            "quote",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A conversation with an AI",
+          "properties": {
+            "kind": {
+              "const": "conversation"
+            },
+            "conversation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The conversation's id."
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The words the value was taken from, quoted exactly."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "conversation",
+            "quote",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A connector or an uploaded file",
+          "properties": {
+            "kind": {
+              "const": "import"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The connector's or the file's name."
+            },
+            "item": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The item's id there."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "name",
+            "item",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Reflect proposed it from the person's own records",
+          "properties": {
+            "kind": {
+              "const": "noticed"
+            },
+            "records": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "description": "The ids of the records it was noticed in."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "records",
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "x-reflect": {
+    "noun": "person",
+    "category": "substance",
+    "good": "external",
+    "community": "person"
+  }
+}

@@ -53,6 +53,18 @@ describe("Reflect's ontology", () => {
     expect(checkOntology(o, KINDS).problems.some((p) => p.startsWith("B1 substance"))).toBe(true);
   });
 
+  it("S1 and S2: information records are sources, outside the ten Categories, never nouns", () => {
+    expect(ONTOLOGY.sources.records).toEqual(["journal entry", "reflection", "conversation", "import"]);
+    expect(ONTOLOGY.sources.bfo).toEqual({ class: "generically dependent continuant", iri: "http://purl.obolibrary.org/obo/BFO_0000031" });
+    const o = copy();
+    const meal = o.nouns.find((n) => n.noun === "meal")!;
+    o.nouns.push({ ...meal, noun: "journal entry", kinds: [] });
+    o.sources.bfo = { class: "process", iri: "http://purl.obolibrary.org/obo/BFO_0000015" };
+    const p = checkOntology(o, KINDS).problems;
+    expect(p).toContain("S1 journal entry is a source of field values, not a noun");
+    expect(p.some((x) => x.startsWith("S2 sources"))).toBe(true);
+  });
+
   it("K1 and K2 find a kind listed by no noun, by two, or one that does not exist", () => {
     const o = copy();
     const meal = o.nouns.find((n) => n.noun === "meal")!;

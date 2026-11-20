@@ -129,3 +129,22 @@ describe("checking a vault's life records", () => {
     expect(c).toEqual({ kinds: [], problems: [] });
   });
 });
+
+describe("a life record's sources", () => {
+  const friend = lifeSchemaOf("friends.friend")!;
+  it("passes known sources and names the field of a bad one, never the quote", () => {
+    expect(schemaProblems(friend, { name: "Sam", _sources: { name: { kind: "conversation", conversation: "c1", quote: "my friend Sam", status: "proposed" } } })).toEqual([]);
+    const bad = schemaProblems(friend, { _sources: { name: { kind: "journal", entry: "e1", status: "proposed" }, shoe: { kind: "stated" }, met: "told" } });
+    expect(bad.map((p) => p.field)).toEqual(["_sources.name", "_sources.shoe", "_sources.met"]);
+    expect(bad[1]?.problem).toBe("names a key the kind does not declare");
+    expect(bad.some((p) => p.problem.includes("e1"))).toBe(false);
+    expect(schemaProblems(friend, { _sources: "stated" })).toEqual([{ field: "_sources", problem: "expected an object from field keys to sources" }]);
+  });
+
+  it("reads _sources from a note's front matter as JSON", () => {
+    const body = bodyFromFrontMatter(friend, { name: "Sam", _sources: JSON.stringify({ name: { kind: "import", name: "contacts.vcf", item: "4", status: "confirmed" } }) });
+    expect(body._sources).toEqual({ name: { kind: "import", name: "contacts.vcf", item: "4", status: "confirmed" } });
+    expect(schemaProblems(friend, body)).toEqual([]);
+    expect(schemaProblems(friend, bodyFromFrontMatter(friend, { _sources: "{ not json" }))).toEqual([{ field: "_sources", problem: "expected an object from field keys to sources" }]);
+  });
+});

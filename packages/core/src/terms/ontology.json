@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "Reflect's nouns, in Naive's ontology format (Torian, 2026-11-19: Reflect's own copy, Naive's format). The top categories are Aristotle's ten Categories (Categories 4, 1b25-2a4), each mapped to a class of BFO (ISO/IEC 21838-2). A noun names what a record is about, not the record. Each noun names what it is a kind of in broader (SKOS broader): another noun or a top category, and every noun reaches exactly one top category. app is the life app a noun belongs to, or null when it is shared; kinds lists the life record kinds (app:kind in packages/core/src/life.ts) about it, and every kind is listed by exactly one noun. good is the kind of good the noun is: body, external or soul (Nicomachean Ethics I.8, 1098b12). community is the community it belongs to: person, union, household, village or polis (Politics I.2). packages/core/src/terms/ontology.ts checks it.",
+  "note": "Reflect's nouns, in Naive's ontology format (Torian, 2026-11-19: Reflect's own copy, Naive's format). The top categories are Aristotle's ten Categories (Categories 4, 1b25-2a4), each mapped to a class of BFO (ISO/IEC 21838-2). A noun names what a record is about, not the record. Each noun names what it is a kind of in broader (SKOS broader): another noun or a top category, and every noun reaches exactly one top category. app is the life app a noun belongs to, or null when it is shared; kinds lists the life record kinds (app:kind in packages/core/src/life.ts) about it, and every kind is listed by exactly one noun. good is the kind of good the noun is: body, external or soul (Nicomachean Ethics I.8, 1098b12). community is the community it belongs to: person, union, household, village or polis (Politics I.2). packages/core/src/terms/ontology.ts checks it. Records that are themselves information (journal entries, reflections, conversations with an AI, imported items) are not nouns: they are sources of field values (Torian, 2026-11-20), listed under sources, outside the ten Categories.",
   "top_categories": [
     {
       "name": "substance",
@@ -103,6 +103,24 @@
       }
     }
   ],
+  "sources": {
+    "note": "Torian, 2026-11-20 04:15Z: journal entries, AI conversations and other places are where a field gets its data from. They are sources of field values, not nouns in the life ontology, and no noun may share their names (check S1). Aristotle classifies beings and has no category for information; a written record is speech set down, which he counts as a discrete quantity (Categories 6, 4b23), but it is about the person rather than a part of their life. BFO files such a record as a generically dependent continuant: its content can be copied without change and depends on some bearer. IAO calls it an information content entity. A field value names its source by one of the source kinds in packages/core/src/value-source.ts (stated, journal, conversation, import, noticed), in the W3C PROV sense that the value was derived from the source; every kind but stated is proposed until the person confirms it.",
+    "bfo": {
+      "class": "generically dependent continuant",
+      "iri": "http://purl.obolibrary.org/obo/BFO_0000031"
+    },
+    "iao": {
+      "class": "information content entity",
+      "iri": "http://purl.obolibrary.org/obo/IAO_0000030"
+    },
+    "standard": "W3C PROV-O (2013), prov:wasDerivedFrom; BFO 2020 (ISO/IEC 21838-2); IAO",
+    "records": [
+      "journal entry",
+      "reflection",
+      "conversation",
+      "import"
+    ]
+  },
   "nouns": [
     {
       "noun": "person",

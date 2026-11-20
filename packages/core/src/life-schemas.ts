@@ -3,11 +3,17 @@
 // numbers (money and unsigned numbers at least 0 and below 1e10, signed ones within 180 either way), day is YYYY-MM-DD,
 // choice is one of the field's option ids, check is a boolean, origins is a comma list of origin ids. Every field is
 // optional and keys the kind does not declare are allowed, as in `kindSchema`.
+// A body may also name where each value came from under `_sources` (`SOURCES_KEY` in ./value-source.ts): an object from
+// a declared field key to its source, one of stated, journal, conversation, import or noticed, each schema sharing
+// the one source schema as `$defs.source`. The name starts with an underscore because it is data about the body, not a
+// field: no field key starts with one, so it cannot clash, and it reads as metadata in front matter and JSON alike.
+// (`x-` names belong to a schema's own annotations, such as `x-reflect`, not to the records it describes.)
 // Each schema also carries, under `x-reflect`, the kind's app and id, its noun and Aristotelian category, its kind of
 // good (Nicomachean Ethics I.8, 1098b12) and its community (Politics I.2), all read from `./terms/ontology.json`.
 // `web/scripts/life-schemas.ts` writes them to `packages/core/schemas/life/<app>.<kind>.schema.json`. Pure: no I/O.
 import { APPS, type Field, type Kind, type LifeAppId } from "./life.ts";
 import { ORIGINS } from "./origins.ts";
+import { SOURCE_JSON_SCHEMA, SOURCES_KEY, sourcesJsonSchema } from "./value-source.ts";
 import { ONTOLOGY, categoryOfKind, communityOfKind, goodOfKind, nounOfKind, type Category, type Community, type Good, type Ontology } from "./terms/ontology.ts";
 
 /** The subset of JSON Schema the life schemas use. */
@@ -34,16 +40,28 @@ export type ReflectAnnotation = {
   community: Community;
 };
 
+/** The schema of a body's `_sources`: a declared field key to its source (./value-source.ts). */
+export type SourcesJsonSchema = ReturnType<typeof sourcesJsonSchema>;
+
 export type LifeSchema = {
   $schema: "https://json-schema.org/draft/2020-12/schema";
   $id: string;
   title: string;
   description: string;
   type: "object";
-  properties: Record<string, FieldJsonSchema>;
+  /** Each declared field's schema, and `_sources`'s. `fieldSchemaOf` gives a field's alone. */
+  properties: Record<string, FieldJsonSchema | SourcesJsonSchema>;
   additionalProperties: true;
+  $defs: { source: typeof SOURCE_JSON_SCHEMA };
   "x-reflect": ReflectAnnotation;
 };
+
+/** A declared field's schema in a life schema, or undefined for `_sources` and keys the kind does not declare. */
+export function fieldSchemaOf(schema: LifeSchema, key: string): FieldJsonSchema | undefined {
+  if (key === SOURCES_KEY || !Object.hasOwn(schema.properties, key)) return undefined;
+  const s = schema.properties[key];
+  return s && s.type !== "object" ? s : undefined;
+}
 
 const ORIGIN = ORIGINS.map((o) => o.id).join("|");
 
@@ -79,14 +97,17 @@ export function lifeSchema(app: LifeAppId, k: Kind, o: Ontology = ONTOLOGY): Lif
   const good = goodOfKind(app, k.id, o);
   const community = communityOfKind(app, k.id, o);
   if (!noun || !category || !good || !community) throw new Error(`${app}:${k.id} has no noun, category, good or community in the ontology`);
+  const odd = k.fields.find((f) => f.key.startsWith("_"));
+  if (odd) throw new Error(`${app}:${k.id} declares the field ${odd.key}; a field key never starts with "_", which ${SOURCES_KEY} uses`);
   return {
     $schema: "https://json-schema.org/draft/2020-12/schema",
     $id: `urn:reflect:schema:life:${app}.${k.id}`,
     title: k.label,
     description: k.intro,
     type: "object",
-    properties: Object.fromEntries(k.fields.map((f) => [f.key, fieldJsonSchema(f)])),
+    properties: { ...Object.fromEntries(k.fields.map((f) => [f.key, fieldJsonSchema(f)])), [SOURCES_KEY]: sourcesJsonSchema(k.fields.map((f) => f.key)) },
     additionalProperties: true,
+    $defs: { source: SOURCE_JSON_SCHEMA },
     "x-reflect": { app, kind: k.id, noun: noun.noun, category, good, community },
   };
 }

@@ -49,9 +49,192 @@
       "type": "string",
       "title": "Notes",
       "maxLength": 20000
+    },
+    "_sources": {
+      "type": "object",
+      "title": "Where each value came from",
+      "description": "One source per field key. A field with no source here was typed by the person.",
+      "propertyNames": {
+        "enum": [
+          "role",
+          "where",
+          "paid",
+          "hours",
+          "since",
+          "keep",
+          "note"
+        ]
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/source"
+      }
     }
   },
   "additionalProperties": true,
+  "$defs": {
+    "source": {
+      "title": "Where a value came from",
+      "description": "The source a field's value was derived from (W3C PROV, wasDerivedFrom). Every kind but stated is proposed until the person confirms it.",
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "The person typed it into the field",
+          "properties": {
+            "kind": {
+              "const": "stated"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A journal entry",
+          "properties": {
+            "kind": {
+              "const": "journal"
+            },
+            "entry": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The entry's id."
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The words the value was taken from, quoted exactly."
+            },
+            "grant": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The read grant the quote was taken under."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "entry",
+            "quote",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A conversation with an AI",
+          "properties": {
+            "kind": {
+              "const": "conversation"
+            },
+            "conversation": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The conversation's id."
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The words the value was taken from, quoted exactly."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "conversation",
+            "quote",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "A connector or an uploaded file",
+          "properties": {
+            "kind": {
+              "const": "import"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The connector's or the file's name."
+            },
+            "item": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300,
+              "description": "The item's id there."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "name",
+            "item",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "title": "Reflect proposed it from the person's own records",
+          "properties": {
+            "kind": {
+              "const": "noticed"
+            },
+            "records": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "description": "The ids of the records it was noticed in."
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed"
+              ],
+              "description": "Proposed until the person confirms it."
+            }
+          },
+          "required": [
+            "kind",
+            "records",
+            "status"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
   "x-reflect": {
     "app": "work",
     "kind": "work",

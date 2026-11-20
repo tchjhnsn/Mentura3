@@ -183,8 +183,9 @@ const USAGE = `reflect <command> [--dir <instance>]
   mcp                             an MCP server over this vault on stdin and stdout, for your own AI:
                                   the same actions as tools
   check [--adopt]                 check the instance, each life record (a note per friend, group and
-                                  office) against its kind's schema, and published/ against its schemas
-                                  and the manifest's hashes; --adopt records hand-written changes in memory
+                                  office) against its kind's schema, person.json against the person
+                                  schema, and published/ against its schemas and the manifest's hashes;
+                                  --adopt records hand-written changes in memory
   export [--out <file>] [--moving-to <where>]
                                   the whole journal as a bundle (stdout or a file); --moving-to then
                                   records that the instance moved and refuses writes here
