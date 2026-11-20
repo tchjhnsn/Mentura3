@@ -17,8 +17,8 @@
         "required": ["path", "kind", "sha256", "presentation", "channel", "approved_at", "approved_by"],
         "additionalProperties": false,
         "properties": {
-          "path": { "type": "string", "pattern": "^(profile\\.json|posts/[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?\\.md)$", "description": "The file's path inside published/" },
-          "kind": { "enum": ["post", "profile"] },
+          "path": { "type": "string", "pattern": "^(profile\\.json|works\\.json|posts/[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?\\.md)$", "description": "The file's path inside published/" },
+          "kind": { "enum": ["post", "profile", "works"] },
           "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "sha256 of the file's bytes, in hex" },
           "presentation": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The id of the presentation record that passed the gate" },
           "channel": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "The presentation policy channel it went out on" },

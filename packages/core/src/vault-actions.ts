@@ -6,7 +6,7 @@
 // journal (listing entries, writing one and reading one) and the presentation gate's drafting and checking
 // (./presentation.ts, Reflect framework plan step 6), which the app offers over its Postgres presentations
 // (web/src/server/actions/presentations.ts), and the published/ folder a site reads (./published.ts): `publish_files`
-// writes a post or the profile there through the gate, and `unpublish_files` takes one out.
+// writes a post, the profile or the works (by their end: making/, knowing/, doing/) there through the gate, and `unpublish_files` takes one out.
 import { acceptLocalDate, type Entry } from "./journal.ts";
 import type { IsoDate } from "./person.ts";
 import type { Journal } from "./store.ts";
@@ -16,7 +16,8 @@ import { checkInput, makeRunner, Refused, type Action, type ActionDecl, type Cha
 import { draftPresentation, gateFor, ID, newPresentationId, OCCASIONS, VIRTUE_IDS, type DraftFields, type GateVerdict, type Presentation } from "./presentation.ts";
 import { vaultGate, type Presentations } from "./files-presentations.ts";
 import type { PublishedFolder, VaultWork } from "./files-published.ts";
-import { PROFILE_FILE, postPath, PUBLISHED_DIR, publishPost, publishProfile, parseFrontMatter, unpublish, type Publication } from "./published.ts";
+import { PROFILE_FILE, postPath, PUBLISHED_DIR, publishPost, publishProfile, publishWorks, parseFrontMatter, unpublish, WORKS_FILE, type Publication } from "./published.ts";
+import { shownWorks, type VaultWorkRecord } from "./works-by-end.ts";
 import { isPublishable, PUBLISHABLE, SLUG, slugify } from "./site.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
@@ -104,7 +105,7 @@ export const PUBLISH_FILES = {
   id: "publish_files",
   title: "Publish to the published folder",
   description:
-    "Ask to write a post or the profile to the vault's published/ folder, which the person's own site reads (Reflect writes files and never the site's code). A post comes from one of the person's Markdown works in the vault (an essay, letter, plan or memoir, from its front matter or kind), never from the journal. Draft its presentation record first with draft_presentation on channel personal-site (the role, the end, the audience) and name it in presentation. It always waits: only the person approves, with reflect approve, and only once the record passes the gate.",
+    "Ask to write a post, the profile or the works to the vault's published/ folder, which the person's own site reads (Reflect writes files and never the site's code). The works are published/works.json, the person's works by their end (Making, Knowing, Doing) from making/, knowing/ and doing/: a public work in full, a foreshadowed one as one line without its name, a private one never. A post comes from one of the person's Markdown works in the vault (an essay, letter, plan or memoir, from its front matter or kind), never from the journal. Draft its presentation record first with draft_presentation on channel personal-site (the role, the end, the audience) and name it in presentation. It always waits: only the person approves, with reflect approve, and only once the record passes the gate.",
   tier: "outside",
   on: ["mcp"],
   publishes: SITE_CHANNEL,
@@ -113,7 +114,7 @@ export const PUBLISH_FILES = {
 export const UNPUBLISH_FILES = {
   id: "unpublish_files",
   title: "Take a file out of the published folder",
-  description: "Take a post (by its slug) or the profile out of the vault's published/ folder and its manifest. Only when the person asks; asked for by a model, it waits for the person.",
+  description: "Take a post (by its slug), the profile or the works out of the vault's published/ folder and its manifest. Only when the person asks; asked for by a model, it waits for the person.",
   tier: "outside",
   on: ["mcp"],
 } as const satisfies ActionDecl;
@@ -167,9 +168,9 @@ export async function getEntryIn(j: Pick<Journal, "entryText">, entryId: string)
   return { id: entryId, text: t };
 }
 
-/** What `publish_files` takes: a post from a work in the vault, or the profile. */
+/** What `publish_files` takes: a post from a work in the vault, the profile, or the works by their end. */
 export type PublishFilesInput = {
-  what: "post" | "profile";
+  what: "post" | "profile" | "works";
   presentation: string;
   file?: string;
   slug?: string;
@@ -213,15 +214,33 @@ export async function publishFilesIn(ctx: VaultContext, input: PublishFilesInput
   const index = await published.index();
   const approval = { policy, record, channel: SITE_CHANNEL, at: now };
   const pub: Publication =
-    input.what === "profile"
+    input.what === "works"
+      ? publishWorks(index, approval, await worksOf(ctx))
+      : input.what === "profile"
       ? publishProfile(index, approval, { name: input.name?.trim() || ctx.personName || ctx.userId, ...(input.headline ? { headline: input.headline } : {}), ...(input.about ? { about: input.about } : {}) })
       : publishPost(index, approval, await postFrom(ctx, input, now));
   await published.apply(pub);
   return { written: pub.write.map((w) => `${PUBLISHED_DIR}/${w.path}`), removed: pub.remove.map((r) => `${PUBLISHED_DIR}/${r}`), presentation: input.presentation };
 }
 
+/** The vault's works by their end, refused when any record fails its check. */
+async function worksOf(ctx: VaultContext): Promise<VaultWorkRecord[]> {
+  if (!ctx.readWorks) throw new Error("this vault has no making/, knowing/ or doing/ folders here");
+  const { works, problems } = await ctx.readWorks();
+  if (problems.length) throw new Error(problems.join("; "));
+  return works;
+}
+
 /** What `publish_files` will write, for the person to read before they approve. Throws for a work never published. */
 async function publishFilesPreview(ctx: VaultContext, input: PublishFilesInput): Promise<string> {
+  if (input.what === "works") {
+    const works = await worksOf(ctx);
+    const shown = shownWorks(works);
+    if (!shown.length) throw new Error("There is no work to publish: add one to making/, knowing/ or doing/, and make it public or foreshadowed.");
+    const n = (d: string) => shown.filter((w) => w.disclosure === d).length;
+    const kept = works.length - shown.length;
+    return `Write ${PUBLISHED_DIR}/${WORKS_FILE} (${n("public")} public, ${n("foreshadow")} foreshadowed as one line without a name${kept ? `; ${kept} private kept out` : ""}) and its line in ${PUBLISHED_DIR}/index.json, as the works read when you approve. Your site reads them from there.`;
+  }
   if (input.what === "profile") {
     const facts = [`name: ${input.name?.trim() || ctx.personName || ctx.userId}`, input.headline ? `headline: ${input.headline}` : null, input.about ? `about: ${input.about}` : null].filter(Boolean);
     return `Write ${PUBLISHED_DIR}/${PROFILE_FILE} (${facts.join("; ")}) and its line in ${PUBLISHED_DIR}/index.json. Your site reads them from there.`;
@@ -233,10 +252,10 @@ async function publishFilesPreview(ctx: VaultContext, input: PublishFilesInput):
 }
 
 /** Take a post or the profile out of published/ and its manifest. */
-export async function unpublishFilesIn(ctx: VaultContext, input: { what?: "post" | "profile"; slug?: string }): Promise<{ removed: string[] }> {
+export async function unpublishFilesIn(ctx: VaultContext, input: { what?: "post" | "profile" | "works"; slug?: string }): Promise<{ removed: string[] }> {
   const { published } = siteOf(ctx);
-  if (input.what !== "profile" && !input.slug) throw new Error("name the post to take out by its slug");
-  const pub = unpublish(await published.index(), input.what === "profile" ? PROFILE_FILE : postPath(input.slug!));
+  if (input.what !== "profile" && input.what !== "works" && !input.slug) throw new Error("name the post to take out by its slug");
+  const pub = unpublish(await published.index(), input.what === "profile" ? PROFILE_FILE : input.what === "works" ? WORKS_FILE : postPath(input.slug!));
   await published.apply(pub);
   return { removed: pub.remove.map((r) => `${PUBLISHED_DIR}/${r}`) };
 }
@@ -251,6 +270,8 @@ export type VaultContext = RunContext & {
   presentations: Presentations;
   published?: PublishedFolder;
   readWork?: (path: string) => Promise<VaultWork>;
+  /** The person's works by their end, from making/, knowing/ and doing/, with the problems of any that fail. */
+  readWorks?: () => Promise<{ works: VaultWorkRecord[]; problems: string[] }>;
   /** The person's name from person.json, which a published profile shows unless another is given. */
   personName?: string;
 };
@@ -314,7 +335,7 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
   vault({
     ...PUBLISH_FILES,
     input: object({
-      what: oneOf(["post", "profile"] as const, { describe: "a post from a work in the vault, or the profile" }),
+      what: oneOf(["post", "profile", "works"] as const, { describe: "a post from a work in the vault, the profile, or the works by their end (making/, knowing/ and doing/: public in full, foreshadowed as one line, private never)" }),
       presentation: str({ pattern: ID, describe: "the id of the presentation record on channel personal-site, from draft_presentation" }),
       file: optional(str({ min: 1, describe: "for a post: the work's path in the vault, such as writing/on-craft.md; never the journal" })),
       slug: optional(str({ pattern: SLUG, describe: "the post's address; left out, one made from the title" })),
@@ -332,7 +353,7 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
   vault({
     ...UNPUBLISH_FILES,
     input: object({
-      what: optional(oneOf(["post", "profile"] as const, { describe: "a post (the default) or the profile" })),
+      what: optional(oneOf(["post", "profile", "works"] as const, { describe: "a post (the default), the profile or the works" })),
       slug: optional(str({ pattern: SLUG, describe: "the post's slug" })),
     }),
     run: async (ctx, input) => unpublishFilesIn(ctx, input),

@@ -806,6 +806,32 @@ describe("reflect CLI", () => {
     expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
   });
 
+  it("keeps works by their end and publishes works.json on the person's approve: public in full, foreshadowed without a name, private never", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    expect((await run("work", "--dir", dir)).out).toEqual(["no works yet: reflect work making <id> --title <title> --section projects --disclosure public"]);
+    expect((await run("work", "making", "virtu", "--title", "Virtu", "--section", "projects", "--disclosure", "public", "--source", "github=https://github.com/tchjhnsn/design-system-theory", "--status", "active", "--last-activity", "2026-11-19", "--dir", dir)).out).toEqual(["kept making/virtu.json"]);
+    await run("work", "making", "stealth", "--title", "Stealth", "--section", "products", "--disclosure", "foreshadow", "--foreshadow", "A platform for founders.", "--dir", dir);
+    await run("work", "doing", "tutoring", "--title", "Tutoring", "--section", "service", "--disclosure", "private", "--dir", dir);
+    await expect(run("work", "doing", "x", "--title", "X", "--section", "research", "--disclosure", "public", "--dir", dir)).rejects.toThrow(/research is a section of knowing/);
+    await expect(run("work", "making", "x", "--title", "X", "--section", "projects", "--disclosure", "public", "--source", "github", "--dir", dir)).rejects.toThrow(/<connector>=<url>/);
+    expect((await run("work", "--dir", dir)).out).toEqual(["Making", "  stealth  products  foreshadow  Stealth", "  virtu  projects  public  active  Virtu", "Doing", "  tutoring  service  private  Tutoring"]);
+    const id = (await run("present", "personal-site", "--role", "founder", "--end", "show what I make and whom it serves", "--audience", "visitors", "--dir", dir)).out[0]!;
+    const held = await run("publish", "works", "--presentation", id, "--dir", dir);
+    expect(held.out.join("\n")).toContain("Write published/works.json (1 public, 1 foreshadowed as one line without a name; 1 private kept out)");
+    const change = /^held: (\S+)/.exec(held.out[0]!)![1]!;
+    await run("approve", change, "--dir", dir);
+    const text = await readFile(join(dir, "published", "works.json"), "utf8");
+    expect(JSON.parse(text).works).toEqual([
+      { disclosure: "public", id: "virtu", title: "Virtu", end: "making", section: "projects", sources: [{ connector: "github", url: "https://github.com/tchjhnsn/design-system-theory" }], status: "active", last_activity: "2026-11-19" },
+      { disclosure: "foreshadow", end: "making", section: "products", foreshadow: "A platform for founders." },
+    ]);
+    expect(text).not.toMatch(/Stealth|Tutoring/);
+    expect(await run("check", "--dir", dir)).toEqual({ code: 0, out: [NONE, "ok"] });
+    expect((await run("unpublish", "--works", "--dir", dir)).out).toEqual(["removed published/works.json"]);
+  });
+
   it("publishes a work and the profile to published/ only on the person's approve with a ready record, lists, checks and unpublishes", async () => {
     const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
     dirs.push(dir);

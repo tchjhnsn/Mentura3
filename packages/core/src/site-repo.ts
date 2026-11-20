@@ -1,7 +1,7 @@
 // A personal site the person hosts themselves, in its own repository (Torian, 2026-11-18 20:47Z). Since 2026-11-20
 // ("Files out, no site code") Reflect does not edit the site: it delivers the files of its published/ folder
-// (./published.ts) into the repository's content folders only, the posts folder and a folder for profile.json and
-// index.json, through the person's GitHub connector, and their host redeploys on push. The site's code is written in
+// (./published.ts) into the repository's content folders only, the posts folder and a folder for profile.json, works.json
+// and index.json, through the person's GitHub connector, and their host redeploys on push. The site's code is written in
 // its own repository, with Claude Code or Virtu. Pure: the repository's name, where its posts live, where each
 // published file lands, and whether a path is inside the content folders.
 
@@ -62,7 +62,7 @@ export function namesRepo(args: unknown, repo: string): boolean {
   return [a.repo, a.repository, a.full_name].some((v) => cleanRepo(v)?.toLowerCase() === want);
 }
 
-/** Where profile.json and index.json land in the site's repository unless the person names another folder. */
+/** Where profile.json, works.json and index.json land in the site's repository unless the person names another folder. */
 export const DEFAULT_DATA_FOLDER = "content/reflect";
 
 /** A folder in a repository as someone typed it: relative, no "..", no leading or trailing slash. Null otherwise. */
@@ -72,6 +72,9 @@ export function cleanFolder(raw: unknown): string | null {
   return f.split("/").some((part) => part === "" || part === "." || part === "..") ? null : f;
 }
 
+/** The files of published/ that land in the data folder. */
+const DATA_FILES: readonly string[] = ["profile.json", "works.json", "index.json"];
+
 const SLUG_PART = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 
 /** The content folders of the site's repository: the posts folder with its extension, and the folder for the data. */
@@ -79,21 +82,21 @@ export type ContentPlace = { posts: string; ext: "md" | "mdx"; data: string };
 
 /**
  * Where a file of published/ lands in the site's repository: a post in the posts folder (with the folder's extension),
- * profile.json and index.json in the data folder. Any other path is refused.
+ * profile.json, works.json and index.json in the data folder. Any other path is refused.
  */
 export function contentPath(place: ContentPlace, publishedPath: string): string {
   const post = /^posts\/([a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?)\.md$/.exec(publishedPath);
   if (post) return repoPostPath({ folder: place.posts, ext: place.ext }, post[1]!);
-  if (publishedPath === "profile.json" || publishedPath === "index.json") return `${place.data}/${publishedPath}`;
-  throw new Error(`Reflect delivers only its posts, profile.json and index.json; ${publishedPath} is none of them.`);
+  if (DATA_FILES.includes(publishedPath)) return `${place.data}/${publishedPath}`;
+  throw new Error(`Reflect delivers only its posts, profile.json, works.json and index.json; ${publishedPath} is none of them.`);
 }
 
 /**
- * Whether a repository path is inside the content folders: a post file directly in the posts folder, or profile.json
- * or index.json in the data folder. Reflect writes nothing else in the site's repository.
+ * Whether a repository path is inside the content folders: a post file directly in the posts folder, or profile.json,
+ * works.json or index.json in the data folder. Reflect writes nothing else in the site's repository.
  */
 export function insideContent(place: ContentPlace, repoPath: string): boolean {
-  if (repoPath === `${place.data}/profile.json` || repoPath === `${place.data}/index.json`) return true;
+  if (DATA_FILES.some((f) => repoPath === `${place.data}/${f}`)) return true;
   const prefix = place.posts ? `${place.posts}/` : "";
   if (!repoPath.startsWith(prefix) || !repoPath.endsWith(`.${place.ext}`)) return false;
   return SLUG_PART.test(repoPath.slice(prefix.length, -(place.ext.length + 1)));
