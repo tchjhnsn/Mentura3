@@ -11,8 +11,8 @@
 // deliberation and choice settle (prohairesis, NE III.3), the work of practical wisdom (NE VI.5, VI.7). A
 // practical belief names the ideal it serves and the circumstances it is for, as the particular premise of
 // the practical syllogism serves the universal one (NE VII.3 1147a1-10). Both keep their origins and holders.
-import type { Holder, StanceLine } from "./claims";
-import { originLabel, type Origin } from "./origins";
+import type { Holder, StanceLine } from "./claims.ts";
+import { originLabel, type Origin } from "./origins.ts";
 
 /** The chapters, in the order of the Ventures of a Lifetime chart (the vault's folders, lifetime.ts). */
 export const DOMAINS = [

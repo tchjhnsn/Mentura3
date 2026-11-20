@@ -14,6 +14,8 @@ import { attributesFromPuzzle } from "../core/src/founder-puzzle.ts";
 import { ATTRIBUTE_KINDS, closeAttribute, confirmAttribute, isAttributeKind, isoDate, proposeAttributes, stateAttribute } from "../core/src/person.ts";
 import { filesPublished, readVaultWork, readWorkRecords, writeWorkRecord } from "../core/src/files-published.ts";
 import { DISCLOSURES, ENDS, isEnd, sectionsOf, STATUSES, type WorkRecord } from "../core/src/works-by-end.ts";
+import { filesQuotes, readQuotesAndClaims } from "../core/src/files-quotes.ts";
+import { claimView, liveTags, QUOTE_SOURCE_KINDS, quoteStatus, SAID_AS, SCHEME_IDS, schemeOf, type QuoteSourceKind, type SchemeId } from "../core/src/quotes.ts";
 import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
 import { lifeCheckLine } from "../core/src/life-check.ts";
@@ -194,6 +196,20 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   keep a work at <end>/<id>.json (writing it at another end moves it).
                                   Sections: making projects, products, writing, art, crafts; knowing
                                   research, study, reading; doing service, care, civic, talks, events
+  quote "<the exact words>" [--speaker <name>] [--source journal|conversation|book|talk|post|letter|reflect|other]
+        [--ref <where>] [--title <title>] [--locator <page or time>] [--said YYYY-MM-DD]
+        [--claim <claim id or its wording>] [--act asserting|agreeing|disagreeing|pure-questioning|retracting|...]
+                                  keep words someone said, exactly, at quotes/<id>.json; --speaker for
+                                  someone else (left out, you). --claim tags what it says (a new wording
+                                  makes claims/<id>.json); --act tags what the words do
+  quotes                          every quote and its tags; a proposed one shows how to confirm it
+  tag <quote or claim id> <scheme> <value> [--object <id>] [--exact <words> [--prefix ..] [--suffix ..]]
+                                  add a tag. On a quote: act, claim, relation (--object), subject, note.
+                                  On a claim: domain, kind (practical needs --object, its ideal), origin,
+                                  subject, note. Confirm or withdraw: tag <id> status confirmed|withdrawn
+                                  [--object <tag>]. Nothing is edited or deleted
+  claims                          each claim and what you last said about it
+  claim <id>                      what you said about a claim over time, and who else says it
   publish list                    what is in published/: each file, its presentation record and when you
                                   approved it
   unpublish <slug> | unpublish --profile | unpublish --works
@@ -331,6 +347,15 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       disclosure: { type: "string" },
       foreshadow: { type: "string" },
       pinned: { type: "boolean", default: false },
+      claim: { type: "string" },
+      act: { type: "string" },
+      said: { type: "string" },
+      ref: { type: "string" },
+      locator: { type: "string" },
+      object: { type: "string" },
+      exact: { type: "string" },
+      prefix: { type: "string" },
+      suffix: { type: "string" },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -382,6 +407,7 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     published,
     readWork: (path) => readVaultWork(root, path),
     readWorks: () => readWorkRecords(root),
+    quotes: filesQuotes(root),
     personName: await readFile(join(root, paths.person, "person.json"), "utf8").then((t) => (JSON.parse(t) as { name?: string }).name, () => undefined),
     ...(config.moved_to ? { movedTo: config.moved_to } : {}),
   };
@@ -477,6 +503,61 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     } as WorkRecord;
     const w = await writeWorkRecord(root, end, id, record);
     out(`kept ${w.path}${w.moved ? ` (moved from ${w.moved})` : ""}`);
+    return 0;
+  }
+  if (cmd === "quote" || cmd === "quotes" || cmd === "claim" || cmd === "claims" || cmd === "tag") {
+    const now = new Date();
+    const read = await readQuotesAndClaims(root);
+    const line = (id: string, t: { id: string; scheme: string; value: string; object?: string; status: string; creator: string }) =>
+      `    ${t.id} ${t.scheme}: ${t.value}${t.object ? ` -> ${t.object}` : ""}${t.status === "proposed" ? `  (proposed by ${t.creator}; confirm: reflect tag ${id} status confirmed --object ${t.id})` : ""}`;
+    if (cmd === "quotes") {
+      for (const { id, record: q } of read.quotes) {
+        const st = quoteStatus(q);
+        out(`${id}  ${"self" in q.speaker ? "you" : q.speaker.name}, ${q.source.kind}${q.said_at ? `, ${q.said_at}` : ""}${st === "confirmed" ? "" : `  (${st})`}\n  "${q.text}"`);
+        for (const t of liveTags(q)) out(line(id, t));
+      }
+      for (const p of read.problems) out(`problem: ${p}`);
+      if (!read.quotes.length && !read.problems.length) out('no quotes yet: reflect quote "<the exact words>" --source journal --claim "<what it says>" --act asserting');
+      return read.problems.length ? 1 : 0;
+    }
+    if (cmd === "claims") {
+      for (const { id, record: c } of read.claims) {
+        const v = claimView(id, c, read.quotes);
+        const said = v.now ? `${SAID_AS.find((x) => x.id === v.now!.said)!.label.toLowerCase()} (${v.now.when})` : "you have not said";
+        out(`${id}  "${c.text}"  ${said}; ${v.mine.length} of yours, ${v.others.length} from others`);
+      }
+      for (const p of read.problems) out(`problem: ${p}`);
+      if (!read.claims.length && !read.problems.length) out('no claims yet: reflect quote "<the exact words>" --claim "<what it says>"');
+      return read.problems.length ? 1 : 0;
+    }
+    if (cmd === "claim") {
+      const c = read.claims.find((x) => x.id === rest[0]);
+      if (!c) throw new Error(`claim <id>: one of ${read.claims.map((x) => x.id).join(", ") || "none yet"}`);
+      const v = claimView(c.id, c.record, read.quotes);
+      out(`"${c.record.text}"`);
+      for (const t of liveTags(c.record)) out(line(c.id, t));
+      out(v.mine.length ? "What you said:" : "You have not said it in a confirmed quote.");
+      for (const s of v.mine) out(`  ${s.when}  ${s.said ? SAID_AS.find((x) => x.id === s.said)!.label : "no act tagged"}: "${s.text}" (${s.source.kind}, ${s.quote})`);
+      if (v.others.length) out("Who else says it:");
+      for (const s of v.others) out(`  ${s.when}  ${s.speaker}: "${s.text}" (${s.source.kind}, ${s.quote})`);
+      return 0;
+    }
+    const store = filesQuotes(root);
+    if (cmd === "tag") {
+      const [id, scheme, ...words] = rest;
+      const value = words.join(" ").trim();
+      if (!id || !scheme || !value) throw new Error(`tag <quote or claim id> <scheme> <value> [--object <id>] [--exact <words> [--prefix <words>] [--suffix <words>]]; schemes: ${SCHEME_IDS.join(", ")}`);
+      if (!schemeOf(scheme)) throw new Error(`no tag scheme ${scheme}; the schemes are ${SCHEME_IDS.join(", ")}`);
+      const w = await store.tag(id, { scheme: scheme as SchemeId, value, ...(values.object ? { object: values.object } : {}), ...(values.exact ? { selector: { exact: values.exact, ...(values.prefix ? { prefix: values.prefix } : {}), ...(values.suffix ? { suffix: values.suffix } : {}) } } : {}) }, now);
+      out(`tagged ${w.path} (${w.tag}): ${scheme} ${value}`);
+      return 0;
+    }
+    const text = rest.join(" ").trim();
+    const kind = values.source?.[0] ?? "journal";
+    if (!QUOTE_SOURCE_KINDS.some((k) => k.id === kind)) throw new Error(`--source is one of ${QUOTE_SOURCE_KINDS.map((k) => k.id).join(", ")}`);
+    if (!text) throw new Error('quote "<the exact words>" [--speaker <name>] [--source journal|conversation|book|talk|post|letter|reflect|other] [--ref <where>] [--title <title>] [--locator <page>] [--said YYYY-MM-DD] [--claim <id or wording>] [--act <act>]');
+    const k = await store.keep({ text, speaker: values.speaker, source: kind as QuoteSourceKind, ref: values.ref, title: values.title, locator: values.locator, said_at: values.said, claim: values.claim, act: values.act }, "person", now);
+    out(`kept ${k.path}${k.madeClaim ? ` and claims/${k.claim}.json` : ""}`);
     return 0;
   }
   if (cmd === "unpublish") {

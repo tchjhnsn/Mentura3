@@ -18,6 +18,8 @@ import { vaultGate, type Presentations } from "./files-presentations.ts";
 import type { PublishedFolder, VaultWork } from "./files-published.ts";
 import { PROFILE_FILE, postPath, PUBLISHED_DIR, publishPost, publishProfile, publishWorks, parseFrontMatter, unpublish, WORKS_FILE, type Publication } from "./published.ts";
 import { shownWorks, type VaultWorkRecord } from "./works-by-end.ts";
+import type { QuotesFolder } from "./files-quotes.ts";
+import { claimView, liveTags, QUOTE_SOURCE_KINDS, quoteStatus, SCHEME_IDS, type QuoteSourceKind, type SchemeId } from "./quotes.ts";
 import { isPublishable, PUBLISHABLE, SLUG, slugify } from "./site.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
@@ -116,6 +118,33 @@ export const UNPUBLISH_FILES = {
   title: "Take a file out of the published folder",
   description: "Take a post (by its slug), the profile or the works out of the vault's published/ folder and its manifest. Only when the person asks; asked for by a model, it waits for the person.",
   tier: "outside",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const KEEP_QUOTE = {
+  id: "keep_quote",
+  title: "Keep a quote",
+  description:
+    "Keep words someone said or wrote, exactly as they were said, never a paraphrase: the person's own (leave speaker out) or another's (name the speaker). Optionally tag what it says (claim: an existing claim's id, or a short wording that makes a new claim) and what the words do (act, as Inference Anchoring Theory names it: asserting, agreeing, disagreeing, pure-questioning, retracting, ...). Kept by you, the quote and its tags come in proposed until the person confirms them. Keep only what the person asked you to keep.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const TAG_QUOTE = {
+  id: "tag_quote",
+  title: "Tag a quote or claim",
+  description:
+    "Add one tag to a quote or a claim (a W3C Web Annotation). On a quote: act, claim, relation (with object, the quote or claim it bears on), subject, note. On a claim: domain, kind (ideal, or practical with object the ideal it serves), origin, subject, note. Your tags come in proposed; only the person confirms or withdraws, so a status tag is refused here. Nothing is edited or deleted.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const READ_QUOTES = {
+  id: "read_quotes",
+  title: "Read quotes and claims",
+  description:
+    "The person's quotes with their tags, or, given a claim's id, what the person has said about that claim over time and who else says it. This is what was said, never what the person believes inside: show it as \"you said\".",
+  tier: "read",
   on: ["mcp"],
 } as const satisfies ActionDecl;
 
@@ -251,6 +280,27 @@ async function publishFilesPreview(ctx: VaultContext, input: PublishFilesInput):
   return `Write ${PUBLISHED_DIR}/${postPath(p.slug)} ("${p.title}", ${p.kind}, from ${input.file}) and its line in ${PUBLISHED_DIR}/index.json, as the work reads when you approve. Your site reads them from there.`;
 }
 
+/** The vault's quotes folder, refused when the host has none. */
+function quotesOf(ctx: VaultContext): QuotesFolder {
+  if (!ctx.quotes) throw new Error("this vault has no quotes/ and claims/ folders here");
+  return ctx.quotes;
+}
+
+/** The quotes with their live tags, or what the person said about one claim. */
+export async function readQuotesIn(ctx: VaultContext, claim?: string) {
+  const { quotes, claims, problems } = await quotesOf(ctx).read();
+  if (claim) {
+    const c = claims.find((x) => x.id === claim);
+    if (!c) throw new Error(`no claim ${claim}; claims: ${claims.map((x) => x.id).join(", ") || "none yet"}`);
+    return { ...claimView(c.id, c.record, quotes), tags: liveTags(c.record).map(({ id, scheme, value, object, status }) => ({ id, scheme, value, ...(object ? { object } : {}), status })) };
+  }
+  return {
+    quotes: quotes.map(({ id, record: q }) => ({ id, text: q.text, speaker: "self" in q.speaker ? "the person" : q.speaker.name, source: q.source, said_at: q.said_at ?? null, status: quoteStatus(q), tags: liveTags(q).map(({ id: t, scheme, value, object, status }) => ({ id: t, scheme, value, ...(object ? { object } : {}), status })) })),
+    claims: claims.map(({ id, record }) => ({ id, text: record.text })),
+    problems,
+  };
+}
+
 /** Take a post or the profile out of published/ and its manifest. */
 export async function unpublishFilesIn(ctx: VaultContext, input: { what?: "post" | "profile" | "works"; slug?: string }): Promise<{ removed: string[] }> {
   const { published } = siteOf(ctx);
@@ -274,6 +324,8 @@ export type VaultContext = RunContext & {
   readWorks?: () => Promise<{ works: VaultWorkRecord[]; problems: string[] }>;
   /** The person's name from person.json, which a published profile shows unless another is given. */
   personName?: string;
+  /** The vault's quotes/ and claims/ folders (./files-quotes.ts). */
+  quotes?: QuotesFolder;
 };
 
 /** A vault action: checked by an input schema of the core's own (./input.ts), so its JSON Schema can be listed. */
@@ -358,6 +410,41 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
     }),
     run: async (ctx, input) => unpublishFilesIn(ctx, input),
     change: (r) => ({ before: r }),
+  }),  vault({
+    ...KEEP_QUOTE,
+    input: object({
+      text: str({ min: 1, describe: "the exact words" }),
+      speaker: optional(str({ min: 1, describe: "who said it, when not the person" })),
+      source: optional(oneOf(QUOTE_SOURCE_KINDS.map((k) => k.id) as unknown as readonly QuoteSourceKind[], { describe: "where it was said; journal when left out" })),
+      ref: optional(str({ min: 1, describe: "the source record or work, such as a journal file or a book" })),
+      title: optional(str({ min: 1, describe: "the source's title" })),
+      locator: optional(str({ min: 1, describe: "the place in the source: page, paragraph, timestamp" })),
+      said_at: optional(str({ pattern: /^\d{4}-\d{2}-\d{2}$/, describe: "when it was said, YYYY-MM-DD" })),
+      claim: optional(str({ min: 1, describe: "what it says: an existing claim's id, or a short wording for a new claim" })),
+      act: optional(str({ min: 1, describe: "what the words do: asserting, agreeing, disagreeing, pure-questioning, assertive-questioning, rhetorical-questioning, challenging, restating, retracting, none" })),
+    }),
+    run: async (ctx, input) => quotesOf(ctx).keep(input, ctx.origin === "cli" ? "person" : "assistant", ctx.now ?? new Date()),
+    change: (r) => ({ after: r }),
+  }),
+  vault({
+    ...TAG_QUOTE,
+    input: object({
+      id: str({ min: 1, describe: "the quote's or claim's id" }),
+      scheme: oneOf(SCHEME_IDS, { describe: "the vocabulary: act, claim, relation, subject, domain, kind, origin, note (status is the person's)" }),
+      value: str({ min: 1, describe: "a concept of the scheme, a claim's id for a claim tag, or the note's words" }),
+      object: optional(str({ min: 1, describe: "for relation, the quote or claim it bears on; for kind practical, the ideal it serves" })),
+      exact: optional(str({ min: 1, describe: "the exact words of the quote the tag is about; left out, the whole quote" })),
+      prefix: optional(str({ describe: "the words just before exact" })),
+      suffix: optional(str({ describe: "the words just after exact" })),
+    }),
+    run: async (ctx, { id, scheme, value, object: obj, exact, prefix, suffix }) =>
+      quotesOf(ctx).tag(id, { scheme: scheme as SchemeId, value, creator: ctx.origin === "cli" ? "person" : "assistant", ...(obj ? { object: obj } : {}), ...(exact ? { selector: { exact, ...(prefix ? { prefix } : {}), ...(suffix ? { suffix } : {}) } } : {}) }, ctx.now ?? new Date()),
+    change: (r) => ({ after: r }),
+  }),
+  vault({
+    ...READ_QUOTES,
+    input: object({ claim: optional(str({ min: 1, describe: "a claim's id, for what the person said about it" })) }),
+    run: async (ctx, { claim }) => readQuotesIn(ctx, claim),
   }),
 ];
 
@@ -366,9 +453,10 @@ export const vaultActionById = (id: string): VaultAction | undefined => VAULT_AC
 /**
  * The vault's actions the app does not offer under the same name: the app keeps works in Postgres and publishes one
  * with publish_to_site (web/src/server/actions/presentations.ts), which writes the same bytes through the same core
- * functions (./published.ts).
+ * functions (./published.ts). The quote actions are the vault's only until the app keeps quotes
+ * (docs/design/REFLECT_QUOTES_2026-11-20.md, step 2).
  */
-export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id];
+export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id, KEEP_QUOTE.id, TAG_QUOTE.id, READ_QUOTES.id];
 
 /** An action as the CLI lists it and an MCP server offers it: its declaration and its input's JSON Schema. */
 export type Listed = ActionDecl & { input: JsonSchema };
