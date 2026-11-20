@@ -9,6 +9,7 @@ import { open } from "./crypto";
 import { isMedium, mediumOf, type Medium } from "@reflect/core/ways";
 import { lifeLogActs } from "@reflect/core/life";
 import { lifeActs, lifeRecords, lifeStateChanges } from "./life-store";
+import { listClaims } from "./claims-store";
 
 const iso = (d: unknown) => new Date(d as string).toISOString();
 
@@ -17,15 +18,11 @@ export async function logActs(userId: string): Promise<Act[]> {
   const [books, statuses, stances, grasps] = await Promise.all([
     db().query("SELECT id, title_ct, created_at, started_on::text AS started_on, finished_on::text AS finished_on FROM learn_book WHERE user_id = $1", [userId]),
     db().query("SELECT book_id, status, on_day::text AS on_day, created_at FROM learn_book_status WHERE user_id = $1", [userId]).catch(() => ({ rows: [] })),
-    db().query("SELECT c.id, c.text_ct, s.stance, s.created_at FROM learn_claim c JOIN learn_claim_stance s ON s.claim_id = c.id WHERE c.user_id = $1", [userId]).catch(() => ({ rows: [] })),
+    listClaims(userId).catch(() => []),
     db().query("SELECT s.name_ct, g.grasp, g.created_at FROM learn_grasp g JOIN learn_subject s ON s.id = g.subject_id WHERE g.user_id = $1", [userId]),
   ]);
-  const claims = new Map<string, { text: string; stances: { stance: Stance; at: string }[] }>();
-  for (const r of stances.rows) {
-    const c = claims.get(r.id as string) ?? { text: open(userId, r.text_ct as string), stances: [] };
-    c.stances.push({ stance: r.stance as Stance, at: iso(r.created_at) });
-    claims.set(r.id as string, c);
-  }
+  // A stance is a quote since migration 0065; listClaims reads the history back from the person's quotes.
+  const claims = new Map<string, { text: string; stances: { stance: Stance; at: string }[] }>(stances.filter((c) => c.history.length).map((c) => [c.id, { text: c.text, stances: c.history.map((h) => ({ stance: h.stance, at: h.at })) }]));
   const history = new Map<string, { status: BookStatus; day: string; at: string }[]>();
   for (const r of statuses.rows) history.set(r.book_id as string, [...(history.get(r.book_id as string) ?? []), { status: r.status as BookStatus, day: r.on_day as string, at: iso(r.created_at) }]);
   const items = await db().query(
