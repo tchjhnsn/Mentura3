@@ -39,6 +39,8 @@ describe("site repository", () => {
     expect(contentPath(place, "posts/on-craft.md")).toBe("app/blog/posts/on-craft.mdx");
     expect(contentPath(place, "index.json")).toBe("content/reflect/index.json");
     expect(contentPath(place, "profile.json")).toBe("content/reflect/profile.json");
+    expect(contentPath(place, "works.json")).toBe("content/reflect/works.json");
+    expect(insideContent(place, "content/reflect/works.json")).toBe(true);
     for (const p of ["app/page.tsx", "posts/../app/page.tsx", "posts/a/b.md", "notes.json"]) expect(() => contentPath(place, p)).toThrow(/delivers only/);
     expect(insideContent(place, "app/blog/posts/on-craft.mdx")).toBe(true);
     expect(insideContent(place, "content/reflect/index.json")).toBe(true);

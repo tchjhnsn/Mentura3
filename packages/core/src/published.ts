@@ -3,37 +3,43 @@
 // `published/`, the way headless Naive writes records. A site (tcjcafe.com, a Next.js blog in its own repository)
 // reads those files. The layout:
 //   - `published/profile.json`: the public profile facts the person approved;
+//   - `published/works.json`: the person's works by their end, Making, Knowing and Doing (./works-by-end.ts): a public
+//     work in full, a foreshadowed one as one line without its name, a private one never;
 //   - `published/posts/<slug>.md`: one post, Markdown with YAML front matter (title, date, updated, slug, summary,
 //     kind, tags when there are any, and the presentation record and its channel);
 //   - `published/index.json`: the manifest, each file with its sha256, the presentation record, the channel, when it
 //     was approved and by whom (always the person).
-// A file goes in only through `publishPost` or `publishProfile`, and each asks `gateFor` (./presentation.ts) first: a
+// A file goes in only through `publishPost`, `publishProfile` or `publishWorks`, and each asks `gateFor` (./presentation.ts) first: a
 // record that is not ready is refused with `not-presented`. The runner (./registry.ts) asked the person before the
 // run; these functions cannot tell who approved, so they write "person" because only the person can approve a run
 // that publishes. `unpublish` takes a file and its entry out. Pure: no I/O. The folder host is ./files-published.ts;
 // the web app delivers the same bytes to the site's repository (web/src/server/site-repo.ts). The schemas are
-// packages/core/schemas/published-index.schema.json, published-post.schema.json and published-profile.schema.json.
+// packages/core/schemas/published-index.schema.json, published-post.schema.json, published-profile.schema.json and
+// published-works.schema.json.
 import indexSchema from "../schemas/published-index.schema.json" with { type: "json" };
 import postSchema from "../schemas/published-post.schema.json" with { type: "json" };
 import profileSchema from "../schemas/published-profile.schema.json" with { type: "json" };
+import worksSchema from "../schemas/published-works.schema.json" with { type: "json" };
 import { sha256 } from "./memory.ts";
 import { gateFor, type Presentation, type PresentationPolicy } from "./presentation.ts";
 import { gateText, Refused } from "./registry.ts";
 import { schemaProblems, type Schema } from "./schema-check.ts";
 import { excerpt, isPublishable, isSlug, RESERVED_SLUGS } from "./site.ts";
 import type { WorkKind } from "./works.ts";
+import { shownWorks, workRecordProblems, type PublishedWork, type VaultWorkRecord } from "./works-by-end.ts";
 
 export const PUBLISHED_DIR = "published";
 export const INDEX_FILE = "index.json";
 export const PROFILE_FILE = "profile.json";
+export const WORKS_FILE = "works.json";
 export const POSTS_DIR = "posts";
 const SCHEMA_DIR = "https://github.com/tchjhnsn/reflect/blob/main/packages/core/schemas";
-export const SCHEMAS = { index: indexSchema as Schema, post: postSchema as Schema, profile: profileSchema as Schema };
+export const SCHEMAS = { index: indexSchema as Schema, post: postSchema as Schema, profile: profileSchema as Schema, works: worksSchema as unknown as Schema };
 
 /** One file in the manifest. `path` is inside published/. */
 export type PublishedEntry = {
   path: string;
-  kind: "post" | "profile";
+  kind: "post" | "profile" | "works";
   sha256: string;
   presentation: string;
   channel: string;
@@ -95,6 +101,8 @@ export function postFile(fm: PostFrontMatter, body: string): string {
 }
 
 export const profileFile = (p: PublishedProfile): string => `${JSON.stringify({ $schema: `${SCHEMA_DIR}/published-profile.schema.json`, ...p }, null, 2)}\n`;
+export type PublishedWorks = { works: PublishedWork[]; presentation: string; channel: string };
+export const worksFile = (w: PublishedWorks): string => `${JSON.stringify({ $schema: `${SCHEMA_DIR}/published-works.schema.json`, ...w }, null, 2)}\n`;
 export const indexFile = (i: PublishedIndex): string => `${JSON.stringify({ $schema: `${SCHEMA_DIR}/published-index.schema.json`, format: i.format, entries: i.entries }, null, 2)}\n`;
 
 const tagsOf = (t: readonly string[] | undefined): string[] | undefined => {
@@ -159,6 +167,19 @@ export function publishProfile(index: PublishedIndex, a: Approval, p: ProfileInp
     channel: g.channel,
   };
   return withFile(index, PROFILE_FILE, "profile", profileFile(profile), g);
+}
+
+/**
+ * Publish the person's works by their end, through the gate: every work read from the vault's making/, knowing/ and
+ * doing/ folders goes in as its disclosure allows (a private one never). A work whose record fails its check stops it.
+ */
+export function publishWorks(index: PublishedIndex, a: Approval, works: readonly VaultWorkRecord[]): Publication {
+  const g = passed(a);
+  const problems = works.flatMap((w) => workRecordProblems(w.end, w.record, `${w.end}/${w.id}.json`));
+  if (problems.length) throw new Error(problems.join("; "));
+  const shown = shownWorks(works);
+  if (!shown.length) throw new Error("There is no work to publish: add one to making/, knowing/ or doing/, and make it public or foreshadowed.");
+  return withFile(index, WORKS_FILE, "works", worksFile({ works: shown, presentation: g.presentation, channel: g.channel }), g);
 }
 
 /** Take a file and its manifest entry out. Unpublishing removes content, so it needs no gate. */
@@ -237,11 +258,12 @@ export function publishedProblems(files: ReadonlyMap<string, string>): string[] 
       front = f.front;
       out.push(...schemaProblems(SCHEMAS.post, front, at(e.path)));
       if (front.slug !== slug) out.push(`${at(e.path)}: its slug is not its file name`);
-    } else if (e.path === PROFILE_FILE) {
+    } else if (e.path === PROFILE_FILE || e.path === WORKS_FILE) {
+      if (e.kind !== (e.path === PROFILE_FILE ? "profile" : "works")) out.push(`${at(INDEX_FILE)}: ${e.path} is not a ${e.kind}`);
       try {
         const { $schema: _s, ...p } = JSON.parse(bytes) as Record<string, unknown>;
         front = p;
-        out.push(...schemaProblems(SCHEMAS.profile, front, at(e.path)));
+        out.push(...schemaProblems(e.path === PROFILE_FILE ? SCHEMAS.profile : SCHEMAS.works, front, at(e.path)));
       } catch {
         out.push(`${at(e.path)} is not JSON`);
       }
