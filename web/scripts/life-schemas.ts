@@ -1,13 +1,16 @@
 // Writes a JSON Schema for every life record kind to packages/core/schemas/life/<app>.<kind>.schema.json, from
-// packages/core/src/life-schemas.ts, and removes files there for kinds that no longer exist. With --check it writes
-// nothing and fails when a committed file is missing, stale or left over:
+// packages/core/src/life-schemas.ts, and removes files there for kinds that no longer exist. It also writes the person
+// record's schema to packages/core/schemas/person.schema.json, from packages/core/src/person-schema.ts. With --check it
+// writes nothing and fails when a committed file is missing, stale or left over:
 //   pnpm schemas            (npx tsx scripts/life-schemas.ts)
 //   pnpm schemas --check
 import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { lifeSchemaFiles } from "../../packages/core/src/life-schemas.ts";
+import { PERSON_SCHEMA_FILE, personSchemaFile } from "../../packages/core/src/person-schema.ts";
 
-const dir = join(import.meta.dirname, "../../packages/core/schemas/life");
+const schemas = join(import.meta.dirname, "../../packages/core/schemas");
+const dir = join(schemas, "life");
 const check = process.argv.includes("--check");
 const want = lifeSchemaFiles();
 mkdirSync(dir, { recursive: true });
@@ -26,8 +29,21 @@ for (const name of have) {
   else rmSync(join(dir, name));
 }
 
+const person = personSchemaFile();
+const personNow = (() => {
+  try {
+    return readFileSync(join(schemas, PERSON_SCHEMA_FILE), "utf8");
+  } catch {
+    return null;
+  }
+})();
+if (personNow !== person) {
+  if (check) problems.push(`${PERSON_SCHEMA_FILE} is ${personNow === null ? "missing" : "stale"}`);
+  else writeFileSync(join(schemas, PERSON_SCHEMA_FILE), person);
+}
+
 if (problems.length > 0) {
-  console.error(`Life schemas are out of date. Run pnpm schemas in web/.\n${problems.join("\n")}`);
+  console.error(`Schemas are out of date. Run pnpm schemas in web/.\n${problems.join("\n")}`);
   process.exit(1);
 }
-console.log(check ? `${want.size} life schemas are current.` : `Wrote ${want.size} life schemas to packages/core/schemas/life.`);
+console.log(check ? `${want.size} life schemas and the person schema are current.` : `Wrote ${want.size} life schemas to packages/core/schemas/life and ${PERSON_SCHEMA_FILE} to packages/core/schemas.`);

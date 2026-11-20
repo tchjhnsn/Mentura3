@@ -9,6 +9,9 @@
 //   K1  every life record kind is listed by exactly one noun, and K2 every listed kind exists
 //   G1  every noun names its kind of good: body, external or soul (Nicomachean Ethics I.8, 1098b12)
 //   C1  every noun names its community: person, union, household, village or polis (Politics I.2)
+//   S1  no noun shares a name with a record listed under sources: journal entries, reflections, conversations and
+//       imports are sources of field values (Torian, 2026-11-20), outside the ten Categories, never life nouns
+//   S2  the sources' BFO class is generically dependent continuant (BFO_0000031)
 // Pure: it reads nothing and is given the ontology and the kinds.
 import ontologyJson from "./ontology.json" with { type: "json" };
 
@@ -26,7 +29,12 @@ export type Noun = {
   community: Community;
   kinds: string[];
 };
-export type Ontology = { version: string; note: string; top_categories: TopCategory[]; nouns: Noun[] };
+/**
+ * The records that are sources of field values rather than nouns (./value-source.ts): information, filed in BFO as a
+ * generically dependent continuant and in IAO as an information content entity.
+ */
+export type Sources = { note: string; bfo: Bfo; iao: Bfo; standard: string; records: string[] };
+export type Ontology = { version: string; note: string; top_categories: TopCategory[]; sources: Sources; nouns: Noun[] };
 
 // The JSON is read as data and checked by checkOntology, so it is typed as the shape the check holds it to.
 export const ONTOLOGY = ontologyJson as unknown as Ontology;
@@ -41,6 +49,7 @@ export const BFO_LABELS: ReadonlyMap<string, string> = new Map([
   [`${OBO}BFO_0000020`, "specifically dependent continuant"],
   [`${OBO}BFO_0000023`, "role"],
   [`${OBO}BFO_0000029`, "site"],
+  [`${OBO}BFO_0000031`, "generically dependent continuant"],
   [`${OBO}BFO_0000145`, "relational quality"],
 ]);
 
@@ -77,7 +86,12 @@ export function checkOntology(o: Ontology, kinds: readonly string[]): Verdict {
     if (label === undefined) problems.push(`B1 ${t.name}: BFO IRI ${t.bfo.iri} is not a class the ontology uses`);
     else if (label !== t.bfo.class) problems.push(`B1 ${t.name}: BFO class ${t.bfo.class} does not match ${t.bfo.iri}, which is ${label}`);
   }
+  const sourceRecords = new Set(o.sources?.records ?? []);
+  if (!o.sources) problems.push("S1 the ontology lists no sources");
+  else if (o.sources.bfo.iri !== `${OBO}BFO_0000031` || o.sources.bfo.class !== "generically dependent continuant")
+    problems.push(`S2 sources: BFO class ${o.sources.bfo.class} (${o.sources.bfo.iri}) is not generically dependent continuant (${OBO}BFO_0000031)`);
   for (const n of live) {
+    if (sourceRecords.has(n.noun)) problems.push(`S1 ${n.noun} is a source of field values, not a noun`);
     if (tops.has(n.noun) || nouns.has(n.noun)) problems.push(`${n.noun}: a top category and a noun, or two nouns, share this name`);
     nouns.set(n.noun, n);
   }
@@ -139,6 +153,17 @@ const categories = (o: Ontology): Map<string, string> => {
 /** The noun a life record kind is about, or null. */
 export function nounOfKind(app: string, kind: string, o: Ontology = ONTOLOGY): Noun | null {
   return o.nouns.find((n) => n.status !== "retired" && n.kinds.includes(`${app}:${kind}`)) ?? null;
+}
+
+/** A kept noun by its name, or null. */
+export function nounNamed(name: string, o: Ontology = ONTOLOGY): Noun | null {
+  return o.nouns.find((n) => n.status !== "retired" && n.noun === name) ?? null;
+}
+
+/** The Aristotelian category a kept noun reaches, or null. */
+export function categoryOfNoun(name: string, o: Ontology = ONTOLOGY): Category | null {
+  const c = nounNamed(name, o) ? categories(o).get(name) : undefined;
+  return (CATEGORIES as readonly string[]).includes(c ?? "") ? (c as Category) : null;
 }
 
 /** The Aristotelian category a life record kind falls under, or null when no noun lists it. */

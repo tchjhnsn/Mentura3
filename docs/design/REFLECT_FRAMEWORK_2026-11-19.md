@@ -1,6 +1,6 @@
 # Reflect as a framework for a life
 
-Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and only the three life kinds a vault keeps (friends, groups and offices) are checked against the schemas, since the web app keeps the rest in Postgres.
+Status: proposed on 2026-11-19 and built one PR at a time. Built: steps 1 to 5, the ontology with its check, a JSON Schema for every life record kind, the Lean proofs, the action registry and runner in core (`src/registry.ts`, `reflect actions`, `reflect act`, `reflect mcp` over a vault), the life stages as the lifecycle (`src/lifecycle.ts`, `reflect stage`), and the presentation gate in core, the CLI and the web app's site publish, with what passes it written as files to `published/` (step 6: `src/presentation.ts`, `src/published.ts`, `reflect present`, `reflect publish`, `publish_to_site`). Built on 2026-11-20: a JSON Schema for the person record, and sources as a closed enumeration for every field value (see "Sources of a value"). Not built: most of the app's actions are still declared in `web/` (only the journal's four moved, because their stores have a files host), and only the three life kinds a vault keeps (friends, groups and offices) are checked against the schemas, since the web app keeps the rest in Postgres.
 
 Torian asked for this on 2026-11-19: "I would actually like to build reflect also as a framework for personal and life aspect such as we built it for ventures; this time using aristotle for our formal ontologies." On the decision card he chose to give Reflect its own ontology and checker in Naive's file format, so it can move onto the shared kernel once that is lifted out of Naive.
 
@@ -75,10 +75,52 @@ A noun names what a record is about, not the record. Naive learned this the hard
 
 It also refuses top categories that are not Aristotle's ten. U2, a top category with something broader, cannot happen in this format. `categoryOfKind(app, kind)` gives the category of any life record kind.
 
+Records that are themselves information, such as journal entries, reflections, AI conversations and imports, are not nouns. Torian ruled on 2026-11-20 (04:15Z) that they are where a field gets its data from: sources of field values, not nouns in the life ontology. Aristotle classifies beings and has no category for information. A written record is speech set down, which he counts as a discrete quantity (*Categories* 6, 4b23), but it is about the person rather than a part of their life. BFO files it as a generically dependent continuant (BFO_0000031) and IAO as an information content entity. The ontology lists them under `sources`, outside the ten Categories, and two rules check it:
+
+- S1: no noun shares a name with a record listed under sources.
+- S2: the sources' BFO class is generically dependent continuant.
+
 What is not built yet:
 
-- Records that are themselves information, such as journal entries, reflections and the chat, are not in the ontology. Aristotle classifies beings and has no category for information. A written record is an artifact whose content is speech, which he counts as a discrete quantity (*Categories* 6, 4b23). BFO files it as a generically dependent continuant. This needs a ruling before those records join.
 - The term engine, which in Naive checks each term's properties label-blind, has not been copied. The check above is structural only.
+
+## Sources of a value
+
+A field's value comes from somewhere. Every value Reflect keeps, in a life record or in the person record, names one source from a closed set, `SOURCE_KINDS` in `packages/core/src/value-source.ts`. The words follow W3C PROV: the value was derived from the source (`prov:wasDerivedFrom`), and it is the person's once they confirm it.
+
+| Kind | What it is | What it carries |
+|---|---|---|
+| `stated` | the person typed it into the field | nothing more |
+| `journal` | a journal entry | the entry's id and the words quoted from it |
+| `conversation` | a conversation with an AI | the conversation's id and the words quoted from it |
+| `import` | a connector or an uploaded file | its name and the item's id there |
+| `noticed` | Reflect proposed it from the person's own records | the ids of those records |
+
+A stated value is confirmed from the start. Every other source starts proposed and stays proposed until the person confirms it. Confirming never changes the source. `lean/Reflect/Sources.lean` proves that every kind other than stated starts proposed.
+
+```mermaid
+flowchart LR
+  J["Journal entry: id and quote"] --> P["Proposed value"]
+  C["AI conversation: id and quote"] --> P
+  I["Import: connector or file, item id"] --> P
+  N["Noticed: from the person's own records"] --> P
+  P --> Y{"The person confirms"}
+  Y -- "yes" --> F["Field value, confirmed, source kept"]
+  Y -- "no" --> X["Stays proposed"]
+  S["Stated: the person typed it"] --> F
+```
+
+- **In a life record,** a body may carry `_sources`, an object from a declared field key to its source. Every life schema declares it and shares one source schema as `$defs.source`. The name starts with an underscore because it is data about the body, not a field: no field key starts with one (the generator refuses such a key), so it cannot clash. An `x-` name was rejected because `x-` belongs to a schema's own annotations, such as `x-reflect`, not to the records the schema describes. A field with no source was typed by the person. `reflect check` checks `_sources` in a vault's friend, group and office notes, where it is one line of JSON in the front matter.
+- **In the person record,** every fact, relationship and hold has a source. Its JSON Schema is `packages/core/schemas/person.schema.json`, generated from `PersonState` by `pnpm schemas` in `web/` (`--check` fails when it is stale). It carries noun person, category substance, an external good and the person's community. A vault's `person.json` holds only the person's id and name, and the files host keeps no facts, relationships or holds (the web app keeps them in Postgres), so `reflect check` validates them only when a `person.json` holds them. The tests validate the schema against fixtures.
+- **Older values still read:** a missing source is stated, person.ts's old `fromJournal` is journal, and the interest model's told and imported are stated and import. No database migration was needed: the app's person tables already store `stated`, and interest records keep their text.
+- **Choices:** every field of kind `choice` in `life.ts` emits `enum` with its option ids, and a test checks it.
+
+Not built:
+
+- No path writes a non-stated source yet. Nothing proposes a value from a journal entry, a conversation, an import or what Reflect noticed, and the app shows no Confirm. The types, schemas, checks and proof are ready for it.
+- The web app's life record write path does not yet check `_sources`; schema validation there is a separate change.
+- New interest records are still written with source `told` in the app (`web/src/server/actions/interests.ts`), which reads as stated. The interest record's levels and its source are text fields, not choices: making them choices would refuse records already stored with older values.
+- The person record in Postgres stores the source as one word, with no entry id or quote.
 
 ## Build order
 

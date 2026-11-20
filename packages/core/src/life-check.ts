@@ -5,11 +5,16 @@
 // The validator covers the subset of JSON Schema the life schemas use (type, minimum, maximum, exclusiveMaximum,
 // maxLength, pattern, format date and enum), so the core still imports no package and the CLI runs under plain Node.
 // It agrees with `parseBody` in ./life-body.ts, which reads the same declarations (life-check.test.ts checks this).
+// A body's `_sources` (./value-source.ts) is checked against the schema's shared source schema with ./schema-check.ts:
+// each key a declared field, each source one of the five kinds with what that kind carries. In a note's front matter
+// `_sources` is one line of JSON.
 // A problem names the record, its kind and the field, never the value, since bodies are personal data.
 import { join } from "node:path";
 import type { RecordPaths } from "./layout.ts";
 import { kindOf, type LifeAppId } from "./life.ts";
-import { lifeSchema, type LifeSchema } from "./life-schemas.ts";
+import { fieldSchemaOf, lifeSchema, type FieldJsonSchema, type LifeSchema } from "./life-schemas.ts";
+import { schemaProblems as jsonSchemaProblems, type Schema } from "./schema-check.ts";
+import { SOURCES_KEY } from "./value-source.ts";
 import { headOf, LIFE_NOTE_KINDS, notesIn } from "./lifetime.ts";
 import { readRecord } from "./record-io.ts";
 
@@ -28,7 +33,7 @@ export type LifeCheck = {
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /** What one value does not match in its field's schema, or null when it matches. Never names the value. */
-function fieldProblem(s: LifeSchema["properties"][string], v: unknown): string | null {
+function fieldProblem(s: FieldJsonSchema, v: unknown): string | null {
   if (s.type === "boolean") return typeof v === "boolean" ? null : "expected true or false";
   if (s.type === "number") {
     if (typeof v !== "number" || !Number.isFinite(v)) return "expected a number";
@@ -50,7 +55,11 @@ export function schemaProblems(schema: LifeSchema, body: unknown): SchemaProblem
   if (typeof body !== "object" || body === null || Array.isArray(body)) return [{ field: "", problem: "expected an object" }];
   const out: SchemaProblem[] = [];
   for (const [key, v] of Object.entries(body)) {
-    const s = Object.hasOwn(schema.properties, key) ? schema.properties[key] : undefined;
+    if (key === SOURCES_KEY && v !== undefined) {
+      out.push(...sourcesProblems(schema, v));
+      continue;
+    }
+    const s = fieldSchemaOf(schema, key);
     if (!s || v === undefined) continue;
     const p = fieldProblem(s, v);
     if (p) out.push({ field: key, problem: p });
@@ -59,13 +68,39 @@ export function schemaProblems(schema: LifeSchema, body: unknown): SchemaProblem
 }
 
 /**
+ * What a body's `_sources` does not match: one problem per source, named by its field (`_sources.<key>`), saying what
+ * was expected and never the value or the quote.
+ */
+export function sourcesProblems(schema: LifeSchema, sources: unknown): SchemaProblem[] {
+  const s = schema.properties[SOURCES_KEY] as unknown as Schema;
+  const root = schema as unknown as Schema;
+  if (typeof sources !== "object" || sources === null || Array.isArray(sources)) return [{ field: SOURCES_KEY, problem: "expected an object from field keys to sources" }];
+  const out: SchemaProblem[] = [];
+  for (const [key, v] of Object.entries(sources)) {
+    const where = `${SOURCES_KEY}.${key}`;
+    const ps = jsonSchemaProblems({ type: "object", propertyNames: s.propertyNames, additionalProperties: s.additionalProperties }, { [key]: v }, SOURCES_KEY, root);
+    if (ps.length) out.push({ field: where, problem: ps.some((p) => p.endsWith("is not a field here")) ? "names a key the kind does not declare" : `expected a source: ${ps.map((p) => p.replace(`${where}.`, "").replace(where, "it")).join("; ")}` });
+  }
+  return out;
+}
+
+/**
  * A note's front matter as a body: front matter is text, so a value is read as a number or a boolean where the field's
- * schema says so and it is written as one ("4", "true"). Anything else stays text, so the check can say it is wrong.
+ * schema says so and it is written as one ("4", "true"), and `_sources` is read as JSON. Anything else stays text, so the
+ * check can say it is wrong.
  */
 export function bodyFromFrontMatter(schema: LifeSchema, head: Record<string, string>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [key, v] of Object.entries(head)) {
-    const type = Object.hasOwn(schema.properties, key) ? schema.properties[key]?.type : undefined;
+    if (key === SOURCES_KEY) {
+      try {
+        out[key] = JSON.parse(v) as unknown;
+      } catch {
+        out[key] = v;
+      }
+      continue;
+    }
+    const type = fieldSchemaOf(schema, key)?.type;
     out[key] = type === "number" && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : type === "boolean" && (v === "true" || v === "false") ? v === "true" : v;
   }
   return out;

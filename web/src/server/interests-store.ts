@@ -2,7 +2,7 @@
 // "craft" (Scholē's crafts, read as Make interests by `@reflect/core/craft-interests`; the craft records are not
 // copied or changed). Levels in `@reflect/core/interests`, things in `@reflect/core/interest-catalogue`. Writes go
 // through the action registry (./actions/interests.ts, ./actions/crafts.ts) so they are in the change log.
-import { COMMITMENT, DEPTH, MODES, SKILL, SOURCES, isStep, sentence, type Interest, type Mode } from "@reflect/core/interests";
+import { COMMITMENT, DEPTH, MODES, SKILL, interestSource, isStep, sentence, type Interest, type Mode } from "@reflect/core/interests";
 import { AREAS, itemOf, related, type AreaId, type CatalogItem } from "@reflect/core/interest-catalogue";
 import { bodyOf } from "@reflect/core/life-body";
 import { craftAsInterest, type CraftDetails } from "@reflect/core/craft-interests";
@@ -25,7 +25,7 @@ export function interestOf(r: LifeRecord): MyInterest {
   const area = AREAS.find((a) => a.id === b.area)?.id ?? item?.area ?? null;
   return {
     id: r.id, ref, title: b.title ?? item?.title ?? ref, area, modes, item, createdAt: r.createdAt,
-    make, do: doSide, know, source: isStep(SOURCES, b.source) ? b.source : "told", craft: null,
+    make, do: doSide, know, source: interestSource(b.source), craft: null,
   };
 }
 

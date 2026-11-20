@@ -15,6 +15,7 @@
  * Do adds a role and Make whom it is for. How each rung is earned from what the person finishes (listening deepens
  * depth), and badges for Standing, are not built. Pure: no I/O.
  */
+import { sourceKindOf, type SourceKind } from "./value-source.ts";
 
 export type Step = { id: string; label: string; line: string };
 
@@ -85,13 +86,23 @@ export const WAYS_OF_KNOWING = [
 ] as const satisfies readonly Step[];
 export type WayOfKnowing = (typeof WAYS_OF_KNOWING)[number]["id"];
 
-/** How Reflect learned a fact about an interest. Noticed facts are labelled as noticed wherever they show. */
+/**
+ * How Reflect learned a fact about an interest: three of the source kinds every field value has (`SOURCE_KINDS` in
+ * ./value-source.ts). Noticed facts are labelled as noticed wherever they show. Before 2026-11-20 the ids were told,
+ * imported and noticed; `interestSource` reads those (and a missing source, as stated), so stored values still read.
+ */
 export const SOURCES = [
-  { id: "told", label: "You told us", line: "" },
-  { id: "imported", label: "Imported", line: "From an account you connected" },
+  { id: "stated", label: "You told us", line: "" },
+  { id: "import", label: "Imported", line: "From an account you connected" },
   { id: "noticed", label: "We noticed", line: "From what you finished or made in Reflect" },
-] as const satisfies readonly Step[];
+] as const satisfies readonly (Step & { id: SourceKind })[];
 export type Source = (typeof SOURCES)[number]["id"];
+
+/** A stored interest source as one of SOURCES: told (or missing) is stated, imported is import; any other kind is stated. */
+export function interestSource(v: unknown): Source {
+  const k = sourceKindOf(v);
+  return isStep(SOURCES, k) ? k : "stated";
+}
 
 /** A goal with an end: what, by when, and the day it was met. Meeting it is done, not dropped. */
 export type Goal = { what: string; by?: string; met?: string };
@@ -140,5 +151,5 @@ export function fromCraft(c: { ref: string; title: string; state: string | null;
   const commitment: Commitment | undefined = c.state === "drawn" ? "curious" : c.state === "trying" ? "tried" : c.state === "practising" ? "regular" : undefined;
   const stage: Record<string, Skill> = { novice: "copy", "advanced-beginner": "steady", competent: "precise", proficient: "adapts", expert: "second-nature" };
   const skill = c.stage ? stage[c.stage.toLowerCase().replace(/ /g, "-")] : undefined;
-  return { ref: `craft:${c.ref}`, title: c.title, make: { commitment, skill }, source: "told" };
+  return { ref: `craft:${c.ref}`, title: c.title, make: { commitment, skill }, source: "stated" };
 }

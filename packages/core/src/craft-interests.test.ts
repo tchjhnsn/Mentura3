@@ -13,7 +13,7 @@ describe("a craft read as a Make interest", () => {
         { kind: "tried", day: "2026-11-02", note: null },
       ],
     );
-    expect(i).toMatchObject({ ref: "craft:baking", title: "Baking", make: { commitment: "regular", skill: "precise" }, source: "told" });
+    expect(i).toMatchObject({ ref: "craft:baking", title: "Baking", make: { commitment: "regular", skill: "precise" }, source: "stated" });
     expect(i.do).toBeUndefined();
     expect(i.know).toBeUndefined();
     expect(i.craft).toEqual({
