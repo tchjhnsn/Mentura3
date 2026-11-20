@@ -3,6 +3,7 @@ import type { Action as CoreAction, ChangeLog, Source, Surface } from "@reflect/
 import type { LearnView } from "../learn-store";
 import type { LearnItem } from "../ways-store";
 import type { ClaimOut } from "../claims-store";
+import type { Presentations } from "@reflect/core/files-presentations";
 
 /** Records a caller already read for this request, so an action does not read them again. */
 export type Loaded = { view?: LearnView; items?: LearnItem[]; claims?: ClaimOut[] | null };
@@ -57,11 +58,11 @@ export interface WorkflowStore {
 }
 
 /**
- * Who an action runs for. `changes`, `workflows` and `now` stand in for the database and the clock in tests.
+ * Who an action runs for. `changes`, `workflows`, `presentations` and `now` stand in for the database and the clock in tests.
  * `origin` is where the request first came from (the chat, MCP, a page); runAction sets it to the source when it is
  * not set, and a plan's steps carry the plan's, so a step asked for from the chat still waits for the person's tap.
  */
-export type ActionContext = { userId: string; today?: string; loaded?: Loaded; changes?: ChangeLog; workflows?: WorkflowStore; now?: Date; origin?: Source };
+export type ActionContext = { userId: string; today?: string; loaded?: Loaded; changes?: ChangeLog; workflows?: WorkflowStore; now?: Date; origin?: Source; presentations?: Presentations };
 
 /**
  * One thing a model can do in Reflect: the core's action (@reflect/core/registry) over the app's context, with zod

@@ -18,6 +18,7 @@ import { Mark, type IdealOption } from "../../mark";
 import { SendToLearn } from "../../send-learn";
 import { PublishButton } from "./publish";
 import type { Published } from "./publish-actions";
+import type { SitePresenting } from "@/server/actions/presentations";
 
 type Status = "saved" | "unsaved" | "saving" | "failed";
 const SAVE_AFTER_MS = 1200;
@@ -27,7 +28,7 @@ const SAVE_AFTER_MS = 1200;
  * and italic come from typing Markdown or from the small bar. It saves on its own a moment after you stop
  * typing, and each save that changes something is kept as a new version.
  */
-export function Editor({ work, ideals, subjects, site }: { work: Work; ideals: IdealOption[]; subjects: string[]; site?: { base: string; post: Published | null; mail: { via: string | null; subscribers: number } } | null }) {
+export function Editor({ work, ideals, subjects, site }: { work: Work; ideals: IdealOption[]; subjects: string[]; site?: { base: string; post: Published | null; mail: { via: string | null; subscribers: number }; presenting: SitePresenting | null } | null }) {
   const [title, setTitle] = useState(work.title);
   const [status, setStatus] = useState<Status>("saved");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -136,7 +137,7 @@ export function Editor({ work, ideals, subjects, site }: { work: Work; ideals: I
             <Button type="button" size="sm" variant="ghost" className="h-8" disabled={!marks?.selected} onMouseDown={(e) => e.preventDefault()} onClick={() => { setSend(null); setMark({ passage: marks!.selected }); }}>
               Mark as a belief
             </Button>
-            {site && editor ? <PublishButton workId={work.id} siteBase={site.base} initial={site.post} read={() => ({ title: titleRef.current, body: editor.getMarkdown() })} save={save} mail={site.mail} /> : null}
+            {site && editor ? <PublishButton workId={work.id} siteBase={site.base} initial={site.post} read={() => ({ title: titleRef.current, body: editor.getMarkdown() })} save={save} mail={site.mail} presenting={site.presenting} /> : null}
             <span className={cn("text-muted-foreground ml-3 w-16 text-right text-xs", status === "failed" && "text-destructive")} role="status">
               {status === "saved" ? "Saved" : status === "saving" ? "Saving" : status === "failed" ? "Not saved" : "Edited"}
             </span>
