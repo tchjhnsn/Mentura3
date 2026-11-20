@@ -64,6 +64,40 @@
                   "events"
                 ]
               },
+              "type": {
+                "enum": [
+                  "CreativeWork",
+                  "Article",
+                  "BlogPosting",
+                  "Book",
+                  "Thesis",
+                  "ScholarlyArticle",
+                  "Report",
+                  "Dataset",
+                  "SoftwareSourceCode",
+                  "SoftwareApplication",
+                  "WebSite",
+                  "VisualArtwork",
+                  "Photograph",
+                  "MusicComposition",
+                  "MusicRecording",
+                  "VideoObject",
+                  "PodcastSeries",
+                  "Course",
+                  "LearningResource",
+                  "PresentationDigitalDocument",
+                  "Message",
+                  "Product",
+                  "Action",
+                  "Event"
+                ],
+                "description": "The work's schema.org type: its own, else its section's. Written for every public work since 2026-11-20; older files may lack it."
+              },
+              "genre": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The work's genre or form, as an LCGFT term"
+              },
               "summary": {
                 "type": "string",
                 "minLength": 1

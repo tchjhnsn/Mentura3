@@ -829,12 +829,13 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     expect((await run("work", "--dir", dir)).out).toEqual(["no works yet: reflect work making <id> --title <title> --section projects --disclosure public"]);
-    expect((await run("work", "making", "virtu", "--title", "Virtu", "--section", "projects", "--disclosure", "public", "--source", "github=https://github.com/tchjhnsn/design-system-theory", "--status", "active", "--last-activity", "2026-11-19", "--problem", "Design systems lack a theory.", "--cause", "They grew from practice alone.", "--solution", "Ground them in first principles.", "--dir", dir)).out).toEqual(["kept making/virtu.json"]);
+    expect((await run("work", "making", "virtu", "--title", "Virtu", "--section", "projects", "--disclosure", "public", "--source", "github=https://github.com/tchjhnsn/design-system-theory", "--status", "active", "--last-activity", "2026-11-19", "--problem", "Design systems lack a theory.", "--cause", "They grew from practice alone.", "--solution", "Ground them in first principles.", "--type", "SoftwareSourceCode", "--genre", "Computer programs", "--dir", dir)).out).toEqual(["kept making/virtu.json"]);
     await run("work", "making", "stealth", "--title", "Stealth", "--section", "products", "--disclosure", "foreshadow", "--foreshadow", "A platform for founders.", "--problem", "Founders drown in tools.", "--dir", dir);
     await run("work", "doing", "tutoring", "--title", "Tutoring", "--section", "service", "--disclosure", "private", "--dir", dir);
     await expect(run("work", "doing", "x", "--title", "X", "--section", "research", "--disclosure", "public", "--dir", dir)).rejects.toThrow(/research is a section of knowing/);
     await expect(run("work", "making", "x", "--title", "X", "--section", "projects", "--disclosure", "public", "--source", "github", "--dir", dir)).rejects.toThrow(/<connector>=<url>/);
     await expect(run("work", "making", "x", "--title", "X", "--section", "projects", "--disclosure", "public", "--problem", "One. Two.", "--dir", dir)).rejects.toThrow(/problem must be one sentence/);
+    await expect(run("work", "doing", "x", "--title", "X", "--section", "service", "--disclosure", "public", "--type", "Article", "--dir", dir)).rejects.toThrow(/Action or Event/);
     expect((await run("work", "--dir", dir)).out).toEqual(["Making", "  stealth  products  foreshadow  Stealth", "  virtu  projects  public  active  Virtu", "Doing", "  tutoring  service  private  Tutoring"]);
     const id = (await run("present", "personal-site", "--role", "founder", "--end", "show what I make and whom it serves", "--audience", "visitors", "--dir", dir)).out[0]!;
     const held = await run("publish", "works", "--presentation", id, "--dir", dir);
@@ -843,7 +844,7 @@ describe("reflect CLI", () => {
     await run("approve", change, "--dir", dir);
     const text = await readFile(join(dir, "published", "works.json"), "utf8");
     expect(JSON.parse(text).works).toEqual([
-      { disclosure: "public", id: "virtu", title: "Virtu", end: "making", section: "projects", sources: [{ connector: "github", url: "https://github.com/tchjhnsn/design-system-theory" }], problem: "Design systems lack a theory.", cause: "They grew from practice alone.", solution: "Ground them in first principles.", status: "active", last_activity: "2026-11-19" },
+      { disclosure: "public", id: "virtu", title: "Virtu", end: "making", section: "projects", type: "SoftwareSourceCode", genre: "Computer programs", sources: [{ connector: "github", url: "https://github.com/tchjhnsn/design-system-theory" }], problem: "Design systems lack a theory.", cause: "They grew from practice alone.", solution: "Ground them in first principles.", status: "active", last_activity: "2026-11-19" },
       { disclosure: "foreshadow", end: "making", section: "products", foreshadow: "A platform for founders." },
     ]);
     expect(text).not.toMatch(/Stealth|Tutoring|drown/);

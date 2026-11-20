@@ -8,7 +8,7 @@ import { checkInstance, initInstance } from "./instance.ts";
 import { defaultPolicy, draftPresentation } from "./presentation.ts";
 import { emptyIndex, publishedProblems, publishWorks, SCHEMAS, unpublish, type Approval, type Publication } from "./published.ts";
 import { schemaProblems } from "./schema-check.ts";
-import { END_IDS, SECTION_IDS, SECTIONS, sectionsOf, shownWork, shownWorks, workOfPath, workRecordProblems, type VaultWorkRecord } from "./works-by-end.ts";
+import { ACT_TYPES, END_IDS, SECTION_TYPES, SECTION_IDS, SECTIONS, sectionsOf, shownWork, shownWorks, workOfPath, workRecordProblems, type VaultWorkRecord } from "./works-by-end.ts";
 
 const NOW = new Date("2026-11-20T05:00:00.000Z");
 const policy = defaultPolicy("Tester");
@@ -85,6 +85,20 @@ describe("works by their end", () => {
     expect(workRecordProblems("making", { ...pub, solution: "Ship it! Then measure." })[0]).toMatch(/solution must be one sentence/);
     expect(workRecordProblems("making", { ...pub, solution: "x".repeat(301) + "." }).length).toBeGreaterThan(0);
     expect(workRecordProblems("making", { ...pub, problem: "Version 2.0 broke the build." })).toEqual([]);
+  });
+
+  it("types a work by schema.org, its section's type by default, with doing only Action or Event", () => {
+    const pub = { title: "Virtu", section: "projects", disclosure: "public" } as const;
+    expect(shownWork("making", "virtu", pub)).toMatchObject({ type: "CreativeWork" });
+    expect(shownWork("making", "virtu", { ...pub, type: "SoftwareSourceCode", genre: " Computer programs " })).toMatchObject({ type: "SoftwareSourceCode", genre: "Computer programs" });
+    expect(shownWork("doing", "t", { title: "Tutoring", section: "service", disclosure: "public" })).toMatchObject({ type: "Action" });
+    expect(SECTION_IDS.every((s) => ACT_TYPES.includes(SECTION_TYPES[s]) === (SECTIONS[s] === "doing"))).toBe(true);
+    expect(workRecordProblems("doing", { title: "T", section: "talks", disclosure: "public", type: "Event" })).toEqual([]);
+    expect(workRecordProblems("doing", { title: "T", section: "talks", disclosure: "public", type: "PresentationDigitalDocument" })[0]).toMatch(/Action or Event/);
+    expect(workRecordProblems("making", { ...pub, type: "Event" })[0]).toMatch(/Event is for doing/);
+    expect(workRecordProblems("making", { ...pub, type: "Spreadsheet" }).length).toBeGreaterThan(0);
+    const fore = shownWork("making", "virtu", { ...pub, disclosure: "foreshadow", foreshadow: "A theory.", type: "SoftwareSourceCode", genre: "Computer programs" });
+    expect(fore).toEqual({ disclosure: "foreshadow", end: "making", section: "projects", foreshadow: "A theory." });
   });
 
   it("publishes works.json through the gate, passing its schema and the folder check", () => {
