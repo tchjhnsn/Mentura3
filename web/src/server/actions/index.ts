@@ -37,7 +37,7 @@ import { dashboardAction, setDashboardCardAction } from "./dashboard";
 import { dashboardToday, setMorningBriefAction } from "./dashboard-today";
 import { setSiteDesignAction, setSiteTemplateAction, siteAction, siteDesignAction } from "./site";
 import { checkPresentationAction, draftPresentationAction, publishToSiteAction } from "./presentations";
-import { connectorActAction, connectorReadAction, connectorsAction, pluginsAction, siteEditAction, siteFilesAction } from "./marketplace";
+import { connectorActAction, connectorReadAction, connectorsAction, pluginsAction, siteFilesAction } from "./marketplace";
 import { importLinkedinAction, linkedinConnectionsAction, linkedinMatchesAction, removeLinkedinConnectionsAction } from "./linkedin";
 import {
   addItemNoteAction, addItemSubjectsAction, addSessionAction, changeItemAction, favoriteEpisodeAction, followListAction, followPerson, followTopic, highlightsToJournal, keepClaimAction, keepExcerpt,
@@ -92,7 +92,7 @@ export const ACTIONS: readonly Action[] = [
   dashboardAction, setDashboardCardAction, dashboardToday, setMorningBriefAction,
   siteAction, setSiteTemplateAction, siteDesignAction, setSiteDesignAction,
   draftPresentationAction, checkPresentationAction, publishToSiteAction,
-  connectorsAction, connectorReadAction, connectorActAction, siteFilesAction, siteEditAction, pluginsAction,
+  connectorsAction, connectorReadAction, connectorActAction, siteFilesAction, pluginsAction,
   ...PAGE_ACTIONS,
 ];
 

@@ -5,7 +5,8 @@
 // Today that is the guide, the life schemas (`life_schema`, a kind's shape and where the ontology places it), the
 // journal (listing entries, writing one and reading one) and the presentation gate's drafting and checking
 // (./presentation.ts, Reflect framework plan step 6), which the app offers over its Postgres presentations
-// (web/src/server/actions/presentations.ts).
+// (web/src/server/actions/presentations.ts), and the published/ folder a site reads (./published.ts): `publish_files`
+// writes a post or the profile there through the gate, and `unpublish_files` takes one out.
 import { acceptLocalDate, type Entry } from "./journal.ts";
 import type { IsoDate } from "./person.ts";
 import type { Journal } from "./store.ts";
@@ -14,6 +15,9 @@ import { lifeKindRefs, lifeSchemaOf, type LifeSchema } from "./life-schemas.ts";
 import { checkInput, makeRunner, Refused, type Action, type ActionDecl, type ChangeLog, type Ran, type RunContext, type Source, type StandardSchema } from "./registry.ts";
 import { draftPresentation, gateFor, ID, newPresentationId, OCCASIONS, VIRTUE_IDS, type DraftFields, type GateVerdict, type Presentation } from "./presentation.ts";
 import { vaultGate, type Presentations } from "./files-presentations.ts";
+import type { PublishedFolder, VaultWork } from "./files-published.ts";
+import { PROFILE_FILE, postPath, PUBLISHED_DIR, publishPost, publishProfile, parseFrontMatter, unpublish, type Publication } from "./published.ts";
+import { isPublishable, PUBLISHABLE, SLUG, slugify } from "./site.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
 export const GUIDE = [
@@ -22,6 +26,8 @@ export const GUIDE = [
   "Rules: save only what the person asked you to save, in their words. Never infer facts about the person beyond what they wrote, and never share their entries.",
   "",
   "Before anything of the person's goes before others, draft its presentation record with them (draft_presentation) and check it (check_presentation): the channel, who speaks and in what role, for what end, to what audience. You may draft and check; only the person approves.",
+  "",
+  "Reflect writes files, never a website's code. What passes the gate goes to the vault's published/ folder (publish_files), which the person's own site reads; the site's code lives in its own repository.",
 ].join("\n");
 
 export const REFLECT_GUIDE = {
@@ -91,6 +97,27 @@ export const CHECK_PRESENTATION = {
   on: ["chat", "mcp"],
 } as const satisfies ActionDecl;
 
+/** The channel a vault's published/ folder goes out on: the person's own site. */
+export const SITE_CHANNEL = "personal-site";
+
+export const PUBLISH_FILES = {
+  id: "publish_files",
+  title: "Publish to the published folder",
+  description:
+    "Ask to write a post or the profile to the vault's published/ folder, which the person's own site reads (Reflect writes files and never the site's code). A post comes from one of the person's Markdown works in the vault (an essay, letter, plan or memoir, from its front matter or kind), never from the journal. Draft its presentation record first with draft_presentation on channel personal-site (the role, the end, the audience) and name it in presentation. It always waits: only the person approves, with reflect approve, and only once the record passes the gate.",
+  tier: "outside",
+  on: ["mcp"],
+  publishes: SITE_CHANNEL,
+} as const satisfies ActionDecl;
+
+export const UNPUBLISH_FILES = {
+  id: "unpublish_files",
+  title: "Take a file out of the published folder",
+  description: "Take a post (by its slug) or the profile out of the vault's published/ folder and its manifest. Only when the person asks; asked for by a model, it waits for the person.",
+  tier: "outside",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
 /** A gate verdict as an action returns it. */
 export const gateOut = (g: GateVerdict) =>
   g.ready
@@ -140,8 +167,93 @@ export async function getEntryIn(j: Pick<Journal, "entryText">, entryId: string)
   return { id: entryId, text: t };
 }
 
-/** What a vault's action runs with: the person, their journal and their vault's change log. */
-export type VaultContext = RunContext & { journal: Journal; changes: ChangeLog; presentations: Presentations };
+/** What `publish_files` takes: a post from a work in the vault, or the profile. */
+export type PublishFilesInput = {
+  what: "post" | "profile";
+  presentation: string;
+  file?: string;
+  slug?: string;
+  title?: string;
+  kind?: string;
+  tags?: string;
+  name?: string;
+  headline?: string;
+  about?: string;
+};
+
+/** The vault's published/ folder and how to read a work, which only a vault opened from a folder has. */
+function siteOf(ctx: VaultContext): { published: PublishedFolder; readWork: (path: string) => Promise<VaultWork> } {
+  if (!ctx.published || !ctx.readWork) throw new Error("this vault has no published/ folder here");
+  return { published: ctx.published, readWork: ctx.readWork };
+}
+
+/** The post a work makes: its kind, title, slug, tags, and its first date kept when it was published before. */
+async function postFrom(ctx: VaultContext, input: PublishFilesInput, now: Date) {
+  if (!input.file) throw new Error("name the work to publish by its path in the vault, such as writing/on-craft.md");
+  const { published, readWork } = siteOf(ctx);
+  const work = await readWork(input.file);
+  const kind = input.kind?.trim() || work.kind;
+  if (!kind) throw new Error(`say the kind of ${work.path}: ${PUBLISHABLE.join(", ")} (kind: in its front matter, or --kind)`);
+  if (!isPublishable(kind)) throw new Error(`${kind} is a kind that is never published; only ${PUBLISHABLE.join(", ")}. The journal stays private.`);
+  const title = input.title?.trim() || work.title;
+  if (!title) throw new Error(`give ${work.path} a title (title: in its front matter, or --title)`);
+  const slug = input.slug?.trim() || slugify(title);
+  const before = await published.read(postPath(slug));
+  const first = before === null ? null : parseFrontMatter(before).front.date;
+  const tags = input.tags !== undefined ? input.tags.split(",") : work.tags;
+  const at = now.toISOString();
+  return { slug, title, kind, body: work.body, date: typeof first === "string" ? first : at, updated: at, ...(tags ? { tags } : {}) };
+}
+
+/** Write a post or the profile to published/ through the gate, and say what was written. */
+export async function publishFilesIn(ctx: VaultContext, input: PublishFilesInput, now = new Date()): Promise<{ written: string[]; removed: string[]; presentation: string }> {
+  const { published } = siteOf(ctx);
+  const policy = await ctx.presentations.policy();
+  const record = ID.test(input.presentation) ? await ctx.presentations.get(input.presentation) : null;
+  const index = await published.index();
+  const approval = { policy, record, channel: SITE_CHANNEL, at: now };
+  const pub: Publication =
+    input.what === "profile"
+      ? publishProfile(index, approval, { name: input.name?.trim() || ctx.personName || ctx.userId, ...(input.headline ? { headline: input.headline } : {}), ...(input.about ? { about: input.about } : {}) })
+      : publishPost(index, approval, await postFrom(ctx, input, now));
+  await published.apply(pub);
+  return { written: pub.write.map((w) => `${PUBLISHED_DIR}/${w.path}`), removed: pub.remove.map((r) => `${PUBLISHED_DIR}/${r}`), presentation: input.presentation };
+}
+
+/** What `publish_files` will write, for the person to read before they approve. Throws for a work never published. */
+async function publishFilesPreview(ctx: VaultContext, input: PublishFilesInput): Promise<string> {
+  if (input.what === "profile") {
+    const facts = [`name: ${input.name?.trim() || ctx.personName || ctx.userId}`, input.headline ? `headline: ${input.headline}` : null, input.about ? `about: ${input.about}` : null].filter(Boolean);
+    return `Write ${PUBLISHED_DIR}/${PROFILE_FILE} (${facts.join("; ")}) and its line in ${PUBLISHED_DIR}/index.json. Your site reads them from there.`;
+  }
+  // A work that can never be published (the journal, a kind that is not published, no title) is refused here, so
+  // nothing waits for an approval that could never run.
+  const p = await postFrom(ctx, input, ctx.now ?? new Date());
+  return `Write ${PUBLISHED_DIR}/${postPath(p.slug)} ("${p.title}", ${p.kind}, from ${input.file}) and its line in ${PUBLISHED_DIR}/index.json, as the work reads when you approve. Your site reads them from there.`;
+}
+
+/** Take a post or the profile out of published/ and its manifest. */
+export async function unpublishFilesIn(ctx: VaultContext, input: { what?: "post" | "profile"; slug?: string }): Promise<{ removed: string[] }> {
+  const { published } = siteOf(ctx);
+  if (input.what !== "profile" && !input.slug) throw new Error("name the post to take out by its slug");
+  const pub = unpublish(await published.index(), input.what === "profile" ? PROFILE_FILE : postPath(input.slug!));
+  await published.apply(pub);
+  return { removed: pub.remove.map((r) => `${PUBLISHED_DIR}/${r}`) };
+}
+
+/**
+ * What a vault's action runs with: the person, their journal, their vault's change log and presentations, and, for a
+ * vault opened from a folder, its published/ folder and how to read a work in it.
+ */
+export type VaultContext = RunContext & {
+  journal: Journal;
+  changes: ChangeLog;
+  presentations: Presentations;
+  published?: PublishedFolder;
+  readWork?: (path: string) => Promise<VaultWork>;
+  /** The person's name from person.json, which a published profile shows unless another is given. */
+  personName?: string;
+};
 
 /** A vault action: checked by an input schema of the core's own (./input.ts), so its JSON Schema can be listed. */
 export type VaultAction = Action<VaultContext, InputSchema<unknown>, unknown>;
@@ -199,9 +311,43 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
     input: object({ id: str({ pattern: ID }) }),
     run: async ({ presentations }, { id }) => checkPresentationIn(presentations, id),
   }),
+  vault({
+    ...PUBLISH_FILES,
+    input: object({
+      what: oneOf(["post", "profile"] as const, { describe: "a post from a work in the vault, or the profile" }),
+      presentation: str({ pattern: ID, describe: "the id of the presentation record on channel personal-site, from draft_presentation" }),
+      file: optional(str({ min: 1, describe: "for a post: the work's path in the vault, such as writing/on-craft.md; never the journal" })),
+      slug: optional(str({ pattern: SLUG, describe: "the post's address; left out, one made from the title" })),
+      title: optional(str({ describe: "the post's title, when the work's front matter has none" })),
+      kind: optional(oneOf(PUBLISHABLE, { describe: "the work's kind, when its front matter has none" })),
+      tags: optional(str({ describe: "the post's tags, separated by commas" })),
+      name: optional(str({ describe: "for the profile: the name shown; left out, the vault's person" })),
+      headline: optional(str({ describe: "for the profile: one line on who the person is" })),
+      about: optional(str({ describe: "for the profile: a few sentences, in the person's words" })),
+    }),
+    preview: (ctx, input) => publishFilesPreview(ctx, input),
+    run: async (ctx, input) => publishFilesIn(ctx, input, ctx.now ?? new Date()),
+    change: (r) => ({ after: r }),
+  }),
+  vault({
+    ...UNPUBLISH_FILES,
+    input: object({
+      what: optional(oneOf(["post", "profile"] as const, { describe: "a post (the default) or the profile" })),
+      slug: optional(str({ pattern: SLUG, describe: "the post's slug" })),
+    }),
+    run: async (ctx, input) => unpublishFilesIn(ctx, input),
+    change: (r) => ({ before: r }),
+  }),
 ];
 
 export const vaultActionById = (id: string): VaultAction | undefined => VAULT_ACTIONS.find((a) => a.id === id);
+
+/**
+ * The vault's actions the app does not offer under the same name: the app keeps works in Postgres and publishes one
+ * with publish_to_site (web/src/server/actions/presentations.ts), which writes the same bytes through the same core
+ * functions (./published.ts).
+ */
+export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id];
 
 /** An action as the CLI lists it and an MCP server offers it: its declaration and its input's JSON Schema. */
 export type Listed = ActionDecl & { input: JsonSchema };

@@ -3,7 +3,8 @@
 // Publish; the journal's sealed text is never read by anyone else. Subscribers' emails are sealed with the site
 // owner's key. Nothing is deleted: unpublishing and leaving mark the row.
 import { randomBytes } from "node:crypto";
-import { db } from "@/db/pool";
+import { db, transaction } from "@/db/pool";
+import { cleanFolder, DEFAULT_DATA_FOLDER } from "@reflect/core/site-repo";
 import { freeSlug, isPublishable, isSlug, isTemplate, RESERVED_SLUGS, type TemplateId } from "@reflect/core/site";
 import { getWork } from "./work-store";
 import { open, seal, tag } from "./crypto";
@@ -33,6 +34,30 @@ export async function setSiteRepo(userId: string, repo: SiteRepo | null): Promis
      ON CONFLICT (user_id) DO UPDATE SET repo = EXCLUDED.repo, repo_branch = EXCLUDED.repo_branch, repo_folder = EXCLUDED.repo_folder, repo_ext = EXCLUDED.repo_ext, updated_at = now()`,
     [userId, repo?.repo ?? null, repo?.branch ?? null, repo?.folder ?? null, repo?.ext ?? null],
   );
+}
+
+// The folder of the site's repository that gets profile.json and index.json (Reflect outputs files, 2026-11-20). It is
+// one `person_fact` row, `site-data-folder`, sealed like every fact, so no migration is needed; left unset, it is
+// content/reflect.
+const DATA_FOLDER_KEY = "site-data-folder";
+
+/** Where profile.json and index.json land in the linked repository. */
+export async function siteDataFolder(userId: string): Promise<string> {
+  const r = await db().query("SELECT value_ct FROM person_fact WHERE user_id = $1 AND key = $2 AND valid_to IS NULL", [userId, DATA_FOLDER_KEY]);
+  const row = r.rows[0] as { value_ct: string } | undefined;
+  return (row ? cleanFolder(open(userId, row.value_ct)) : null) ?? DEFAULT_DATA_FOLDER;
+}
+
+/** Names that folder: a new version of the fact, the open row closed today. Refuses a folder that is not one. */
+export async function setSiteDataFolder(userId: string, raw: string): Promise<string> {
+  const folder = cleanFolder(raw);
+  if (!folder) throw new Error("Give the folder as a path in the repository, such as content/reflect.");
+  const day = new Date().toISOString().slice(0, 10);
+  await transaction(async () => {
+    await db().query("UPDATE person_fact SET valid_to = $3 WHERE user_id = $1 AND key = $2 AND valid_to IS NULL", [userId, DATA_FOLDER_KEY, day]);
+    await db().query("INSERT INTO person_fact (user_id, key, value_ct, valid_from, source) VALUES ($1, $2, $3, $4, 'stated')", [userId, DATA_FOLDER_KEY, seal(userId, folder), day]);
+  });
+  return folder;
 }
 
 /** Remembers where a post was written in the site's repository (null when it was removed). */

@@ -1,6 +1,7 @@
 // An instance: one person's records in a folder. reflect.json is Image's pointer (who, which host),
 // memory.jsonl is Memory, and the rest is the person's vault (layout.ts): plain markdown the person
 // owns and can open in Obsidian or any editor.
+import { publishedFolderProblems } from "./files-published.ts";
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join, relative, resolve } from "node:path";
@@ -223,7 +224,7 @@ export async function checkInstance(root: string): Promise<CheckResult> {
     } catch {
       problems.push("legacy/release.json is not JSON");
     }
-    problems.push(...(await learnProblems(root)), ...(await ideaProblems(root)), ...(await sourceProblems(root)), ...(await wikiProblems(root)), ...(await presentationProblems(root, config.person)));
+    problems.push(...(await learnProblems(root)), ...(await ideaProblems(root)), ...(await sourceProblems(root)), ...(await wikiProblems(root)), ...(await presentationProblems(root, config.person)), ...(await publishedFolderProblems(root)));
   }
   const shas = lastShas(lines);
   const outside: string[] = [];

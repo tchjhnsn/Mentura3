@@ -3,11 +3,14 @@
 // and publishing a journal work to the person's own site, the first action that `publishes` (channel personal-site).
 // Publishing is always held, from any source: the run's host (./run.ts) asks the gate for the record the input names
 // in `presentation`, and only the person approves, on a page (the Publish sheet, or Send on its card in Ask). Chat and
-// MCP may draft, check and ask to publish; their request waits for the person. The site repository's writes from Ask
-// (site_edit, and connector_act's GitHub writes to it, ./marketplace.ts) use the same channel, gate and helpers.
+// MCP may draft, check and ask to publish; their request waits for the person. What reaches the person's own repository
+// is the post file and the manifest that @reflect/core/published makes through the gate, the same bytes a vault writes
+// to published/ (../site-repo.ts delivers them into the repository's content folders only). Reflect never edits the
+// site's code: Ask may read the repository (site_files), and a connector write to it is refused (./marketplace.ts).
 import { z } from "zod";
 import { CHECK_PRESENTATION, checkPresentationIn, DRAFT_PRESENTATION, draftPresentationIn } from "@reflect/core/vault-actions";
-import { gateFor, ID, OCCASIONS, VIRTUE_IDS, type Occasion, type VirtueId } from "@reflect/core/presentation";
+import { ID, OCCASIONS, VIRTUE_IDS, type Occasion, type VirtueId } from "@reflect/core/presentation";
+import type { Approval } from "@reflect/core/published";
 import { excerpt } from "@reflect/core/site";
 import { postgresPresentations, type Presentations } from "../presentation-store";
 import { getWork } from "../work-store";
@@ -80,29 +83,25 @@ export async function sitePresenting(userId: string, store: Presentations = post
   };
 }
 
-/**
- * The newest presentation record on the site's channel that passes the gate now, or null. One record may cover a
- * working session of changes to the site: site_files offers it so the chat can ask the person whether it covers this
- * change too, and names it in site_edit only when they say so.
- */
-export async function readySiteRecord(store: Presentations): Promise<{ id: string; role: string; end: string } | null> {
-  const [policy, all] = await Promise.all([store.policy(), store.list()]);
-  const p = all.find((x) => x.channel === SITE_CHANNEL && gateFor(policy, x, SITE_CHANNEL).ready);
-  return p ? { id: p.id, role: p.circumstances.who.role ?? "", end: p.circumstances.end ?? "" } : null;
-}
-
 /** What a publish did: where the post is, and whether it reached the person's repository and their subscribers. */
 export type Published = { slug: string; href: string; updatedAt: string; emailed?: number; repo?: string | null; repoError?: string };
 
-/** Publish the work as it is now: its post on the person's site, a commit to their linked repository, and the email. */
-async function publishNow(userId: string, workId: string, slug: string | null, email: boolean): Promise<Published> {
+/** The gate's inputs for a publish the person approved now: their policy and the record the input names. */
+async function approvalOf(ctx: ActionContext, presentation: string): Promise<Approval> {
+  const store = presentationsOf(ctx);
+  const [policy, record] = await Promise.all([store.policy(), ID.test(presentation) ? store.get(presentation) : Promise.resolve(null)]);
+  return { policy, record, channel: SITE_CHANNEL, at: ctx.now ?? new Date() };
+}
+
+/** Publish the work as it is now: its post on the person's site, its files in their linked repository, and the email. */
+async function publishNow(userId: string, workId: string, slug: string | null, email: boolean, approval: Approval): Promise<Published> {
   const p = await publishWork(userId, workId, slug);
   const site = profileHref({ id: userId, handle: (await profileSettings(userId)).handle });
-  // A site the person hosts themselves gets the post as a commit to its repository; their host redeploys.
+  // A site the person hosts themselves gets the post file and the manifest in its content folders; their host redeploys.
   let repo: string | null = null;
   let repoError: string | undefined;
   try {
-    repo = await publishToRepo(userId, p);
+    repo = await publishToRepo(userId, p, approval);
   } catch (e) {
     repoError = e instanceof Error ? e.message.slice(0, 300) : "Could not write it to your repository.";
   }
@@ -129,7 +128,7 @@ export const publishToSiteAction = action({
   id: "publish_to_site",
   title: "Publish a work to the person's site",
   description:
-    "Ask to publish one of the person's journal works (an essay, letter, plan or memoir) to their own site: its post on their site, a commit to the repository they linked in Settings, Your site, Your own site on GitHub, and, with email, a note to their subscribers. Draft its presentation record first with draft_presentation on channel personal-site (the role, the end, the audience) and name it in presentation. It always waits: only the person approves, on the work's Publish sheet or with Send on its card, and only once the record passes the gate. The text published is the work as it is when they approve.",
+    "Ask to publish one of the person's journal works (an essay, letter, plan or memoir) to their own site: its post on their site, the post file and Reflect's manifest committed to the content folders of the repository they linked in Settings, Your site, Your own site on GitHub, and, with email, a note to their subscribers. Draft its presentation record first with draft_presentation on channel personal-site (the role, the end, the audience) and name it in presentation. It always waits: only the person approves, on the work's Publish sheet or with Send on its card, and only once the record passes the gate. The text published is the work as it is when they approve.",
   tier: "outside",
   on: ["chat", "mcp"],
   publishes: SITE_CHANNEL,
@@ -143,10 +142,10 @@ export const publishToSiteAction = action({
     const [w, repo] = await Promise.all([getWork(userId, work_id), siteOf(userId).then((s) => s.repo).catch(() => null)]);
     return [
       `Publish "${w?.title.trim() || "Untitled"}" to your site${slug ? ` at /${slug}` : ""}, as the work reads when you approve.`,
-      repo ? `It is committed to ${repo.repo} on ${repo.branch}; your host deploys it.` : null,
+      repo ? `Its file and Reflect's manifest are committed to the content folders of ${repo.repo} on ${repo.branch}; your host deploys it.` : null,
       email ? "Its opening is emailed to your subscribers." : null,
     ].filter(Boolean).join("\n");
   },
-  run: async ({ userId }, { work_id, slug, email }) => publishNow(userId, work_id, slug?.trim() || null, email),
+  run: async (ctx, { work_id, slug, email, presentation }) => publishNow(ctx.userId, work_id, slug?.trim() || null, email, await approvalOf(ctx, presentation)),
   change: (r, input) => ({ after: { slug: r.slug, href: r.href, repo: r.repo ?? null, presentation: input.presentation } }),
 });

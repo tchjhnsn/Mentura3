@@ -23,9 +23,9 @@ async function vault(): Promise<VaultContext & { root: string }> {
 }
 
 describe("a vault's actions", () => {
-  it("are the guide, the life schemas, the journal's and the presentation gate's, read and own tier, and none publishes", () => {
-    expect(VAULT_ACTIONS.map((a) => [a.id, a.tier])).toEqual([["reflect_guide", "read"], ["life_schema", "read"], ["list_entries", "read"], ["write_entry", "own"], ["get_entry", "read"], ["draft_presentation", "own"], ["check_presentation", "read"]]);
-    expect(VAULT_ACTIONS.filter((a) => a.publishes !== undefined)).toEqual([]);
+  it("are the guide, the life schemas, the journal's, the presentation gate's and the published folder's, and only publish_files publishes", () => {
+    expect(VAULT_ACTIONS.map((a) => [a.id, a.tier])).toEqual([["reflect_guide", "read"], ["life_schema", "read"], ["list_entries", "read"], ["write_entry", "own"], ["get_entry", "read"], ["draft_presentation", "own"], ["check_presentation", "read"], ["publish_files", "outside"], ["unpublish_files", "outside"]]);
+    expect(VAULT_ACTIONS.filter((a) => a.publishes !== undefined).map((a) => [a.id, a.publishes])).toEqual([["publish_files", "personal-site"]]);
   });
 
   it("draft a presentation, update it until the gate is ready, and check it; an agent may draft but never approves", async () => {
@@ -104,7 +104,7 @@ describe("the MCP server over a vault", () => {
     expect(await answerMcp({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-03-26" } }, open)).toMatchObject({ id: 1, result: { protocolVersion: "2025-03-26", capabilities: { tools: {} } } });
     expect(await answerMcp({ jsonrpc: "2.0", method: "notifications/initialized" }, open)).toBeNull();
     const tools = await answerMcp({ jsonrpc: "2.0", id: 2, method: "tools/list" }, open);
-    expect((tools?.result as { tools: { name: string }[] }).tools.map((t) => t.name)).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation"]);
+    expect((tools?.result as { tools: { name: string }[] }).tools.map((t) => t.name)).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files"]);
     const wrote = await answerMcp({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "write_entry", arguments: { text: "Cold.", local_date: "2026-11-19" } } }, open);
     expect(wrote?.result).toMatchObject({ content: [{ type: "text" }], _meta: { change: expect.any(String) } });
     expect((await v.changes.recent(v.userId, 1))[0]!.source).toBe("mcp");

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "published-profile.schema.json",
+  "title": "Published profile",
+  "description": "The public profile facts the person approved, at published/profile.json (Reflect framework plan, step 6), with the presentation record that passed the gate and its channel. packages/core/src/published.ts writes and checks it.",
+  "type": "object",
+  "required": ["name", "presentation", "channel"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string", "minLength": 1 },
+    "headline": { "type": "string", "minLength": 1, "description": "One line on who the person is" },
+    "about": { "type": "string", "minLength": 1, "description": "A few sentences, in the person's words" },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["label", "url"],
+        "additionalProperties": false,
+        "properties": { "label": { "type": "string", "minLength": 1 }, "url": { "type": "string", "format": "uri" } }
+      }
+    },
+    "presentation": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "channel": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+  }
+}
