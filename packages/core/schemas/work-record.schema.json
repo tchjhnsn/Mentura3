@@ -42,6 +42,41 @@
       ],
       "description": "public goes out in full; foreshadow goes out as its end, section and one line only; private never goes out"
     },
+    "type": {
+      "enum": [
+        "CreativeWork",
+        "Article",
+        "BlogPosting",
+        "Book",
+        "Thesis",
+        "ScholarlyArticle",
+        "Report",
+        "Dataset",
+        "SoftwareSourceCode",
+        "SoftwareApplication",
+        "WebSite",
+        "VisualArtwork",
+        "Photograph",
+        "MusicComposition",
+        "MusicRecording",
+        "VideoObject",
+        "PodcastSeries",
+        "Course",
+        "LearningResource",
+        "PresentationDigitalDocument",
+        "Message",
+        "Product",
+        "Action",
+        "Event"
+      ],
+      "description": "The work's schema.org type. Doing takes only Action or Event; making and knowing never do. When missing, the section's type: projects CreativeWork, products Product, writing Article, art and crafts VisualArtwork, research ScholarlyArticle, study Course, reading Book, service, care and civic Action, talks and events Event."
+    },
+    "genre": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "The work's genre or form, as a Library of Congress Genre/Form Term (LCGFT), such as Essays or Computer programs"
+    },
     "summary": {
       "type": "string",
       "minLength": 1,

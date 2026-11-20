@@ -6,16 +6,16 @@
 
 export type WorkKind = "entry" | "essay" | "letter" | "plan" | "examination" | "exercise" | "decision" | "memoir";
 
-/** How each kind reads, and the LCGFT term it follows where there is one. */
-export const KINDS: Record<WorkKind, { label: string; lcgft: string | null }> = {
-  entry: { label: "Journal entry", lcgft: "Diaries" },
-  essay: { label: "Essay", lcgft: "Essays" },
-  letter: { label: "Letter", lcgft: "Personal correspondence" },
-  plan: { label: "Plan", lcgft: null },
-  examination: { label: "Examination", lcgft: null },
-  exercise: { label: "Exercise", lcgft: null },
-  decision: { label: "Decision", lcgft: null },
-  memoir: { label: "Memoir", lcgft: "Autobiographies" },
+/** How each kind reads, the LCGFT term it follows where there is one, and its schema.org type (schema.org has no diary or memoir type, so those are CreativeWork with the LCGFT genre). */
+export const KINDS: Record<WorkKind, { label: string; lcgft: string | null; schemaOrg: "CreativeWork" | "Article" | "Message" }> = {
+  entry: { label: "Journal entry", lcgft: "Diaries", schemaOrg: "CreativeWork" },
+  essay: { label: "Essay", lcgft: "Essays", schemaOrg: "Article" },
+  letter: { label: "Letter", lcgft: "Personal correspondence", schemaOrg: "Message" },
+  plan: { label: "Plan", lcgft: null, schemaOrg: "CreativeWork" },
+  examination: { label: "Examination", lcgft: null, schemaOrg: "CreativeWork" },
+  exercise: { label: "Exercise", lcgft: null, schemaOrg: "CreativeWork" },
+  decision: { label: "Decision", lcgft: null, schemaOrg: "CreativeWork" },
+  memoir: { label: "Memoir", lcgft: "Autobiographies", schemaOrg: "CreativeWork" },
 };
 
 export type Template = {
