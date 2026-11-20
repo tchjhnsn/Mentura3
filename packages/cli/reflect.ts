@@ -9,7 +9,8 @@ import { filesJournal } from "../core/src/files-journal.ts";
 import { filesChanges } from "../core/src/files-changes.ts";
 import { listed, runVaultAction, VAULT_ACTIONS, vaultRunner, type VaultContext } from "../core/src/vault-actions.ts";
 import { filesPresentations } from "../core/src/files-presentations.ts";
-import { filesPublished, readVaultWork } from "../core/src/files-published.ts";
+import { filesPublished, readVaultWork, readWorkRecords, writeWorkRecord } from "../core/src/files-published.ts";
+import { DISCLOSURES, ENDS, isEnd, sectionsOf, STATUSES, type WorkRecord } from "../core/src/works-by-end.ts";
 import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
 import { lifeCheckLine } from "../core/src/life-check.ts";
@@ -169,10 +170,22 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   the presentation record passes the gate on personal-site
   publish profile --presentation <id> [--name <name>] [--headline <line>] [--about <text>]
                                   ask to write your public profile facts to published/profile.json
+  publish works --presentation <id>
+                                  ask to write your works by their end to published/works.json: a public
+                                  work in full, a foreshadowed one as one line without its name, a
+                                  private one never
+  work                            your works by their end: Making, Knowing, Doing
+  work <making|knowing|doing> <id> --title <title> --section <section> --disclosure public|foreshadow|private
+                [--summary <text>] [--source <connector>=<url>]... [--link <label>=<href>]...
+                [--status active|quiet|dormant|archived] [--last-activity YYYY-MM-DD]
+                [--foreshadow <one line>] [--pinned]
+                                  keep a work at <end>/<id>.json (writing it at another end moves it).
+                                  Sections: making projects, products, writing, art, crafts; knowing
+                                  research, study, reading; doing service, care, civic, talks, events
   publish list                    what is in published/: each file, its presentation record and when you
                                   approved it
-  unpublish <slug> | unpublish --profile
-                                  take a post or the profile out of published/ and its manifest
+  unpublish <slug> | unpublish --profile | unpublish --works
+                                  take a post, the profile or the works out of published/ and its manifest
   approve [<change id>]           the held changes waiting for you; with an id, approve one at the
                                   terminal (you are the person, so a publish runs once its gate is ready)
   decline <change id>             decline a held change; it never runs
@@ -297,6 +310,15 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       tags: { type: "string" },
       headline: { type: "string" },
       profile: { type: "boolean", default: false },
+      works: { type: "boolean", default: false },
+      section: { type: "string" },
+      summary: { type: "string" },
+      source: { type: "string", multiple: true },
+      link: { type: "string", multiple: true },
+      "last-activity": { type: "string" },
+      disclosure: { type: "string" },
+      foreshadow: { type: "string" },
+      pinned: { type: "boolean", default: false },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -347,12 +369,13 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     presentations,
     published,
     readWork: (path) => readVaultWork(root, path),
+    readWorks: () => readWorkRecords(root),
     personName: await readFile(join(root, paths.person, "person.json"), "utf8").then((t) => (JSON.parse(t) as { name?: string }).name, () => undefined),
     ...(config.moved_to ? { movedTo: config.moved_to } : {}),
   };
   if (cmd === "publish") {
     const [what] = rest;
-    if (!what) throw new Error("publish <work.md> --presentation <id>, publish profile --presentation <id>, or publish list");
+    if (!what) throw new Error("publish <work.md> --presentation <id>, publish profile --presentation <id>, publish works --presentation <id>, or publish list");
     if (what === "list") {
       const index = await published.index();
       for (const e of index.entries) out(`${e.path}  ${e.presentation}  ${e.channel}  approved ${e.approved_at.slice(0, 16).replace("T", " ")} by the ${e.approved_by}`);
@@ -360,7 +383,7 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       return 0;
     }
     if (!values.presentation) throw new Error("--presentation <id> names the record that passes the gate; draft one with reflect present personal-site");
-    const input: Record<string, string> = what === "profile" ? { what: "profile", presentation: values.presentation } : { what: "post", presentation: values.presentation, file: what };
+    const input: Record<string, string> = what === "profile" || what === "works" ? { what, presentation: values.presentation } : { what: "post", presentation: values.presentation, file: what };
     for (const k of ["slug", "title", "kind", "tags", "name", "headline", "about"] as const) if (values[k] !== undefined) input[k] = values[k]!;
     const ran = await runVaultAction(vault, "publish_files", input, "cli");
     if (!ran.held) throw new Error("publishing is always held");
@@ -368,9 +391,50 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     out(ran.gate?.ready ? `Approve it: reflect approve ${ran.changeId}` : `Complete the record (reflect present personal-site --id ${values.presentation} ...), then: reflect approve ${ran.changeId}`);
     return 0;
   }
+  if (cmd === "work") {
+    const [end, id] = rest;
+    if (!end) {
+      const { works, problems } = await readWorkRecords(root);
+      for (const e of ENDS) {
+        const mine = works.filter((w) => w.end === e.id);
+        if (!mine.length) continue;
+        out(e.label);
+        for (const w of mine) out(`  ${w.id}  ${w.record.section}  ${w.record.disclosure}${w.record.status ? `  ${w.record.status}` : ""}  ${w.record.title}`);
+      }
+      for (const p of problems) out(`problem: ${p}`);
+      if (!works.length && !problems.length) out("no works yet: reflect work making <id> --title <title> --section projects --disclosure public");
+      return problems.length ? 1 : 0;
+    }
+    if (!isEnd(end)) throw new Error(`a work's end is ${ENDS.map((e) => e.id).join(", ")}`);
+    if (!id) throw new Error(`work ${end} <id> --title <title> --section ${sectionsOf(end).join("|")} --disclosure ${DISCLOSURES.join("|")}`);
+    const pairs = (list: string[] | undefined, a: string, b: string) =>
+      (list ?? []).map((s) => {
+        const i = s.indexOf("=");
+        if (i < 1) throw new Error(`write each as ${a}=${b}`);
+        return [s.slice(0, i).trim(), s.slice(i + 1).trim()] as const;
+      });
+    if (values.status !== undefined && !(STATUSES as readonly string[]).includes(values.status)) throw new Error(`--status is one of ${STATUSES.join(", ")}`);
+    const sources = pairs(values.source, "<connector>", "<url>").map(([connector, url]) => ({ connector, url }));
+    const links = pairs(values.link, "<label>", "<href>").map(([label, href]) => ({ label, href }));
+    const record = {
+      title: values.title ?? "",
+      section: values.section ?? "",
+      disclosure: values.disclosure ?? "",
+      ...(values.summary ? { summary: values.summary } : {}),
+      ...(sources.length ? { sources } : {}),
+      ...(values.status ? { status: values.status } : {}),
+      ...(values["last-activity"] ? { last_activity: values["last-activity"] } : {}),
+      ...(values.foreshadow ? { foreshadow: values.foreshadow } : {}),
+      ...(values.pinned ? { pinned: true } : {}),
+      ...(links.length ? { links } : {}),
+    } as WorkRecord;
+    const w = await writeWorkRecord(root, end, id, record);
+    out(`kept ${w.path}${w.moved ? ` (moved from ${w.moved})` : ""}`);
+    return 0;
+  }
   if (cmd === "unpublish") {
-    if (!values.profile && !rest[0]) throw new Error("unpublish <slug>, or unpublish --profile");
-    const input = values.profile ? { what: "profile" } : { what: "post", slug: rest[0] };
+    if (!values.profile && !values.works && !rest[0]) throw new Error("unpublish <slug>, unpublish --profile, or unpublish --works");
+    const input = values.profile ? { what: "profile" } : values.works ? { what: "works" } : { what: "post", slug: rest[0] };
     const ran = await runVaultAction(vault, "unpublish_files", input, "cli");
     if (ran.held) throw new Error("unpublishing at the terminal is never held");
     out(`removed ${(ran.result as { removed: string[] }).removed.join(", ")}`);

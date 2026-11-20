@@ -1,10 +1,12 @@
 // The folder host's published/ (./published.ts): the files a site reads, written only from a publication made through
 // the presentation gate, each write logged in memory.jsonl like every other record. It also reads the vault's own
-// Markdown works for `publish_files` and refuses the journal: an entry is never published.
+// Markdown works for `publish_files` and refuses the journal: an entry is never published, and the person's works by
+// their end (making/, knowing/ and doing/, ./works-by-end.ts) for published/works.json.
 import type { Dirent } from "node:fs";
 import { readdir, rm } from "node:fs/promises";
 import { join, normalize, sep } from "node:path";
 import { readRecord, writeRecord } from "./record-io.ts";
+import { END_IDS, workOfPath, workPath, workRecordProblems, type End, type VaultWorkRecord, type WorkRecord } from "./works-by-end.ts";
 import { emptyIndex, INDEX_FILE, isGated, parseFrontMatter, parseIndex, publishedProblems, PUBLISHED_DIR, type Publication, type PublishedIndex } from "./published.ts";
 
 /** Where a vault keeps what it published. */
@@ -92,4 +94,46 @@ export async function readVaultWork(root: string, rel: string): Promise<VaultWor
   const heading = /^#\s+(.+?)\s*#*\s*$/m.exec(body)?.[1];
   const title = str(front.title) ?? str(heading);
   return { path: p, ...(title ? { title } : {}), ...(str(front.kind) ? { kind: str(front.kind) } : {}), ...(tags?.length ? { tags } : {}), body };
+}
+
+/** Every work record in the vault's making/, knowing/ and doing/ folders, with the problems of any that fail. */
+export async function readWorkRecords(root: string): Promise<{ works: VaultWorkRecord[]; problems: string[] }> {
+  const works: VaultWorkRecord[] = [];
+  const problems: string[] = [];
+  for (const end of END_IDS) {
+    for (const rel of await walk(root, end)) {
+      if (rel.endsWith(".draft.json")) continue;
+      const w = workOfPath(rel);
+      if (!w) {
+        problems.push(`${rel}: a work is one file, ${end}/<id>.json, with a lowercase id`);
+        continue;
+      }
+      let raw: unknown;
+      try {
+        raw = JSON.parse((await readRecord(root, rel)) ?? "");
+      } catch {
+        problems.push(`${rel} is not JSON`);
+        continue;
+      }
+      const p = workRecordProblems(w.end, raw, rel);
+      if (p.length) problems.push(...p);
+      else works.push({ end: w.end, id: w.id, record: raw as WorkRecord });
+    }
+  }
+  return { works, problems };
+}
+
+/** Write one work record, logged in memory.jsonl, after its check passes. It replaces a work of the same id at another end. */
+export async function writeWorkRecord(root: string, end: End, id: string, record: WorkRecord, now = new Date()): Promise<{ path: string; moved?: string }> {
+  const path = workPath(end, id);
+  const p = workRecordProblems(end, record, path);
+  if (p.length) throw new Error(p.join("; "));
+  const old = await readRecord(root, path);
+  await writeRecord(root, path, `${JSON.stringify(record, null, 2)}\n`, old === null ? "create" : "append", now.toISOString());
+  for (const other of END_IDS) {
+    if (other === end || (await readRecord(root, workPath(other, id))) === null) continue;
+    await rm(join(root, workPath(other, id)), { force: true });
+    return { path, moved: workPath(other, id) };
+  }
+  return { path };
 }

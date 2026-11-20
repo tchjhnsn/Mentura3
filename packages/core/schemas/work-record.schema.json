@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "work-record.schema.json",
+  "title": "Work",
+  "description": "One of the person's works, kept in a vault at <end>/<id>.json, where the folder (making, knowing or doing) is its end (Nicomachean Ethics VI.4; Metaphysics VI.1). Its section must be one of that end's. packages/core/src/works-by-end.ts reads and checks it.",
+  "type": "object",
+  "required": [
+    "title",
+    "section",
+    "disclosure"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "section": {
+      "enum": [
+        "projects",
+        "products",
+        "writing",
+        "art",
+        "crafts",
+        "research",
+        "study",
+        "reading",
+        "service",
+        "care",
+        "civic",
+        "talks",
+        "events"
+      ],
+      "description": "Making: projects, products, writing, art, crafts. Knowing: research, study, reading. Doing: service, care, civic, talks, events."
+    },
+    "disclosure": {
+      "enum": [
+        "public",
+        "foreshadow",
+        "private"
+      ],
+      "description": "public goes out in full; foreshadow goes out as its end, section and one line only; private never goes out"
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "connector",
+          "url"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "connector": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "The connector the work shows on, such as github, etsy, behance, substack, reading-list or calendar"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "description": "Where the work shows: the person's own connectors"
+    },
+    "status": {
+      "enum": [
+        "active",
+        "quiet",
+        "dormant",
+        "archived"
+      ],
+      "description": "How the work stands, from its sources' evidence where a source gives it"
+    },
+    "last_activity": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "foreshadow": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "The one line shown for a foreshadowed work, without its name"
+    },
+    "pinned": {
+      "type": "boolean",
+      "description": "Shown first in its section, whatever its status"
+    },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "label",
+          "href"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "href": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A web address, or a path on the person's own site"
+          }
+        }
+      }
+    }
+  }
+}
