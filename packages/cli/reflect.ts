@@ -9,6 +9,9 @@ import { filesJournal } from "../core/src/files-journal.ts";
 import { filesChanges } from "../core/src/files-changes.ts";
 import { listed, runVaultAction, VAULT_ACTIONS, vaultRunner, type VaultContext } from "../core/src/vault-actions.ts";
 import { filesPresentations } from "../core/src/files-presentations.ts";
+import { readPersonFile, writePersonFile } from "../core/src/files-person.ts";
+import { attributesFromPuzzle } from "../core/src/founder-puzzle.ts";
+import { ATTRIBUTE_KINDS, closeAttribute, confirmAttribute, isAttributeKind, isoDate, proposeAttributes, stateAttribute } from "../core/src/person.ts";
 import { filesPublished, readVaultWork, readWorkRecords, writeWorkRecord } from "../core/src/files-published.ts";
 import { DISCLOSURES, ENDS, isEnd, sectionsOf, STATUSES, type WorkRecord } from "../core/src/works-by-end.ts";
 import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
@@ -174,6 +177,15 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   ask to write your works by their end to published/works.json: a public
                                   work in full, a foreshadowed one as one line without its name, a
                                   private one never
+  attributes                      what you aim at and are made of: telos, ambitions, passions, values,
+                                  strengths, weaknesses, puzzles, unfair advantages, constraints; each
+                                  numbered, with its source and whether you confirmed it
+  attribute <kind> <text>         say one in your own words (confirmed at once); kind is telos, ambition,
+                                  passion, value, strength, weakness, puzzle, unfair-advantage, constraint
+  attribute confirm <n> | attribute close <n>
+                                  confirm a proposed one as yours, or say one no longer holds (kept, closed)
+  puzzle import <report.json>     read a founder's puzzle report from your AI assistant into person.json:
+                                  every attribute comes in proposed until you confirm it
   work                            your works by their end: Making, Knowing, Doing
   work <making|knowing|doing> <id> --title <title> --section <section> --disclosure public|foreshadow|private
                 [--summary <text>] [--source <connector>=<url>]... [--link <label>=<href>]...
@@ -389,6 +401,41 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     if (!ran.held) throw new Error("publishing is always held");
     out(`held: ${ran.changeId}\n${ran.preview}`);
     out(ran.gate?.ready ? `Approve it: reflect approve ${ran.changeId}` : `Complete the record (reflect present personal-site --id ${values.presentation} ...), then: reflect approve ${ran.changeId}`);
+    return 0;
+  }
+  if (cmd === "attributes" || cmd === "attribute" || cmd === "puzzle") {
+    const rel = join(paths.person, "person.json");
+    const today = isoDate(new Date().toISOString().slice(0, 10))!;
+    const { person } = await readPersonFile(root, rel);
+    if (cmd === "attributes") {
+      for (const k of ATTRIBUTE_KINDS) {
+        const mine = person.attributes.map((a, i) => ({ a, n: i + 1 })).filter(({ a }) => a.kind === k.id && a.validTo === null);
+        if (!mine.length) continue;
+        out(k.label);
+        for (const { a, n } of mine) out(`  ${n}. ${a.text}  (${a.status === "confirmed" ? "yours" : `proposed, ${a.source.kind === "import" ? a.source.name : a.source.kind}`})`);
+      }
+      if (!person.attributes.some((a) => a.validTo === null)) out("none yet: reflect attribute telos \"<in your own words>\", or reflect puzzle import <report.json>");
+      return 0;
+    }
+    if (cmd === "puzzle") {
+      if (rest[0] !== "import" || !rest[1]) throw new Error("puzzle import <report.json>");
+      const r = proposeAttributes(person, attributesFromPuzzle(JSON.parse(await readFile(rest[1], "utf8")), today));
+      await writePersonFile(root, r.person, rel);
+      out(`proposed ${r.added} attribute(s) in person.json; confirm each that is yours: reflect attributes, then reflect attribute confirm <n>`);
+      return 0;
+    }
+    const [what, ...words] = rest;
+    if (what === "confirm" || what === "close") {
+      const n = Number(words[0]);
+      if (!Number.isInteger(n) || n < 1) throw new Error(`attribute ${what} <n>, the number reflect attributes shows`);
+      await writePersonFile(root, what === "confirm" ? confirmAttribute(person, n - 1) : closeAttribute(person, n - 1, today), rel);
+      out(`${what === "confirm" ? "confirmed" : "closed"} ${n}`);
+      return 0;
+    }
+    if (!isAttributeKind(what)) throw new Error(`attribute <kind> <text>: kind is ${ATTRIBUTE_KINDS.map((k) => k.id).join(", ")}`);
+    const text = words.join(" ").trim();
+    await writePersonFile(root, stateAttribute(person, what, text, today), rel);
+    out(`kept: ${what}, ${text}`);
     return 0;
   }
   if (cmd === "work") {

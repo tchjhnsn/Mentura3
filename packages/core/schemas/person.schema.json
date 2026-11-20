@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:reflect:schema:person",
   "title": "Person",
-  "description": "What the person has said about themselves: facts, relationships and holds. Nothing is overwritten: a new value closes the open one by giving it validTo. Each value names its source.",
+  "description": "What the person has said about themselves: facts, relationships, holds, and attributes (what they aim at and what they are made of: telos, ambitions, passions, values, strengths, weaknesses, puzzles, unfair advantages, constraints). Nothing is overwritten: a new value closes the open one by giving it validTo. Each value names its source.",
   "type": "object",
   "required": [
     "facts",
@@ -160,6 +160,87 @@
           },
           "source": {
             "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "attributes": {
+      "type": "array",
+      "description": "What the person aims at and is made of, the attributes of the founder's puzzle. Several of each kind may hold at once. telos: The end everything else is for (Nicomachean Ethics I.7); ambition: What you want to bring about, a goal with an end (Nicomachean Ethics III.4 (wish is for the end)); passion: What you love doing or thinking about for its own sake (Nicomachean Ethics X.4-5 (pleasure completes the activity)); value: What you hold good and will not trade away (Nicomachean Ethics I.8 (goods of soul, body and external)); strength: What you do well, by nature or by habit (Nicomachean Ethics II.1, II.5 (a state, hexis)); weakness: Where you fall short or overdo it (Nicomachean Ethics II.6 (excess and deficiency)); puzzle: The problem your life keeps working on (Metaphysics III.1 (aporia)); unfair-advantage: What you have that others cannot easily get (Nicomachean Ethics I.8 (external goods as instruments)); constraint: What limits what you can do now: time, money, place, duties (Nicomachean Ethics III.3 (we deliberate about what is in our power)).",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "text",
+          "validFrom",
+          "validTo",
+          "recordedAt",
+          "source",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "enum": [
+              "telos",
+              "ambition",
+              "passion",
+              "value",
+              "strength",
+              "weakness",
+              "puzzle",
+              "unfair-advantage",
+              "constraint"
+            ]
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The attribute in words, the person's own once confirmed."
+          },
+          "validFrom": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day it began to hold, or was first said."
+          },
+          "validTo": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day the value stopped holding; null while it holds."
+          },
+          "recordedAt": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "The day Reflect recorded it."
+          },
+          "source": {
+            "$ref": "#/$defs/source"
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "confirmed"
+            ],
+            "description": "Confirmed when stated or when the person confirmed it; an assistant's reading stays proposed."
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the proposal rests on, when an assistant proposed it."
+          },
+          "confidence": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "description": "How sure the proposer was."
           }
         }
       }
