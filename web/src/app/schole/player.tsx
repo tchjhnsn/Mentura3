@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronDownIcon, ListMusicIcon, ListOrderedIcon, Maximize2Icon, MoonIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, ListMusicIcon, ListOrderedIcon, Maximize2Icon, MoonIcon, PauseIcon, PlayIcon, RotateCcwIcon, RotateCwIcon, ScissorsIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
 import type { Audiobook } from "@reflect/core/librivox";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
 import { backgroundFor, INTERLUDE, LEVELS } from "@reflect/core/background-music";
 import type { CollectionItem } from "@reflect/core/collections";
 import { keepUnitPlaceAction, setUnitDoneAction } from "./actions";
+import { snipAction } from "./snips/actions";
 import { BackgroundMusicLayer, BG_DEFAULT, BG_KEY, type BgSettings } from "./background-music";
 import { localDay } from "./items/youtube";
 
@@ -107,6 +108,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
   const [sleep, setSleep] = useState<Sleep>(null);
   // Full screen (Torian, 2026-11-15 07:57Z): what is playing, large, with its chapters.
   const [full, setFull] = useState(false);
+  const [snipped, setSnipped] = useState(false);
   useEffect(() => {
     if (!full) return;
     const was = document.body.style.overflow;
@@ -391,6 +393,17 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+  // Snip (Torian, 2026-11-21, after Snipd): keep this moment; it goes to Snips with no words, for the journal.
+  const snipMenu = (
+    <Button size="icon" variant="ghost" aria-label={snipped ? "Snipped" : "Snip this moment"} title={snipped ? "Kept in Snips" : "Snip this moment"} onClick={() => {
+      const at = Math.floor(time);
+      void snipAction({
+        at, title: track ? track.title : book!.bookTitle, by: track ? track.show : "", href, image: art,
+        track: track ? { id: track.id, src: track.src, title: track.title, show: track.show, href: track.href, image: track.image ?? null, item: track.item, unit: track.unit, seconds: track.seconds ?? null } : null,
+        chapter: track ? null : chapter, chapterTitle: track ? chap?.title ?? null : c?.title ?? null,
+      }).then((r) => { if (r.ok) { setSnipped(true); setTimeout(() => setSnipped(false), 2000); } });
+    }}>{snipped ? <CheckIcon /> : <ScissorsIcon />}</Button>
+  );
   const queueMenu = queue.length ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label={`Up next, ${queue.length}`} className="relative"><ListMusicIcon /><span className="bg-foreground text-background absolute -top-0.5 -right-0.5 rounded-full px-1 text-[10px] leading-4">{queue.length}</span></Button></DropdownMenuTrigger>
@@ -474,6 +487,7 @@ export function ListenProvider({ children }: { children: React.ReactNode }) {
               {chaptersMenu ?? partsMenu}
               {sleepMenu}
               {soundMenu}
+              {snipMenu}
               {queueMenu}
               <Button size="icon" variant="ghost" aria-label="Full screen" title="Full screen" onClick={() => setFull(true)}><Maximize2Icon /></Button>
               </div>

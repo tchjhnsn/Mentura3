@@ -42,3 +42,20 @@ Points, streak pressure, leagues, scores and certificates. Questions are tried a
 ## Not built
 
 Progress in the database (kept in the browser for now), server-side onboarding answers, audio for lessons, and the Uxcel skill graph beyond the Your growth radar.
+
+## Second pass: Listen, Learn and Shelf (2026-11-21, later)
+
+Torian, 18:55Z and 19:03Z: Uxcel is a starting point but not enough. Scholē is a multimedia site with broad subjects: it is as much a podcast and audiobook platform (Audible, Snipd) as a course app (Brilliant, MasterClass, Uxcel). Books are kept mainly for reference and to show a person's knowledge and interests; reading in the app is not a primary focus. The Aristotle work was closer to lessons than courses. He then said: go with the recommendations.
+
+Decided (recommendations he accepted):
+
+- Scholē has three parts of equal weight on one catalog: Listen (podcasts, audiobooks, people, snips), Learn (courses, subjects, lectures, glossary, examination) and Shelf (your library, highlights, saved). Talk is the dialectic; You is growth and the journal. The sidebar is grouped that way.
+- Home leads with listening: Continue listening (the last thing played, the rest under way) and new episodes from your shows, then Continue learning and recommended courses.
+- A course is built around one work and uses every medium: the whole work as a LibriVox audiobook, and in each unit the chapters for that part (played in Scholē's player), podcast episodes and lectures on it (`packages/core/src/aristotle/media.ts`, every link checked on 2026-11-21). The lessons are the reading.
+- Practice goes past multiple choice, after Brilliant: after the questions, the person matches the lesson's Greek terms to their meanings (L3.4).
+- Snips, after Snipd: a scissors button in the player keeps the moment playing (episode or audiobook, and the second). There is no transcript and no AI summary, so a snip holds no words; Snips (A16) plays it from that moment or opens a journal entry about it. Kept as `snip/<id>` in `person_fact`, so no migration.
+- The model for the catalog is IFLA's Library Reference Model: a work (the Nicomachean Ethics), its expressions (Ross's translation) and their manifestations (a LibriVox recording). Not built as records yet.
+
+The screen inventory now lists every Scholē route (85 screens in five areas), each with Mobbin references or a note saying why there are none. Snipd, Pocket Casts and Kindle are not on Mobbin; the nearest real flows are used and named.
+
+Not built: Up next as its own page (A17, the player's queue menu does it today), courses for other authors (Aquinas next), unit media on the lesson page, the dead Doing and Knowing doors removed.

@@ -1,8 +1,10 @@
 "use client";
 
-// S1 Home, after Uxcel's Home (Mobbin 68933767): continue learning first, a getting-started list for a newcomer, the
+// S1 Home: what the person is listening to first (the listen slot, S1.0 and S1.6, from the server), then, after
+// Uxcel's Home (Mobbin 68933767), continue learning, a getting-started list for a newcomer, the
 // week of study, recommended courses, and Scholē's three parts: nature, habits, reason (Politics VII.13, 1332a38-b11).
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CheckCircle2Icon, CircleIcon, ClockIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Num } from "@/components/studio/bits";
@@ -19,7 +21,7 @@ export function nextIn(c: CourseIndex, done: string[], at?: string) {
   return c.order.find((l) => !done.includes(l.id)) ?? null;
 }
 
-export function ScholeHome({ courses, subjects }: { courses: CourseIndex[]; subjects: Subj[] }) {
+export function ScholeHome({ courses, subjects, listen }: { courses: CourseIndex[]; subjects: Subj[]; listen?: ReactNode }) {
   const { done, at, picks, ready, days } = useSchole();
   const started = courses.filter((c) => at[c.id] || (done[c.id] ?? []).length).sort((a, b) => (at[b.id]?.when ?? "").localeCompare(at[a.id]?.when ?? ""));
   const current = started[0];
@@ -37,9 +39,10 @@ export function ScholeHome({ courses, subjects }: { courses: CourseIndex[]; subj
   const allSet = steps.every((s) => s.done);
   return (
     <div className={PAGE}>
-      <Head n="S1" title={current ? "Welcome back" : "Welcome to Scholē"} job="A tool for knowing your nature, building good habits, and expanding your reason. Courses on Aristotle's works, by subject, a lesson at a time." />
+      <Head n="S1" title={current ? "Welcome back" : "Welcome to Scholē"} job="A tool for knowing your nature, building good habits, and expanding your reason: podcasts and audiobooks to listen to, courses to work through, and a shelf of what you know." />
       <div className="grid gap-8 lg:grid-cols-[1fr_20rem]">
         <div className="min-w-0 space-y-10">
+          {listen}
           <section className="relative">
             <Num n="S1.1" className="absolute -top-2 right-0" />
             <h2 className="mb-3 text-lg font-semibold">Continue learning</h2>
