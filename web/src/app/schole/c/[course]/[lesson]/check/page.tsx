@@ -14,5 +14,5 @@ export default async function CheckPage({ params }: { params: Promise<{ course: 
   const found = c && lessonOf(c, lesson);
   if (!c || !found) notFound();
   const l = found.lesson;
-  return <Check course={c.id} lesson={l.id} title={l.title} checks={l.checks} passage={{ text: l.passage.text, ref: `${c.title} ${l.passage.ref}` }} />;
+  return <Check course={c.id} lesson={l.id} title={l.title} checks={l.checks} terms={l.terms} passage={{ text: l.passage.text, ref: `${c.title} ${l.passage.ref}` }} />;
 }

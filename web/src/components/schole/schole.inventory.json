@@ -4,126 +4,2068 @@
   "app": "schole",
   "title": "Scholē",
   "prefixes": {
-    "S": "Scholē screens, across every course",
-    "L": "Screens inside one course"
+    "S": "Scholē screens across the app: home, map, onboarding and the first course screens",
+    "L": "Learn: courses, lessons, lectures and practice",
+    "A": "Listen: podcasts, audiobooks, the people in them and playlists",
+    "B": "Shelf: books kept for reference and to show what a person knows",
+    "D": "Talk: dialectic, discussion and debate",
+    "Y": "You: the person's own pages"
+  },
+  "refNames": {
+    "68933767-f763-41a5-94ed-967cadaac831": "Uxcel, Home",
+    "371f86d9-e35f-43f9-b287-cc624e1a2de8": "Uxcel, Courses and a course page",
+    "25541238-f28f-47a1-a7a2-5dd47c6737e8": "Uxcel, Onboarding",
+    "19e96245-9a08-4ef1-a3af-14d154b50482": "Uxcel, Courses by level",
+    "6f01f893-2d97-406b-844e-8ebfebf879d0": "Uxcel, Filtering courses",
+    "df720b4d-3372-42ec-9122-e2eee8a7ca16": "Uxcel, Career paths",
+    "a53088fe-2b34-42c8-b251-4bde66d109ff": "Uxcel, A career path",
+    "2eedd9fc-eec6-444c-820e-f8e2e53df6f9": "Uxcel, Starting a lesson",
+    "007c3248-0e23-4b9b-b512-1bd4d68494af": "Uxcel, Read theory",
+    "dfc9a583-d2ba-4bc1-a71d-e33a5b73e04c": "Uxcel, Lesson detail",
+    "0faf91f9-2b61-4c3f-8e0f-3ddf43b60944": "Uxcel, Completing a lesson",
+    "ed7e20c6-209d-4f68-92fd-efe412a97471": "Uxcel, Sharing a lesson",
+    "efb89081-dc1e-436c-8015-8099448218ec": "Uxcel, Skill graph",
+    "f0a078e3-43bf-4848-b2f1-f79583faf833": "Uxcel, Bookmarks",
+    "8cb4ef57-3a66-430a-a775-29a2c5d237f6": "Uxcel, Searching Uxcel",
+    "ad2d1490-8529-4013-b250-2669e4d2e698": "Uxcel, Starting an assessment",
+    "32a32c68-89f9-449c-9004-117e2ab6d708": "Audible, Audiobook title detail",
+    "ee73c94d-dd9d-43c4-a8d9-1ae1af74add3": "Audible, Playing an audiobook",
+    "84e8670d-c49f-43d8-9731-c8047cd0f8e2": "Audible, Listening history",
+    "8f2f652e-fb90-487e-98c1-918e2a34a687": "Audible, Author detail",
+    "81544ae0-e0d2-4857-a605-704a16387bcd": "Apple Podcasts, Show detail",
+    "6006acbe-5b89-4447-a023-04fe59581a38": "Apple Podcasts, Episodes",
+    "7134b6e4-9b49-45d8-8cd6-153798f9ba8f": "Apple Podcasts, View transcript",
+    "51bb0fc5-45ac-460a-88fa-45fdbbc5d404": "Apple Podcasts, Transcript",
+    "a5791128-1870-4234-8dd9-729e2e3a6d45": "Apple Podcasts, Library and latest episodes",
+    "ec748abc-2b82-460c-863d-e417047a341e": "Apple Podcasts, Browse categories",
+    "796fd4b3-700f-41ff-8ecb-1d862a44bd88": "Spotify, Searching in a podcast",
+    "9038a412-7ed3-4915-b484-7257022505a4": "Spotify, Searching episodes",
+    "fb05115a-cbf3-4c5f-a7d3-8e7d15f1db25": "Spotify, Podcast episode detail",
+    "a962f177-fc3c-4a7a-a503-94e633d446a7": "Spotify, Queue",
+    "4f9f805f-7e0b-4808-b47a-416113d0138c": "Spotify, Adding to the queue",
+    "ff91e81a-2d81-4854-98cc-f2e8fd8dd3e1": "Spotify, Following",
+    "e55a9f38-5268-49ad-b12a-f0d2a6dc1f28": "Spotify, Following an artist",
+    "56526571-619f-4ae8-9dbd-0783f791779f": "Spotify, Made for you",
+    "aa59578d-c8de-4c83-b902-95b39c33e54c": "Spotify, Making a playlist and its page",
+    "1f00ea4e-3c27-4ea5-94c7-7e8d2379ff51": "Brink, Saving a moment with its audio",
+    "16fa0e5c-2a94-4843-9870-d8b9df12e787": "ElevenReader, Bookmarks to listen again",
+    "ece9cce5-d491-43ca-9053-f1efd3c4c3f9": "Brilliant, Completing a lesson",
+    "4a43592e-d21d-4f08-83c3-6c36e9dadea4": "Brilliant, Starting a lesson",
+    "db559650-ff8c-4664-a75b-e39aa7c6b39a": "Brilliant, Courses by topic",
+    "1cbf874d-cc87-4c94-bfad-508f1e40c277": "MasterClass, Class detail",
+    "53d30dc0-b6b1-408d-aae3-72379d2b9d36": "MasterClass, Lesson with up next and moments",
+    "760e8c13-f491-4cd2-aafb-d222b196bf46": "Coursera, Lecture with transcript",
+    "9f26f2c9-842d-4e61-b06c-4408c1cf708c": "Coursera, Module",
+    "91599bc1-6b57-4d06-9095-2d46ff0a2842": "Coursera, My learning",
+    "67128d88-7c89-4096-beb2-05a8bb3484b3": "Coursera, Setting a goal and its calendar",
+    "3d2c3dc8-b4c6-464e-9d74-7eecc64154d9": "Goodreads, Book detail",
+    "3fb41bfe-7c8a-44b2-93c2-4bd3ad01c04b": "Goodreads, Details and editions",
+    "3358a40a-41c7-41d6-b85d-5cecb7c2870d": "Goodreads, List detail",
+    "8b2bffbe-6f47-489a-907a-f0f9f07a7453": "Goodreads, Listopia",
+    "95fe5849-e01a-4912-b86d-b8898a1039cf": "Goodreads, My books",
+    "181750ff-5d4f-4346-b611-8b705cfe0625": "Goodreads, Shelf detail",
+    "15905bfa-0c9a-4ef2-bf9e-b21911e22c58": "Goodreads, Reading challenge",
+    "cde82a64-3eab-478c-a5b0-57a2c6f6638f": "Goodreads, Author profile",
+    "d0556d52-c2c8-466e-b36b-b1445dfd211d": "Goodreads, Following an author",
+    "e0eeb8e1-4224-469a-92c3-61551427a5d0": "Goodreads, Discover",
+    "cca1058c-ea5b-45b0-a499-38577604aa98": "Goodreads, Genre detail",
+    "5456f3ee-facf-4b4e-a447-9dd62e72626e": "Goodreads, Group discussions",
+    "19683b5e-2183-4562-950c-28f07ee9078a": "Fable, Profile with reading stats",
+    "dada271a-4dd9-445b-be2e-584aaaad3ff2": "Fable, Highlights in a book",
+    "07f87165-ac71-477e-9ff5-8a518ccb207d": "Fable, Notes",
+    "6b16a511-43af-45c3-9bcd-afba6feeadd4": "Blinkist, Highlights by book",
+    "3c9de60b-b12f-4c15-9856-7edd1a7d147d": "Blinkist, Summary outline",
+    "5ef2cb9d-7b72-4d12-a922-3e7eb09508be": "Blinkist, Reading a summary",
+    "5750cdf2-d788-4d2a-9d70-c35147fe9fea": "Apple Books, Reader and font size",
+    "fd95f966-613d-4ae5-a613-a589e183333c": "Reddit, Post detail",
+    "8d41d3d3-8ddf-454f-bfc8-3b9c1c4f3ad0": "Reddit, Post and replies",
+    "d8897f4f-1dbc-405c-a8da-e514dee52084": "Reddit, Creating a post",
+    "19454dbc-c7b9-48f8-8d60-30b22baf5650": "Reddit, Choosing where to post",
+    "2e98306f-7e26-43f3-9d45-24186e4fec8a": "Reddit, User profile",
+    "9d3ab38e-dc59-45db-ab7b-dac5fb7889a6": "Discord, Joining a stage channel",
+    "990e8227-41ab-486e-a064-c017aee40f73": "Discord, Joining a voice channel",
+    "6b875b46-848c-4562-b12e-c356b9a5958e": "Discord, Joining an event",
+    "1eb6c2be-1371-4f3f-8d20-08aa24ab96e8": "Discord, Creating an event",
+    "eaff9aa7-3808-42e0-a26a-f882a5b6f398": "Discord, Creating a channel"
   },
   "screens": [
-    { "id": "S0", "title": "Screen map", "path": "/schole/map", "job": "Every Scholē screen, part and component number in one list, with the Mobbin screens each is built after.", "states": ["default"] },
-    { "id": "S1", "title": "Home", "path": "/schole", "job": "Pick up the lesson you were on, see your week of study, and start a course when you have none.",
-      "refs": ["https://mobbin.com/screens/68933767-f763-41a5-94ed-967cadaac831", "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8"],
-      "states": ["default", "empty", "phone", "wide"],
+    {
+      "id": "S0",
+      "area": "map",
+      "title": "Screen map",
+      "path": "/schole/map",
+      "job": "Every Scholē screen, part and component number in one list, by area, with the Mobbin screens each is built after.",
+      "note": "A working index for building the app, after the Venture Studio's and Mentura's maps; it copies no app.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "S1",
+      "area": "listen",
+      "title": "Home",
+      "path": "/schole",
+      "job": "Pick up what you were listening to or learning, see your week of study, and start a course when you have none.",
+      "refs": [
+        "https://mobbin.com/screens/68933767-f763-41a5-94ed-967cadaac831",
+        "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8",
+        "https://mobbin.com/flows/84e8670d-c49f-43d8-9731-c8047cd0f8e2"
+      ],
       "parts": [
-        { "id": "S1.1", "name": "Continue learning", "job": "The course you were on, its progress and Resume, which opens the next lesson." },
-        { "id": "S1.2", "name": "Getting started", "job": "Three steps for a newcomer: choose what to understand, read a first lesson, check it." },
-        { "id": "S1.3", "name": "Your week", "job": "The days you studied this week. Habits are built by doing (Ethics II.1)." },
-        { "id": "S1.4", "name": "Recommended for you", "job": "Courses from the subjects you picked, each with why." },
-        { "id": "S1.5", "name": "Nature, habits, reason", "job": "Scholē's three parts, each leading to where it is worked on." }
-      ] },
-    { "id": "S2", "title": "Get started", "path": "/schole/start", "job": "Three questions, one per screen: what you want to understand, how long a day, where to begin.",
-      "refs": ["https://mobbin.com/flows/25541238-f28f-47a1-a7a2-5dd47c6737e8"],
-      "states": ["default", "phone", "wide"],
+        {
+          "id": "S1.0",
+          "name": "Continue listening",
+          "job": "What the person last played, as one large card with Continue, and the rest under way in a row; with nothing under way, find a podcast or audiobook and playlists people made."
+        },
+        {
+          "id": "S1.1",
+          "name": "Continue learning",
+          "job": "The course you were on, its progress and Resume, which opens the next lesson."
+        },
+        {
+          "id": "S1.2",
+          "name": "Getting started",
+          "job": "Three steps for a newcomer: choose what to understand, read a first lesson, check it."
+        },
+        {
+          "id": "S1.3",
+          "name": "Your week",
+          "job": "The days you studied this week. Habits are built by doing (Ethics II.1)."
+        },
+        {
+          "id": "S1.4",
+          "name": "Recommended for you",
+          "job": "Courses from the subjects you picked, each with why."
+        },
+        {
+          "id": "S1.5",
+          "name": "Nature, habits, reason",
+          "job": "Scholē's three parts, each leading to where it is worked on."
+        },
+        {
+          "id": "S1.6",
+          "name": "New from your shows",
+          "job": "Episodes out in the last two weeks from shows the person keeps, not yet begun."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S2",
+      "area": "learn",
+      "title": "Get started",
+      "path": "/schole/start",
+      "job": "Three questions, one per screen: what you want to understand, how long a day, where to begin.",
+      "refs": [
+        "https://mobbin.com/flows/25541238-f28f-47a1-a7a2-5dd47c6737e8"
+      ],
       "parts": [
-        { "id": "S2.1", "name": "Subjects you want to understand", "job": "Tap tiles for the nine subjects, any number." },
-        { "id": "S2.2", "name": "Time a day", "job": "Ten, twenty or forty minutes." },
-        { "id": "S2.3", "name": "Where to begin", "job": "The first course of the first subject picked, with Start course." }
-      ] },
-    { "id": "S3", "title": "Courses", "path": "/schole/courses", "job": "Every course, one per work of Aristotle, filtered by subject and level.",
-      "refs": ["https://mobbin.com/flows/19e96245-9a08-4ef1-a3af-14d154b50482", "https://mobbin.com/flows/6f01f893-2d97-406b-844e-8ebfebf879d0"],
-      "states": ["default", "empty", "phone", "wide"],
+        {
+          "id": "S2.1",
+          "name": "Subjects you want to understand",
+          "job": "Tap tiles for the nine subjects, any number."
+        },
+        {
+          "id": "S2.2",
+          "name": "Time a day",
+          "job": "Ten, twenty or forty minutes."
+        },
+        {
+          "id": "S2.3",
+          "name": "Where to begin",
+          "job": "The first course of the first subject picked, with Start course."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S3",
+      "area": "learn",
+      "title": "Courses",
+      "path": "/schole/courses",
+      "job": "Every course, one per work of Aristotle, filtered by subject and level.",
+      "refs": [
+        "https://mobbin.com/flows/19e96245-9a08-4ef1-a3af-14d154b50482",
+        "https://mobbin.com/flows/6f01f893-2d97-406b-844e-8ebfebf879d0"
+      ],
       "parts": [
-        { "id": "S3.1", "name": "Subject tabs", "job": "All, then the nine subjects." },
-        { "id": "S3.2", "name": "Level filter", "job": "Start here, Intermediate, Advanced." },
-        { "id": "S3.3", "name": "Course grid", "job": "Course cards; one in progress shows how far you are." },
-        { "id": "S3.4", "name": "Lecture courses", "job": "The Yale and MIT lecture courses Scholē already plays, one link away." }
-      ] },
-    { "id": "S4", "title": "Subjects", "path": "/schole/subjects", "job": "The nine subjects in Aristotle's own division: the instrument, knowing, doing and making.",
-      "refs": ["https://mobbin.com/flows/df720b4d-3372-42ec-9122-e2eee8a7ca16"],
-      "states": ["default", "phone", "wide"],
+        {
+          "id": "S3.1",
+          "name": "Subject tabs",
+          "job": "All, then the nine subjects."
+        },
+        {
+          "id": "S3.2",
+          "name": "Level filter",
+          "job": "Start here, Intermediate, Advanced."
+        },
+        {
+          "id": "S3.3",
+          "name": "Course grid",
+          "job": "Course cards; one in progress shows how far you are."
+        },
+        {
+          "id": "S3.4",
+          "name": "Lecture courses",
+          "job": "The Yale and MIT lecture courses Scholē already plays, one link away."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S4",
+      "area": "learn",
+      "title": "Subjects",
+      "path": "/schole/subjects",
+      "job": "The nine subjects in Aristotle's own division: the instrument, knowing, doing and making.",
+      "refs": [
+        "https://mobbin.com/flows/df720b4d-3372-42ec-9122-e2eee8a7ca16"
+      ],
       "parts": [
-        { "id": "S4.1", "name": "Division", "job": "One group per division, with Aristotle's reason for it." },
-        { "id": "S4.2", "name": "Subject cards", "job": "Name in English and Greek, what it studies, works and hours." }
-      ] },
-    { "id": "S5", "title": "Subject", "path": "/schole/subjects/[subject]", "job": "One subject's works as a numbered path in reading order, with examination at the end.",
-      "refs": ["https://mobbin.com/flows/a53088fe-2b34-42c8-b251-4bde66d109ff"],
-      "states": ["default", "partial", "phone", "wide"],
+        {
+          "id": "S4.1",
+          "name": "Division",
+          "job": "One group per division, with Aristotle's reason for it."
+        },
+        {
+          "id": "S4.2",
+          "name": "Subject cards",
+          "job": "Name in English and Greek, what it studies, works and hours."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S5",
+      "area": "learn",
+      "title": "Subject",
+      "path": "/schole/subjects/[subject]",
+      "job": "One subject's works as a numbered path in reading order, with examination at the end.",
+      "refs": [
+        "https://mobbin.com/flows/a53088fe-2b34-42c8-b251-4bde66d109ff"
+      ],
       "parts": [
-        { "id": "S5.1", "name": "Numbered path", "job": "Each work as a step, with level and hours." },
-        { "id": "S5.2", "name": "Examination at the end", "job": "Put yourself under examination by people on the subject." }
-      ] },
-    { "id": "L1", "title": "Course", "path": "/schole/c/[course]", "job": "What the work asks, its books as units with their lessons, and Start or Continue.",
-      "refs": ["https://mobbin.com/flows/2eedd9fc-eec6-444c-820e-f8e2e53df6f9", "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8"],
-      "states": ["default", "partial", "long", "phone", "wide"],
+        {
+          "id": "S5.1",
+          "name": "Numbered path",
+          "job": "Each work as a step, with level and hours."
+        },
+        {
+          "id": "S5.2",
+          "name": "Examination at the end",
+          "job": "Put yourself under examination by people on the subject."
+        }
+      ],
+      "states": [
+        "default",
+        "partial",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L1",
+      "area": "learn",
+      "title": "Course",
+      "path": "/schole/c/[course]",
+      "job": "What the work asks, its books as units with their lessons, and Start or Continue.",
+      "refs": [
+        "https://mobbin.com/flows/2eedd9fc-eec6-444c-820e-f8e2e53df6f9",
+        "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8"
+      ],
       "parts": [
-        { "id": "L1.1", "name": "Course head", "job": "Title, Greek and Latin names, facts line, Start course or Continue, Save." },
-        { "id": "L1.2", "name": "About this course", "job": "What the work asks, the caveat when there is one, and the translation read." },
-        { "id": "L1.3", "name": "Units", "job": "One unit per book, each with its lessons and progress." },
-        { "id": "L1.4", "name": "Progress card", "job": "How far you are, time left, and Continue learning." },
-        { "id": "L1.5", "name": "Examination card", "job": "Examiners are people: put yourself under examination on this work." }
-      ] },
-    { "id": "L2", "title": "Lesson", "path": "/schole/c/[course]/[lesson]", "job": "Read one idea: the passage in Aristotle's words, what it says, its terms, then check it.",
-      "refs": ["https://mobbin.com/flows/007c3248-0e23-4b9b-b512-1bd4d68494af", "https://mobbin.com/flows/dfc9a583-d2ba-4bc1-a71d-e33a5b73e04c"],
-      "states": ["default", "phone", "wide"],
+        {
+          "id": "L1.1",
+          "name": "Course head",
+          "job": "Title, Greek and Latin names, facts line, Start course or Continue, Save."
+        },
+        {
+          "id": "L1.2",
+          "name": "About this course",
+          "job": "What the work asks, the caveat when there is one, and the translation read."
+        },
+        {
+          "id": "L1.3",
+          "name": "Units",
+          "job": "One unit per book, each with its lessons and progress."
+        },
+        {
+          "id": "L1.4",
+          "name": "Progress card",
+          "job": "How far you are, time left, and Continue learning."
+        },
+        {
+          "id": "L1.5",
+          "name": "Examination card",
+          "job": "Examiners are people: put yourself under examination on this work."
+        }
+      ],
+      "states": [
+        "default",
+        "partial",
+        "long",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L2",
+      "area": "learn",
+      "title": "Lesson",
+      "path": "/schole/c/[course]/[lesson]",
+      "job": "Read one idea: the passage in Aristotle's words, what it says, its terms, then check it.",
+      "refs": [
+        "https://mobbin.com/flows/007c3248-0e23-4b9b-b512-1bd4d68494af",
+        "https://mobbin.com/flows/dfc9a583-d2ba-4bc1-a71d-e33a5b73e04c"
+      ],
       "parts": [
-        { "id": "L2.1", "name": "Passage", "job": "The text, verbatim, with its Bekker reference and translator." },
-        { "id": "L2.2", "name": "What it says", "job": "The lesson in plain sentences." },
-        { "id": "L2.3", "name": "Terms", "job": "Its Greek terms, each opening the glossary." },
-        { "id": "L2.4", "name": "Unit contents", "job": "The unit's lessons beside the reading, with Start check." },
-        { "id": "L2.5", "name": "Take it to your journal", "job": "A question that opens a new journal entry with it." },
-        { "id": "L2.6", "name": "Previous and next", "job": "The lessons either side, across units." }
-      ] },
-    { "id": "L3", "title": "Lesson check", "path": "/schole/c/[course]/[lesson]/check", "job": "Two or three tap-choice questions, one at a time, each answered with why. No score.",
-      "refs": ["https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944"],
-      "states": ["default", "error", "phone", "wide"],
+        {
+          "id": "L2.1",
+          "name": "Passage",
+          "job": "The text, verbatim, with its Bekker reference and translator."
+        },
+        {
+          "id": "L2.2",
+          "name": "What it says",
+          "job": "The lesson in plain sentences."
+        },
+        {
+          "id": "L2.3",
+          "name": "Terms",
+          "job": "Its Greek terms, each opening the glossary."
+        },
+        {
+          "id": "L2.4",
+          "name": "Unit contents",
+          "job": "The unit's lessons beside the reading, with Start check."
+        },
+        {
+          "id": "L2.5",
+          "name": "Take it to your journal",
+          "job": "A question that opens a new journal entry with it."
+        },
+        {
+          "id": "L2.6",
+          "name": "Previous and next",
+          "job": "The lessons either side, across units."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L3",
+      "area": "learn",
+      "title": "Lesson check",
+      "path": "/schole/c/[course]/[lesson]/check",
+      "job": "Two or three tap-choice questions, one at a time, each answered with why. No score.",
+      "refs": [
+        "https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944"
+      ],
       "parts": [
-        { "id": "L3.1", "name": "Progress bar", "job": "How many questions are left; the cross goes back to the lesson." },
-        { "id": "L3.2", "name": "Question", "job": "The question and its choices, numbered for the keyboard." },
-        { "id": "L3.3", "name": "Answer bar", "job": "Right, or not quite, with why, the passage again, and Continue." }
-      ] },
-    { "id": "L4", "title": "Lesson complete", "path": "/schole/c/[course]/[lesson]/done", "job": "What you now know, your week, the journal question, and the next lesson.",
-      "refs": ["https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944", "https://mobbin.com/flows/ed7e20c6-209d-4f68-92fd-efe412a97471"],
-      "states": ["default", "phone", "wide"],
+        {
+          "id": "L3.1",
+          "name": "Progress bar",
+          "job": "How many questions are left; the cross goes back to the lesson."
+        },
+        {
+          "id": "L3.2",
+          "name": "Question",
+          "job": "The question and its choices, numbered for the keyboard."
+        },
+        {
+          "id": "L3.3",
+          "name": "Answer bar",
+          "job": "Right, or not quite, with why, the passage again, and Continue."
+        }
+      ],
+      "states": [
+        "default",
+        "error",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L4",
+      "area": "learn",
+      "title": "Lesson complete",
+      "path": "/schole/c/[course]/[lesson]/done",
+      "job": "What you now know, your week, the journal question, and the next lesson.",
+      "refs": [
+        "https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944",
+        "https://mobbin.com/flows/ed7e20c6-209d-4f68-92fd-efe412a97471"
+      ],
       "parts": [
-        { "id": "L4.1", "name": "What you now know", "job": "The lesson's terms and its one idea." },
-        { "id": "L4.2", "name": "Next lesson", "job": "Continue goes straight to it; at a unit's end, the course page." },
-        { "id": "L4.3", "name": "Share lesson", "job": "Copy the lesson's link for a friend." }
-      ] },
-    { "id": "S6", "title": "Your growth", "path": "/schole/growth", "job": "Nature, habits and reason: what you are drawn to, how steadily you study, and how far you know each subject.",
-      "refs": ["https://mobbin.com/flows/efb89081-dc1e-436c-8015-8099448218ec"],
-      "states": ["default", "empty", "phone", "wide"],
+        {
+          "id": "L4.1",
+          "name": "What you now know",
+          "job": "The lesson's terms and its one idea."
+        },
+        {
+          "id": "L4.2",
+          "name": "Next lesson",
+          "job": "Continue goes straight to it; at a unit's end, the course page."
+        },
+        {
+          "id": "L4.3",
+          "name": "Share lesson",
+          "job": "Copy the lesson's link for a friend."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S6",
+      "area": "you",
+      "title": "Your growth",
+      "path": "/schole/growth",
+      "job": "Nature, habits and reason: what you are drawn to, how steadily you study, and how far you know each subject.",
+      "refs": [
+        "https://mobbin.com/flows/efb89081-dc1e-436c-8015-8099448218ec"
+      ],
       "parts": [
-        { "id": "S6.1", "name": "Reason graph", "job": "One axis per subject: the share of its lessons you have read and checked." },
-        { "id": "S6.2", "name": "Habits", "job": "Days studied in the last four weeks." },
-        { "id": "S6.3", "name": "Nature", "job": "The subjects you said you want to understand, and Change." }
-      ] },
-    { "id": "S7", "title": "Saved", "path": "/schole/saved", "job": "Lessons and courses you saved to come back to.",
-      "refs": ["https://mobbin.com/flows/f0a078e3-43bf-4848-b2f1-f79583faf833"],
-      "states": ["default", "empty", "phone", "wide"] },
-    { "id": "S8", "title": "Search", "path": "/schole/search", "job": "Find a course, a lesson or a term by any word in it.",
-      "refs": ["https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"],
-      "states": ["default", "empty", "phone", "wide"] },
-    { "id": "S9", "title": "Glossary", "path": "/schole/glossary", "job": "Every Greek term the courses teach, with where each is taught.",
-      "refs": ["https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"],
-      "states": ["default", "phone", "wide"] },
-    { "id": "S10", "title": "Put yourself under examination", "path": "/schole/examinations/new", "job": "Say what you will answer for on a course; people examine you in person. No grade.",
-      "refs": ["https://mobbin.com/flows/ad2d1490-8529-4013-b250-2669e4d2e698"],
-      "states": ["default", "phone", "wide"] },
-    { "id": "S11", "title": "Your library", "path": "/schole/shelves", "job": "Books, highlights, notes, schedule and lists you keep (unchanged in this rework).", "states": ["default"] },
-    { "id": "S12", "title": "Browse", "path": "/schole/browse", "job": "Books, lectures, podcasts and playlists from every medium (unchanged in this rework).", "states": ["default"] }
+        {
+          "id": "S6.1",
+          "name": "Reason graph",
+          "job": "One axis per subject: the share of its lessons you have read and checked."
+        },
+        {
+          "id": "S6.2",
+          "name": "Habits",
+          "job": "Days studied in the last four weeks."
+        },
+        {
+          "id": "S6.3",
+          "name": "Nature",
+          "job": "The subjects you said you want to understand, and Change."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S7",
+      "area": "you",
+      "title": "Saved",
+      "path": "/schole/saved",
+      "job": "Lessons and courses you saved to come back to.",
+      "refs": [
+        "https://mobbin.com/flows/f0a078e3-43bf-4848-b2f1-f79583faf833"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S8",
+      "area": "learn",
+      "title": "Search",
+      "path": "/schole/search",
+      "job": "Find a course, a lesson or a term by any word in it.",
+      "refs": [
+        "https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S9",
+      "area": "learn",
+      "title": "Glossary",
+      "path": "/schole/glossary",
+      "job": "Every Greek term the courses teach, with where each is taught.",
+      "refs": [
+        "https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S10",
+      "area": "learn",
+      "title": "Put yourself under examination",
+      "path": "/schole/examinations/new",
+      "job": "Say what you will answer for on a course; people examine you in person. No grade.",
+      "refs": [
+        "https://mobbin.com/flows/ad2d1490-8529-4013-b250-2669e4d2e698"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S11",
+      "area": "shelf",
+      "title": "Your library",
+      "path": "/schole/shelves",
+      "job": "Your shelves by the ways of learning, books by Thema section within them, and your claims.",
+      "refs": [
+        "https://mobbin.com/flows/95fe5849-e01a-4912-b86d-b8898a1039cf",
+        "https://mobbin.com/flows/181750ff-5d4f-4346-b611-8b705cfe0625"
+      ],
+      "parts": [
+        {
+          "id": "S11.1",
+          "name": "Shelves",
+          "job": "One shelf per way of learning, each with its count and covers."
+        },
+        {
+          "id": "S11.2",
+          "name": "Books by section",
+          "job": "Within a shelf, books grouped by Thema section."
+        },
+        {
+          "id": "S11.3",
+          "name": "Your claims",
+          "job": "What you have argued, each opening its claim."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "S12",
+      "area": "shelf",
+      "title": "Browse",
+      "path": "/schole/browse",
+      "job": "Books not on your shelves yet: lists for you, this week's reads, a Thema section best rated first, or a search of the open library.",
+      "refs": [
+        "https://mobbin.com/flows/e0eeb8e1-4224-469a-92c3-61551427a5d0",
+        "https://mobbin.com/flows/cca1058c-ea5b-45b0-a499-38577604aa98"
+      ],
+      "parts": [
+        {
+          "id": "S12.1",
+          "name": "Search the open library",
+          "job": "Title, author or subject."
+        },
+        {
+          "id": "S12.2",
+          "name": "Lists for you",
+          "job": "Rows of covers from lists that fit what you keep."
+        },
+        {
+          "id": "S12.3",
+          "name": "Sections",
+          "job": "A Thema section or category, best rated first."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A1",
+      "area": "listen",
+      "title": "Podcast",
+      "path": "/schole/podcasts",
+      "job": "A podcast's own page, to explore before following it: its episodes, each heard here straight away.",
+      "refs": [
+        "https://mobbin.com/flows/81544ae0-e0d2-4857-a605-704a16387bcd",
+        "https://mobbin.com/flows/796fd4b3-700f-41ff-8ecb-1d862a44bd88",
+        "https://mobbin.com/flows/6006acbe-5b89-4447-a023-04fe59581a38"
+      ],
+      "parts": [
+        {
+          "id": "A1.1",
+          "name": "Show head",
+          "job": "Artwork, title, publisher and Follow."
+        },
+        {
+          "id": "A1.2",
+          "name": "About",
+          "job": "What the show is, in two lines."
+        },
+        {
+          "id": "A1.3",
+          "name": "Episodes",
+          "job": "Newest first, each with its date, length and Play."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A2",
+      "area": "listen",
+      "title": "Episode",
+      "path": "/schole/podcasts/episode",
+      "job": "An episode of a show not yet on your shelves, heard here; keeping the show keeps your place.",
+      "refs": [
+        "https://mobbin.com/flows/fb05115a-cbf3-4c5f-a7d3-8e7d15f1db25",
+        "https://mobbin.com/flows/7134b6e4-9b49-45d8-8cd6-153798f9ba8f"
+      ],
+      "parts": [
+        {
+          "id": "A2.1",
+          "name": "Episode head",
+          "job": "Title, show, date, length and Play as the largest control."
+        },
+        {
+          "id": "A2.2",
+          "name": "Notes",
+          "job": "The show's notes for the episode."
+        },
+        {
+          "id": "A2.3",
+          "name": "Keep the show",
+          "job": "Following keeps your place in this episode."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A3",
+      "area": "listen",
+      "title": "Episode you keep",
+      "path": "/schole/items/[id]/episodes/[key]",
+      "job": "One episode of a show you keep, heard from the show's own feed, with its transcript when it has one.",
+      "refs": [
+        "https://mobbin.com/flows/7134b6e4-9b49-45d8-8cd6-153798f9ba8f",
+        "https://mobbin.com/flows/51bb0fc5-45ac-460a-88fa-45fdbbc5d404",
+        "https://mobbin.com/flows/fb05115a-cbf3-4c5f-a7d3-8e7d15f1db25"
+      ],
+      "parts": [
+        {
+          "id": "A3.1",
+          "name": "Player",
+          "job": "Play, skip, speed and your place, kept."
+        },
+        {
+          "id": "A3.2",
+          "name": "Transcript",
+          "job": "The words as they are said, each line opening that moment."
+        },
+        {
+          "id": "A3.3",
+          "name": "Notes at a moment",
+          "job": "What you wrote at a time in the episode."
+        }
+      ],
+      "states": [
+        "default",
+        "no transcript",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A4",
+      "area": "listen",
+      "title": "New from your shows",
+      "path": "/schole/podcasts/new",
+      "job": "Every episode of the shows you keep out in the last two weeks and not begun, newest first.",
+      "refs": [
+        "https://mobbin.com/flows/a5791128-1870-4234-8dd9-729e2e3a6d45"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A5",
+      "area": "listen",
+      "title": "Search your episodes",
+      "path": "/schole/podcasts/search",
+      "job": "A word or phrase looked for in every episode transcript you keep, each place opening the episode at that moment.",
+      "refs": [
+        "https://mobbin.com/flows/9038a412-7ed3-4915-b484-7257022505a4",
+        "https://mobbin.com/flows/796fd4b3-700f-41ff-8ecb-1d862a44bd88"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A6",
+      "area": "listen",
+      "title": "Audiobook",
+      "path": "/schole/audiobooks/[id]",
+      "job": "A LibriVox audiobook heard here as an episode is: cover, Play or Continue as the largest control, then its chapters.",
+      "refs": [
+        "https://mobbin.com/flows/32a32c68-89f9-449c-9004-117e2ab6d708",
+        "https://mobbin.com/flows/ee73c94d-dd9d-43c4-a8d9-1ae1af74add3"
+      ],
+      "parts": [
+        {
+          "id": "A6.1",
+          "name": "Hero",
+          "job": "Cover, title, author, and Play or Continue naming the chapter."
+        },
+        {
+          "id": "A6.2",
+          "name": "Metadata",
+          "job": "One line of facts, topics, and two lines about the recording."
+        },
+        {
+          "id": "A6.3",
+          "name": "Chapters",
+          "job": "Every chapter, with where you are."
+        },
+        {
+          "id": "A6.4",
+          "name": "More",
+          "job": "More by the author and on its first topic."
+        }
+      ],
+      "states": [
+        "default",
+        "partial",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A7",
+      "area": "listen",
+      "title": "People you follow",
+      "path": "/schole/people",
+      "job": "The hosts and guests you follow, and the newest episodes that name them, each played here.",
+      "refs": [
+        "https://mobbin.com/flows/ff91e81a-2d81-4854-98cc-f2e8fd8dd3e1"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A8",
+      "area": "listen",
+      "title": "Person",
+      "path": "/schole/people/[name]",
+      "job": "A person's own profile: who they are, their accounts, the podcasts they host and their guest appearances on any show.",
+      "refs": [
+        "https://mobbin.com/flows/e55a9f38-5268-49ad-b12a-f0d2a6dc1f28",
+        "https://mobbin.com/flows/8f2f652e-fb90-487e-98c1-918e2a34a687"
+      ],
+      "parts": [
+        {
+          "id": "A8.1",
+          "name": "Name and Follow",
+          "job": "The name, with Follow at the top right."
+        },
+        {
+          "id": "A8.2",
+          "name": "Who they are",
+          "job": "Two lines from Wikipedia and their accounts as icons."
+        },
+        {
+          "id": "A8.3",
+          "name": "Shows they host",
+          "job": "Their podcasts and the newest episodes."
+        },
+        {
+          "id": "A8.4",
+          "name": "Guest appearances",
+          "job": "Episodes on any show that name them, each heard here."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A9",
+      "area": "listen",
+      "title": "Topic",
+      "path": "/schole/topics/[topic]",
+      "job": "One topic: a place, period or school grouped by form, or a listening subject with its top podcasts and most heard audiobooks side by side.",
+      "refs": [
+        "https://mobbin.com/flows/ec748abc-2b82-460c-863d-e417047a341e"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A10",
+      "area": "listen",
+      "title": "Playlists",
+      "path": "/schole/playlists",
+      "job": "Every playlist chosen by people, those serving what you are working toward first, each saying why.",
+      "refs": [
+        "https://mobbin.com/flows/56526571-619f-4ae8-9dbd-0783f791779f"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A11",
+      "area": "listen",
+      "title": "Playlist",
+      "path": "/schole/playlists/[id]",
+      "job": "A playlist chosen by a person: who chose it and why, its things in order, and one button that starts the first you have not begun.",
+      "refs": [
+        "https://mobbin.com/flows/aa59578d-c8de-4c83-b902-95b39c33e54c"
+      ],
+      "note": "Spotify's playlist page is the last screen of the referenced flow; Scholē's playlist says who chose it and why.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A12",
+      "area": "listen",
+      "title": "Made for you",
+      "path": "/schole/playlists/made/[id]",
+      "job": "A playlist Scholē made for you, marked as made and from what, with Play, Save, Another and Change it.",
+      "refs": [
+        "https://mobbin.com/flows/aa59578d-c8de-4c83-b902-95b39c33e54c",
+        "https://mobbin.com/flows/56526571-619f-4ae8-9dbd-0783f791779f"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A13",
+      "area": "listen",
+      "title": "Guest (old link)",
+      "path": "/schole/guests/[name]",
+      "job": "Redirects to the person's page; guest pages became people's pages.",
+      "note": "A redirect with no layout of its own; it has nothing to build after.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "A14",
+      "area": "listen",
+      "title": "Collections (old link)",
+      "path": "/schole/collections",
+      "job": "Redirects to Playlists; collections are called playlists now.",
+      "note": "A redirect with no layout of its own.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "A15",
+      "area": "listen",
+      "title": "Collection (old link)",
+      "path": "/schole/collections/[id]",
+      "job": "Redirects to the playlist of the same id.",
+      "note": "A redirect with no layout of its own.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "A16",
+      "area": "listen",
+      "title": "Snips",
+      "path": "/schole/snips",
+      "job": "Moments you saved from episodes and audiobooks, each with its clip, transcript lines and note, played again from the moment.",
+      "refs": [
+        "https://mobbin.com/flows/1f00ea4e-3c27-4ea5-94c7-7e8d2379ff51",
+        "https://mobbin.com/flows/16fa0e5c-2a94-4843-9870-d8b9df12e787"
+      ],
+      "note": "After Snipd's snips; Snipd is not on Mobbin, so the refs are the nearest saved-audio-moment flows found.",
+      "parts": [
+        {
+          "id": "A16.1",
+          "name": "Snip",
+          "job": "The clip, its show and time, the lines said, and your note."
+        },
+        {
+          "id": "A16.2",
+          "name": "Play from here",
+          "job": "Opens the episode at the moment."
+        },
+        {
+          "id": "A16.3",
+          "name": "By show",
+          "job": "Snips grouped by episode, newest first."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "A17",
+      "area": "listen",
+      "title": "Up next",
+      "path": "/schole/listen/queue",
+      "job": "The listening queue: what plays now and what plays next, reordered by drag, with Clear.",
+      "status": "planned",
+      "refs": [
+        "https://mobbin.com/flows/a962f177-fc3c-4a7a-a503-94e633d446a7",
+        "https://mobbin.com/flows/4f9f805f-7e0b-4808-b47a-416113d0138c"
+      ],
+      "note": "Pocket Casts is not on Mobbin; Spotify's queue is the reference.",
+      "parts": [
+        {
+          "id": "A17.1",
+          "name": "Now playing",
+          "job": "The episode or chapter playing, with its place."
+        },
+        {
+          "id": "A17.2",
+          "name": "Next",
+          "job": "The queue in order, each with a handle and remove."
+        },
+        {
+          "id": "A17.3",
+          "name": "Add to Up next",
+          "job": "From any episode row: Play next or Play last."
+        }
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L5",
+      "area": "learn",
+      "title": "Instrument course",
+      "path": "/schole/courses/[instrument]",
+      "job": "Learn an instrument: the piece to practise today with its recording and score, Log practice, and every piece in order.",
+      "refs": [
+        "https://mobbin.com/flows/1cbf874d-cc87-4c94-bfad-508f1e40c277"
+      ],
+      "parts": [
+        {
+          "id": "L5.1",
+          "name": "Today's piece",
+          "job": "Listen first, the score on IMSLP, and Log practice."
+        },
+        {
+          "id": "L5.2",
+          "name": "Practice minutes",
+          "job": "The last two weeks of minutes."
+        },
+        {
+          "id": "L5.3",
+          "name": "Pieces",
+          "job": "Every piece in order, to hear, read and mark learned."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L6",
+      "area": "learn",
+      "title": "Course on argument",
+      "path": "/schole/courses/argument",
+      "job": "The modern work behind dialectic practice, unit by unit, then the people it reads, each opening their page.",
+      "refs": [
+        "https://mobbin.com/flows/1cbf874d-cc87-4c94-bfad-508f1e40c277",
+        "https://mobbin.com/flows/9f26f2c9-842d-4e61-b06c-4408c1cf708c"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L7",
+      "area": "learn",
+      "title": "Debate course",
+      "path": "/schole/courses/debates/[id]",
+      "job": "A course on the quarrels new art and inventions start: each unit a playlist with the question argued in it.",
+      "refs": [
+        "https://mobbin.com/flows/1cbf874d-cc87-4c94-bfad-508f1e40c277"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L8",
+      "area": "learn",
+      "title": "Course on dialectic",
+      "path": "/schole/courses/dialectic",
+      "job": "Scholē's course on dialectic, where its practice lives, laid out as the unit courses are.",
+      "refs": [
+        "https://mobbin.com/flows/1cbf874d-cc87-4c94-bfad-508f1e40c277",
+        "https://mobbin.com/flows/4a43592e-d21d-4f08-83c3-6c36e9dadea4"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L9",
+      "area": "learn",
+      "title": "Lecture",
+      "path": "/schole/courses/lecture",
+      "job": "A lecture of a course not yet on your shelves, watched here with its transcript; starting the course keeps your place.",
+      "refs": [
+        "https://mobbin.com/flows/760e8c13-f491-4cd2-aafb-d222b196bf46",
+        "https://mobbin.com/flows/53d30dc0-b6b1-408d-aae3-72379d2b9d36"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L10",
+      "area": "learn",
+      "title": "Course made in chat",
+      "path": "/schole/courses/made/[key]",
+      "job": "A course drafted in chat: its name and goal, Start, then each unit with the works and passages it reads, each cited.",
+      "refs": [
+        "https://mobbin.com/flows/9f26f2c9-842d-4e61-b06c-4408c1cf708c",
+        "https://mobbin.com/flows/1cbf874d-cc87-4c94-bfad-508f1e40c277"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L11",
+      "area": "learn",
+      "title": "Why I am learning this",
+      "path": "/schole/courses/why",
+      "job": "Before a course: what moves you to learn it, marked with the seven origins, and for the sake of what; kept in your journal.",
+      "refs": [
+        "https://mobbin.com/flows/25541238-f28f-47a1-a7a2-5dd47c6737e8",
+        "https://mobbin.com/flows/67128d88-7c89-4096-beb2-05a8bb3484b3"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L12",
+      "area": "learn",
+      "title": "Learn item",
+      "path": "/schole/items/[id]",
+      "job": "One thing you are learning: its status and dates, what it taught you, and what its way asks for, with the recording or transcript here.",
+      "refs": [
+        "https://mobbin.com/flows/91599bc1-6b57-4d06-9095-2d46ff0a2842",
+        "https://mobbin.com/flows/53d30dc0-b6b1-408d-aae3-72379d2b9d36"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L13",
+      "area": "learn",
+      "title": "Lecture you keep",
+      "path": "/schole/items/[id]/lectures/[n]",
+      "job": "One lecture of a kept course: it plays from its publisher, the transcript beneath, and finishing it opens the next.",
+      "refs": [
+        "https://mobbin.com/flows/760e8c13-f491-4cd2-aafb-d222b196bf46",
+        "https://mobbin.com/flows/53d30dc0-b6b1-408d-aae3-72379d2b9d36"
+      ],
+      "parts": [
+        {
+          "id": "L13.1",
+          "name": "Player",
+          "job": "The lecture from its publisher, your place kept."
+        },
+        {
+          "id": "L13.2",
+          "name": "Transcript",
+          "job": "Beneath the player, searchable."
+        },
+        {
+          "id": "L13.3",
+          "name": "Course contents",
+          "job": "The lectures in order, with Next."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L14",
+      "area": "learn",
+      "title": "Your examination",
+      "path": "/schole/examinations/[id]",
+      "job": "Your examination: the link to invite examiners and the record of attestations as it stands.",
+      "note": "Examination by people has no counterpart in the listed apps: Uxcel, Brilliant and Coursera grade by machine, which Scholē refuses.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L15",
+      "area": "learn",
+      "title": "Examine someone",
+      "path": "/schole/examine/[token]",
+      "job": "Asked to examine someone: what they answer for, joining with your name, and your attestation in your own words, written once.",
+      "note": "No listed app asks one learner to attest to another in their own words.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L16",
+      "area": "learn",
+      "title": "Great Ideas",
+      "path": "/schole/ideas",
+      "job": "The Great Ideas Scholē has passages for, the most discussed first.",
+      "refs": [
+        "https://mobbin.com/flows/db559650-ff8c-4664-a75b-e39aa7c6b39a"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L17",
+      "area": "learn",
+      "title": "Idea",
+      "path": "/schole/ideas/[id]",
+      "job": "One Great Idea: where it is listed, how many works discuss it, where to start, its passages by era and the terms that grew from it.",
+      "refs": [
+        "https://mobbin.com/flows/a53088fe-2b34-42c8-b251-4bde66d109ff"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L18",
+      "area": "learn",
+      "title": "Term",
+      "path": "/schole/terms/[id]",
+      "job": "A term under a Great Idea, with journal prompts: your own case first, then stories and real cases, then an essay.",
+      "refs": [
+        "https://mobbin.com/flows/dfc9a583-d2ba-4bc1-a71d-e33a5b73e04c"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L19",
+      "area": "learn",
+      "title": "People in history",
+      "path": "/schole/people/history",
+      "job": "Everyone in history with a page in Scholē, by era, each era opening its topic.",
+      "refs": [
+        "https://mobbin.com/flows/db559650-ff8c-4664-a75b-e39aa7c6b39a"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L20",
+      "area": "learn",
+      "title": "Philosophers (old link)",
+      "path": "/schole/philosophers",
+      "job": "Redirects to People in history.",
+      "note": "A permanent redirect with no layout of its own.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "L21",
+      "area": "learn",
+      "title": "Philosopher (old link)",
+      "path": "/schole/philosophers/[name]",
+      "job": "Redirects to the person's page and tab.",
+      "note": "A permanent redirect with no layout of its own.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "L22",
+      "area": "learn",
+      "title": "Annotate",
+      "path": "/schole/dialectic/practice",
+      "job": "The annotation game: choose a dialogue; the one filled button starts the one you have done least.",
+      "refs": [
+        "https://mobbin.com/flows/4a43592e-d21d-4f08-83c3-6c36e9dadea4"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L23",
+      "area": "learn",
+      "title": "Annotate a dialogue",
+      "path": "/schole/dialectic/practice/[work]",
+      "job": "Five rounds on one dialogue, each a passage to annotate, in an order fixed by the seed so a reload keeps it.",
+      "refs": [
+        "https://mobbin.com/flows/ece9cce5-d491-43ca-9053-f1efd3c4c3f9"
+      ],
+      "parts": [
+        {
+          "id": "L23.1",
+          "name": "Round progress",
+          "job": "Five rounds; the cross leaves."
+        },
+        {
+          "id": "L23.2",
+          "name": "Passage",
+          "job": "The passage to annotate."
+        },
+        {
+          "id": "L23.3",
+          "name": "Answer",
+          "job": "What each answer means, and agreement so far."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L24",
+      "area": "learn",
+      "title": "Practice guidelines",
+      "path": "/schole/dialectic/practice/guide",
+      "job": "What each annotation answer means, with examples from Euthyphro, the kinds of argument and their critical questions.",
+      "note": "A reference page of rules and examples; none of the listed apps has one worth copying.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "L25",
+      "area": "learn",
+      "title": "Doing",
+      "path": "/schole/doing",
+      "job": "The Doing door: practical wisdom, leading to Qualities, Dialectic and Ideas.",
+      "note": "Dead: the new home no longer links it, and nothing else does.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "L26",
+      "area": "learn",
+      "title": "Knowing",
+      "path": "/schole/knowing",
+      "job": "The Knowing door: science and wisdom for its own sake.",
+      "note": "Dead: the new home no longer links it, and nothing else does.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "L27",
+      "area": "learn",
+      "title": "Article",
+      "path": "/schole/articles/[title]",
+      "job": "A Wikipedia article read inside Scholē as plain text, credited under its licence with a link to the original.",
+      "refs": [
+        "https://mobbin.com/flows/5750cdf2-d788-4d2a-9d70-c35147fe9fea"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B1",
+      "area": "shelf",
+      "title": "Book",
+      "path": "/schole/works/[work]",
+      "job": "One book's page: cover, what it is about, ratings, a free read or listen when in the public domain, contents, editions, books like it, and where you are with it.",
+      "refs": [
+        "https://mobbin.com/flows/3d2c3dc8-b4c6-464e-9d74-7eecc64154d9",
+        "https://mobbin.com/flows/3fb41bfe-7c8a-44b2-93c2-4bd3ad01c04b"
+      ],
+      "parts": [
+        {
+          "id": "B1.1",
+          "name": "Book head",
+          "job": "Cover, title, author, ratings, and the shelf it is on."
+        },
+        {
+          "id": "B1.2",
+          "name": "Read or listen free",
+          "job": "The whole book from the Internet Archive, Gutenberg, Standard Ebooks or LibriVox, or a preview."
+        },
+        {
+          "id": "B1.3",
+          "name": "About and contents",
+          "job": "What it is about, its contents and editions."
+        },
+        {
+          "id": "B1.4",
+          "name": "Where it sits",
+          "job": "Its Thema section, books like it, more by its author."
+        },
+        {
+          "id": "B1.5",
+          "name": "Claims and ideas",
+          "job": "The claims that cite it and the ideas that came from it."
+        }
+      ],
+      "states": [
+        "default",
+        "public domain",
+        "yours",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B2",
+      "area": "shelf",
+      "title": "Reading",
+      "path": "/schole/works/[work]/read",
+      "job": "A public-domain book read one chapter at a time in your font, size and page colour; a selected passage can be highlighted, quoted or kept as a claim.",
+      "refs": [
+        "https://mobbin.com/flows/5750cdf2-d788-4d2a-9d70-c35147fe9fea",
+        "https://mobbin.com/flows/dada271a-4dd9-445b-be2e-584aaaad3ff2"
+      ],
+      "note": "Reading in the app is not a primary focus of Scholē; this reader serves reference.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B3",
+      "area": "shelf",
+      "title": "Author",
+      "path": "/schole/authors/[author]",
+      "job": "One author: photo, life dates and biography, how many of their books can be read or heard free here, and their books best rated first.",
+      "refs": [
+        "https://mobbin.com/flows/cde82a64-3eab-478c-a5b0-57a2c6f6638f",
+        "https://mobbin.com/flows/d0556d52-c2c8-466e-b36b-b1445dfd211d"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B4",
+      "area": "shelf",
+      "title": "Lists",
+      "path": "/schole/lists",
+      "job": "Lists of books and other things, each shown by its first covers.",
+      "refs": [
+        "https://mobbin.com/flows/8b2bffbe-6f47-489a-907a-f0f9f07a7453"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B5",
+      "area": "shelf",
+      "title": "List",
+      "path": "/schole/lists/[id]",
+      "job": "One list in its order: each book numbered, where you are with it, how many you have read, and Read in this order.",
+      "refs": [
+        "https://mobbin.com/flows/3358a40a-41c7-41d6-b85d-5cecb7c2870d"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B6",
+      "area": "shelf",
+      "title": "List of things",
+      "path": "/schole/lists/items/[id]",
+      "job": "A list beyond books, in its order: Keep the ones not kept, each row opening its thing.",
+      "refs": [
+        "https://mobbin.com/flows/3358a40a-41c7-41d6-b85d-5cecb7c2870d"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B7",
+      "area": "shelf",
+      "title": "Your reading",
+      "path": "/schole/reading",
+      "job": "What you are reading now, a goal for the year if you set one, the days you read, Want to read in your order, and the books you finished by year.",
+      "refs": [
+        "https://mobbin.com/flows/15905bfa-0c9a-4ef2-bf9e-b21911e22c58",
+        "https://mobbin.com/flows/19683b5e-2183-4562-950c-28f07ee9078a"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B8",
+      "area": "shelf",
+      "title": "Highlights",
+      "path": "/schole/highlights",
+      "job": "Every highlight you keep, grouped by book and in reading order, searchable and narrowed by colour; exported or sent to the journal.",
+      "refs": [
+        "https://mobbin.com/flows/6b16a511-43af-45c3-9bcd-afba6feeadd4",
+        "https://mobbin.com/flows/dada271a-4dd9-445b-be2e-584aaaad3ff2"
+      ],
+      "note": "Kindle's notes and highlights are not on Mobbin; Blinkist and Fable are the nearest found.",
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B9",
+      "area": "shelf",
+      "title": "Notes",
+      "path": "/schole/notes",
+      "job": "Your journal works filed under learning, newest first, each with what it is about; each opens in the journal.",
+      "refs": [
+        "https://mobbin.com/flows/07f87165-ac71-477e-9ff5-8a518ccb207d"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B10",
+      "area": "shelf",
+      "title": "Passages (old link)",
+      "path": "/schole/passages",
+      "job": "Redirects to Highlights' search inside your books.",
+      "note": "A redirect with no layout of its own.",
+      "states": [
+        "default"
+      ]
+    },
+    {
+      "id": "B11",
+      "area": "shelf",
+      "title": "Summary",
+      "path": "/schole/summary",
+      "job": "A book's summary, about fifteen minutes to read, written once by a model from the book's Wikipedia article and labelled so.",
+      "refs": [
+        "https://mobbin.com/flows/3c9de60b-b12f-4c15-9856-7edd1a7d147d",
+        "https://mobbin.com/flows/5ef2cb9d-7b72-4d12-a922-3e7eb09508be"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "B12",
+      "area": "shelf",
+      "title": "Find",
+      "path": "/schole/find",
+      "job": "Something from Browse with no page of its own yet (a film, an album, a work of art): a watch page for video, else what it is with its verb and Save.",
+      "refs": [
+        "https://mobbin.com/flows/53d30dc0-b6b1-408d-aae3-72379d2b9d36"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D1",
+      "area": "talk",
+      "title": "Dialectic",
+      "path": "/schole/dialectic",
+      "job": "Dialectic to watch and listen to: one recording first, new debates from the channels, the questions, and old and new arguments in turn.",
+      "refs": [
+        "https://mobbin.com/flows/fd95f966-613d-4ae5-a613-a589e183333c",
+        "https://mobbin.com/flows/6b875b46-848c-4562-b12e-c356b9a5958e"
+      ],
+      "parts": [
+        {
+          "id": "D1.1",
+          "name": "This week's recording",
+          "job": "One recording with the page's one filled button; changes each Monday."
+        },
+        {
+          "id": "D1.2",
+          "name": "New debates",
+          "job": "From the channels' feeds, video and podcast told apart."
+        },
+        {
+          "id": "D1.3",
+          "name": "Questions",
+          "job": "Each showing what it holds."
+        }
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D2",
+      "area": "talk",
+      "title": "Debate",
+      "path": "/schole/dialectic/debates/[id]",
+      "job": "A debate: what is argued, from which work, by whom, when and in what format; Listen while live, Start for its host, else Remind me.",
+      "refs": [
+        "https://mobbin.com/flows/6b875b46-848c-4562-b12e-c356b9a5958e",
+        "https://mobbin.com/flows/1eb6c2be-1371-4f3f-8d20-08aa24ab96e8"
+      ],
+      "states": [
+        "default",
+        "live",
+        "ended",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D3",
+      "area": "talk",
+      "title": "Host a debate",
+      "path": "/schole/dialectic/debates/new",
+      "job": "Hosting a debate: the motion, the work it comes from, the format, the time, and whether the host takes a side.",
+      "refs": [
+        "https://mobbin.com/flows/1eb6c2be-1371-4f3f-8d20-08aa24ab96e8"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D4",
+      "area": "talk",
+      "title": "Room",
+      "path": "/schole/dialectic/rooms/[id]",
+      "job": "A live room: speakers as large faces, the question on the table, listeners small, raised hands, chat, and Leave quietly or Ask to speak.",
+      "refs": [
+        "https://mobbin.com/flows/9d3ab38e-dc59-45db-ab7b-dac5fb7889a6",
+        "https://mobbin.com/flows/990e8227-41ab-486e-a064-c017aee40f73"
+      ],
+      "parts": [
+        {
+          "id": "D4.1",
+          "name": "Speakers",
+          "job": "Large faces, the host first."
+        },
+        {
+          "id": "D4.2",
+          "name": "On the table",
+          "job": "The question being argued."
+        },
+        {
+          "id": "D4.3",
+          "name": "Listeners",
+          "job": "Small faces."
+        },
+        {
+          "id": "D4.4",
+          "name": "Hands raised",
+          "job": "The host's queue."
+        },
+        {
+          "id": "D4.5",
+          "name": "Foot bar",
+          "job": "Leave quietly and Ask to speak."
+        }
+      ],
+      "states": [
+        "default",
+        "speaking",
+        "ended",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D5",
+      "area": "talk",
+      "title": "Open a room",
+      "path": "/schole/dialectic/rooms/new",
+      "job": "Opening a live table on one work or one question; the person who opens it hosts it.",
+      "refs": [
+        "https://mobbin.com/flows/eaff9aa7-3808-42e0-a26a-f882a5b6f398"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D6",
+      "area": "talk",
+      "title": "Thread",
+      "path": "/schole/dialectic/threads/[id]",
+      "job": "A question answered in writing, with replies to replies.",
+      "refs": [
+        "https://mobbin.com/flows/fd95f966-613d-4ae5-a613-a589e183333c",
+        "https://mobbin.com/flows/8d41d3d3-8ddf-454f-bfc8-3b9c1c4f3ad0"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D7",
+      "area": "talk",
+      "title": "Ask a question",
+      "path": "/schole/dialectic/threads/new",
+      "job": "Asking a question for people to answer in writing, on a work or on its own.",
+      "refs": [
+        "https://mobbin.com/flows/d8897f4f-1dbc-405c-a8da-e514dee52084",
+        "https://mobbin.com/flows/19454dbc-c7b9-48f8-8d60-30b22baf5650"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D8",
+      "area": "talk",
+      "title": "Post",
+      "path": "/schole/dialectic/p/[id]",
+      "job": "A post on its own page: what it answers, the post, Debate this, the reply box and every reply indented beneath.",
+      "refs": [
+        "https://mobbin.com/flows/8d41d3d3-8ddf-454f-bfc8-3b9c1c4f3ad0"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D9",
+      "area": "talk",
+      "title": "Person in Dialectic",
+      "path": "/schole/dialectic/u/[id]",
+      "job": "A person in Dialectic: face, name, Follow, their points, and their posts and reposts.",
+      "refs": [
+        "https://mobbin.com/flows/2e98306f-7e26-43f3-9d45-24186e4fec8a"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D10",
+      "area": "talk",
+      "title": "Questions",
+      "path": "/schole/dialectic/questions",
+      "job": "Every standing question Dialectic is arranged by, those drawing on works you keep first.",
+      "refs": [
+        "https://mobbin.com/flows/5456f3ee-facf-4b4e-a447-9dd62e72626e"
+      ],
+      "note": "Kialo-like apps are not on Mobbin; Goodreads' list of discussion topics is the nearest.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D11",
+      "area": "talk",
+      "title": "Question",
+      "path": "/schole/dialectic/questions/[id]",
+      "job": "A standing question: what it asks, the recordings that argue it, and the positions taken on it across the ages, each with its place in the work.",
+      "note": "Positions across the ages, each cited to its place, is an argument map; Kialo is not on Mobbin and Reddit and Discord have no equivalent.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "D12",
+      "area": "talk",
+      "title": "Discussion on a topic",
+      "path": "/schole/dialectic/on/[kind]/[id]",
+      "job": "A topic's discussion, where a term or a person can be the topic: the question and its positions when curated, then the discussion.",
+      "refs": [
+        "https://mobbin.com/flows/5456f3ee-facf-4b4e-a447-9dd62e72626e",
+        "https://mobbin.com/flows/fd95f966-613d-4ae5-a613-a589e183333c"
+      ],
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "Y1",
+      "area": "you",
+      "title": "Qualities",
+      "path": "/schole/qualities",
+      "job": "The qualities you are building, each with who you saw it in and how much you wrote about it; then those named by authors you finished, to add.",
+      "note": "No listed app tracks virtues of character; habit trackers count, which this page does not.",
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "Y2",
+      "area": "you",
+      "title": "Quality",
+      "path": "/schole/qualities/[id]",
+      "job": "A quality: what it is and the one act, writing about it; who you saw it in in your own words; what teaches it; and what you wrote.",
+      "note": "No listed app tracks virtues of character.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "Y3",
+      "area": "you",
+      "title": "Claim",
+      "path": "/schole/claims/[id]",
+      "job": "One claim: what you said about it over time, each saying quoted with where and when, and who else says it. What was said, never what is believed.",
+      "note": "A personal record of sayings over time has no counterpart in the listed apps.",
+      "states": [
+        "default",
+        "phone",
+        "wide"
+      ]
+    },
+    {
+      "id": "Y4",
+      "area": "you",
+      "title": "Schedule",
+      "path": "/schole/schedule",
+      "job": "The next four weeks of your calendar filtered to Scholē (reading groups, salons, examinations, lectures), by day, with + to add.",
+      "refs": [
+        "https://mobbin.com/flows/67128d88-7c89-4096-beb2-05a8bb3484b3"
+      ],
+      "states": [
+        "default",
+        "empty",
+        "phone",
+        "wide"
+      ]
+    }
   ],
   "components": [
-    { "id": "C1", "name": "Sidebar", "where": ["*"] },
-    { "id": "C2", "name": "Space switcher", "where": ["*"] },
-    { "id": "C3", "name": "Search bar", "where": ["*"] },
-    { "id": "C4", "name": "Course card", "where": ["S1", "S3", "S5", "S7", "S8"] },
-    { "id": "C5", "name": "Lesson row", "where": ["L1", "L2", "S7", "S8"] },
-    { "id": "C6", "name": "Progress bar", "where": ["S1", "S3", "S5", "L1", "L3"] },
-    { "id": "C7", "name": "Week of study", "where": ["S1", "S6", "L4"] },
-    { "id": "C8", "name": "Number tag", "where": ["*"] },
-    { "id": "C9", "name": "Lesson start dialog", "where": ["L1"] },
-    { "id": "C10", "name": "Choice question", "where": ["L3"] },
-    { "id": "C11", "name": "Term chip", "where": ["L2", "L4", "S9"] },
-    { "id": "C12", "name": "Examination card", "where": ["S5", "L1"] },
-    { "id": "C13", "name": "Subject card", "where": ["S2", "S4"] },
-    { "id": "C14", "name": "Journal question", "where": ["L2", "L4"] }
+    {
+      "id": "C1",
+      "name": "Sidebar",
+      "where": [
+        "*"
+      ]
+    },
+    {
+      "id": "C2",
+      "name": "Space switcher",
+      "where": [
+        "*"
+      ]
+    },
+    {
+      "id": "C3",
+      "name": "Search bar",
+      "where": [
+        "*"
+      ]
+    },
+    {
+      "id": "C4",
+      "name": "Course card",
+      "where": [
+        "S1",
+        "S3",
+        "S5",
+        "S7",
+        "S8"
+      ]
+    },
+    {
+      "id": "C5",
+      "name": "Lesson row",
+      "where": [
+        "L1",
+        "L2",
+        "S7",
+        "S8"
+      ]
+    },
+    {
+      "id": "C6",
+      "name": "Progress bar",
+      "where": [
+        "S1",
+        "S3",
+        "S5",
+        "L1",
+        "L3"
+      ]
+    },
+    {
+      "id": "C7",
+      "name": "Week of study",
+      "where": [
+        "S1",
+        "S6",
+        "L4"
+      ]
+    },
+    {
+      "id": "C8",
+      "name": "Number tag",
+      "where": [
+        "*"
+      ]
+    },
+    {
+      "id": "C9",
+      "name": "Lesson start dialog",
+      "where": [
+        "L1"
+      ]
+    },
+    {
+      "id": "C10",
+      "name": "Choice question",
+      "where": [
+        "L3"
+      ]
+    },
+    {
+      "id": "C11",
+      "name": "Term chip",
+      "where": [
+        "L2",
+        "L4",
+        "S9"
+      ]
+    },
+    {
+      "id": "C12",
+      "name": "Examination card",
+      "where": [
+        "S5",
+        "L1"
+      ]
+    },
+    {
+      "id": "C13",
+      "name": "Subject card",
+      "where": [
+        "S2",
+        "S4"
+      ]
+    },
+    {
+      "id": "C14",
+      "name": "Journal question",
+      "where": [
+        "L2",
+        "L4"
+      ]
+    },
+    {
+      "id": "C15",
+      "name": "Episode row",
+      "where": [
+        "A1",
+        "A4",
+        "A5",
+        "A7",
+        "A8",
+        "A9",
+        "A17"
+      ]
+    },
+    {
+      "id": "C16",
+      "name": "Player",
+      "where": [
+        "A2",
+        "A3",
+        "A6",
+        "L9",
+        "L13"
+      ]
+    },
+    {
+      "id": "C17",
+      "name": "Transcript",
+      "where": [
+        "A3",
+        "L9",
+        "L13"
+      ]
+    },
+    {
+      "id": "C18",
+      "name": "Book cover card",
+      "where": [
+        "S11",
+        "S12",
+        "B3",
+        "B4",
+        "B5",
+        "B7"
+      ]
+    },
+    {
+      "id": "C19",
+      "name": "Follow button",
+      "where": [
+        "A1",
+        "A8",
+        "A9",
+        "B3",
+        "D9"
+      ]
+    },
+    {
+      "id": "C20",
+      "name": "Reply thread",
+      "where": [
+        "D6",
+        "D8",
+        "D12"
+      ]
+    }
   ]
 }

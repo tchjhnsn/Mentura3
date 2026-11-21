@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "friendship.schema.json",
+  "title": "Friendship",
+  "description": "A friendship between the person and a friend, a relation (pros ti) kept apart from the friend, who is a person, at friendships/<id>.json. Its basis, equality, community and its state on the statechart goodwill, friends, dormant, ended (Nicomachean Ethics VIII-IX). packages/core/src/friendship.ts reads and checks it. docs/design/REFLECT_FRIENDSHIP_2026-11-21.md.",
+  "x-reflect": {
+    "noun": "friendship",
+    "category": "relation",
+    "good": "external",
+    "community": "polis"
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "friend",
+    "state",
+    "history",
+    "created",
+    "updated"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "friend": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "The friend note or record that holds who they are, such as belonging/friends/ana.md"
+        }
+      }
+    },
+    "basis": {
+      "enum": [
+        "utility",
+        "pleasure",
+        "virtue"
+      ],
+      "description": "NE VIII.3, 1156a6-b32"
+    },
+    "equality": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "equal"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "kind",
+            "greater"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "unequal"
+            },
+            "greater": {
+              "enum": [
+                "me",
+                "friend"
+              ]
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          }
+        }
+      ],
+      "description": "NE VIII.6-7, 1158b1-28"
+    },
+    "community": {
+      "enum": [
+        "household",
+        "kin",
+        "comrades",
+        "fellow-citizens",
+        "fellow-travellers",
+        "congregation",
+        "work",
+        "other"
+      ],
+      "description": "NE VIII.9, VIII.12"
+    },
+    "began": {
+      "type": "string",
+      "format": "date"
+    },
+    "state": {
+      "enum": [
+        "goodwill",
+        "friends",
+        "dormant",
+        "ended"
+      ]
+    },
+    "history": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "at",
+          "from",
+          "to"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "from": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "enum": [
+                  "goodwill",
+                  "friends",
+                  "dormant",
+                  "ended"
+                ]
+              }
+            ]
+          },
+          "to": {
+            "enum": [
+              "goodwill",
+              "friends",
+              "dormant",
+              "ended"
+            ]
+          },
+          "why": {
+            "type": "string",
+            "maxLength": 2000
+          }
+        }
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

@@ -9,6 +9,8 @@ import { LessonRow, Progress, StartDialog } from "@/components/schole/parts";
 import { useSchole } from "@/components/schole/store";
 import { nextIn } from "@/components/schole/home";
 import { hours, type CourseIndex } from "@/components/schole/index";
+import type { UnitMedia } from "@reflect/core/aristotle/media";
+import { UnitMediaRow, type Book } from "./media";
 
 type L = { id: string; title: string; minutes: number; checks: number };
 type U = { id: string; title: string; line: string; bekker: string; lessons: L[] };
@@ -38,7 +40,7 @@ export function CourseProgress({ course }: { course: CourseIndex }) {
 }
 
 /** L1.3 One level per book, as Uxcel's levels: title, what it does, progress, and its lessons; a lesson opens C9. */
-export function Units({ course, units }: { course: string; units: U[] }) {
+export function Units({ course, units, media, book }: { course: string; units: U[]; media?: Record<string, UnitMedia>; book?: Book | null }) {
   const { done, at } = useSchole();
   const d = done[course] ?? [];
   const here = at[course]?.lesson;
@@ -59,6 +61,7 @@ export function Units({ course, units }: { course: string; units: U[] }) {
               </div>
               <span className="flex shrink-0 items-center gap-2 pt-4 text-xs"><Progress value={n / u.lessons.length} className="w-16" /><span className="text-muted-foreground tabular-nums">{n}/{u.lessons.length}</span><ChevronDownIcon className={cn("size-4 transition", !open && "-rotate-90")} /></span>
             </button>
+            {open ? <UnitMediaRow media={media?.[u.id] ?? null} book={book ?? null} /> : null}
             {open ? (
               <ul className="mt-3 space-y-2">
                 {u.lessons.map((l) => <li key={l.id}><LessonRow course={course} id={l.id} title={l.title} minutes={l.minutes} here={l.id === here} onPick={() => setPick(l)} /></li>)}

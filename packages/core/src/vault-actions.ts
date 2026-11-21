@@ -21,6 +21,37 @@ import { shownWorks, type VaultWorkRecord } from "./works-by-end.ts";
 import type { QuotesFolder } from "./files-quotes.ts";
 import { claimView, liveTags, QUOTE_SOURCE_KINDS, quoteStatus, SCHEME_IDS, type QuoteSourceKind, type SchemeId } from "./quotes.ts";
 import { isPublishable, PUBLISHABLE, SLUG, slugify } from "./site.ts";
+import { freshId, type FriendshipsFolder } from "./files-friendships.ts";
+import {
+  addQuestion,
+  BASES,
+  BEARS,
+  COMMUNITY_KINDS,
+  confirmEvaluation,
+  counts,
+  crosswalk,
+  editFriendship,
+  hideQuestion,
+  ID as FRIENDSHIP_ID,
+  moveFriendship,
+  newEvaluation,
+  newFriendship,
+  questionsFor,
+  readEvaluation,
+  SCHEME_IDS as FRIENDSHIP_SCHEME_IDS,
+  SCHEMES as FRIENDSHIP_SCHEMES,
+  setScheme,
+  STATES,
+  suggestedBasis,
+  type Answer,
+  type Basis,
+  type Bears,
+  type CommunityKind,
+  type Equality,
+  type Friendship,
+  type FriendshipSchemeId,
+  type FriendshipState,
+} from "./friendship.ts";
 
 /** What Reflect keeps and the rules for an AI working in it; the MCP server's instructions. */
 export const GUIDE = [
@@ -145,6 +176,57 @@ export const READ_QUOTES = {
   description:
     "The person's quotes with their tags, or, given a claim's id, what the person has said about that claim over time and who else says it. This is what was said, never what the person believes inside: show it as \"you said\".",
   tier: "read",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const READ_FRIENDSHIPS = {
+  id: "read_friendships",
+  title: "Read friendships",
+  description:
+    "The person's friendships (a friendship is a relation between the person and a friend: its basis, useful, pleasant or good, equal or unequal, its community and its state, goodwill, friends, dormant or ended; Nicomachean Ethics VIII-IX). Given an id: that friendship with its evaluations, each answer read against the text. Private: never share it.",
+  tier: "read",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const KEEP_FRIENDSHIP = {
+  id: "keep_friendship",
+  title: "Keep a friendship",
+  description: "Begin a friendship record with a friend, or change its basis, equality, community or when it began. The person's own: an assistant may suggest it, never write it.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const MOVE_FRIENDSHIP = {
+  id: "move_friendship",
+  title: "Move a friendship's state",
+  description: "Move a friendship along its statechart: goodwill to friends or ended; friends to dormant or ended; dormant to friends or ended. Nothing leaves ended. The person's own.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const FRIENDSHIP_QUESTIONS = {
+  id: "friendship_questions",
+  title: "The friendship questions",
+  description:
+    "The questions for evaluating a friendship, from the schemes the person turned on (Aristotle always; Christian, from Aquinas and Aelred, and C. S. Lewis when on), less the hidden ones, plus the person's own. Each has its passage and its choices, and each choice what the text says about it. Also the schemes and how each maps onto Aristotle's. Ask them one at a time; never answer for the person.",
+  tier: "read",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const EVALUATE_FRIENDSHIP = {
+  id: "evaluate_friendship",
+  title: "Evaluate a friendship",
+  description:
+    "Keep the person's answers to the friendship questions, dated, for one friendship. Only answers the person gave, in their words. Kept by an assistant, the evaluation comes in proposed until the person confirms it. Private. No answer is a score.",
+  tier: "own",
+  on: ["mcp"],
+} as const satisfies ActionDecl;
+
+export const FRIENDSHIP_CATALOG = {
+  id: "friendship_catalog",
+  title: "Change the friendship questions",
+  description: "Turn a scheme on or off (Aristotle stays on), hide or show a question (hidden ones are kept), or add a question of the person's own. The person's own.",
+  tier: "own",
   on: ["mcp"],
 } as const satisfies ActionDecl;
 
@@ -301,6 +383,149 @@ export async function readQuotesIn(ctx: VaultContext, claim?: string) {
   };
 }
 
+/** The vault's friendships folder, refused when the host has none. */
+function friendshipsOf(ctx: VaultContext): FriendshipsFolder {
+  if (!ctx.friendships) throw new Error("this vault has no friendships/ folder here");
+  return ctx.friendships;
+}
+
+/** Friendship records are the person's: an assistant suggests, the person writes (Reflect's standing rule). */
+function personOnly(ctx: VaultContext, what: string) {
+  if (ctx.origin !== "cli") throw new Error(`${what} is the person's to do; suggest it to them instead`);
+}
+
+const friendshipOut = (f: Friendship) => ({ id: f.id, friend: f.friend, basis: f.basis ?? null, equality: f.equality ?? null, community: f.community ?? null, began: f.began ?? null, state: f.state, since: f.history[f.history.length - 1]!.at });
+
+/** Every friendship, or one with its evaluations read against the text. */
+export async function readFriendshipsIn(ctx: VaultContext, id?: string) {
+  const store = friendshipsOf(ctx);
+  if (!id) {
+    const all = await store.list();
+    const evals = await store.evaluations();
+    return { friendships: all.map((f) => ({ ...friendshipOut(f), evaluations: evals.filter((e) => e.friendship === f.id).length })) };
+  }
+  const f = await store.get(id);
+  if (!f) throw new Error(`no friendship ${id}`);
+  const catalog = await store.catalog();
+  const evals = await store.evaluations(id);
+  return {
+    friendship: { ...friendshipOut(f), history: f.history },
+    evaluations: evals.map((e) => ({ id: e.id, date: e.date, status: e.status, counts: counts(e), suggested_basis: suggestedBasis(e), answers: readEvaluation(catalog, e) })),
+  };
+}
+
+export type KeepFriendshipInput = { id?: string; friend?: string; ref?: string; basis?: Basis; equality?: "equal" | "unequal"; greater?: "me" | "friend"; note?: string; community?: CommunityKind; began?: string; state?: FriendshipState };
+
+function equalityOf(input: KeepFriendshipInput): Equality | undefined {
+  if (!input.equality) return undefined;
+  if (input.equality === "equal") return { kind: "equal" };
+  if (!input.greater) throw new Error("an unequal friendship says who is the greater: me or friend");
+  return { kind: "unequal", greater: input.greater, ...(input.note?.trim() ? { note: input.note.trim() } : {}) };
+}
+
+export async function keepFriendshipIn(ctx: VaultContext, input: KeepFriendshipInput, now = new Date()): Promise<{ id: string; created: boolean; friendship: ReturnType<typeof friendshipOut> }> {
+  personOnly(ctx, "keeping a friendship");
+  const store = friendshipsOf(ctx);
+  const equality = equalityOf(input);
+  if (input.id) {
+    const f = await store.get(input.id);
+    if (!f) throw new Error(`no friendship ${input.id}; leave id out to begin one`);
+    if (input.state) throw new Error("a friendship's state moves with move_friendship");
+    const next = editFriendship(f, { ...(input.basis ? { basis: input.basis } : {}), ...(equality ? { equality } : {}), ...(input.community ? { community: input.community } : {}), ...(input.began ? { began: input.began } : {}), ...(input.friend ? { friend: { name: input.friend, ...(input.ref ?? f.friend.ref ? { ref: input.ref ?? f.friend.ref } : {}) } } : {}) }, now);
+    await store.put(next);
+    return { id: next.id, created: false, friendship: friendshipOut(next) };
+  }
+  if (!input.friend?.trim()) throw new Error("name the friend");
+  const id = freshId(input.friend, new Set((await store.list()).map((f) => f.id)));
+  const f = newFriendship({ id, friend: { name: input.friend.trim(), ...(input.ref ? { ref: input.ref } : {}) }, ...(input.basis ? { basis: input.basis } : {}), ...(equality ? { equality } : {}), ...(input.community ? { community: input.community } : {}), ...(input.began ? { began: input.began } : {}), ...(input.state ? { state: input.state } : {}) }, now);
+  await store.put(f);
+  return { id, created: true, friendship: friendshipOut(f) };
+}
+
+export async function moveFriendshipIn(ctx: VaultContext, id: string, to: FriendshipState, why: string | undefined, now = new Date()) {
+  personOnly(ctx, "moving a friendship");
+  const store = friendshipsOf(ctx);
+  const f = await store.get(id);
+  if (!f) throw new Error(`no friendship ${id}`);
+  const next = moveFriendship(f, to, now, why);
+  await store.put(next);
+  return { id, from: f.state, to: next.state };
+}
+
+export async function friendshipQuestionsIn(ctx: VaultContext) {
+  const catalog = await friendshipsOf(ctx).catalog();
+  return {
+    schemes: FRIENDSHIP_SCHEMES.map((s) => ({ id: s.id, label: s.label, source: s.source, on: catalog.schemes.includes(s.id) })),
+    questions: questionsFor(catalog),
+    hidden: catalog.hidden,
+    crosswalk: crosswalk(),
+  };
+}
+
+/** Answers as the CLI and an MCP client give them: a JSON list, or question=choice pairs separated by commas. */
+export function parseAnswers(text: string): Answer[] {
+  const t = text.trim();
+  if (t.startsWith("[")) {
+    let raw: unknown;
+    try {
+      raw = JSON.parse(t);
+    } catch {
+      throw new Error("answers is not JSON");
+    }
+    if (!Array.isArray(raw)) throw new Error("answers is a list");
+    return raw.map((a, i) => {
+      if (!a || typeof a !== "object" || typeof (a as Answer).question !== "string" || typeof (a as Answer).choice !== "string") throw new Error(`answers[${i}] needs question and choice`);
+      const x = a as Answer;
+      return { question: x.question, choice: x.choice, ...(typeof x.words === "string" ? { words: x.words } : {}), ...(Array.isArray(x.evidence) ? { evidence: x.evidence.map(String) } : {}) };
+    });
+  }
+  return t.split(",").map((pair) => {
+    const [question, choice] = pair.split("=").map((x) => x.trim());
+    if (!question || !choice) throw new Error(`"${pair}" is not question=choice`);
+    return { question, choice };
+  });
+}
+
+export async function evaluateFriendshipIn(ctx: VaultContext, input: { friendship: string; answers: string; date?: string }, now = new Date()) {
+  const store = friendshipsOf(ctx);
+  const f = await store.get(input.friendship);
+  if (!f) throw new Error(`no friendship ${input.friendship}`);
+  const catalog = await store.catalog();
+  const date = input.date ?? now.toISOString().slice(0, 10);
+  const id = freshId(`${date}-${f.id}`, new Set((await store.evaluations()).map((e) => e.id)));
+  const e = newEvaluation(catalog, { id, friendship: f.id, date, answers: parseAnswers(input.answers) }, ctx.origin === "cli" ? "person" : "assistant", now);
+  await store.putEvaluation(e);
+  return { id, status: e.status, suggested_basis: suggestedBasis(e), answers: readEvaluation(catalog, e) };
+}
+
+export async function confirmFriendshipEvaluationIn(ctx: VaultContext, id: string) {
+  personOnly(ctx, "confirming an evaluation");
+  const store = friendshipsOf(ctx);
+  const e = await store.getEvaluation(id);
+  if (!e) throw new Error(`no evaluation ${id}`);
+  const next = confirmEvaluation(e);
+  await store.putEvaluation(next);
+  return { id, status: next.status };
+}
+
+export type FriendshipCatalogInput = { scheme?: FriendshipSchemeId; on?: "on" | "off"; hide?: string; show?: string; add?: string; text?: string; bears?: Bears; choices?: string; cite?: string };
+
+export async function friendshipCatalogIn(ctx: VaultContext, input: FriendshipCatalogInput) {
+  personOnly(ctx, "changing the friendship questions");
+  const store = friendshipsOf(ctx);
+  let c = await store.catalog();
+  if (input.scheme) c = setScheme(c, input.scheme, input.on !== "off");
+  if (input.hide) c = hideQuestion(c, input.hide, true);
+  if (input.show) c = hideQuestion(c, input.show, false);
+  if (input.add) {
+    if (!input.text?.trim() || !input.bears || !input.choices?.trim()) throw new Error("a new question needs text, bears and choices (labels separated by commas)");
+    const choices = input.choices.split(",").map((l) => l.trim()).filter(Boolean).map((label) => ({ id: freshId(label, new Set()), label }));
+    c = addQuestion(c, { id: input.add, text: input.text.trim(), bears: input.bears, choices, ...(input.scheme ? { scheme: input.scheme } : {}), ...(input.cite ? { cite: input.cite } : {}) });
+  }
+  await store.putCatalog(c);
+  return { schemes: c.schemes, hidden: c.hidden, added: c.added.map((x) => x.id), asked: questionsFor(c).length };
+}
+
 /** Take a post or the profile out of published/ and its manifest. */
 export async function unpublishFilesIn(ctx: VaultContext, input: { what?: "post" | "profile" | "works"; slug?: string }): Promise<{ removed: string[] }> {
   const { published } = siteOf(ctx);
@@ -326,6 +551,8 @@ export type VaultContext = RunContext & {
   personName?: string;
   /** The vault's quotes/ and claims/ folders (./files-quotes.ts). */
   quotes?: QuotesFolder;
+  /** The vault's friendships/ folder (./files-friendships.ts). */
+  friendships?: FriendshipsFolder;
 };
 
 /** A vault action: checked by an input schema of the core's own (./input.ts), so its JSON Schema can be listed. */
@@ -446,6 +673,67 @@ export const VAULT_ACTIONS: readonly VaultAction[] = [
     input: object({ claim: optional(str({ min: 1, describe: "a claim's id, for what the person said about it" })) }),
     run: async (ctx, { claim }) => readQuotesIn(ctx, claim),
   }),
+  vault({
+    ...READ_FRIENDSHIPS,
+    input: object({ id: optional(str({ pattern: FRIENDSHIP_ID, describe: "a friendship's id, for it with its evaluations" })) }),
+    run: async (ctx, { id }) => readFriendshipsIn(ctx, id),
+  }),
+  vault({
+    ...KEEP_FRIENDSHIP,
+    input: object({
+      id: optional(str({ pattern: FRIENDSHIP_ID, describe: "a friendship's id, to change it; left out, a new one" })),
+      friend: optional(str({ min: 1, describe: "the friend's name" })),
+      ref: optional(str({ min: 1, describe: "the friend note that holds who they are, such as belonging/friends/ana.md" })),
+      basis: optional(oneOf(BASES.map((b) => b.id), { describe: "utility, pleasure or virtue (Nicomachean Ethics VIII.3)" })),
+      equality: optional(oneOf(["equal", "unequal"] as const, { describe: "equal, or unequal (VIII.6-7)" })),
+      greater: optional(oneOf(["me", "friend"] as const, { describe: "in an unequal friendship, who is the greater" })),
+      note: optional(str({ describe: "in an unequal friendship, what each gives" })),
+      community: optional(oneOf(COMMUNITY_KINDS.map((k) => k.id), { describe: "the community it lives in (VIII.9, VIII.12)" })),
+      began: optional(str({ pattern: /^\d{4}-\d{2}-\d{2}$/, describe: "when it began, YYYY-MM-DD" })),
+      state: optional(oneOf(STATES.map((x) => x.id), { describe: "for a new one: goodwill (the default) or friends, or dormant" })),
+    }),
+    run: async (ctx, input) => keepFriendshipIn(ctx, input, ctx.now ?? new Date()),
+    change: (r) => ({ after: { id: r.id } }),
+  }),
+  vault({
+    ...MOVE_FRIENDSHIP,
+    input: object({
+      id: str({ pattern: FRIENDSHIP_ID, describe: "the friendship's id" }),
+      to: oneOf(STATES.map((x) => x.id), { describe: "the state it moves to" }),
+      why: optional(str({ describe: "why, in the person's words" })),
+    }),
+    run: async (ctx, { id, to, why }) => moveFriendshipIn(ctx, id, to, why, ctx.now ?? new Date()),
+    change: (r) => ({ after: r }),
+  }),
+  vault({ ...FRIENDSHIP_QUESTIONS, run: async (ctx) => friendshipQuestionsIn(ctx) }),
+  vault({
+    ...EVALUATE_FRIENDSHIP,
+    input: object({
+      friendship: str({ pattern: FRIENDSHIP_ID, describe: "the friendship's id" }),
+      answers: str({ min: 1, describe: "the person's answers: question=choice pairs separated by commas, or a JSON list of {question, choice, words, evidence}" }),
+      date: optional(str({ pattern: /^\d{4}-\d{2}-\d{2}$/, describe: "the day of the evaluation, YYYY-MM-DD; today when left out" })),
+    }),
+    run: async (ctx, input) => evaluateFriendshipIn(ctx, input, ctx.now ?? new Date()),
+    // The answers are in the evaluation's own file; the change log keeps only its id.
+    logged: ({ friendship }) => ({ friendship }),
+    change: (r) => ({ after: { id: r.id, status: r.status } }),
+  }),
+  vault({
+    ...FRIENDSHIP_CATALOG,
+    input: object({
+      scheme: optional(oneOf(FRIENDSHIP_SCHEME_IDS, { describe: "a scheme to turn on or off, or the scheme a new question draws on" })),
+      on: optional(oneOf(["on", "off"] as const, { describe: "with scheme: on (the default) or off" })),
+      hide: optional(str({ pattern: FRIENDSHIP_ID, describe: "a question to hide" })),
+      show: optional(str({ pattern: FRIENDSHIP_ID, describe: "a hidden question to show again" })),
+      add: optional(str({ pattern: FRIENDSHIP_ID, describe: "the id of a new question of the person's own" })),
+      text: optional(str({ min: 1, describe: "the new question's words" })),
+      bears: optional(oneOf(BEARS.map((b) => b.id), { describe: "what the new question bears on" })),
+      choices: optional(str({ min: 1, describe: "the new question's choices, separated by commas; not sure is added" })),
+      cite: optional(str({ min: 1, describe: "the passage the new question comes from" })),
+    }),
+    run: async (ctx, input) => friendshipCatalogIn(ctx, input),
+    change: (r) => ({ after: r }),
+  }),
 ];
 
 export const vaultActionById = (id: string): VaultAction | undefined => VAULT_ACTIONS.find((a) => a.id === id);
@@ -455,7 +743,7 @@ export const vaultActionById = (id: string): VaultAction | undefined => VAULT_AC
  * with publish_to_site (web/src/server/actions/presentations.ts), which writes the same bytes through the same core
  * functions (./published.ts).
  */
-export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id];
+export const VAULT_ONLY: readonly string[] = [PUBLISH_FILES.id, UNPUBLISH_FILES.id, READ_FRIENDSHIPS.id, KEEP_FRIENDSHIP.id, MOVE_FRIENDSHIP.id, FRIENDSHIP_QUESTIONS.id, EVALUATE_FRIENDSHIP.id, FRIENDSHIP_CATALOG.id];
 
 /** An action as the CLI lists it and an MCP server offers it: its declaration and its input's JSON Schema. */
 export type Listed = ActionDecl & { input: JsonSchema };
