@@ -90,6 +90,8 @@ const ROUTED: Record<string, string[]> = {
   "life/work/crafts/actions.ts#keepCraftAction": ["keep_craft"],
   "life/work/crafts/actions.ts#saveCraftAnswersAction": ["save_craft_answers"],
   "life/work/crafts/actions.ts#savePicksAction": ["save_craft_picks"],
+  "life/work/paths-actions.ts#startPathAction": ["start_path"],
+  "life/work/paths-actions.ts#pathStepAction": ["path_step"],
   "life/work/crafts/actions.ts#setCraftStateAction": ["set_craft_state"],
   "life/work/crafts/actions.ts#setCraftStageAction": ["set_craft_stage"],
   "life/work/crafts/actions.ts#setCraftLearnedAction": ["set_craft_learned"],
