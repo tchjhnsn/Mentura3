@@ -92,7 +92,6 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
               </SidebarMenu>
             </Group>
             <Fold label="Gather">
-              {item("/events", "Events", <CalendarDaysIcon />)}
               {item("/adventures", "Adventures", <CompassIcon />)}
               {item("/v/people", "People you've met", <UsersRoundIcon />)}
             </Fold>
@@ -316,7 +315,7 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
       <Group>
         <SidebarGroupLabel>Discover</SidebarGroupLabel>
         <SidebarMenu>
-          {item("/events", "Events", <CalendarDaysIcon />)}
+          {item("/mentura/events", "Events", <CalendarDaysIcon />)}
         </SidebarMenu>
       </Group>
     </>
