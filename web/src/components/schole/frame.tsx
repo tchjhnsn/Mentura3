@@ -5,11 +5,12 @@
 // account's three spaces. A lesson check and a finished lesson take the whole screen, as Uxcel's do. The frame marks
 // each inventory screen with data-virtu-screen so Virtu's checkScreens can read the build.
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, type FormEvent, type ReactNode } from "react";
 import {
-  BookmarkIcon, BookOpenIcon, CheckIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HashIcon, HomeIcon, LandmarkIcon, LanguagesIcon,
-  LibraryIcon, MapIcon, MenuIcon, NotebookPenIcon, RocketIcon, RouteIcon, SearchIcon, SproutIcon, UsersRoundIcon,
+  BadgeCheckIcon, BookmarkIcon, BookOpenIcon, CheckIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HashIcon, HeadphonesIcon, HighlighterIcon, HomeIcon,
+  LandmarkIcon, LanguagesIcon, LibraryIcon, MapIcon, MenuIcon, MessagesSquareIcon, NotebookPenIcon, PodcastIcon, RocketIcon, RouteIcon, ScissorsIcon,
+  SearchIcon, SproutIcon, TvIcon, UsersRoundIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -57,21 +58,36 @@ function SpaceSwitcher() {
   );
 }
 
+// Scholē is three things of equal weight (Torian, 2026-11-21 19:03Z): a podcast and audiobook platform (Listen), courses
+// and lessons (Learn), and books kept to show what a person knows and cares about (Shelf). Talk is its dialectic.
 const NAV: { label?: string; items: Item[] }[] = [
   { items: [
     { href: "/schole", label: "Home", icon: HomeIcon, n: "S1", exact: true },
-    { href: "/schole/saved", label: "Saved", icon: BookmarkIcon, n: "S7" },
-    { href: "/schole/growth", label: "Your growth", icon: SproutIcon, n: "S6" },
+  ] },
+  { label: "Listen", items: [
+    { href: "/schole/browse?m=podcast", label: "Podcasts", icon: PodcastIcon },
+    { href: "/schole/browse?m=audiobooks", label: "Audiobooks", icon: HeadphonesIcon },
+    { href: "/schole/people", label: "People", icon: UsersRoundIcon },
+    { href: "/schole/snips", label: "Snips", icon: ScissorsIcon },
+    { href: "/schole/browse", label: "Browse everything", icon: CompassIcon, n: "S12" },
   ] },
   { label: "Learn", items: [
     { href: "/schole/courses", label: "Courses", icon: GraduationCapIcon, n: "S3" },
     { href: "/schole/subjects", label: "Subjects", icon: RouteIcon, n: "S4" },
+    { href: "/schole/browse?m=lecture", label: "Lectures", icon: TvIcon },
     { href: "/schole/glossary", label: "Glossary", icon: LanguagesIcon, n: "S9" },
-    { href: "/schole/examinations/new", label: "Examination", icon: UsersRoundIcon, n: "S10" },
+    { href: "/schole/examinations/new", label: "Examination", icon: BadgeCheckIcon, n: "S10" },
   ] },
-  { label: "Yours", items: [
+  { label: "Shelf", items: [
     { href: "/schole/shelves", label: "Your library", icon: LibraryIcon, n: "S11" },
-    { href: "/schole/browse", label: "Browse", icon: CompassIcon, n: "S12" },
+    { href: "/schole/highlights", label: "Highlights", icon: HighlighterIcon },
+    { href: "/schole/saved", label: "Saved", icon: BookmarkIcon, n: "S7" },
+  ] },
+  { label: "Talk", items: [
+    { href: "/schole/dialectic", label: "Dialectic", icon: MessagesSquareIcon },
+  ] },
+  { label: "You", items: [
+    { href: "/schole/growth", label: "Your growth", icon: SproutIcon, n: "S6" },
     { href: "/journal", label: "Journal", icon: NotebookPenIcon },
   ] },
   { label: "Your other spaces", items: [
@@ -81,7 +97,24 @@ const NAV: { label?: string; items: Item[] }[] = [
   ] },
 ];
 
+/** Whether a sidebar item is the page shown; a Browse item with ?m= matches that medium only. */
+function isActive(it: Item, path: string, m: string | null) {
+  const [base, query] = it.href.split("?");
+  if (base === "/schole/browse") return path === base && (query ? new URLSearchParams(query).get("m") === m : !m);
+  if (it.exact) return path === base;
+  return path === base || path.startsWith(`${base}/`) || (base === "/schole/courses" && path.startsWith("/schole/c/"));
+}
+
+function NavItems({ path, onGo }: { path: string; onGo?: () => void }) {
+  const m = useSearchParams()?.get("m") ?? null;
+  return <NavList path={path} m={m} onGo={onGo} />;
+}
+
 function Nav({ path, onGo }: { path: string; onGo?: () => void }) {
+  return <Suspense fallback={<NavList path={path} m={null} onGo={onGo} />}><NavItems path={path} onGo={onGo} /></Suspense>;
+}
+
+function NavList({ path, m, onGo }: { path: string; m: string | null; onGo?: () => void }) {
   const nums = useNums();
   const row = (active: boolean) => cn("flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm", active ? "bg-background font-medium shadow-xs ring-1 ring-border" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground");
   return (
@@ -94,7 +127,7 @@ function Nav({ path, onGo }: { path: string; onGo?: () => void }) {
             {g.label ? <div className="text-muted-foreground px-2 pb-1 text-[11px] font-medium uppercase tracking-wide">{g.label}</div> : null}
             <ul className="space-y-0.5">
               {g.items.map((it) => {
-                const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`) || (it.href === "/schole/courses" && path.startsWith("/schole/c/"));
+                const active = isActive(it, path, m);
                 return (
                   <li key={it.href}>
                     <Link href={it.href} onClick={onGo} aria-current={active ? "page" : undefined} className={row(active)}>
@@ -124,7 +157,7 @@ function SearchBar({ className }: { className?: string }) {
     <form onSubmit={go} role="search" className={cn("relative", className)}>
       <Num n="C3" className="absolute -top-2 left-2 z-10" />
       <SearchIcon className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search courses, lessons, terms" aria-label="Search Scholē" className="bg-muted/60 focus:bg-background h-9 w-full rounded-lg border pr-3 pl-8 text-sm outline-none focus:ring-2 focus:ring-ring/40" />
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search podcasts, audiobooks, courses" aria-label="Search Scholē" className="bg-muted/60 focus:bg-background h-9 w-full rounded-lg border pr-3 pl-8 text-sm outline-none focus:ring-2 focus:ring-ring/40" />
     </form>
   );
 }

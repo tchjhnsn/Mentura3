@@ -7,19 +7,29 @@ import { requireUser } from "@/server/session";
 import { Num } from "@/components/studio/bits";
 import { indexOf, hours } from "@/components/schole/index";
 import { Art, ExamCard, PAGE, SaveButton } from "@/components/schole/parts";
+import { mediaOf } from "@reflect/core/aristotle/media";
+import { audiobookById, coverOf, recordingOf } from "@/server/audiobooks";
+import { AudiobookButton } from "../../audiobooks/[id]/play";
 import { CourseActions, CourseProgress, Units } from "./units";
+import { CourseMediaList, type Book } from "./media";
 
 export const generateMetadata = async ({ params }: { params: Promise<{ course: string }> }): Promise<Metadata> => ({ title: courseOf((await params).course)?.title ?? "Course" });
 export const generateStaticParams = () => COURSES.map((c) => ({ course: c.id }));
 
-/** L1 Course, after Uxcel's course page (Mobbin flows 2eedd9fc and 371f86d9): the head with Start course, About this
- * course, one level per book with its lessons, and beside them progress and examination by people. */
+/** L1 Course, after Uxcel's course page (Mobbin flows 2eedd9fc and 371f86d9): the head with Start course and the whole
+ * work to listen to (L1.7), About this course with episodes and lectures on the whole work, one unit per book with its
+ * chapters, episodes and lectures (L1.6) and its lessons, and beside them progress and examination by people. */
 export default async function CoursePage({ params }: { params: Promise<{ course: string }> }) {
   await requireUser();
   const c = courseOf((await params).course);
   if (!c) notFound();
   const s = subjectOf(c.subject)!;
   const idx = indexOf(c);
+  // The whole work as an audiobook from LibriVox, when there is one; its chapters play inside each unit (L1.6).
+  const media = mediaOf(c.id);
+  const entry = media?.audiobook ? audiobookById(media.audiobook) : undefined;
+  const rec = media?.audiobook ? await recordingOf(media.audiobook).catch(() => null) : null;
+  const book: Book | null = rec ? { book: rec, title: entry?.title ?? rec.title, cover: entry ? coverOf(entry) : null, page: `/schole/audiobooks/${media!.audiobook}` } : null;
   const units = c.units.map((u) => ({ id: u.id, title: u.title, line: u.line, bekker: u.bekker, lessons: u.lessons.map((l) => ({ id: l.id, title: l.title, minutes: l.minutes, checks: l.checks.length })) }));
   return (
     <div className={PAGE}>
@@ -36,7 +46,14 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
               <span className="flex items-center gap-1"><ListIcon className="size-4" />{lessonsOf(c).length} lessons in {c.units.length} {c.units.length === 1 ? "unit" : "units"}</span>
               {c.bekker ? <span className="flex items-center gap-1"><BookOpenTextIcon className="size-4" />Bekker {c.bekker}</span> : null}
             </div>
-            <div className="mt-4 flex items-center gap-2"><CourseActions course={idx} /><SaveButton k={c.id} /></div>
+            <div className="mt-4 flex flex-wrap items-center gap-2"><CourseActions course={idx} /><SaveButton k={c.id} /></div>
+            {book ? (
+              <div className="relative mt-4 flex flex-wrap items-center gap-3 rounded-xl border p-3">
+                <Num n="L1.7" className="absolute -top-2 right-2" />
+                <div className="min-w-0 flex-1"><div className="text-sm font-medium">Listen to the whole work</div><div className="text-muted-foreground text-xs">LibriVox recording, {book.book.chapters.length} chapters. <Link href={book.page} className="underline underline-offset-4">About the recording</Link></div></div>
+                <AudiobookButton book={book.book} title={book.title} cover={book.cover} page={book.page} />
+              </div>
+            ) : null}
           </section>
 
           <section className="relative border-b py-6">
@@ -49,11 +66,12 @@ export default async function CoursePage({ params }: { params: Promise<{ course:
               <div className="flex items-center gap-2"><BookOpenTextIcon className="size-4" /><a href={c.translation.url} target="_blank" rel="noreferrer" className="underline underline-offset-4">The whole text</a></div>
               {c.before.length ? <div className="sm:col-span-2">Read first: {c.before.map((b, i) => { const x = courseOf(b); return x ? <span key={b}>{i ? ", " : ""}<Link href={`/schole/c/${b}`} className="underline underline-offset-4">{x.title}</Link></span> : null; })}</div> : null}
             </dl>
+            <CourseMediaList episodes={media?.episodes ?? []} lectures={media?.lectures ?? []} />
           </section>
 
           <section className="relative pt-6">
             <Num n="L1.3" className="absolute top-4 right-0" />
-            <Units course={c.id} units={units} />
+            <Units course={c.id} units={units} media={media?.units} book={book} />
           </section>
         </div>
         <aside className="space-y-4 lg:sticky lg:top-20 lg:h-fit">
