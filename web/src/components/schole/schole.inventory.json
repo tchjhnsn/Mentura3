@@ -1,0 +1,129 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tchjhnsn/design-system-theory/main/schema/inventory.schema.json",
+  "virtu-inventory": "0",
+  "app": "schole",
+  "title": "Scholē",
+  "prefixes": {
+    "S": "Scholē screens, across every course",
+    "L": "Screens inside one course"
+  },
+  "screens": [
+    { "id": "S0", "title": "Screen map", "path": "/schole/map", "job": "Every Scholē screen, part and component number in one list, with the Mobbin screens each is built after.", "states": ["default"] },
+    { "id": "S1", "title": "Home", "path": "/schole", "job": "Pick up the lesson you were on, see your week of study, and start a course when you have none.",
+      "refs": ["https://mobbin.com/screens/68933767-f763-41a5-94ed-967cadaac831", "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8"],
+      "states": ["default", "empty", "phone", "wide"],
+      "parts": [
+        { "id": "S1.1", "name": "Continue learning", "job": "The course you were on, its progress and Resume, which opens the next lesson." },
+        { "id": "S1.2", "name": "Getting started", "job": "Three steps for a newcomer: choose what to understand, read a first lesson, check it." },
+        { "id": "S1.3", "name": "Your week", "job": "The days you studied this week. Habits are built by doing (Ethics II.1)." },
+        { "id": "S1.4", "name": "Recommended for you", "job": "Courses from the subjects you picked, each with why." },
+        { "id": "S1.5", "name": "Nature, habits, reason", "job": "Scholē's three parts, each leading to where it is worked on." }
+      ] },
+    { "id": "S2", "title": "Get started", "path": "/schole/start", "job": "Three questions, one per screen: what you want to understand, how long a day, where to begin.",
+      "refs": ["https://mobbin.com/flows/25541238-f28f-47a1-a7a2-5dd47c6737e8"],
+      "states": ["default", "phone", "wide"],
+      "parts": [
+        { "id": "S2.1", "name": "Subjects you want to understand", "job": "Tap tiles for the nine subjects, any number." },
+        { "id": "S2.2", "name": "Time a day", "job": "Ten, twenty or forty minutes." },
+        { "id": "S2.3", "name": "Where to begin", "job": "The first course of the first subject picked, with Start course." }
+      ] },
+    { "id": "S3", "title": "Courses", "path": "/schole/courses", "job": "Every course, one per work of Aristotle, filtered by subject and level.",
+      "refs": ["https://mobbin.com/flows/19e96245-9a08-4ef1-a3af-14d154b50482", "https://mobbin.com/flows/6f01f893-2d97-406b-844e-8ebfebf879d0"],
+      "states": ["default", "empty", "phone", "wide"],
+      "parts": [
+        { "id": "S3.1", "name": "Subject tabs", "job": "All, then the nine subjects." },
+        { "id": "S3.2", "name": "Level filter", "job": "Start here, Intermediate, Advanced." },
+        { "id": "S3.3", "name": "Course grid", "job": "Course cards; one in progress shows how far you are." },
+        { "id": "S3.4", "name": "Lecture courses", "job": "The Yale and MIT lecture courses Scholē already plays, one link away." }
+      ] },
+    { "id": "S4", "title": "Subjects", "path": "/schole/subjects", "job": "The nine subjects in Aristotle's own division: the instrument, knowing, doing and making.",
+      "refs": ["https://mobbin.com/flows/df720b4d-3372-42ec-9122-e2eee8a7ca16"],
+      "states": ["default", "phone", "wide"],
+      "parts": [
+        { "id": "S4.1", "name": "Division", "job": "One group per division, with Aristotle's reason for it." },
+        { "id": "S4.2", "name": "Subject cards", "job": "Name in English and Greek, what it studies, works and hours." }
+      ] },
+    { "id": "S5", "title": "Subject", "path": "/schole/subjects/[subject]", "job": "One subject's works as a numbered path in reading order, with examination at the end.",
+      "refs": ["https://mobbin.com/flows/a53088fe-2b34-42c8-b251-4bde66d109ff"],
+      "states": ["default", "partial", "phone", "wide"],
+      "parts": [
+        { "id": "S5.1", "name": "Numbered path", "job": "Each work as a step, with level and hours." },
+        { "id": "S5.2", "name": "Examination at the end", "job": "Put yourself under examination by people on the subject." }
+      ] },
+    { "id": "L1", "title": "Course", "path": "/schole/c/[course]", "job": "What the work asks, its books as units with their lessons, and Start or Continue.",
+      "refs": ["https://mobbin.com/flows/2eedd9fc-eec6-444c-820e-f8e2e53df6f9", "https://mobbin.com/flows/371f86d9-e35f-43f9-b287-cc624e1a2de8"],
+      "states": ["default", "partial", "long", "phone", "wide"],
+      "parts": [
+        { "id": "L1.1", "name": "Course head", "job": "Title, Greek and Latin names, facts line, Start course or Continue, Save." },
+        { "id": "L1.2", "name": "About this course", "job": "What the work asks, the caveat when there is one, and the translation read." },
+        { "id": "L1.3", "name": "Units", "job": "One unit per book, each with its lessons and progress." },
+        { "id": "L1.4", "name": "Progress card", "job": "How far you are, time left, and Continue learning." },
+        { "id": "L1.5", "name": "Examination card", "job": "Examiners are people: put yourself under examination on this work." }
+      ] },
+    { "id": "L2", "title": "Lesson", "path": "/schole/c/[course]/[lesson]", "job": "Read one idea: the passage in Aristotle's words, what it says, its terms, then check it.",
+      "refs": ["https://mobbin.com/flows/007c3248-0e23-4b9b-b512-1bd4d68494af", "https://mobbin.com/flows/dfc9a583-d2ba-4bc1-a71d-e33a5b73e04c"],
+      "states": ["default", "phone", "wide"],
+      "parts": [
+        { "id": "L2.1", "name": "Passage", "job": "The text, verbatim, with its Bekker reference and translator." },
+        { "id": "L2.2", "name": "What it says", "job": "The lesson in plain sentences." },
+        { "id": "L2.3", "name": "Terms", "job": "Its Greek terms, each opening the glossary." },
+        { "id": "L2.4", "name": "Unit contents", "job": "The unit's lessons beside the reading, with Start check." },
+        { "id": "L2.5", "name": "Take it to your journal", "job": "A question that opens a new journal entry with it." },
+        { "id": "L2.6", "name": "Previous and next", "job": "The lessons either side, across units." }
+      ] },
+    { "id": "L3", "title": "Lesson check", "path": "/schole/c/[course]/[lesson]/check", "job": "Two or three tap-choice questions, one at a time, each answered with why. No score.",
+      "refs": ["https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944"],
+      "states": ["default", "error", "phone", "wide"],
+      "parts": [
+        { "id": "L3.1", "name": "Progress bar", "job": "How many questions are left; the cross goes back to the lesson." },
+        { "id": "L3.2", "name": "Question", "job": "The question and its choices, numbered for the keyboard." },
+        { "id": "L3.3", "name": "Answer bar", "job": "Right, or not quite, with why, the passage again, and Continue." }
+      ] },
+    { "id": "L4", "title": "Lesson complete", "path": "/schole/c/[course]/[lesson]/done", "job": "What you now know, your week, the journal question, and the next lesson.",
+      "refs": ["https://mobbin.com/flows/0faf91f9-2b61-4c3f-8e0f-3ddf43b60944", "https://mobbin.com/flows/ed7e20c6-209d-4f68-92fd-efe412a97471"],
+      "states": ["default", "phone", "wide"],
+      "parts": [
+        { "id": "L4.1", "name": "What you now know", "job": "The lesson's terms and its one idea." },
+        { "id": "L4.2", "name": "Next lesson", "job": "Continue goes straight to it; at a unit's end, the course page." },
+        { "id": "L4.3", "name": "Share lesson", "job": "Copy the lesson's link for a friend." }
+      ] },
+    { "id": "S6", "title": "Your growth", "path": "/schole/growth", "job": "Nature, habits and reason: what you are drawn to, how steadily you study, and how far you know each subject.",
+      "refs": ["https://mobbin.com/flows/efb89081-dc1e-436c-8015-8099448218ec"],
+      "states": ["default", "empty", "phone", "wide"],
+      "parts": [
+        { "id": "S6.1", "name": "Reason graph", "job": "One axis per subject: the share of its lessons you have read and checked." },
+        { "id": "S6.2", "name": "Habits", "job": "Days studied in the last four weeks." },
+        { "id": "S6.3", "name": "Nature", "job": "The subjects you said you want to understand, and Change." }
+      ] },
+    { "id": "S7", "title": "Saved", "path": "/schole/saved", "job": "Lessons and courses you saved to come back to.",
+      "refs": ["https://mobbin.com/flows/f0a078e3-43bf-4848-b2f1-f79583faf833"],
+      "states": ["default", "empty", "phone", "wide"] },
+    { "id": "S8", "title": "Search", "path": "/schole/search", "job": "Find a course, a lesson or a term by any word in it.",
+      "refs": ["https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"],
+      "states": ["default", "empty", "phone", "wide"] },
+    { "id": "S9", "title": "Glossary", "path": "/schole/glossary", "job": "Every Greek term the courses teach, with where each is taught.",
+      "refs": ["https://mobbin.com/flows/8cb4ef57-3a66-430a-a775-29a2c5d237f6"],
+      "states": ["default", "phone", "wide"] },
+    { "id": "S10", "title": "Put yourself under examination", "path": "/schole/examinations/new", "job": "Say what you will answer for on a course; people examine you in person. No grade.",
+      "refs": ["https://mobbin.com/flows/ad2d1490-8529-4013-b250-2669e4d2e698"],
+      "states": ["default", "phone", "wide"] },
+    { "id": "S11", "title": "Your library", "path": "/schole/shelves", "job": "Books, highlights, notes, schedule and lists you keep (unchanged in this rework).", "states": ["default"] },
+    { "id": "S12", "title": "Browse", "path": "/schole/browse", "job": "Books, lectures, podcasts and playlists from every medium (unchanged in this rework).", "states": ["default"] }
+  ],
+  "components": [
+    { "id": "C1", "name": "Sidebar", "where": ["*"] },
+    { "id": "C2", "name": "Space switcher", "where": ["*"] },
+    { "id": "C3", "name": "Search bar", "where": ["*"] },
+    { "id": "C4", "name": "Course card", "where": ["S1", "S3", "S5", "S7", "S8"] },
+    { "id": "C5", "name": "Lesson row", "where": ["L1", "L2", "S7", "S8"] },
+    { "id": "C6", "name": "Progress bar", "where": ["S1", "S3", "S5", "L1", "L3"] },
+    { "id": "C7", "name": "Week of study", "where": ["S1", "S6", "L4"] },
+    { "id": "C8", "name": "Number tag", "where": ["*"] },
+    { "id": "C9", "name": "Lesson start dialog", "where": ["L1"] },
+    { "id": "C10", "name": "Choice question", "where": ["L3"] },
+    { "id": "C11", "name": "Term chip", "where": ["L2", "L4", "S9"] },
+    { "id": "C12", "name": "Examination card", "where": ["S5", "L1"] },
+    { "id": "C13", "name": "Subject card", "where": ["S2", "S4"] },
+    { "id": "C14", "name": "Journal question", "where": ["L2", "L4"] }
+  ]
+}
