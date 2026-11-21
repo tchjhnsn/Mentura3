@@ -4,6 +4,10 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { EXAM, cleanText, joinRefusal, type ExamStatus, type JoinRefusal } from "@reflect/core/examination";
 import { courseSite } from "@reflect/core/courses";
+import { scholeCourse } from "@reflect/core/aristotle/index";
+
+/** A course a person can be examined on: a Yale or MIT lecture course, or one of Scholē's own. */
+const examinable = (url: string | null | undefined) => courseSite(url) ?? scholeCourse(url);
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
 import { tx } from "./learn-store";
@@ -36,7 +40,7 @@ async function load(where: string, args: unknown[]): Promise<Examination[]> {
 
 /** Puts the person under examination on a course: what they will answer for, and the name examiners will see. */
 export async function createExamination(userId: string, f: { courseUrl: string; courseTitle: string; name: unknown; claim: unknown }): Promise<{ id: string; token: string }> {
-  const site = courseSite(f.courseUrl);
+  const site = examinable(f.courseUrl);
   const name = cleanText(f.name, EXAM.name);
   const claim = cleanText(f.claim, EXAM.claim);
   const title = cleanText(f.courseTitle, 300);
@@ -49,7 +53,7 @@ export async function createExamination(userId: string, f: { courseUrl: string; 
 
 /** The person's own examinations, all or on one course. */
 export async function listExaminations(userId: string, courseUrl?: string): Promise<Examination[]> {
-  const site = courseUrl ? courseSite(courseUrl) : null;
+  const site = courseUrl ? examinable(courseUrl) : null;
   return site ? load("user_id = $1 AND course_url = $2", [userId, site.url]) : load("user_id = $1", [userId]);
 }
 
