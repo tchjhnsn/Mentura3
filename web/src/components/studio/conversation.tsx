@@ -8,7 +8,7 @@ import { DatabaseIcon } from "lucide-react";
 import { JSONUIProvider, Renderer } from "@json-render/react";
 import { cn } from "@/lib/utils";
 import { Face, Num, StatusDot } from "./bits";
-import { agentOf, ventureOf } from "./data";
+import { RUNS, agentOf, ventureOf } from "./data";
 import { answerRegistry, specOf } from "./answer-registry";
 import { PromptBox } from "./prompt-box";
 import { leadOf, nextPhase, phaseLabel, phaseOf, workersOf, type Lead } from "./phase";
@@ -58,7 +58,7 @@ function answer(slug: string, lead: Lead, ask: string): Omit<Msg, "id" | "who"> 
     };
   }
   return {
-    text: lead.id === "chief-of-staff" ? `I split that between the leads. I will bring you only what needs your call.` : `I will take that on with ${workersOf(lead).map((a) => a.name).join(" and ") || "the function agents"} and show you the draft first.`,
+    text: lead.id === "chief-of-staff" ? `I split that between the leads. I will bring you only what needs your call.` : workersOf(lead).length ? `I will take that on with ${workersOf(lead).map((a) => a.name).join(" and ")} and show you the draft first.` : "I will take that on and show you the draft first.",
     fetched: ["strategy/one-pager.md", "operations/week-47.md"],
     pieces: [
       { type: "Plan", props: { title: ask.length > 60 ? `${ask.slice(0, 57)}...` : ask, steps: [
@@ -87,7 +87,10 @@ function seed(slug: string, lead: Lead): Msg[] {
     "growth-lead": [{ type: "Record", props: { slug, path: "marketing/outreach/coaches-v2.md", title: "Coach outreach, draft 2", lines: ["Short email to three coaches at Lincoln High, offering a practice with the vest."] } }, { type: "Held", props: { who: "Growth lead", what: "Send the coach outreach email", detail: "Goes to Coach Reyes and two assistants." } }],
     "finance-lead": [{ type: "Record", props: { slug, path: "finance/budget.sheet", title: "Budget, November", lines: ["$41 spent of $120 this month.", "Vest parts are the biggest line; agent runs cost $18."] } }],
   };
-  return [{ id: "s1", who: "agent", text: `${lead.covers}. Here is where my side of ${ventureOf(slug).name} stands.`, fetched: [], pieces: opener[lead.id] ?? [] }];
+  const STEP = { running: "Running", done: "Done", held: "Waiting for you", failed: "Next" } as const;
+  const mine = RUNS.filter((r) => r.agent === lead.id);
+  const runs: Piece[] = mine.length ? [{ type: "Plan", props: { title: "What I am on", steps: mine.map((r) => ({ title: r.title, who: lead.name, status: STEP[r.status] })) } }] : [];
+  return [{ id: "s1", who: "agent", text: `${lead.covers}. Here is where my side of ${ventureOf(slug).name} stands.`, fetched: mine.length ? ["traces/today.jsonl"] : [], pieces: opener[lead.id] ?? runs }];
 }
 
 export function Conversation({ slug, leadId }: { slug: string; leadId: string }) {
