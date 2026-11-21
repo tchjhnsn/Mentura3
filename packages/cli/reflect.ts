@@ -15,6 +15,8 @@ import { ATTRIBUTE_KINDS, closeAttribute, confirmAttribute, isAttributeKind, iso
 import { filesPublished, readVaultWork, readWorkRecords, writeWorkRecord } from "../core/src/files-published.ts";
 import { DISCLOSURES, ENDS, isEnd, sectionsOf, STATUSES, type WorkRecord } from "../core/src/works-by-end.ts";
 import { filesQuotes, readQuotesAndClaims } from "../core/src/files-quotes.ts";
+import { filesFriendships } from "../core/src/files-friendships.ts";
+import { confirmFriendshipEvaluationIn, friendshipQuestionsIn, readFriendshipsIn } from "../core/src/vault-actions.ts";
 import { claimView, liveTags, QUOTE_SOURCE_KINDS, quoteStatus, SAID_AS, SCHEME_IDS, schemeOf, type QuoteSourceKind, type SchemeId } from "../core/src/quotes.ts";
 import { gateFor, OCCASIONS, recordAfterward, VIRTUE_IDS, VIRTUES } from "../core/src/presentation.ts";
 import { serveStdio } from "../core/src/vault-mcp.ts";
@@ -214,6 +216,23 @@ const USAGE = `reflect <command> [--dir <instance>]
                                   [--object <tag>]. Nothing is edited or deleted
   claims                          each claim and what you last said about it
   claim <id>                      what you said about a claim over time, and who else says it
+  friendships                     each friendship: the friend, its basis, its state and how many evaluations
+  friendship <id>                 one friendship, its history and its evaluations read against the text
+  friendship new <friend's name> [--ref <friend note>] [--basis utility|pleasure|virtue]
+        [--community household|kin|comrades|fellow-citizens|fellow-travellers|congregation|work|other]
+        [--began YYYY-MM-DD] [--state goodwill|friends|dormant] [--greater me|friend]
+                                  begin a friendship at friendships/<id>.json (Nicomachean Ethics VIII-IX);
+                                  --greater makes it unequal, with who is the greater
+  friendship edit <id> [--basis ..] [--community ..] [--began ..] [--greater me|friend | --equal]
+  friendship move <id> <goodwill|friends|dormant|ended> [--why <words>]
+                                  move it along its statechart; nothing leaves ended
+  friendship questions            the questions to ask, each with its passage and choices, and the schemes
+  friendship evaluate <id> <question=choice,...> [--date YYYY-MM-DD]
+                                  keep your answers, dated, at friendships/evaluations/<id>.json
+  friendship confirm <evaluation id>
+                                  confirm an evaluation an assistant kept for you
+  friendship scheme <aristotle|christian|lewis> on|off
+  friendship hide|show <question id>
   publish list                    what is in published/: each file, its presentation record and when you
                                   approved it
   unpublish <slug> | unpublish --profile | unpublish --works
@@ -365,6 +384,13 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
       exact: { type: "string" },
       prefix: { type: "string" },
       suffix: { type: "string" },
+      basis: { type: "string" },
+      community: { type: "string" },
+      began: { type: "string" },
+      greater: { type: "string" },
+      state: { type: "string" },
+      why: { type: "string" },
+      equal: { type: "boolean", default: false },
       help: { type: "boolean", short: "h" },
     },
   });
@@ -417,6 +443,7 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     readWork: (path) => readVaultWork(root, path),
     readWorks: () => readWorkRecords(root),
     quotes: filesQuotes(root),
+    friendships: filesFriendships(root),
     personName: await readFile(join(root, paths.person, "person.json"), "utf8").then((t) => (JSON.parse(t) as { name?: string }).name, () => undefined),
     ...(config.moved_to ? { movedTo: config.moved_to } : {}),
   };
@@ -517,6 +544,79 @@ export async function main(argv: string[], out: (s: string) => void = console.lo
     } as WorkRecord;
     const w = await writeWorkRecord(root, end, id, record);
     out(`kept ${w.path}${w.moved ? ` (moved from ${w.moved})` : ""}`);
+    return 0;
+  }
+  if (cmd === "friendships" || cmd === "friendship") {
+    const [sub, a, b] = rest;
+    const run = async (id: string, input: unknown) => {
+      const ran = await runVaultAction(vault, id, input, "cli");
+      if (ran.held) throw new Error("a friendship action at the terminal is never held");
+      return ran.result as Record<string, unknown>;
+    };
+    if (cmd === "friendships" || !sub) {
+      const r = (await readFriendshipsIn(vault)) as { friendships: { id: string; friend: { name: string }; basis: string | null; state: string; evaluations: number }[] };
+      for (const f of r.friendships) out(`${f.id}  ${f.friend.name}  ${f.state}${f.basis ? `, ${f.basis}` : ""}  ${f.evaluations} evaluation${f.evaluations === 1 ? "" : "s"}`);
+      if (!r.friendships.length) out('no friendships yet: reflect friendship new "<friend\'s name>" --state friends');
+      return 0;
+    }
+    if (sub === "new") {
+      const name = [a, b, ...rest.slice(3)].filter(Boolean).join(" ").trim();
+      const r = await run("keep_friendship", { friend: name, ...(values.ref ? { ref: values.ref } : {}), ...(values.basis ? { basis: values.basis } : {}), ...(values.community ? { community: values.community } : {}), ...(values.began ? { began: values.began } : {}), ...(values.state ? { state: values.state } : {}), ...(values.greater ? { equality: "unequal", greater: values.greater } : {}), ...(values.note ? { note: values.note } : {}) });
+      out(`kept friendships/${r.id}.json`);
+      return 0;
+    }
+    if (sub === "edit") {
+      if (!a) throw new Error("friendship edit <id> [--basis ..] [--community ..] [--began ..] [--greater me|friend | --equal]");
+      const r = await run("keep_friendship", { id: a, ...(values.basis ? { basis: values.basis } : {}), ...(values.community ? { community: values.community } : {}), ...(values.began ? { began: values.began } : {}), ...(values.greater ? { equality: "unequal", greater: values.greater } : {}), ...(values.note ? { note: values.note } : {}), ...(values.equal ? { equality: "equal" } : {}) });
+      out(`changed friendships/${r.id}.json`);
+      return 0;
+    }
+    if (sub === "move") {
+      if (!a || !b) throw new Error("friendship move <id> <goodwill|friends|dormant|ended> [--why <words>]");
+      const r = await run("move_friendship", { id: a, to: b, ...(values.why ? { why: values.why } : {}) });
+      out(`${a}: ${r.from} to ${r.to}`);
+      return 0;
+    }
+    if (sub === "questions") {
+      const r = await friendshipQuestionsIn(vault);
+      out(`Schemes: ${r.schemes.map((s) => `${s.id} ${s.on ? "on" : "off"}`).join(", ")}`);
+      for (const q of r.questions) out(`${q.id}  (${q.scheme}, ${q.cite})\n  ${q.text}\n  ${q.choices.map((c) => c.id).join(" | ")}`);
+      if (r.hidden.length) out(`Hidden: ${r.hidden.join(", ")}`);
+      return 0;
+    }
+    if (sub === "evaluate") {
+      if (!a || !b) throw new Error("friendship evaluate <id> <question=choice,...> [--date YYYY-MM-DD]; see reflect friendship questions");
+      const r = (await run("evaluate_friendship", { friendship: a, answers: [b, ...rest.slice(3)].join(","), ...(values.date ? { date: values.date } : {}) })) as { id: string; suggested_basis: string | null; answers: { question: string; label: string; reads?: string }[] };
+      out(`kept friendships/evaluations/${r.id}.json`);
+      for (const x of r.answers) out(`  ${x.question}: ${x.label}${x.reads ? `\n    ${x.reads}` : ""}`);
+      if (r.suggested_basis) out(`Your answers read like a friendship of ${r.suggested_basis}. The basis is yours to set: reflect friendship edit ${a} --basis ${r.suggested_basis}`);
+      return 0;
+    }
+    if (sub === "confirm") {
+      if (!a) throw new Error("friendship confirm <evaluation id>");
+      const r = await confirmFriendshipEvaluationIn(vault, a);
+      out(`${r.id}: ${r.status}`);
+      return 0;
+    }
+    if (sub === "scheme") {
+      if (!a || (b !== "on" && b !== "off")) throw new Error("friendship scheme <aristotle|christian|lewis> on|off");
+      const r = await run("friendship_catalog", { scheme: a, on: b });
+      out(`schemes on: ${(r.schemes as string[]).join(", ")}; ${r.asked} questions asked`);
+      return 0;
+    }
+    if (sub === "hide" || sub === "show") {
+      if (!a) throw new Error(`friendship ${sub} <question id>`);
+      const r = await run("friendship_catalog", { [sub]: a });
+      out(`hidden: ${(r.hidden as string[]).join(", ") || "none"}; ${r.asked} questions asked`);
+      return 0;
+    }
+    const r = (await readFriendshipsIn(vault, sub)) as { friendship: { friend: { name: string }; state: string; basis: string | null; community: string | null; history: { at: string; from: string | null; to: string; why?: string }[] }; evaluations: { id: string; date: string; status: string; answers: { question: string; label: string; reads?: string }[] }[] };
+    out(`${r.friendship.friend.name}: ${r.friendship.state}${r.friendship.basis ? `, ${r.friendship.basis}` : ""}${r.friendship.community ? `, ${r.friendship.community}` : ""}`);
+    for (const h of r.friendship.history) out(`  ${h.at.slice(0, 10)}  ${h.from ?? "began"} to ${h.to}${h.why ? `: ${h.why}` : ""}`);
+    for (const e of r.evaluations) {
+      out(`${e.id}  ${e.date}${e.status === "proposed" ? `  (proposed; confirm: reflect friendship confirm ${e.id})` : ""}`);
+      for (const x of e.answers) out(`  ${x.question}: ${x.label}${x.reads ? `\n    ${x.reads}` : ""}`);
+    }
     return 0;
   }
   if (cmd === "quote" || cmd === "quotes" || cmd === "claim" || cmd === "claims" || cmd === "tag") {

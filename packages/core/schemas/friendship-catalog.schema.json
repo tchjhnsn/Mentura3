@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "friendship-catalog.schema.json",
+  "title": "Friendship question catalog",
+  "description": "The person's settings for the friendship questions at friendships/catalog.json: the schemes turned on (Aristotle always), the default questions hidden (kept, not deleted) and the person's own questions. packages/core/src/friendship.ts reads and checks it.",
+  "type": "object",
+  "required": [
+    "schemes",
+    "hidden",
+    "added"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "choice": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "reads": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "id",
+        "text",
+        "scheme",
+        "cite",
+        "bears",
+        "choices",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "scheme": {
+          "enum": [
+            "aristotle",
+            "christian",
+            "lewis"
+          ]
+        },
+        "cite": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "bears": {
+          "enum": [
+            "basis",
+            "reciprocity",
+            "equality",
+            "time",
+            "state",
+            "character"
+          ]
+        },
+        "choices": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/choice"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "acts",
+              "quotes",
+              "journal"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "aristotle",
+          "christian",
+          "lewis"
+        ]
+      }
+    },
+    "hidden": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]*$"
+      }
+    },
+    "added": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    }
+  }
+}

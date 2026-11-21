@@ -118,7 +118,8 @@
       "journal entry",
       "reflection",
       "conversation",
-      "import"
+      "import",
+      "friendship evaluation"
     ]
   },
   "nouns": [
@@ -195,6 +196,48 @@
       "kinds": [
         "friends:group"
       ]
+    },
+    {
+      "noun": "friendship",
+      "level": "life",
+      "meaning": "Goodwill returned and known to both, for the sake of the useful, the pleasant or the good (Nicomachean Ethics VIII.2, 1155b27-1156a5). A relation between two people, apart from the friend, who is a person; its basis, equality, community and state are kept on a friendship record (packages/core/src/friendship.ts)",
+      "standard": "Aristotle, Nicomachean Ethics VIII.2-3",
+      "status": "kept",
+      "app": "friends",
+      "broader": [
+        "relation"
+      ],
+      "good": "external",
+      "community": "polis",
+      "kinds": []
+    },
+    {
+      "noun": "goodwill",
+      "level": "life",
+      "meaning": "Wishing someone good for their own sake, not yet returned or not yet known to them; the beginning of friendship (Nicomachean Ethics VIII.2, 1155b32-1156a5; IX.5, 1166b30-1167a21)",
+      "standard": "Aristotle, Nicomachean Ethics VIII.2, IX.5",
+      "status": "kept",
+      "app": "friends",
+      "broader": [
+        "relation"
+      ],
+      "good": "external",
+      "community": "polis",
+      "kinds": []
+    },
+    {
+      "noun": "fellowship",
+      "level": "life",
+      "meaning": "Sharing a life toward a common end in a community: koinonia (Nicomachean Ethics VIII.9, 1159b25-32; Acts 2:42). Kept on a group, not on a pair",
+      "standard": "Aristotle, Nicomachean Ethics VIII.9; Acts 2:42",
+      "status": "kept",
+      "app": "friends",
+      "broader": [
+        "relation"
+      ],
+      "good": "external",
+      "community": "polis",
+      "kinds": []
     },
     {
       "noun": "venture",

@@ -752,7 +752,7 @@ describe("reflect CLI", () => {
     dirs.push(dir);
     await run("init", "--name", "Tester", "--dir", dir);
     const listed = await run("actions");
-    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files", "keep_quote", "tag_quote", "read_quotes"]);
+    expect(listed.out.map((l) => l.split("  ")[0])).toEqual(["reflect_guide", "life_schema", "list_entries", "write_entry", "get_entry", "draft_presentation", "check_presentation", "publish_files", "unpublish_files", "keep_quote", "tag_quote", "read_quotes", "read_friendships", "keep_friendship", "move_friendship", "friendship_questions", "evaluate_friendship", "friendship_catalog"]);
     expect(JSON.parse((await run("actions", "--json")).out[0]!)[3]).toMatchObject({ id: "write_entry", tier: "own", input: { required: ["text", "local_date"] } });
     const today = new Date().toISOString().slice(0, 10);
     const wrote = await run("act", "write_entry", "--input", JSON.stringify({ text: "By the river.", local_date: today }), "--dir", dir);
@@ -909,5 +909,31 @@ describe("reflect CLI", () => {
     const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
     dirs.push(dir);
     await expect(run("list", "--dir", dir)).rejects.toThrow(/reflect init/);
+  });
+});
+
+describe("friendships at the terminal", () => {
+  it("begins a friendship, evaluates it, reads it back, and moves it along its statechart", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "reflect-cli-"));
+    dirs.push(dir);
+    await run("init", "--name", "Tester", "--dir", dir);
+    expect((await run("friendship", "new", "Ana", "Lopez", "--state", "friends", "--community", "comrades", "--dir", dir)).out).toEqual(["kept friendships/ana-lopez.json"]);
+    const asked = await run("friendship", "questions", "--dir", dir);
+    expect(asked.out[0]).toBe("Schemes: aristotle on, christian off, lewis off");
+    expect(asked.out.join("\n")).toMatch(/what-each-gets {2}\(aristotle, NE VIII\.2-3/);
+    const ev = await run("friendship", "evaluate", "ana-lopez", "what-each-gets=themselves,if-not-useful=yes", "--date", "2026-11-21", "--dir", dir);
+    expect(ev.out[0]).toBe("kept friendships/evaluations/2026-11-21-ana-lopez.json");
+    expect(ev.out.join("\n")).toMatch(/1156b7-17/);
+    expect(ev.out.at(-1)).toMatch(/friendship of virtue.*--basis virtue/);
+    await run("friendship", "edit", "ana-lopez", "--basis", "virtue", "--dir", dir);
+    expect((await run("friendships", "--dir", dir)).out).toEqual(["ana-lopez  Ana Lopez  friends, virtue  1 evaluation"]);
+    expect((await run("friendship", "move", "ana-lopez", "dormant", "--why", "she moved away", "--dir", dir)).out).toEqual(["ana-lopez: friends to dormant"]);
+    await expect(run("friendship", "move", "ana-lopez", "goodwill", "--dir", dir)).rejects.toThrow(/dormant can move to friends or ended/);
+    const shown = await run("friendship", "ana-lopez", "--dir", dir);
+    expect(shown.out[0]).toBe("Ana Lopez: dormant, virtue, comrades");
+    expect(shown.out.join("\n")).toMatch(/friends to dormant: she moved away/);
+    await run("friendship", "scheme", "christian", "on", "--dir", dir);
+    expect((await run("friendship", "questions", "--dir", dir)).out.join("\n")).toMatch(/aelred-stage/);
+    expect((await run("check", "--dir", dir)).out.at(-1)).toBe("ok");
   });
 });
