@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ArrowUpIcon, PaperclipIcon } from "lucide-react";
 import { Num } from "./bits";
 
-/** C6 Prompt box: write what you want; Enter sends. Suggestions fill the box. */
+/** C6 Prompt box: write what you want; Enter sends. A suggestion sends itself. */
 export function PromptBox({ placeholder = "Ask for anything", suggestions = [], onSubmit, autoFocus }: { placeholder?: string; suggestions?: string[]; onSubmit?: (text: string) => void; autoFocus?: boolean }) {
   const [text, setText] = useState("");
   const send = () => { const t = text.trim(); if (!t) return; onSubmit?.(t); setText(""); };
@@ -22,7 +22,7 @@ export function PromptBox({ placeholder = "Ask for anything", suggestions = [], 
       </div>
       {suggestions.length ? (
         <div className="flex flex-wrap gap-1.5">
-          {suggestions.map((s) => <button key={s} type="button" onClick={() => setText(s)} className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-full border px-2.5 py-1 text-xs">{s}</button>)}
+          {suggestions.map((s) => <button key={s} type="button" onClick={() => (onSubmit ? onSubmit(s) : setText(s))} className="text-muted-foreground hover:bg-accent hover:text-foreground rounded-full border px-2.5 py-1 text-xs">{s}</button>)}
         </div>
       ) : null}
     </div>

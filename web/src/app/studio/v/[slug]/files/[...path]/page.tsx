@@ -3,13 +3,14 @@
 // V3 Document: read and edit one document with the agent beside it. Edits are held in this page only.
 import Link from "next/link";
 import { use, useState, type ReactNode } from "react";
-import { BotIcon, ChevronRightIcon, EyeIcon, HistoryIcon, PencilIcon, SparklesIcon } from "lucide-react";
+import { BotIcon, BracesIcon, ChevronRightIcon, EyeIcon, HistoryIcon, PencilIcon, SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Face, Num } from "@/components/studio/bits";
 import { ScreenHead, useChat } from "@/components/studio/shell";
+import { recordOf } from "@/components/studio/records";
 import { agentOf, ventureHref, ventureOf } from "@/components/studio/data";
 import {
   COMMENTS, SHEET_ROWS, SUGGESTIONS, fileAt, fileName, isAgentId, mdBlocks, recordBody, titleOf, type Version,
@@ -52,7 +53,7 @@ export default function DocumentPage({ params }: { params: Promise<{ slug: strin
   const initial = file ? (file.kind === "record" ? recordBody(file) : file.body ?? "") : "";
   const [body, setBody] = useState(initial);
   const [saved, setSaved] = useState(initial);
-  const [mode, setMode] = useState<"preview" | "edit">("preview");
+  const [mode, setMode] = useState<"preview" | "edit" | "record">("preview");
   const [history, setHistory] = useState<Version[]>(() => file?.history ?? (file ? [{ id: "v1", at: file.updated, by: file.by, note: "Last change" }] : []));
   const [histOpen, setHistOpen] = useState(false);
   const sug = SUGGESTIONS[path];
@@ -127,14 +128,14 @@ export default function DocumentPage({ params }: { params: Promise<{ slug: strin
               <span className="text-muted-foreground text-xs">Edited by</span>
               {file.editors.map((e) => <Who key={e} id={e} />)}
             </div>
-            {editable ? (
-              <div className="relative flex rounded-md border p-0.5" role="group" aria-label="Edit or preview">
-                <Num n="V3.2" className="absolute -top-2 -right-2" />
-                <Button variant={mode === "edit" ? "secondary" : "ghost"} size="sm" aria-pressed={mode === "edit"} onClick={() => setMode("edit")}><PencilIcon />Edit</Button>
-                <Button variant={mode === "preview" ? "secondary" : "ghost"} size="sm" aria-pressed={mode === "preview"} onClick={() => setMode("preview")}><EyeIcon />Preview</Button>
-              </div>
-            ) : null}
+            <div className="relative flex rounded-md border p-0.5" role="group" aria-label="Document, record or edit">
+              <Num n="V3.2" className="absolute -top-2 -right-2" />
+              <Button variant={mode === "preview" ? "secondary" : "ghost"} size="sm" aria-pressed={mode === "preview"} onClick={() => setMode("preview")}><EyeIcon />Document</Button>
+              <Button variant={mode === "record" ? "secondary" : "ghost"} size="sm" aria-pressed={mode === "record"} onClick={() => setMode("record")}><BracesIcon />Record</Button>
+              {editable ? <Button variant={mode === "edit" ? "secondary" : "ghost"} size="sm" aria-pressed={mode === "edit"} onClick={() => setMode("edit")}><PencilIcon />Edit</Button> : null}
+            </div>
           </div>
+          <p className="text-muted-foreground -mt-2 text-xs">The record is the source of truth. This document is one way to read it.</p>
 
           {sug && file.kind === "doc" ? (
             <section className="relative rounded-lg border border-fuchsia-600/30 bg-fuchsia-600/5 p-3">
@@ -156,7 +157,9 @@ export default function DocumentPage({ params }: { params: Promise<{ slug: strin
 
           <section className="relative rounded-lg border p-4 md:p-6">
             <Num n="V3.5" className="absolute -top-2 left-2" />
-            {file.kind === "image" ? (
+            {mode === "record" ? (
+              <pre className="overflow-x-auto font-mono text-xs leading-relaxed">{JSON.stringify(recordOf(slug, { ...file, body }), null, 2)}</pre>
+            ) : file.kind === "image" ? (
               <div className="grid aspect-video place-items-center rounded bg-gradient-to-br from-stone-200 to-stone-400 text-sm text-stone-700 dark:from-stone-700 dark:to-stone-900 dark:text-stone-300">{fileName(path)} · {file.size}</div>
             ) : file.kind === "sheet" ? (
               <div className="overflow-x-auto"><table className="w-full text-sm"><tbody>{SHEET_ROWS.map((r, i) => <tr key={i} className={cn("border-b", i === 0 && "font-medium")}>{r.map((c, k) => <td key={k} className="px-2 py-1.5">{c}</td>)}</tr>)}</tbody></table></div>
