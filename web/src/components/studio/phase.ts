@@ -56,5 +56,15 @@ export const LEADS: Lead[] = [
   { id: "growth-lead", name: "Growth lead", covers: "Marketing, sales and customer service", status: "running", hue: 330, works: ["marketing-agent", "funder-scout"] },
   { id: "finance-lead", name: "Finance lead", covers: "Money, assets, legal and risk", status: "running", hue: 140, works: ["finance-agent", "legal-agent"] },
 ];
-export const leadOf = (id: string | null | undefined): Lead => LEADS.find((l) => l.id === id) ?? LEADS[0]!;
+/** Any agent you can talk to, in the lead shape: a lead, or a function agent working under one. */
+export const leadOf = (id: string | null | undefined): Lead => {
+  const lead = LEADS.find((l) => l.id === id);
+  if (lead) return lead;
+  const a = AGENTS.find((x) => x.id === id && x.id !== "chief-of-staff");
+  if (!a) return LEADS[0]!;
+  const boss = LEADS.find((l) => l.works.includes(a.id));
+  return { id: a.id, name: a.name, covers: a.job.replace(/\.$/, ""), status: a.status, hue: boss?.hue ?? 60, works: [] };
+};
+/** The lead an agent works under, if any. */
+export const bossOf = (id: string) => LEADS.find((l) => l.works.includes(id)) ?? null;
 export const workersOf = (l: Lead) => AGENTS.filter((a) => l.works.includes(a.id));

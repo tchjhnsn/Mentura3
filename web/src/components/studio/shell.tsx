@@ -4,20 +4,18 @@
 // C5 agent chat panel. Modeled on the shared anatomy of OpenAI Platform (project switcher, grouped left nav), Replit
 // (agent beside the work, tools per project) and Base44 (prompt first, preview beside).
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIcon, BlocksIcon, BookOpenIcon, BotIcon, CheckIcon, ChevronsUpDownIcon, FileTextIcon, GaugeIcon, GitForkIcon,
   HashIcon, HomeIcon, LayoutGridIcon, LibraryIcon, MapIcon, MenuIcon, MessageSquareIcon, PlugIcon, PlusIcon,
-  PresentationIcon, ScaleIcon, SendIcon, SettingsIcon, TargetIcon, WorkflowIcon, XIcon,
+  PresentationIcon, PuzzleIcon, ScaleIcon, SendIcon, SettingsIcon, TargetIcon, WorkflowIcon, XIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
-import { Num, StatusDot, useNums } from "./bits";
-import { LeadMark } from "./conversation";
-import { LEADS } from "./phase";
+import { Num, useNums } from "./bits";
 import { VENTURES, ventureHref, ventureOf } from "./data";
 
 type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean };
@@ -38,53 +36,34 @@ const STUDIO_NAV: NavGroup[] = [
   ] },
 ];
 
-// Inside a venture the nav is short: the agents you talk to, then the venture's records. Everything else is
-// reached from an agent's answer or from More, folded by default (Torian, 2026-11-21: "much more simplicity").
 const ventureNav = (slug: string): NavGroup[] => {
   const h = (r: string) => ventureHref(slug, r);
   return [
-    { label: "Records", items: [
-      { href: h("files"), label: "Records and documents", icon: FileTextIcon, n: "V2" },
+    { items: [
+      { href: h(""), label: "Overview", icon: LayoutGridIcon, n: "V1", exact: true },
+      { href: h("agents"), label: "Agents", icon: BotIcon, n: "V6" },
       { href: h("decisions"), label: "Decisions", icon: ScaleIcon, n: "V15" },
-      { href: h("activity"), label: "Activity", icon: ActivityIcon, n: "V9" },
     ] },
-    { label: "More", more: true, items: [
+    { label: "Make", items: [
+      { href: h("files"), label: "Records and documents", icon: FileTextIcon, n: "V2" },
       { href: h("strategy"), label: "Strategy", icon: TargetIcon, n: "V4" },
       { href: h("decks/investor"), label: "Decks", icon: PresentationIcon, n: "V5" },
-      { href: h("outreach"), label: "Outreach", icon: SendIcon, n: "V13" },
-      { href: h("agents"), label: "Function agents", icon: BotIcon, n: "V6" },
-      { href: h("automations"), label: "Automations", icon: WorkflowIcon, n: "V8" },
+    ] },
+    { label: "Run", items: [
       { href: h("functions"), label: "Functions", icon: BlocksIcon, n: "V11" },
+      { href: h("skills"), label: "Skills and plugins", icon: PuzzleIcon, n: "V17" },
+      { href: h("automations"), label: "Automations", icon: WorkflowIcon, n: "V8" },
+      { href: h("outreach"), label: "Outreach", icon: SendIcon, n: "V13" },
+    ] },
+    { label: "Watch", items: [
+      { href: h("activity"), label: "Activity", icon: ActivityIcon, n: "V9" },
+    ] },
+    { label: "Connect", items: [
       { href: h("connectors"), label: "Connectors", icon: PlugIcon, n: "V14" },
       { href: h("settings"), label: "Settings", icon: SettingsIcon, n: "V16" },
     ] },
   ];
 };
-
-/** C17 Agent list: the chief of staff and the four leads, each opening its conversation (V1). */
-function AgentList({ slug, onGo }: { slug: string; onGo?: () => void }) {
-  const path = usePathname() ?? "";
-  const params = useSearchParams();
-  const at = path === ventureHref(slug) ? (params?.get("agent") ?? "chief-of-staff") : null;
-  return (
-    <div className="relative">
-      <Num n="C17" className="absolute -top-1 right-0" />
-      <div className="text-muted-foreground px-2 pb-1 text-xs">Agents</div>
-      <ul className="space-y-0.5">
-        {LEADS.map((l) => (
-          <li key={l.id}>
-            <Link href={l.id === "chief-of-staff" ? ventureHref(slug) : `${ventureHref(slug)}?agent=${l.id}`} onClick={onGo} aria-current={at === l.id ? "page" : undefined}
-              className={cn("flex items-center gap-2 rounded-md px-2 py-1.5 text-sm", at === l.id ? "bg-accent font-medium" : "hover:bg-accent/60")}>
-              <LeadMark lead={l} size={l.id === "chief-of-staff" ? 22 : 18} />
-              <span className="min-w-0 flex-1 truncate">{l.name}</span>
-              <StatusDot status={l.status} label={false} />
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 const slugOf = (path: string) => path.match(/^\/studio\/v\/([^/]+)/)?.[1] ?? null;
 
@@ -145,11 +124,11 @@ function NavList({ groups, path, onGo }: { groups: NavGroup[]; path: string; onG
   );
 }
 
-/** "Ask the agent" from any venture screen opens the chief of staff's conversation (V1). */
+/** "Ask the agent" from any venture screen opens the chief of staff in the Agents view (V6). */
 export function useChat() {
   const router = useRouter();
   const slug = slugOf(usePathname() ?? "");
-  return { open: false, setOpen: (v: boolean) => { if (v && slug) router.push(ventureHref(slug)); } };
+  return { open: false, setOpen: (v: boolean) => { if (v && slug) router.push(ventureHref(slug, "agents")); } };
 }
 
 /** C1 Top bar plus the left nav (C3 studio, C4 venture) for every Studio screen. No side panels: inside a venture
@@ -163,7 +142,6 @@ export function StudioFrame({ children }: { children: ReactNode }) {
   const nums = useNums();
   const nav = (onGo?: () => void) => (
     <div className="space-y-4">
-      {slug ? <Suspense fallback={null}><AgentList slug={slug} onGo={onGo} /></Suspense> : null}
       <NavList groups={groups} path={path} onGo={onGo} />
     </div>
   );
