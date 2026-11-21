@@ -41,8 +41,8 @@ export default async function RootLayout({ children, modal }: { children: ReactN
   // A guest account (made from a meeting invite) and an invite link (/m/<token>) get no sidebar: they show only the
   // meeting (the guest wall, src/server/guest-wall.ts).
   const path = head.get(PATH_HEADER) ?? "";
-  // The Venture Studio (/studio) is a full-screen app with its own frame and nav (src/components/studio/shell.tsx).
-  const bare = !user || path === "/m" || path.startsWith("/m/") || path === "/studio" || path.startsWith("/studio/") || path === "/mentura" || path.startsWith("/mentura/") || (await isGuest(user.id));
+  // The Venture Studio (/studio), Mentura and Scholē are full-screen apps with their own frame and nav (src/components/studio/shell.tsx, src/components/schole/frame.tsx).
+  const bare = !user || path === "/m" || path.startsWith("/m/") || path === "/studio" || path.startsWith("/studio/") || path === "/mentura" || path.startsWith("/mentura/") || path === "/schole" || path.startsWith("/schole/") || (await isGuest(user.id));
   const chats = user && !bare ? (await listEntries(user.id, 40).catch(() => [])).filter((e) => e.promptId === CHAT_PROMPT).slice(0, 5).map((c) => ({ id: c.id, title: c.parts.map((p) => readChatPart(p.text)).find((m) => m.who === "you")?.text ?? "A chat" })) : [];
   // Their face at the foot of the sidebar opens their own profile (Profiles, 2026-11-18).
   const me = user && !bare ? await selfOf(user.id).catch(() => ({ name: "You", href: `/p/${encodeURIComponent(user.id)}` })) : null;

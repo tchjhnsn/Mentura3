@@ -1,3 +1,4 @@
+import { scholeCourse } from "@reflect/core/aristotle/index";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,7 +22,7 @@ export default async function ExaminationPage({ params }: { params: Promise<{ id
   if (!e) notFound();
   return (
     <main className={PAGE}>
-      <TaskHeader back={{ href: `/schole/courses?u=${encodeURIComponent(e.courseUrl)}&t=${encodeURIComponent(e.courseTitle)}`, label: "Back to the course" }} title={e.courseTitle} position={`Examination, ${e.status === "open" ? "open" : "closed"}`} />
+      <TaskHeader back={{ href: scholeCourse(e.courseUrl) ? `/schole/c/${scholeCourse(e.courseUrl)!.id}` : `/schole/courses?u=${encodeURIComponent(e.courseUrl)}&t=${encodeURIComponent(e.courseTitle)}`, label: "Back to the course" }} title={e.courseTitle} position={`Examination, ${e.status === "open" ? "open" : "closed"}`} />
       <div className="mt-6 max-w-3xl space-y-8">
         <header className="space-y-1">
           <h1 id="page-title" className="text-2xl font-semibold tracking-tight sm:text-3xl">Your examination</h1>
