@@ -16,7 +16,7 @@ import { cookieDomain, polisOrigin, siteUrl } from "@/server/site";
 import { APPEARANCE_BUTTON_COOKIE, LOOK_COOKIE, appearanceButtonOn, lookOf, themeOf, themeVars } from "@/lib/themes";
 import { AppearanceButton } from "@/components/appearance-button";
 import { AppearanceSlot } from "@/components/slots";
-import { FOLDED, GLYPHS, hrefOf, MINE } from "./home-tiles";
+import { FOLDED, GLYPHS, IN_SETTINGS, hrefOf, MINE } from "./home-tiles";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 // The journal's writing face.
@@ -29,8 +29,9 @@ const tileOf = (id: string): SidebarTile[] => { const t = MINE.find((x) => x.id 
 // The village and polis group lives only on the shared side's sidebar (Torian, 2026-11-19: "I don't know why Village
 // and Polis is still in the Home app"); Home's sidebar keeps the person and the household.
 const POLIS_TILES = GROUPS.find((g) => g.id === "village")?.tiles ?? [];
-// Home's sidebar keeps the main dashboard's groups, less the tiles that moved to Village and polis.
-const GROUPED: SidebarGroup[] = GROUPS.filter((g) => g.id !== "village").map((g) => ({ label: g.label, tiles: g.tiles.filter((id) => !FOLDED.includes(id)).flatMap(tileOf) }));
+// Home's sidebar keeps the main dashboard's groups, less the tiles that moved to Village and polis and the areas that
+// are not core apps, which Settings, Life areas lists (Torian, 2026-11-21).
+const GROUPED: SidebarGroup[] = GROUPS.filter((g) => g.id !== "village").map((g) => ({ label: g.label, tiles: g.tiles.filter((id) => !FOLDED.includes(id) && !IN_SETTINGS.includes(id)).flatMap(tileOf) }));
 const POLIS: SidebarTile[] = POLIS_TILES.flatMap(tileOf);
 
 /** Every page in shadcn's look (src/app/globals.css), with the sidebar kept once for the whole app when someone is signed in. */
