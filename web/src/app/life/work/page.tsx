@@ -10,13 +10,19 @@ import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { workspace, type Wanted, type Workspace } from "@/server/work-space";
 import { signalsOf } from "@/server/recommend";
-import { lifeActs } from "@/server/life-store";
+import { lifeActs, lifeRecords } from "@/server/life-store";
+import { workFit } from "@/server/fit-store";
+import { jobByCode } from "@/server/work-catalog";
+import { stepsDone } from "@/server/actions/paths";
 import { connectionTallies, type Tally } from "@/server/profile-store";
 import LifeAppPage from "../[app]/page";
 import { WorkHeader } from "./parts";
 import { writeTowardAction } from "./space-actions";
 import { kindLabel, STATE, WAYS } from "./aims";
 import { Steps } from "./steps";
+import { FindCrafts } from "./find-crafts";
+import { ContinuePath, StartPath, type Following } from "./home-continue";
+import { HomeCrafts, HomeFits } from "./home-fits";
 
 export const metadata: Metadata = { title: "Work" };
 export const dynamic = "force-dynamic";
@@ -32,20 +38,20 @@ function underWay(w: Wanted): string | null {
   return parts.length ? parts.join(" · ") : null;
 }
 
-/** The main aim, as the page's hero: the largest type, the only heavy border, and the one filled button. */
+/** The main aim, as a normal card below the Continue card: its button is outline, since Continue holds the filled one. */
 function Hero({ w }: { w: Wanted }) {
   const draws = typeof w.record.body.draws === "string" ? w.record.body.draws : "";
   const done = underWay(w);
   return (
-    <section aria-labelledby="main-aim" className="relative grid gap-3 rounded-2xl border-2 border-foreground p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section aria-labelledby="main-aim" className="relative grid gap-3 rounded-xl border p-4">
+      <div className="grid gap-3">
         <div className="grid min-w-0 gap-1">
           <p className="text-muted-foreground flex items-center gap-1.5 text-xs"><StarIcon className="fill-foreground size-3.5" aria-label="Main aim" />Main aim · {kindLabel(w)}{w.record.state && STATE[w.record.state] ? ` · ${STATE[w.record.state]}` : ""}</p>
-          <h2 id="main-aim" className="text-[28px] leading-tight font-semibold tracking-tight first-letter:uppercase">
-            <Link href={`/life/work/${w.record.id}`} className="after:absolute after:inset-0 after:rounded-2xl">{w.title}</Link>
+          <h2 id="main-aim" className="text-lg leading-snug font-semibold tracking-tight first-letter:uppercase">
+            <Link href={`/life/work/${w.record.id}`} className="after:absolute after:inset-0 after:rounded-xl">{w.title}</Link>
           </h2>
         </div>
-        <form action={writeTowardAction.bind(null, w.record.id)} className="relative z-10"><Button type="submit"><PenLineIcon />Write toward it</Button></form>
+        <form action={writeTowardAction.bind(null, w.record.id)} className="relative z-10"><Button type="submit" variant="outline" size="sm"><PenLineIcon />Write toward it</Button></form>
       </div>
       {draws ? <p className="text-muted-foreground line-clamp-2 text-sm">{draws}</p> : null}
       <p className="text-muted-foreground text-sm">{done ?? "Nothing under way yet"}</p>
@@ -53,18 +59,18 @@ function Hero({ w }: { w: Wanted }) {
   );
 }
 
-/** With no aim, the hero asks the question Work answers, with the four ways in. */
+/** With no aim, a normal card asks the question Work answers, with the four ways in and an outline button. */
 function NoAim() {
   return (
-    <section aria-labelledby="main-aim" className="grid gap-4 rounded-2xl border-2 border-foreground p-5 sm:p-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+    <section aria-labelledby="main-aim" className="grid gap-4 rounded-xl border p-4">
+      <div className="grid gap-3">
         <div className="grid gap-1">
-          <h2 id="main-aim" className="text-[28px] leading-tight font-semibold tracking-tight">What are you working toward?</h2>
+          <h2 id="main-aim" className="text-lg leading-snug font-semibold tracking-tight">What are you working toward?</h2>
           <p className="text-muted-foreground text-sm">A job, a role, a venture or work that does not exist yet, paid or not.</p>
         </div>
-        <Button asChild><Link href="/life/work/add">Choose an aim</Link></Button>
+        <Button asChild variant="outline" size="sm" className="w-fit"><Link href="/life/work/add">Choose an aim</Link></Button>
       </div>
-      <ul className="grid gap-2 sm:grid-cols-2">
+      <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
         {WAYS.map((x) => <li key={x.label}><Link href={x.href} className="hover:bg-accent grid rounded-lg border px-4 py-3 transition"><span className="font-medium">{x.label}</span><span className="text-muted-foreground text-sm">{x.note}</span></Link></li>)}
       </ul>
     </section>
@@ -84,7 +90,7 @@ function Figure({ label, value, note, href }: { label: string; value: string; no
 
 function Season({ s }: { s: Workspace }) {
   return (
-    <section aria-labelledby="season" className="order-first grid content-start gap-3 lg:order-none">
+    <section aria-labelledby="season" className="grid content-start gap-3">
       <h2 id="season" className="font-semibold">This season</h2>
       <div className="grid grid-cols-3 gap-3 lg:grid-cols-1">
         <Figure label="To earn a year" value={s.left !== null ? money(s.left) : "Not known"} note={s.left !== null ? "After income" : "Add costs in Home"} href="/plan" />
@@ -122,9 +128,23 @@ function Around({ t }: { t: { companies: Tally[]; positions: Tally[] } }) {
   );
 }
 
+/** The path the person follows, most recently updated first, with its tasks and steps done; null when none is followed. */
+async function following(userId: string): Promise<Following | null> {
+  const paths = (await lifeRecords(userId, "work")).filter((r) => r.kind === "path" && r.state === "following").sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  for (const r of paths) {
+    const code = typeof r.body.ref === "string" ? r.body.ref : "";
+    const job = code ? jobByCode(code) : null;
+    if (!job || !job.tasks.length) continue;
+    return { code, title: typeof r.body.title === "string" && r.body.title ? r.body.title : job.title, tasks: job.tasks, done: await stepsDone(userId, r.id) };
+  }
+  return null;
+}
+
 /**
- * Work's workspace (doc "Work design guide", Workspace): the main aim first, with the one act, writing toward it;
- * this season's three figures; the next steps toward the aim; then the other aims and the records, small.
+ * Work home (doc "Work and Scholē as Reflect apps", 2026-11-21): Continue first, the page's one filled button and only
+ * heavy border (the path followed, else a path to start from the top fit, else Find your crafts); then the jobs that fit
+ * and the crafts kept; the main aim, this season and the next steps in a side column on wide screens, after them on a
+ * phone; then the other aims and the records, small.
  */
 export default async function WorkPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const sp = await searchParams;
@@ -132,29 +152,39 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
   if (k === "inspired") redirect("/life/work");
   if (k) return LifeAppPage({ params: Promise.resolve({ app: "work" }), searchParams: Promise.resolve(sp) });
   const user = await requireUser();
-  const [s, signals, around] = await Promise.all([workspace(user.id), signalsOf(user.id), connectionTallies(user.id).catch(() => null)]);
+  const [s, signals, around, fit, path] = await Promise.all([workspace(user.id), signalsOf(user.id), connectionTallies(user.id).catch(() => null), workFit(user.id, 3), following(user.id)]);
   const main = s.main;
   const others = s.wanted.filter((w) => w !== main);
   const learn = main ? recommend(signals, undefined, 3) : [];
   const talks = main ? (await lifeActs(user.id, main.record.id)).filter((a) => a.kind === "talked").slice(0, 3) : [];
+  const keepsCrafts = fit.crafts.length > 0;
+  const top = fit.fits[0];
+  const continueCard = path ? <ContinuePath p={path} /> : !keepsCrafts ? <FindCrafts /> : top ? <StartPath fit={top} /> : null;
   return (
     <main className={PAGE}>
       <WorkHeader on="space" />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
-        {main ? <Hero w={main} /> : <NoAim />}
+        {continueCard}
 
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          {main ? (
-            <section aria-labelledby="next" className="grid content-start gap-3">
-              <h2 id="next" className="text-lg font-semibold tracking-tight">Next steps</h2>
-              <div className="grid gap-6 md:grid-cols-3">
-                <Steps title="Work for now" empty="No job covers what is left to earn at your hours." rows={s.now.slice(0, 3).map((x) => ({ key: x.job.code, href: `/life/work/jobs/${x.job.code}`, label: x.job.title, reason: x.why[0] ?? (x.pay ? `${money(x.pay)} a year` : "Pay not published") }))} />
-                <Steps title="Learn it in Scholē" empty={<>Nothing chosen for this aim yet. <Link href="/schole/browse" className="underline underline-offset-2">Browse Scholē</Link>.</>} rows={learn.map((p) => ({ key: `${p.item.kind}:${p.item.title}`, href: itemHref(p.item), label: p.item.title, reason: p.reason }))} />
-                <Steps title="People to talk with" empty={<>Talk with someone who does this work, then keep it on <Link href={`/life/work/${main.record.id}#talked`} className="underline underline-offset-2">the aim</Link>.</>} rows={talks.map((a) => ({ key: a.id, href: `/life/work/${main.record.id}#talked`, label: a.note ?? "Talked with someone doing it", reason: a.day }))} />
-              </div>
-            </section>
-          ) : <div />}
-          <Season s={s} />
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid content-start gap-8">
+            <HomeFits fits={fit.fits} venture={fit.ventures[0] ?? null} keepsCrafts={keepsCrafts} />
+            <HomeCrafts crafts={fit.crafts} />
+          </div>
+          <aside aria-label="Aim and season" className="grid content-start gap-8">
+            {main ? <Hero w={main} /> : <NoAim />}
+            <Season s={s} />
+            {main ? (
+              <section aria-labelledby="next" className="grid content-start gap-3">
+                <h2 id="next" className="font-semibold">Next steps</h2>
+                <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-1">
+                  <Steps title="Work for now" empty="No job covers what is left to earn at your hours." rows={s.now.slice(0, 3).map((x) => ({ key: x.job.code, href: `/life/work/jobs/${x.job.code}`, label: x.job.title, reason: x.why[0] ?? (x.pay ? `${money(x.pay)} a year` : "Pay not published") }))} />
+                  <Steps title="Learn it in Scholē" empty={<>Nothing chosen for this aim yet. <Link href="/schole/browse" className="underline underline-offset-2">Browse Scholē</Link>.</>} rows={learn.map((p) => ({ key: `${p.item.kind}:${p.item.title}`, href: itemHref(p.item), label: p.item.title, reason: p.reason }))} />
+                  <Steps title="People to talk with" empty={<>Talk with someone who does this work, then keep it on <Link href={`/life/work/${main.record.id}#talked`} className="underline underline-offset-2">the aim</Link>.</>} rows={talks.map((a) => ({ key: a.id, href: `/life/work/${main.record.id}#talked`, label: a.note ?? "Talked with someone doing it", reason: a.day }))} />
+                </div>
+              </section>
+            ) : null}
+          </aside>
         </div>
 
         <section aria-labelledby="others" className="grid gap-2">

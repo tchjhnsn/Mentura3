@@ -26,19 +26,20 @@ const stem = (w: string) => w.toLowerCase().replace(/[^a-z]/g, "").replace(/(ing
 const words = (s: string, min = 4) => s.split(/[\s,/()-]+/).filter((w) => w.length >= min).map(stem);
 
 /** The jobs a craft leads to: jobs whose title or a reported title shares a word with the craft ("Pottery" finds
- * "Potters"); a craft no title names falls back to the jobs its group names, by the title's first word. */
+ * "Potters"); a craft no title names falls back to the jobs its group names, by their title. */
 export function jobsForCraft(craft: Craft, jobs: readonly Job[]): Job[] {
   const own = words(craft.label, 5);
-  const direct = jobs.filter((j) => [j.title, ...j.titles].some((t) => own.some((w) => words(t).includes(w))));
+  // Machine operators share the craft's word ("Drawing Machine Setters") but not the craft, so they never match by name.
+  const direct = jobs.filter((j) => !/\bMachine\b/.test(j.title) && [j.title, ...j.titles].some((t) => own.some((w) => words(t).includes(w))));
   if (direct.length) return direct;
-  const named = (groupOf(craft.group)?.work ?? []).map((t) => stem(t.split(/[\s,]+/)[0]!));
-  return jobs.filter((j) => named.includes(stem(j.title.split(/[\s,]+/)[0]!)));
+  const named = groupOf(craft.group)?.work ?? [];
+  return jobs.filter((j) => named.some((t) => j.title === t || j.title.startsWith(`${t},`) || j.title.startsWith(`${t} and `)));
 }
 
 /** O*NET's basic skills (content and process) are shared by nearly every job, so they never count as a shared skill. */
 const BASIC = new Set(["Reading Comprehension", "Active Listening", "Writing", "Speaking", "Mathematics", "Science", "Critical Thinking", "Active Learning", "Learning Strategies", "Monitoring"]);
 
-const stageLabel = (i: number) => STAGES.at(i)?.label ?? null;
+const stageLabel = (i: number) => (i >= 0 ? STAGES.at(i)?.label ?? null : null);
 
 /** Ranks jobs by fit, each with its reasons; jobs with no reason are left out. */
 export function fitJobs(jobs: readonly Job[], p: { holland: readonly Holland[]; crafts: readonly CraftFact[]; skills?: SkillTable | null; n?: number }): Fit[] {

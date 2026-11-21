@@ -87,6 +87,8 @@ inductive Noun
   | «end»
   /-- inspiration (kept; app work; kinds work:inspiration). Work one is drawn to, and why Standard: ours. -/
   | «inspiration»
+  /-- career pathway (kept; app work; kinds work:path). A sequence of steps toward an occupation: the tasks and learning that lead into it Standard: U.S. Department of Labor, career pathways (Workforce Innovation and Opportunity Act, 2014, sec. 3(7)). -/
+  | «careerPathway»
   /-- citizenship (kept; app polis; kinds polis:civic). Sharing in judging and ruling in a polis (Politics III.1, 1275a22); residence and districts Standard: Aristotle, Politics III.1. -/
   | «citizenship»
   /-- standing (kept; app polis; kinds polis:standing). Honour earned and deserved (Nicomachean Ethics IV.3) Standard: Aristotle, Nicomachean Ethics IV.3. -/
@@ -166,6 +168,7 @@ def Noun.name : Noun → String
   | .«preference» => "preference"
   | .«end» => "end"
   | .«inspiration» => "inspiration"
+  | .«careerPathway» => "career pathway"
   | .«citizenship» => "citizenship"
   | .«standing» => "standing"
   | .«duty» => "duty"
@@ -186,7 +189,7 @@ def Noun.name : Noun → String
   | .«lifeChange» => "life change"
 
 /-- [D] Every noun, once. -/
-def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«presentation», .«lifeChange»]
+def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«careerPathway», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«presentation», .«lifeChange»]
 
 /-- [D] The nouns a noun names in broader. -/
 def Noun.broaderNouns : Noun → List Noun
@@ -216,6 +219,7 @@ def Noun.broaderNouns : Noun → List Noun
   | .«preference» => []
   | .«end» => []
   | .«inspiration» => []
+  | .«careerPathway» => []
   | .«citizenship» => []
   | .«standing» => []
   | .«duty» => []
@@ -263,6 +267,7 @@ def Noun.broaderCategories : Noun → List Category
   | .«preference» => [.«quality»]
   | .«end» => [.«relation»]
   | .«inspiration» => [.«relation»]
+  | .«careerPathway» => [.«relation»]
   | .«citizenship» => [.«relation»]
   | .«standing» => [.«relation»]
   | .«duty» => [.«relation»]
@@ -310,6 +315,7 @@ def Noun.rank : Noun → Nat
   | .«preference» => 0
   | .«end» => 0
   | .«inspiration» => 0
+  | .«careerPathway» => 0
   | .«citizenship» => 0
   | .«standing» => 0
   | .«duty» => 0
@@ -357,6 +363,7 @@ def Noun.category : Noun → Category
   | .«preference» => .«quality»
   | .«end» => .«relation»
   | .«inspiration» => .«relation»
+  | .«careerPathway» => .«relation»
   | .«citizenship» => .«relation»
   | .«standing» => .«relation»
   | .«duty» => .«relation»

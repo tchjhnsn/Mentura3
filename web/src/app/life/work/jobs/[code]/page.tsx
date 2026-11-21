@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { familyOf, INTERESTS, ZONES } from "@reflect/core/work-browse";
 import { PAGE } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
 import { requireUser } from "@/server/session";
 import { lifeRecords } from "@/server/life-store";
 import { CREDIT, jobByCode } from "@/server/work-catalog";
@@ -27,6 +28,7 @@ export default async function JobPage({ params }: { params: Promise<{ code: stri
     <main className={PAGE}>
       <EntryTop kind="Jobs that exist" kindHref="/life/work/browse?m=jobs" title={job.title}>
         {fam ? <p className="text-sm"><Link href={`/life/work/browse?m=jobs&family=${fam.id}`} className="text-muted-foreground underline-offset-2 hover:underline">{fam.label}</Link></p> : null}
+        <div><Button asChild size="sm" variant="outline"><Link href={`/life/work/paths/${code}`}>Follow as a career path</Link></Button></div>
       </EntryTop>
       <div className="mt-6 grid max-w-4xl grid-cols-[minmax(0,1fr)] gap-8">
         <p className="text-base leading-relaxed">{job.about}</p>

@@ -283,11 +283,11 @@ export default async function SpacePage({ searchParams }: { searchParams: Promis
     <main className={PAGE}>
       <LearnHeader on="space" />
       <div className={`mt-4 ${SPACE}`}>
-        <Doors />
         <section className="grid grid-cols-1 gap-3" aria-label="Continue">
           <h2 className="text-xl font-semibold tracking-tight">Continue</h2>
           <Hero c={last} outline={false} />
         </section>
+        <Doors />
         {rest.length ? (
           <section className="grid grid-cols-1 gap-3">
             <Head title="Under way" href="/schole/shelves" note="" />

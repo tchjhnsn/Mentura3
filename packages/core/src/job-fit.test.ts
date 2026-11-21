@@ -36,6 +36,10 @@ describe("jobs that fit", () => {
     expect(fits[0]!.reasons).toEqual(["You practise carpentry (competent)", "Fits your Realistic interest"]);
     expect(fits.every((f) => f.reasons.length > 0)).toBe(true);
   });
+  it("says practise with no stage when none is set", () => {
+    const fits = fitJobs(JOBS, { holland: [], crafts: [{ craft: carpentry, practising: true, stage: -1 }] });
+    expect(fits[0]!.reasons).toEqual(["You practise carpentry"]);
+  });
   it("shows interest-only matches when the person keeps no crafts", () => {
     const fits = fitJobs(JOBS, { holland: ["C"], crafts: [] });
     expect(fits.map((f) => f.job.title)).toEqual(["Bookkeeping, Accounting, and Auditing Clerks"]);
