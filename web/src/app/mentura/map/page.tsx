@@ -1,7 +1,7 @@
 "use client";
 
-// M0 Screen map, after the Venture Studio's screen map (no Contra reference): every Mentura screen and shared part by
-// number, with links to open each screen and the Contra screen it follows.
+// M0 Screen map, after the Venture Studio's screen map (no outside reference): every Mentura screen and shared part by
+// number, with links to open each screen and the Mobbin screen or flow it is built after (data.ts REFS).
 import Link from "next/link";
 import { ExternalLinkIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ export default function ScreenMap() {
                       {dynamic && sample ? <> <span className="text-muted-foreground font-sans">for example</span> <Link href={sample} className="underline-offset-4 hover:underline">{sample}</Link></> : null}
                     </div>
                     <p className="text-muted-foreground mt-1 text-xs">{s.job}</p>
-                    {s.ref ? <a href={s.ref} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground mt-1 inline-flex items-center gap-1 text-xs underline">Contra reference<ExternalLinkIcon className="size-3" /></a> : null}
+                    {s.ref ? <a href={s.ref.url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground mt-1 inline-flex items-center gap-1 text-xs underline">Built after {s.ref.name}<ExternalLinkIcon className="size-3" /></a> : null}
                   </div>
                 </li>
               );

@@ -1,14 +1,16 @@
 "use client";
 
-// M15 How you appear, after Contra's About editor: choose what of your shared profile Mentura shows, and in which words.
-// The profile and account are shared with Reflect; this page sets only how Mentura presents them.
+// M15 How you appear, after Contra's Adding profile details (data.ts REFS.editProfile): choose what of your shared profile Mentura shows, and in which words.
+// The profile and account are shared with Reflect; this page sets only how Mentura presents them. Founder, investor,
+// operator and builder are attributes on the one account, any number at once, not separate workspaces.
 import { useState } from "react";
 import Link from "next/link";
 import { CheckIcon, MapPinIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useMentura } from "@/components/mentura/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Num } from "@/components/studio/bits";
 import { ME, POSTS, personOf, ventureOf, type Role } from "@/components/mentura/data";
 import { Face } from "@/components/mentura/parts";
@@ -30,10 +32,11 @@ export default function HowYouAppear() {
   const [show, setShow] = useState<Record<Show, boolean>>({ line: true, city: true, ventures: true, open: true, socials: false, posts: true });
   const [headline, setHeadline] = useState(me.line);
   const [looking, setLooking] = useState(me.open ?? "");
-  const [role, setRole] = useState<Role>(me.role);
+  const { roles: kept, setRoles, say, posts: mine } = useMentura();
+  const [roles, setPicked] = useState<Role[]>(kept);
   const [saved, setSaved] = useState(false);
   const change = () => setSaved(false);
-  const posts = POSTS.filter((p) => p.by === ME).length;
+  const posts = POSTS.filter((p) => p.by === ME).length + mine.length;
 
   return (
     <div data-virtu-screen="M15" className="px-4 py-5 md:px-8">
@@ -57,12 +60,15 @@ export default function HowYouAppear() {
                 <span className="font-medium">Looking for</span>
                 <Input value={looking} onChange={(e) => { setLooking(e.target.value); change(); }} placeholder="A hardware co-founder, a first check, a designer" maxLength={80} />
               </label>
-              <div className="grid gap-1.5 text-sm">
-                <span className="font-medium" id="role-label">Role</span>
-                <Select value={role} onValueChange={(r) => { setRole(r as Role); change(); }}>
-                  <SelectTrigger className="w-full sm:w-56" aria-labelledby="role-label"><SelectValue /></SelectTrigger>
-                  <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                </Select>
+              <div className="grid gap-1.5 text-sm" role="group" aria-labelledby="roles-label">
+                <span className="font-medium" id="roles-label">You are</span>
+                <div className="flex flex-wrap gap-2">
+                  {ROLES.map((r) => {
+                    const on = roles.includes(r);
+                    return <button key={r} type="button" aria-pressed={on} onClick={() => { setPicked(on ? roles.filter((x) => x !== r) : ROLES.filter((x) => x === r || roles.includes(x))); change(); }} className={cn("flex items-center gap-1.5 rounded-full border px-3 py-1.5", on ? "border-foreground bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>{on ? <CheckIcon className="size-3.5" /> : null}{r}</button>;
+                  })}
+                </div>
+                <span className="text-muted-foreground text-xs">Pick all that are true. A founder who also writes checks is both. People find you by each one in Discover.</span>
               </div>
             </div>
           </section>
@@ -83,7 +89,7 @@ export default function HowYouAppear() {
 
           <div className="relative flex flex-wrap items-center gap-3">
             <Num n="M15.3" className="absolute -top-2 left-0" />
-            <Button onClick={() => setSaved(true)}>Save</Button>
+            <Button disabled={!roles.length} onClick={() => { setRoles(roles); setSaved(true); say("Saved. Your profile shows it now."); }}>Save</Button>
             {saved ? <span className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400"><CheckIcon className="size-4" />Saved. Your Mentura profile now shows this.</span> : null}
             <Link href="/settings/account" className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline sm:ml-auto">Account settings, shared with Reflect</Link>
           </div>
@@ -96,7 +102,7 @@ export default function HowYouAppear() {
             <div className="h-20" style={{ background: `linear-gradient(135deg, oklch(0.78 0.11 ${v?.hue ?? me.hue}), oklch(0.42 0.13 ${((v?.hue ?? me.hue) + 40) % 360}))` }} />
             <div className="-mt-8 px-4 pb-4">
               <span className="ring-card inline-block rounded-full ring-4"><Face handle={ME} size={64} name={false} /></span>
-              <p className="mt-2 text-xs font-medium">{role}</p>
+              <p className="mt-2 text-xs font-medium">{roles.map((r, i) => (i ? r.toLowerCase() : r)).join(" and ")}</p>
               {show.open && looking.trim() ? <p className="mt-0.5 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400"><span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />{looking}</p> : null}
               <p className="mt-1 text-lg font-semibold">{me.name}</p>
               {show.line && headline.trim() ? <p className="text-muted-foreground text-sm">{headline}</p> : null}

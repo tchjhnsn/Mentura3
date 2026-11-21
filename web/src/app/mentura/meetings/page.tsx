@@ -1,6 +1,6 @@
 "use client";
 
-// M14 Meetings, after Contra's dashboard (data.ts, CONTRA.dashboard): meetings with people met in Mentura, upcoming and
+// M14 Meetings, after ClickUp's call beside its channel (data.ts REFS.meeting): meetings with people met in Mentura, upcoming and
 // past, each with its guests and a line of prep. New meeting opens the real meetings app at /meetings.
 import { useState } from "react";
 import Link from "next/link";

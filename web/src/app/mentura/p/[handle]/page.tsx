@@ -1,6 +1,6 @@
 "use client";
 
-// M7 Someone's profile, after Contra's profile and About pages: what a person makes and does; follow or message them.
+// M7 Someone's profile, after Contra's Profile seen by others (data.ts REFS.profile): what a person makes and does; follow or message them.
 import { use } from "react";
 import { ME } from "@/components/mentura/data";
 import { ProfileView } from "@/components/mentura/profile-view";

@@ -1,6 +1,6 @@
 "use client";
 
-// M10 Events, after Contra's home and its event cards: tabs for upcoming, going and hosting, events as large rows with
+// M10 Events, after Luma's city events (data.ts REFS.events; Contra has no events): tabs for upcoming, going and hosting, events as large rows with
 // the date block, host and who is going, and a dialog to host an event (?new=1 opens it).
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Num } from "@/components/studio/bits";
 import { EVENTS, ME, SCREENS, type Event } from "@/components/mentura/data";
+import { useMentura } from "@/components/mentura/store";
 import { Face, Faces, Head } from "@/components/mentura/parts";
 
 const TABS = ["Upcoming", "Going", "Hosting"] as const;
@@ -29,8 +30,10 @@ function Events() {
   const [mine, setMine] = useState<Event[]>([]);
   const [open, setOpen] = useState(() => params.get("new") === "1");
 
+  const { going } = useMentura();
   const all = [...mine, ...EVENTS];
-  const shown = all.filter((e) => (tab === "Going" ? e.going.includes(ME) : tab === "Hosting" ? e.host === ME : true));
+  const isGoing = (e: Event) => going.includes(e.id) || e.host === ME;
+  const shown = all.filter((e) => (tab === "Going" ? isGoing(e) : tab === "Hosting" ? e.host === ME : true));
   const add = (e: Event) => { setMine((m) => [e, ...m]); setTab("Hosting"); setOpen(false); };
 
   return (
@@ -42,7 +45,7 @@ function Events() {
       <div className="relative flex gap-1 overflow-x-auto border-b pb-px">
         <Num n="M10.1" className="absolute -top-2 right-0" />
         {TABS.map((t) => {
-          const count = all.filter((e) => (t === "Going" ? e.going.includes(ME) : t === "Hosting" ? e.host === ME : true)).length;
+          const count = all.filter((e) => (t === "Going" ? isGoing(e) : t === "Hosting" ? e.host === ME : true)).length;
           return (
             <button key={t} type="button" onClick={() => setTab(t)} aria-pressed={tab === t}
               className={cn("-mb-px shrink-0 border-b-2 px-3 py-2 text-sm", tab === t ? "border-foreground font-medium" : "text-muted-foreground hover:text-foreground border-transparent")}>

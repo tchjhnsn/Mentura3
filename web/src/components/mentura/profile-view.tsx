@@ -1,7 +1,7 @@
 "use client";
 
 // The profile view shared by M6 My profile and M7 Someone's profile, after Contra's profile and About pages: a header
-// with a large face, role, the "Open to" line, name, line and actions, "Followed by" faces and a banner; then tabs for
+// with a large face, roles (attributes on the one account), the "Open to" line, name, line and actions, "Followed by" faces and a banner; then tabs for
 // Work, Posts, Ventures, Events and About, chosen by ?tab=. The profile and account are shared with Reflect; Mentura
 // shows them in public for founding work.
 import { Suspense } from "react";
@@ -11,8 +11,9 @@ import { BriefcaseIcon, MapPinIcon, PlusIcon, Share2Icon, SparklesIcon } from "l
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Num } from "@/components/studio/bits";
-import { EVENTS, PEOPLE, POSTS, VENTURES, personOf, ventureOf, type Person } from "./data";
+import { EVENTS, ME, PEOPLE, POSTS, VENTURES, isA, messageHref, personOf, roleLine, ventureOf, type Person } from "./data";
 import { EventRow, Face, Faces, FollowButton, PostCard, VentureCard } from "./parts";
+import { useAllPosts, useMentura } from "./store";
 
 const TABS = ["Work", "Posts", "Ventures", "Events", "About"] as const;
 type Tab = (typeof TABS)[number];
@@ -32,7 +33,9 @@ function View({ handle, mine, n }: { handle: string; mine?: boolean; n: string }
   const params = useSearchParams();
   const raw = params.get("tab");
   const tab: Tab = (TABS as readonly string[]).includes(raw ?? "") ? (raw as Tab) : "Work";
-  const p = personOf(handle);
+  const { roles } = useMentura();
+  const found = personOf(handle);
+  const p: Person = found.handle === ME ? { ...found, roles } : found;
   const base = mine ? "/mentura/profile" : `/mentura/p/${p.handle}`;
 
   return (
@@ -62,13 +65,19 @@ function Header({ p, mine, n }: { p: Person; mine?: boolean; n: string }) {
   const v = p.venture ? ventureOf(p.venture) : undefined;
   const followedBy = PEOPLE.filter((x) => x.handle !== p.handle).slice(0, 3);
   const hue = v?.hue ?? p.hue;
+  const { has, say } = useMentura();
+  const followers = p.followers + (has("follows", p.handle) ? 1 : 0);
+  const share = async () => {
+    const url = `${window.location.origin}${mine ? `/mentura/p/${p.handle}` : window.location.pathname}`;
+    try { await navigator.clipboard.writeText(url); say("Link to the profile copied."); } catch { say(url); }
+  };
   return (
     <section className="relative grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] md:items-start">
       <Num n={n} className="absolute -top-2 left-0" />
       <Num n={`${n}.1`} className="absolute -top-2 right-0" />
       <div className="min-w-0 pt-3">
         <Face handle={p.handle} size={88} name={false} />
-        <p className="mt-4 text-sm font-medium">{p.role}{p.fund ? ` at ${p.fund}` : ""}</p>
+        <p className="mt-4 text-sm font-medium">{roleLine(p)}</p>
         {p.open ? <p className="mt-1 flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400"><span className="size-2 shrink-0 rounded-full bg-emerald-500" />{p.open}</p> : null}
         <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words md:text-4xl">{p.name}</h1>
         <p className="text-muted-foreground mt-2 max-w-xl text-[15px] leading-relaxed">{p.line}</p>
@@ -77,15 +86,15 @@ function Header({ p, mine, n }: { p: Person; mine?: boolean; n: string }) {
             <Button asChild><Link href="/mentura/profile/edit">Edit profile</Link></Button>
           ) : (
             <>
-              <Button asChild><Link href="/mentura/messages">Message</Link></Button>
+              <Button asChild><Link href={messageHref(p.handle)}>Message</Link></Button>
               <FollowButton handle={p.handle} size="sm" />
             </>
           )}
-          <Button variant="outline" size="icon-sm" aria-label="Share profile" title="Share profile"><Share2Icon /></Button>
+          <Button variant="outline" size="icon-sm" aria-label="Share profile" title="Share profile" onClick={share}><Share2Icon /></Button>
         </div>
         <div className="text-muted-foreground mt-4 flex items-center gap-2 text-xs">
           <Faces handles={followedBy.map((x) => x.handle)} size={22} />
-          <span className="min-w-0">Followed by {followedBy.slice(0, 2).map((x) => x.name.split(" ")[0]).join(", ")} and {Math.max(p.followers - 2, 0).toLocaleString()} others</span>
+          <span className="min-w-0">Followed by {followedBy.slice(0, 2).map((x) => x.name.split(" ")[0]).join(", ")} and {Math.max(followers - 2, 0).toLocaleString()} others</span>
         </div>
       </div>
       <div className="relative grid aspect-[16/10] content-end overflow-hidden rounded-2xl p-4 text-white" style={{ background: `linear-gradient(135deg, oklch(0.78 0.11 ${hue}), oklch(0.42 0.13 ${(hue + 40) % 360}))` }}>
@@ -119,7 +128,7 @@ function Work({ p, mine, n }: { p: Person; mine?: boolean; n: string }) {
           </Link>
         ))}
         {mine ? (
-          <Link href="/mentura" className="text-muted-foreground hover:text-foreground hover:border-foreground/30 grid aspect-[4/3] place-items-center rounded-xl border border-dashed text-sm">
+          <Link href="/mentura?compose=1" className="text-muted-foreground hover:text-foreground hover:border-foreground/30 grid aspect-[4/3] place-items-center rounded-xl border border-dashed text-sm">
             <span className="flex flex-col items-center gap-2"><PlusIcon className="size-5" />Add work</span>
           </Link>
         ) : null}
@@ -130,7 +139,7 @@ function Work({ p, mine, n }: { p: Person; mine?: boolean; n: string }) {
 }
 
 function Posts({ p, n }: { p: Person; n: string }) {
-  const posts = POSTS.filter((x) => x.by === p.handle);
+  const posts = useAllPosts(POSTS).filter((x) => x.by === p.handle);
   return (
     <section className="relative max-w-2xl space-y-4">
       <Num n={`${n}.4`} className="absolute -top-2 right-0" />
@@ -146,7 +155,7 @@ function Ventures({ p, n }: { p: Person; n: string }) {
     <section className="relative space-y-6">
       <Num n={`${n}.5`} className="absolute -top-2 right-0" />
       {ventures.length ? <div className="grid gap-4 md:grid-cols-2">{ventures.map((v, i) => <VentureCard key={v.slug} v={v} first={i === 0} />)}</div> : null}
-      {p.role === "Investor" ? (
+      {isA(p, "Investor") ? (
         <div>
           <h2 className="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide">Backed</h2>
           <ul className="divide-y rounded-xl border">
@@ -161,7 +170,7 @@ function Ventures({ p, n }: { p: Person; n: string }) {
           </ul>
         </div>
       ) : null}
-      {!ventures.length && p.role !== "Investor" ? <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-sm">No ventures yet.</p> : null}
+      {!ventures.length && !isA(p, "Investor") ? <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-sm">No ventures yet.</p> : null}
     </section>
   );
 }
@@ -196,7 +205,7 @@ function About({ p, n }: { p: Person; n: string }) {
         <p className="text-muted-foreground mt-2 text-sm"><span className="text-foreground font-medium">{p.following.toLocaleString()}</span> following · <span className="text-foreground font-medium">{p.followers.toLocaleString()}</span> followers</p>
         <div className="mt-4 max-w-2xl space-y-3 text-[15px] leading-relaxed">
           <p>{p.line}</p>
-          <p>{first} is a {p.role.toLowerCase()} in {p.city}{v ? `, building ${v.name}: ${v.line.charAt(0).toLowerCase()}${v.line.slice(1)}` : p.fund ? `, writing checks through ${p.fund}.` : "."}</p>
+          <p>{first} is {/^[AEIOU]/.test(p.roles[0] ?? "") ? "an" : "a"} {p.roles.map((r) => r.toLowerCase()).join(" and ")} in {p.city}{v ? `, building ${v.name}: ${v.line.charAt(0).toLowerCase()}${v.line.slice(1)}` : p.fund ? `, writing checks through ${p.fund}.` : "."}</p>
           <p>Ask {first} about {p.tags.map((t) => t.toLowerCase()).join(", ")}.</p>
         </div>
       </div>

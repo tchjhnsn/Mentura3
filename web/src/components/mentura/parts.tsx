@@ -1,13 +1,15 @@
 "use client";
 
 // Mentura's shared parts, each numbered (data.ts, PARTS). People are faces with names, never pills.
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { BookmarkIcon, HeartIcon, ImageIcon, MessageCircleIcon, Repeat2Icon, SmileIcon, HashIcon } from "lucide-react";
+import { BookmarkIcon, HeartIcon, MessageCircleIcon, Repeat2Icon, HashIcon, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Num } from "@/components/studio/bits";
-import { ME, personOf, ventureOf, type Event, type Post, type PublicVenture } from "./data";
+import { ME, personOf, roleLine, TOPICS, ventureOf, type Event, type Post, type PublicVenture } from "./data";
+import { useMentura } from "./store";
 
 /** C6 Face, with the name beside it unless told not to. */
 export function Face({ handle, size = 36, name = true, sub, plain }: { handle: string; size?: number; name?: boolean; sub?: string; /** No link, for use inside another link. */ plain?: boolean }) {
@@ -18,7 +20,7 @@ export function Face({ handle, size = 36, name = true, sub, plain }: { handle: s
   return (
     <Link href={href(handle)} className="inline-flex min-w-0 items-center gap-2.5">
       {dot}
-      <span className="min-w-0"><span className="block truncate text-sm font-medium hover:underline">{p.name}</span><span className="text-muted-foreground block truncate text-xs">{sub ?? `${p.role}${p.fund ? ` at ${p.fund}` : ""}`}</span></span>
+      <span className="min-w-0"><span className="block truncate text-sm font-medium hover:underline">{p.name}</span><span className="text-muted-foreground block truncate text-xs">{sub ?? roleLine(p)}</span></span>
     </Link>
   );
 }
@@ -31,9 +33,10 @@ export function Faces({ handles, size = 24 }: { handles: string[]; size?: number
 
 /** C7 Follow button. */
 export function FollowButton({ handle, size = "sm" }: { handle: string; size?: "sm" | "xs" }) {
-  const [on, setOn] = useState(false);
+  const { has, toggle, say } = useMentura();
   if (handle === ME) return null;
-  return <Button variant={on ? "ghost" : "outline"} size={size} onClick={(e) => { e.preventDefault(); setOn(!on); }} aria-pressed={on}>{on ? "Following" : "Follow"}</Button>;
+  const on = has("follows", handle);
+  return <Button variant={on ? "ghost" : "outline"} size={size} onClick={(e) => { e.preventDefault(); toggle("follows", handle); if (!on) say(`Following ${personOf(handle).name}. Their posts show under Following.`); }} aria-pressed={on}>{on ? "Following" : "Follow"}</Button>;
 }
 
 const KIND_TONE: Record<Post["kind"], string> = { Made: "text-emerald-700 dark:text-emerald-400", Doing: "text-sky-700 dark:text-sky-400", Asking: "text-amber-700 dark:text-amber-400", Milestone: "text-fuchsia-700 dark:text-fuchsia-400", Note: "text-muted-foreground" };
@@ -41,8 +44,11 @@ const KIND_TONE: Record<Post["kind"], string> = { Made: "text-emerald-700 dark:t
 /** C4 Post: who, what they made or are doing, the venture it belongs to, and the reactions. */
 export function PostCard({ post, first, full }: { post: Post; first?: boolean; full?: boolean }) {
   const p = personOf(post.by);
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const { has, toggle, replies, say } = useMentura();
+  const liked = has("likes", post.id);
+  const saved = has("saved", post.id);
+  const reposted = has("reposts", post.id);
+  const mine = replies[post.id]?.length ?? 0;
   return (
     <article className="bg-card relative rounded-xl border p-4 md:p-5">
       {first ? <Num n="C4" className="absolute -top-2 left-4" /> : null}
@@ -66,10 +72,10 @@ export function PostCard({ post, first, full }: { post: Post; first?: boolean; f
             {post.tags.map((t) => <Link key={t} href={`/mentura?topic=${t}`} className="text-muted-foreground hover:text-foreground text-xs">#{t}</Link>)}
           </div>
           <div className="text-muted-foreground mt-3 flex items-center gap-5 text-xs">
-            <button type="button" onClick={() => setLiked(!liked)} aria-pressed={liked} className={cn("flex items-center gap-1 hover:text-foreground", liked && "text-rose-600")}><HeartIcon className={cn("size-4", liked && "fill-current")} />{post.likes + (liked ? 1 : 0)}</button>
-            <Link href={`/mentura/post/${post.id}`} className="flex items-center gap-1 hover:text-foreground"><MessageCircleIcon className="size-4" />{post.replies}</Link>
-            <span className="flex items-center gap-1"><Repeat2Icon className="size-4" />{post.reposts}</span>
-            <button type="button" onClick={() => setSaved(!saved)} aria-pressed={saved} aria-label="Save" className="ml-auto hover:text-foreground"><BookmarkIcon className={cn("size-4", saved && "fill-current text-foreground")} /></button>
+            <button type="button" onClick={() => toggle("likes", post.id)} aria-pressed={liked} className={cn("flex items-center gap-1 hover:text-foreground", liked && "text-rose-600")}><HeartIcon className={cn("size-4", liked && "fill-current")} />{post.likes + (liked ? 1 : 0)}</button>
+            <Link href={`/mentura/post/${post.id}`} className="flex items-center gap-1 hover:text-foreground"><MessageCircleIcon className="size-4" />{post.replies + mine}</Link>
+            <button type="button" onClick={() => { toggle("reposts", post.id); if (!reposted) say("Reposted to your followers."); }} aria-pressed={reposted} aria-label="Repost" className={cn("flex items-center gap-1 hover:text-foreground", reposted && "text-emerald-600")}><Repeat2Icon className="size-4" />{post.reposts + (reposted ? 1 : 0)}</button>
+            <button type="button" onClick={() => { toggle("saved", post.id); if (!saved) say("Saved. Find it under Saved on Home."); }} aria-pressed={saved} aria-label="Save" className="ml-auto hover:text-foreground"><BookmarkIcon className={cn("size-4", saved && "fill-current text-foreground")} /></button>
           </div>
         </div>
       </div>
@@ -77,23 +83,34 @@ export function PostCard({ post, first, full }: { post: Post; first?: boolean; f
   );
 }
 
-/** C5 Composer: say what you made or are doing. Posting adds it to the top of the feed. */
-export function Composer({ onPost, placeholder }: { onPost: (text: string, kind: Post["kind"]) => void; placeholder?: string }) {
+/** C5 Composer, after Contra's "What are you working on?" box: say what you made or are doing, its kind and its tags.
+ * Posting adds it to the top of the feed and to your profile (store.tsx). `focus` puts the cursor in it (Create, Post). */
+export function Composer({ onPost, placeholder, focus }: { onPost: (text: string, kind: Post["kind"], tags: string[]) => void; placeholder?: string; focus?: boolean }) {
   const [text, setText] = useState("");
   const [kind, setKind] = useState<Post["kind"]>("Made");
+  const [tags, setTags] = useState<string[]>([]);
+  const box = useRef<HTMLTextAreaElement>(null);
   const me = personOf(ME);
+  useEffect(() => { if (focus) box.current?.focus(); }, [focus]);
   return (
     <div className="bg-card relative rounded-xl border p-4">
       <Num n="C5" className="absolute -top-2 left-4" />
       <div className="flex gap-3">
         <Face handle={ME} size={40} name={false} />
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={2} placeholder={placeholder ?? `What are you making, ${me.name.split(" ")[0]}?`} aria-label="Write a post"
+        <textarea ref={box} value={text} onChange={(e) => setText(e.target.value)} rows={2} placeholder={placeholder ?? `What are you working on, ${me.name.split(" ")[0]}?`} aria-label="Write a post"
           className="placeholder:text-muted-foreground min-h-14 flex-1 resize-none bg-transparent pt-2 text-[15px] outline-none" />
       </div>
+      {tags.length ? <div className="mt-1 flex flex-wrap gap-1.5 pl-[52px]">{tags.map((t) => <button key={t} type="button" onClick={() => setTags(tags.filter((x) => x !== t))} className="bg-muted hover:bg-accent flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs">#{t}<XIcon className="size-3" /></button>)}</div> : null}
       <div className="mt-2 flex flex-wrap items-center gap-1 pl-[52px]">
-        {(["Made", "Doing", "Asking", "Milestone"] as const).map((k) => <button key={k} type="button" onClick={() => setKind(k)} className={cn("rounded-md px-2 py-1 text-xs", kind === k ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/60")}>{k === "Asking" ? "Asking for" : k}</button>)}
-        <span className="text-muted-foreground ml-1 flex items-center gap-2"><ImageIcon className="size-4" /><SmileIcon className="size-4" /><HashIcon className="size-4" /></span>
-        <Button className="ml-auto" size="sm" disabled={!text.trim()} onClick={() => { onPost(text.trim(), kind); setText(""); }}>Post</Button>
+        {(["Made", "Doing", "Asking", "Milestone"] as const).map((k) => <button key={k} type="button" onClick={() => setKind(k)} aria-pressed={kind === k} className={cn("rounded-md px-2 py-1 text-xs", kind === k ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/60")}>{k === "Asking" ? "Asking for" : k}</button>)}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild><button type="button" className="text-muted-foreground hover:bg-accent/60 ml-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs"><HashIcon className="size-3.5" />Add tags</button></DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Topics</DropdownMenuLabel>
+            {TOPICS.map((t) => <DropdownMenuCheckboxItem key={t} checked={tags.includes(t)} onSelect={(e) => e.preventDefault()} onCheckedChange={(on) => setTags(on ? [...tags, t] : tags.filter((x) => x !== t))}>#{t}</DropdownMenuCheckboxItem>)}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button className="ml-auto" size="sm" disabled={!text.trim()} onClick={() => { onPost(text.trim(), kind, tags); setText(""); setTags([]); }}>Post</Button>
       </div>
     </div>
   );

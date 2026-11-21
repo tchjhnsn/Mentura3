@@ -1,8 +1,9 @@
 "use client";
 
-// M5 Messages, after Contra's messages (data.ts, CONTRA.messages): a list with search and the tabs Conversations and
+// M5 Messages, after Contra's messages (data.ts REFS.messages): a list with search and the tabs Conversations and
 // Requests on the left, the chosen conversation on the right with bubbles and a send box. On a phone the list shows
-// first and the conversation replaces it when one is chosen.
+// first and the conversation replaces it when one is chosen. ?to=<handle> starts a new conversation (Message on a
+// profile). What you send and accept is kept across screens (store.tsx).
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -12,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Num } from "@/components/studio/bits";
 import { CONVOS, ME, personOf, REQUESTS, type Convo } from "@/components/mentura/data";
 import { Face } from "@/components/mentura/parts";
+import { useMentura } from "@/components/mentura/store";
 
 type Msg = Convo["messages"][number];
 type Tab = "conversations" | "requests";
@@ -32,20 +34,22 @@ function Inbox() {
   const params = useSearchParams();
   const tab: Tab = params.get("tab") === "requests" ? "requests" : "conversations";
   const picked = params.get("c");
-  const list = tab === "requests" ? REQUESTS : CONVOS;
+  const to = params.get("to");
+  const { sent, send: keep, answered: answer, answer: setAnswer, read: seen, markRead } = useMentura();
+  const started = Object.keys(sent).filter((id) => id.startsWith("new-")).map((id) => id.slice(4));
+  const fresh = [...new Set([...(to ? [to] : []), ...started])].filter((h) => h !== ME && !CONVOS.some((c) => c.with === h) && !REQUESTS.some((c) => c.with === h));
+  const list = tab === "requests" ? REQUESTS : [...fresh.map((h): Convo => ({ id: `new-${h}`, with: h, unread: 0, messages: [] })), ...CONVOS];
   const [query, setQuery] = useState("");
-  const [sent, setSent] = useState<Record<string, Msg[]>>({});
-  const [answer, setAnswer] = useState<Record<string, "accepted" | "declined">>({});
-  const [read, setRead] = useState<Record<string, boolean>>({});
+  const read: Record<string, boolean> = Object.fromEntries(seen.map((id) => [id, true]));
 
   const shown = list.filter((c) => personOf(c.with).name.toLowerCase().includes(query.trim().toLowerCase()));
-  const chosen = list.find((c) => c.id === picked) ?? list[0];
-  const send = (id: string, text: string) => setSent((s) => ({ ...s, [id]: [...(s[id] ?? []), { from: ME, text, when: "Now" }] }));
+  const chosen = list.find((c) => c.id === (to ? `new-${to}` : picked)) ?? list.find((c) => c.id === picked) ?? list[0];
+  const send = (id: string, text: string) => keep(id, text);
 
   return (
     <div data-virtu-screen="M5" className="flex h-[calc(100dvh-3rem)] min-w-0 md:h-[calc(100dvh-1rem)]">
       {/* The list: hidden on a phone once a conversation is chosen. */}
-      <section className={cn("relative flex w-full min-w-0 flex-col border-r md:w-80 md:shrink-0", picked && "max-md:hidden")}>
+      <section className={cn("relative flex w-full min-w-0 flex-col border-r md:w-80 md:shrink-0", (picked || to) && "max-md:hidden")}>
         <Num n="M5.1" className="absolute top-2 right-2" />
         <div className="space-y-3 border-b px-4 pt-4 pb-3">
           <div className="flex items-center gap-2"><Num n="M5" /><h1 className="text-xl font-semibold tracking-tight">Messages</h1></div>
@@ -73,7 +77,7 @@ function Inbox() {
             const active = chosen?.id === c.id;
             return (
               <li key={c.id}>
-                <Link href={linkOf(tab, c.id)} onClick={() => setRead((r) => ({ ...r, [c.id]: true }))} aria-current={active ? "true" : undefined}
+                <Link href={linkOf(tab, c.id)} onClick={() => markRead([c.id])} aria-current={active ? "true" : undefined}
                   className={cn("flex items-start gap-3 rounded-lg p-2.5", active ? "md:bg-accent" : "hover:bg-accent/50")}>
                   <Face handle={c.with} size={40} name={false} plain />
                   <span className="min-w-0 flex-1">
@@ -89,10 +93,10 @@ function Inbox() {
       </section>
 
       {/* The conversation: on a phone it shows only once one is chosen. */}
-      <section className={cn("relative flex min-w-0 flex-1 flex-col", !picked && "max-md:hidden")}>
+      <section className={cn("relative flex min-w-0 flex-1 flex-col", !(picked || to) && "max-md:hidden")}>
         {chosen ? (
           <Thread key={chosen.id} convo={chosen} tab={tab} extra={sent[chosen.id] ?? []} onSend={(t) => send(chosen.id, t)}
-            answer={answer[chosen.id]} onAnswer={(a) => setAnswer((s) => ({ ...s, [chosen.id]: a }))} />
+            answer={answer[chosen.id]} onAnswer={(a) => setAnswer(chosen.id, a)} />
         ) : <p className="text-muted-foreground m-auto p-6 text-sm">Choose a conversation.</p>}
       </section>
     </div>
@@ -119,6 +123,7 @@ function Thread({ convo, tab, extra, onSend, answer, onAnswer }: {
 
       <div className="relative flex-1 space-y-3 overflow-y-auto px-4 py-5 md:px-8">
         <Num n="M5.2" className="absolute top-2 right-2" />
+        {!all.length ? <p className="text-muted-foreground text-center text-sm">Say hello to {personOf(convo.with).name.split(" ")[0]}. Tell them what you are making.</p> : null}
         {isRequest ? <p className="text-muted-foreground text-center text-xs">{personOf(convo.with).name.split(" ")[0]} is not in your conversations yet. Accept to reply.</p> : null}
         {all.map((m, i) => {
           const mine = m.from === ME;

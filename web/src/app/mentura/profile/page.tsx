@@ -1,6 +1,6 @@
 "use client";
 
-// M6 My profile, after Contra's profile: your public founder profile, the shared profile as Mentura shows it.
+// M6 My profile, after Contra's Profile (data.ts REFS.myProfile): your public founder profile, the shared profile as Mentura shows it.
 import { ME } from "@/components/mentura/data";
 import { ProfileView } from "@/components/mentura/profile-view";
 
