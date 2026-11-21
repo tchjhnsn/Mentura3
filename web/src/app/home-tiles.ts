@@ -66,6 +66,9 @@ export const MINE: readonly Tile[] = [
 /** Tiles folded into another for now: Water into Food and water (Torian, 2026-11-19). Kept as records and costs. */
 export const FOLDED: readonly string[] = ["water"];
 
+/** Areas that are not core apps: off the sidebar, reached from Settings, Life areas (Torian, 2026-11-21). */
+export const IN_SETTINGS: readonly string[] = ["food", "shelter", "transport", "safety", "health", "fitness"];
+
 export function hrefOf(t: Tile): string | null {
   if (t.app === "learn") return "/schole";
   if (t.app === "journal") return "/journal";
