@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
+import { CalendarDaysIcon, RocketIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
-import { hrefOn, sideOfPath, type Side } from "@/lib/sides";
+import { hrefOn, spaceOfPath, type Side, type Space } from "@/lib/sides";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -58,7 +58,8 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   const path = usePathname();
   // Which side this page is on (doc "Private and shared Reflect plan", 2026-11-19): everything on the polis host is
   // the shared side; on a shared host the path says, and a page on neither side keeps Home's sidebar.
-  const side: Side = places.hostSide === "polis" ? "polis" : sideOfPath(path) ?? "home";
+  // Mentura's pages show Mentura's navigation (Torian, 2026-11-21).
+  const side: Space = places.hostSide === "polis" ? "polis" : spaceOfPath(path) ?? "home";
   const to = (p: string) => hrefOn(p, places.hostSide, places);
   const here = (p: string) => (p === "/" ? path === "/" : path === p || path.startsWith(`${p}/`));
   const { isMobile, setOpenMobile } = useSidebar();
@@ -80,7 +81,24 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
       </SidebarHeader>
 
       <SidebarContent>
-        {side === "polis" ? (
+        {side === "mentura" ? (
+          <>
+            {/* Mentura, after Contra's sidebar (Torian, 2026-11-21): a home, the work with others, then discovery. */}
+            <Group>
+              <SidebarMenu>
+                <MenturaCreate to={to} done={done} />
+                {item("/mentura", "Home", <HomeIcon />)}
+                {item("/meetings", "Meetings", <VideoIcon />)}
+                {item("/life/ventures", "Venture Studio", <RocketIcon />)}
+                {item("/settings/profile", "Your profile", <UserRoundIcon />)}
+              </SidebarMenu>
+            </Group>
+            <Fold label="Discover">
+              {item("/v/people", "People", <UsersRoundIcon />)}
+              {item("/events", "Events", <CalendarDaysIcon />)}
+            </Fold>
+          </>
+        ) : side === "polis" ? (
           <>
             <Group>
               <SidebarMenu>
@@ -102,7 +120,6 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
                 {/* The dashboard is Home's front page for now (Torian, 2026-11-19); the journal and the calendar are in Settings. */}
                 <CreateMenu to={to} done={done} />
                 {item("/dashboard", "Dashboard", <LayoutDashboardIcon />)}
-                {item("/meetings", "Meetings", <VideoIcon />)}
               </SidebarMenu>
             </Group>
             {groups.map((g) => <Fold key={g.label} label={g.label}>{g.tiles.map(tile)}</Fold>)}
@@ -133,12 +150,14 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   );
 }
 
-/** The two sides, like a team switcher: Home (the person and the household, private) and Village and polis (shared). */
+/** The spaces, like a team switcher: the Reflect console (the person and the household, private), Village and polis
+ * (shared), and Mentura (ventures, meetings and work with others; Torian, 2026-11-21). */
 // Its menu opens directly below it, and the person's menu directly above theirs (Torian, 2026-11-19).
-function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
+function SideSwitcher({ side, to }: { side: Space; to: (p: string) => string }) {
   const SIDES = [
-    { id: "home" as const, name: "Home", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
+    { id: "home" as const, name: "Reflect console", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
     { id: "polis" as const, name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
+    { id: "mentura" as const, name: "Mentura", about: "Ventures, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
   ];
   const now = SIDES.find((s) => s.id === side)!;
   return (
@@ -156,7 +175,7 @@ function SideSwitcher({ side, to }: { side: Side; to: (p: string) => string }) {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" align="start" side="bottom" sideOffset={4}>
-            <DropdownMenuLabel className="text-muted-foreground text-xs">Reflect</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-muted-foreground text-xs">Spaces</DropdownMenuLabel>
             {SIDES.map((s) => (
               <DropdownMenuItem key={s.id} asChild className="gap-2 p-2">
                 <Go href={to(s.href)}>
@@ -287,6 +306,34 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 ];
 
 /** The sidebar's first button: Create, a menu of what Reflect can make. */
+/** Mentura's Create: a meeting or a venture. */
+function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
+  const MADE = [
+    { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
+    { href: "/life/ventures", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
+  ];
+  return (
+    <SidebarMenuItem>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton tooltip="Create" className="font-medium"><PlusIcon /><span>Create</span></SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="bottom" className="w-72">
+          <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Create in Mentura</DropdownMenuLabel>
+          {MADE.map((m) => (
+            <DropdownMenuItem key={m.label} asChild>
+              <Go href={to(m.href)} onClick={done} className="flex items-start gap-2">
+                {m.icon}
+                <span className="flex flex-col"><span className="font-medium">{m.label}</span><span className="text-muted-foreground text-xs">{m.what}</span></span>
+              </Go>
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+}
+
 function CreateMenu({ to, done }: { to: (p: string) => string; done: () => void }) {
   return (
     <SidebarMenuItem>
