@@ -295,7 +295,7 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 const MENTURA_TABS = [
   { id: "home", label: "Home", href: "/mentura", icon: HomeIcon, under: ["/mentura"], opens: true },
   { id: "meetings", label: "Meetings", href: "/meetings", icon: VideoIcon, under: ["/meetings", "/m"], opens: true },
-  { id: "studio", label: "Venture Studio", href: "/life/ventures", icon: RocketIcon, under: ["/life/ventures"], opens: true },
+  { id: "studio", label: "Venture Studio", href: "/studio", icon: RocketIcon, under: ["/studio", "/life/ventures"], opens: true },
   { id: "people", label: "People", href: "/v/people", icon: UsersRoundIcon, under: [], opens: false },
   { id: "profile", label: "Profile", href: "/settings/profile", icon: UserRoundIcon, under: [], opens: false },
 ] as const;
@@ -337,8 +337,9 @@ function MenturaTabs({ path, item, to, done }: { path: string; item: (href: stri
             </>
           ) : tab === "studio" ? (
             <>
+              {item("/studio", "Open the Venture Studio", <RocketIcon />)}
+              {item("/studio/library", "Library", <RocketIcon />)}
               {item("/life/ventures", "Your ventures", <RocketIcon />)}
-              <li className="text-muted-foreground px-2 py-1.5 text-xs">More here once the Venture Studio is designed.</li>
             </>
           ) : tab === "people" ? (
             <>
