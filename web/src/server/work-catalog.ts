@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { filingsFrom, type Company, type Filing, type Job, type WikiWork } from "@reflect/core/work-browse";
+import type { SkillTable } from "@reflect/core/job-fit";
 import { outsideFetch } from "@/server/outside";
 
 // The catalogs Work browses, read from src/data (written by scripts/work-catalogs.ts): O*NET's occupations,
@@ -17,6 +18,8 @@ function load<T>(name: string, empty: T): T {
 }
 
 export const jobs = (): Job[] => load<Job[]>("onet.json", []);
+/** O*NET skills and knowledge per job (scripts/onet-skills.ts), or null when the file is missing. */
+export const jobSkills = (): SkillTable | null => load<SkillTable | null>("onet-skills.json", null);
 export const jobByCode = (code: string): Job | null => jobs().find((j) => j.code === code) ?? null;
 const wiki = () => load<{ past: WikiWork[]; fiction: WikiWork[] }>("wikidata-work.json", { past: [], fiction: [] });
 export const pastWork = (): WikiWork[] => wiki().past;

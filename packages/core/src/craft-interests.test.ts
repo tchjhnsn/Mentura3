@@ -20,7 +20,7 @@ describe("a craft read as a Make interest", () => {
       id: "baking", group: "food", state: "practising", stage: "competent", why: "Bread on Sundays", madeText: "A sourdough loaf",
       learned: ["practice", "school"], vouches: 2, tried: 2,
       made: [{ day: "2026-11-10", note: "Rye" }, { day: "2026-11-03", note: "Focaccia" }],
-      firstProject: "Mug cake", href: "/schole/crafts/baking",
+      firstProject: "Mug cake", href: "/life/work/crafts/baking",
     });
     expect(sentence(i, "make")).toBe("You make Baking: regular practice, at Precise.");
   });

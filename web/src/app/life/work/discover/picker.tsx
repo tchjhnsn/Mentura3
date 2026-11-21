@@ -36,7 +36,7 @@ export function Picker({ initialWorlds, initialPicks }: { initialWorlds: string[
   const saving = useRef<Promise<unknown>>(Promise.resolve());
   const pushedStep = useRef(false);
 
-  useEffect(() => { router.prefetch("/schole/discover/matches"); }, [router]);
+  useEffect(() => { router.prefetch("/life/work/discover/matches"); }, [router]);
 
   const save = (w: string[], p: string[]) => {
     start(async () => {
@@ -81,10 +81,10 @@ export function Picker({ initialWorlds, initialPicks }: { initialWorlds: string[
     setMatching(true);
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     await Promise.all([saving.current, new Promise((r) => setTimeout(r, still ? 400 : 1000))]);
-    router.push("/schole/discover/matches");
+    router.push("/life/work/discover/matches");
   };
 
-  const header = () => <TaskHeader back={{ href: "/schole", label: "Back to Scholē" }} title="Scholē" position="Find your crafts" />;
+  const header = () => <TaskHeader back={{ href: "/life/work", label: "Back to Work" }} title="Work" position="Find your crafts" />;
 
   if (matching) return <Matching picks={picks} />;
 
@@ -98,7 +98,7 @@ export function Picker({ initialWorlds, initialPicks }: { initialWorlds: string[
               <h1 className="text-[21px] leading-tight font-bold">What pulls you?</h1>
               <p className="text-muted-foreground text-sm text-pretty">Pick any worlds. In a minute you will have three crafts to try this week.</p>
             </div>
-            <Button asChild variant="ghost" size="sm" className="-mr-2 shrink-0"><Link href="/schole/discover/matches?range=1">Skip</Link></Button>
+            <Button asChild variant="ghost" size="sm" className="-mr-2 shrink-0"><Link href="/life/work/discover/matches?range=1">Skip</Link></Button>
           </div>
           <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {WORLDS.map((w, i) => (

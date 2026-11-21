@@ -38,7 +38,7 @@ describe("crafts", () => {
     const b1 = await keepCraft.before!(ctx, { ref: "baking" });
     const r1 = await keepCraft.run(ctx, { ref: "baking" });
     expect(craft("baking")).toMatchObject({ state: "drawn", body: { ref: "baking", title: "Baking" } });
-    expect(r1.href).toBe("/schole/crafts/baking");
+    expect(r1.href).toBe("/life/work/crafts/baking");
     const b2 = await keepCraft.before!(ctx, { ref: "baking", state: "practising" });
     const r2 = await keepCraft.run(ctx, { ref: "baking", state: "practising" });
     expect(craft("baking")!.state).toBe("practising");

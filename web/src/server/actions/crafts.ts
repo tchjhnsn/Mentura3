@@ -48,7 +48,7 @@ const putCraftBack = async ({ userId }: ActionContext, c: LoggedChange) => {
 export const keepCraft = action({
   id: "keep_craft",
   title: "Keep a craft",
-  description: "Keep a craft from Scholē's catalogue (by its id, from /schole/making) as one the person is drawn to, or in the state they say (drawn, trying, practising). When they keep it already, this sets its state. Only when the person says so. Its page is /schole/crafts/<id>.",
+  description: "Keep a craft from Scholē's catalogue (by its id, from /life/work/making) as one the person is drawn to, or in the state they say (drawn, trying, practising). When they keep it already, this sets its state. Only when the person says so. Its page is /life/work/crafts/<id>.",
   tier: "own",
   on: ["chat", "mcp"],
   input: z.object({ ref, state: z.enum(STATE_IDS).optional() }),
@@ -59,10 +59,10 @@ export const keepCraft = action({
     if (had) {
       const to = state ?? (had.state === "let-go" ? "drawn" : null);
       if (to) await setLifeState(userId, had.id, to);
-      return { id: had.id, ref: r, state: to ?? had.state, href: `/schole/crafts/${r}` };
+      return { id: had.id, ref: r, state: to ?? had.state, href: `/life/work/crafts/${r}` };
     }
     const id = await addLifeRecord(userId, "work", "craft", { ref: r, title: craft.label }, state ?? "drawn");
-    return { id, ref: r, state: state ?? "drawn", href: `/schole/crafts/${r}` };
+    return { id, ref: r, state: state ?? "drawn", href: `/life/work/crafts/${r}` };
   },
   before: ({ userId }, { ref: r }) => snap(userId, r),
   change: (r, _i, before) => ({ before, after: r }),
@@ -211,7 +211,7 @@ const picksSnap = async (userId: string) => {
 export const saveCraftPicks = action({
   id: "save_craft_picks",
   title: "Keep the person's craft picks",
-  description: `Keep what the person picked in Scholē's photo picker (/schole/discover): worlds (craft group ids: ${WORLDS.map((w) => w.id).join(", ")}) and crafts (catalogue ids such as 'carpentry'). Both lists replace what was there, in the order picked. Only the person's own picks.`,
+  description: `Keep what the person picked in Scholē's photo picker (/life/work/discover): worlds (craft group ids: ${WORLDS.map((w) => w.id).join(", ")}) and crafts (catalogue ids such as 'carpentry'). Both lists replace what was there, in the order picked. Only the person's own picks.`,
   tier: "own",
   on: ["chat", "mcp"],
   input: z.object({ worlds: z.array(z.string().max(40)).max(WORLDS.length), picks: z.array(z.string().max(80)).max(200) }),

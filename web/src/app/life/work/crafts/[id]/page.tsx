@@ -10,10 +10,9 @@ import { myAnswers, myCraft } from "@/server/crafts-store";
 import { lifeActs } from "@/server/life-store";
 import { friendsMet } from "@/server/connect-store";
 import { hrefOf, MINE } from "@/app/home-tiles";
-import { LEARN } from "../../crumbs";
 import { craftActAction, keepCraftAction, setCraftStateAction } from "../actions";
 import { AddMade, FirstProjectCard, LearnedChoices, PractiseNow, StageLine, VouchFaces } from "./parts";
-import { CraftPhoto } from "../../craft-photo";
+import { CraftPhoto } from "@/app/schole/craft-photo";
 
 export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -28,7 +27,7 @@ const list = (v: unknown) => String(v ?? "").split(",").map((s) => s.trim()).fil
  * leads with the craft's photo. Not yet (drawn to it, trying it, or not kept): the first project with the one filled
  * button, Start the first project, what drew the person, how often they tried it, and I practise this; after three
  * tries, "Do you practise this now?" takes the filled button and Start turns outline. Already (practising): where they are on the Dreyfus five steps, how
- * they learned it, what they made, which friends vouch, and the way to work in it in Ergon.
+ * they learned it, what they made, which friends vouch, and the way to work in it in Work.
  */
 export default async function CraftPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -50,16 +49,16 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
   // After three tries, ask whether the person practises it now; that question then holds the one filled button.
   const ask = !already && tried.length >= 3;
 
-  const crumbs = [LEARN, { label: "Making", href: "/schole/making" }, { label: group.label, href: `/schole/making/${group.id}` }];
+  const crumbs = [{ label: "Work", href: "/life/work" }, { label: "Making", href: "/life/work/making" }, { label: group.label, href: `/life/work/making/${group.id}` }];
   const where = !mine ? "Not kept yet" : already ? "You practise this" : mine.state === "trying" ? "You are trying this" : "You are drawn to this";
 
   return (
     <main className={PAGE}>
-      <ThingHeader back={`/schole/making/${group.id}`} backLabel={group.label} crumbs={crumbs} title={craft.label} />
+      <ThingHeader back={`/life/work/making/${group.id}`} backLabel={group.label} crumbs={crumbs} title={craft.label} />
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">{craft.label}</h1>
-          <p className="text-muted-foreground">{where}{tried.length ? `, tried ${tried.length === 1 ? "once" : `${tried.length} times`}` : ""}. <Link href={`/schole/making/${group.id}`} className="underline-offset-2 hover:underline">{group.label}</Link></p>
+          <p className="text-muted-foreground">{where}{tried.length ? `, tried ${tried.length === 1 ? "once" : `${tried.length} times`}` : ""}. <Link href={`/life/work/making/${group.id}`} className="underline-offset-2 hover:underline">{group.label}</Link></p>
         </div>
 
         <CraftPhoto id={craft.id} alt={craft.label} sizes="(min-width: 800px) 768px, 100vw" className="aspect-[16/9] w-full rounded-xl sm:aspect-[21/9]" />
@@ -100,14 +99,14 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
 
             <section aria-labelledby="work" className="grid gap-1.5">
               <h2 id="work" className="font-semibold">Work in it</h2>
-              <p className="text-muted-foreground text-sm">Keep the work you want, or do, in <Link href="/life/work" className="text-foreground underline underline-offset-2">Ergon</Link>.</p>
+              <p className="text-muted-foreground text-sm">Keep the work you want, or do, in <Link href="/life/work" className="text-foreground underline underline-offset-2">Work</Link>.</p>
             </section>
           </>
         ) : (
           <>
             {ask ? <PractiseNow craft={craft.id} label={craft.label} tried={tried.length} /> : null}
 
-            {project ? <FirstProjectCard href={`/schole/crafts/${craft.id}/project`} project={project} primary={!ask} /> : null}
+            {project ? <FirstProjectCard href={`/life/work/crafts/${craft.id}/project`} project={project} primary={!ask} /> : null}
 
             <section aria-labelledby="drew" className="grid gap-3">
               <h2 id="drew" className="font-semibold">What drew you</h2>
@@ -116,7 +115,7 @@ export default async function CraftPage({ params }: { params: Promise<{ id: stri
                   {why ? <li>{why}</li> : null}
                   {because.map((a) => <li key={a.id}>You liked: {a.text.charAt(0).toLowerCase() + a.text.slice(1)}.</li>)}
                 </ul>
-              ) : <p className="text-muted-foreground text-sm">Nothing yet. <Link href="/schole/discover" className="underline underline-offset-2">Discover crafts</Link> to see what draws you.</p>}
+              ) : <p className="text-muted-foreground text-sm">Nothing yet. <Link href="/life/work/discover" className="underline underline-offset-2">Discover crafts</Link> to see what draws you.</p>}
             </section>
 
             <section aria-labelledby="try" className="grid gap-3">

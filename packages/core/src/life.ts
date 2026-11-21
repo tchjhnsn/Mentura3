@@ -164,7 +164,7 @@ const DECLARED = [
       },
       {
         id: "craft", label: "Craft", plural: "Crafts", title: "title", hidden: true,
-        intro: "A craft from Scholē's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
+        intro: "A craft from Work's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
         fields: [
           { key: "ref", label: "Which craft", kind: "text", internal: true },
           { key: "title", label: "Name", kind: "text" },
@@ -187,6 +187,16 @@ const DECLARED = [
           { key: "worlds", label: "Worlds picked", kind: "text", internal: true },
           { key: "picks", label: "Crafts picked", kind: "text", internal: true },
         ],
+      },
+      {
+        id: "path", label: "Career path", plural: "Career paths", title: "title", hidden: true,
+        intro: "A career path in Work: an O*NET occupation followed as a syllabus of its tasks. Each task done is a step act whose note is the task's number.",
+        fields: [
+          { key: "ref", label: "Which job", kind: "text", internal: true },
+          { key: "title", label: "Name", kind: "text" },
+        ],
+        states: [{ id: "following", label: "Following it", active: true }, { id: "done", label: "Finished" }, { id: "let-go", label: "Let go" }],
+        acts: [{ id: "step", label: "Did a step", done: "Did a step of", hidden: true }],
       },
       {
         id: "interest", label: "Interest", plural: "Interests", title: "title", hidden: true,

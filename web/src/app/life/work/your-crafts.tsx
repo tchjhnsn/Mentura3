@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CRAFT_STATES, STAGES, firstProjectOf } from "@reflect/core/crafts";
 import type { MyCraft } from "@/server/crafts-store";
 import { cn } from "@/lib/utils";
-import { CraftPhoto } from "./craft-photo";
+import { CraftPhoto } from "@/app/schole/craft-photo";
 
 /** Where the person is with a craft, in words: the Dreyfus stage once practising and set, else its state, with the projects tried. */
 function whereOf(c: MyCraft, tried: number): string {
@@ -22,7 +22,7 @@ export function YourCrafts({ crafts, tried }: { crafts: readonly MyCraft[]; trie
     <section aria-labelledby="your-crafts" className="grid grid-cols-1 gap-3">
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="your-crafts" className="text-xl font-semibold tracking-tight">Your crafts</h2>
-        <Link href="/schole/discover" className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline">Tune</Link>
+        <Link href="/life/work/discover" className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline">Tune</Link>
       </div>
       <ul className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         {crafts.map((c, i) => {
@@ -30,7 +30,7 @@ export function YourCrafts({ crafts, tried }: { crafts: readonly MyCraft[]; trie
           const project = first ? firstProjectOf(c.ref) : undefined;
           return (
             <li key={c.record.id} className={cn("shrink-0 snap-start", first ? "w-60" : "w-32")}>
-              <Link href={`/schole/crafts/${c.ref}`} className="group bg-card hover:bg-accent/40 flex h-full flex-col overflow-hidden rounded-xl border transition-colors">
+              <Link href={`/life/work/crafts/${c.ref}`} className="group bg-card hover:bg-accent/40 flex h-full flex-col overflow-hidden rounded-xl border transition-colors">
                 <CraftPhoto id={c.ref} alt={c.title} sizes={first ? "240px" : "128px"} className={cn("w-full", first ? "aspect-[16/9]" : "aspect-square")} />
                 <span className="grid gap-0.5 p-3">
                   <span className="line-clamp-2 text-sm leading-tight font-semibold group-hover:underline">{c.title}</span>

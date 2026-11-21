@@ -36,8 +36,8 @@ export function DidIt({ craftId, label, practising }: { craftId: string; label: 
       </p>
       <p className="text-muted-foreground text-sm">Next: see what else to try in {label.toLowerCase()} on its page.</p>
       <div className="flex flex-wrap gap-2">
-        <Button asChild variant="outline"><Link href={`/schole/crafts/${craftId}`}>Open {label}</Link></Button>
-        <Button asChild variant="ghost"><Link href="/schole">Back to Scholē</Link></Button>
+        <Button asChild variant="outline"><Link href={`/life/work/crafts/${craftId}`}>Open {label}</Link></Button>
+        <Button asChild variant="ghost"><Link href="/life/work">Back to Work</Link></Button>
       </div>
     </div>
   );

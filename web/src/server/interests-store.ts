@@ -91,7 +91,7 @@ function craftThing(ref: string) {
   if (!c) return null;
   const p = firstProjectOf(c.id);
   return {
-    thing: { title: c.label, group: groupOf(c.group)?.label ?? null, first_project: p ? { name: p.name, minutes: p.minutes, href: `/schole/crafts/${c.id}/project` } : null, href: `/schole/crafts/${c.id}` },
+    thing: { title: c.label, group: groupOf(c.group)?.label ?? null, first_project: p ? { name: p.name, minutes: p.minutes, href: `/life/work/crafts/${c.id}/project` } : null, href: `/life/work/crafts/${c.id}` },
     more_like_it: relatedCrafts(c.id).map((id) => ({ ref: `craft:${id}`, title: craftOf(id)?.label ?? id })),
   };
 }

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "urn:reflect:schema:life:work.craft",
   "title": "Craft",
-  "description": "A craft from Scholē's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
+  "description": "A craft from Work's catalogue (`@reflect/core/crafts`): drawn to it, trying it, or practising it, with how it was learned, the stage reached, what was made and who vouches.",
   "type": "object",
   "properties": {
     "ref": {

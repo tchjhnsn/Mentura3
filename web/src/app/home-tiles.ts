@@ -39,8 +39,8 @@ export type Tile = { id: string; label: string; app: App };
 
 export const MINE: readonly Tile[] = [
   { id: "learn", label: "Scholē", app: "learn" },
-  { id: "work", label: "Ergon", app: "work" },
-  // Income is the household's budget; earning moved into Ergon (Torian, 2026-11-19). The id stays "income" for its records.
+  { id: "work", label: "Work", app: "work" },
+  // Income is the household's budget; earning moved into Work (Torian, 2026-11-19). The id stays "income" for its records.
   { id: "income", label: "Budget", app: "work" },
   { id: "food", label: "Food and water", app: "home" },
   { id: "water", label: "Water", app: "home" },
