@@ -17,6 +17,7 @@ export async function keepCraftAction(form: FormData): Promise<void> {
   const user = await requireUser();
   await fromPage(keepCraft, user.id, { ref: String(form.get("ref") ?? ""), state: stateOf(form.get("state")) });
   revalidatePath("/schole", "layout");
+  revalidatePath("/life/work", "layout");
 }
 
 /** Keep the person's Discover crafts answers, all of them at once. */
@@ -24,6 +25,7 @@ export async function saveCraftAnswersAction(answers: Record<string, Answer>): P
   const user = await requireUser();
   await fromPage(saveCraftAnswers, user.id, { answers });
   revalidatePath("/schole", "layout");
+  revalidatePath("/life/work", "layout");
 }
 
 /** Keep the worlds and crafts the person picked in the photo picker, both lists whole. */
@@ -37,32 +39,33 @@ export async function setCraftStateAction(ref: string, state: State): Promise<vo
   const user = await requireUser();
   await fromPage(setCraftState, user.id, { ref, state });
   revalidatePath("/schole", "layout");
+  revalidatePath("/life/work", "layout");
 }
 
 /** Set where the person is with a craft, on the Dreyfus five steps. */
 export async function setCraftStageAction(ref: string, stage: string): Promise<void> {
   const user = await requireUser();
   await fromPage(setCraftStage, user.id, { ref, stage });
-  revalidatePath(`/schole/crafts/${ref}`);
+  revalidatePath(`/life/work/crafts/${ref}`);
 }
 
 /** Set how the person learned a craft (several may be true). */
 export async function setCraftLearnedAction(ref: string, how: string[]): Promise<void> {
   const user = await requireUser();
   await fromPage(setCraftLearned, user.id, { ref, how });
-  revalidatePath(`/schole/crafts/${ref}`);
+  revalidatePath(`/life/work/crafts/${ref}`);
 }
 
 /** Keep that the person tried a craft once, or made something with it. */
 export async function craftActAction(ref: string, kind: "tried" | "made", note?: string): Promise<void> {
   const user = await requireUser();
   await fromPage(craftAct, user.id, { ref, kind, note });
-  revalidatePath(`/schole/crafts/${ref}`);
+  revalidatePath(`/life/work/crafts/${ref}`);
 }
 
 /** Set which Reflect friends vouch for the person's craft. */
 export async function setCraftVouchAction(ref: string, friends: string[]): Promise<void> {
   const user = await requireUser();
   await fromPage(setCraftVouch, user.id, { ref, friends });
-  revalidatePath(`/schole/crafts/${ref}`);
+  revalidatePath(`/life/work/crafts/${ref}`);
 }

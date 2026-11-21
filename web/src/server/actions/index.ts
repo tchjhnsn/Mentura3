@@ -22,6 +22,7 @@ import { addMealAction, addToBasketAction, keepRecipeAction, planMealAction, pla
 import { beliefFromWorkAction, compileEditionAction, fileWorkAction, markBeliefAction, placeBeliefAction, placeSubjectAction, saveWorkAction, sendToLearnAction, startWork } from "./journal-works";
 import { mainAim, takeOffQuality, toggleQuality, writeQuality, writeToward } from "./work-life";
 import { craftAct, keepCraft, saveCraftAnswers, saveCraftPicks, setCraftLearned, setCraftStage, setCraftState, setCraftVouch } from "./crafts";
+import { jobsForMe, pathStep, startPath } from "./paths";
 import { interests, pickInterest, setInterest, setInterestArea } from "./interests";
 import { adventureToCalendar } from "./adventure-calendar";
 import { draftNaiveVenture, startNaiveVenture, ventureFilesAction, writeVentureFile } from "./ventures";
@@ -53,7 +54,7 @@ export const PAGE_ACTIONS: readonly Action[] = [
   addMealAction, planMealAction, unplanMealAction, planWeekAction, startMealPlanAction, addToBasketAction, keepRecipeAction, setReceiptAction,
   startWork, saveWorkAction, fileWorkAction, beliefFromWorkAction, sendToLearnAction, markBeliefAction, placeSubjectAction, placeBeliefAction, compileEditionAction,
   toggleQuality, takeOffQuality, writeQuality, writeToward, mainAim,
-  keepCraft, setCraftState, setCraftStage, setCraftLearned, craftAct, setCraftVouch, saveCraftAnswers, saveCraftPicks, interests, pickInterest, setInterest, setInterestArea,
+  keepCraft, setCraftState, setCraftStage, setCraftLearned, craftAct, setCraftVouch, saveCraftAnswers, saveCraftPicks, startPath, pathStep, jobsForMe, interests, pickInterest, setInterest, setInterestArea,
   adventureToCalendar,
   startNaiveVenture, askToBuildAction, answerBuildRequestAction,
   goingToEvent, hostEvent, setEventPartAction,

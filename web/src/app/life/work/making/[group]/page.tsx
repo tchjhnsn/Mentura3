@@ -31,7 +31,7 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
   const fitness = (fitnessTile && hrefOf(fitnessTile)) ?? "/life/body";
   return (
     <main className={PAGE}>
-      <ThingHeader crumbs={[{ label: "Scholē", href: "/schole" }, { label: "Making", href: "/schole/making" }]} title={g.label} />
+      <ThingHeader crumbs={[{ label: "Work", href: "/life/work" }, { label: "Making", href: "/life/work/making" }]} title={g.label} />
       <div className="mt-4 grid max-w-3xl grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1.5">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">
@@ -55,7 +55,7 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
               const contest = g.id === "performance" && CONTESTS.includes(c.id);
               return (
                 <li key={c.id} className="border-b last:border-b-0 sm:[&:nth-last-child(2):nth-child(odd)]:border-b-0">
-                  <Link href={`/schole/crafts/${c.id}`} className="hover:bg-accent flex items-baseline justify-between gap-3 py-3 transition">
+                  <Link href={`/life/work/crafts/${c.id}`} className="hover:bg-accent flex items-baseline justify-between gap-3 py-3 transition">
                     <span className="min-w-0">
                       <span className={state ? "font-semibold" : undefined}>{c.label}</span>
                       {contest ? <span className="text-muted-foreground text-sm"> · contest</span> : null}

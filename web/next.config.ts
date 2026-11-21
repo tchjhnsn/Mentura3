@@ -10,6 +10,10 @@ const config: NextConfig = { reactStrictMode: true, experimental: { serverAction
   redirects: async () => [{ source: "/learn", destination: "/schole", permanent: true }, { source: "/learn/:path*", destination: "/schole/:path*", permanent: true },
     // Qualities moved into Scholē, Legacy into Settings (Torian, 2026-11-19).
     { source: "/journal/qualities", destination: "/schole/qualities", permanent: true }, { source: "/journal/qualities/:path*", destination: "/schole/qualities/:path*", permanent: true },
+    // Crafts are making, so they moved from Scholē into Work (Torian, 2026-11-21).
+    { source: "/schole/crafts/:path*", destination: "/life/work/crafts/:path*", permanent: true }, { source: "/schole/making", destination: "/life/work/making", permanent: true },
+    { source: "/schole/making/:path*", destination: "/life/work/making/:path*", permanent: true }, { source: "/schole/discover", destination: "/life/work/discover", permanent: true },
+    { source: "/schole/discover/:path*", destination: "/life/work/discover/:path*", permanent: true },
     { source: "/life/legacy", missing: [{ type: "query", key: "k" }], destination: "/settings/legacy", permanent: false }] };
 
 export default config;

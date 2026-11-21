@@ -70,7 +70,7 @@ export function craftAsInterest(r: { ref: string; title?: unknown; state: string
       tried: acts.filter((a) => a.kind === "tried").length,
       made,
       firstProject: firstProjectOf(r.ref)?.name ?? null,
-      href: `/schole/crafts/${r.ref}`,
+      href: `/life/work/crafts/${r.ref}`,
     },
   };
 }

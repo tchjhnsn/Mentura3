@@ -40,11 +40,11 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
   const [first, ...rest] = result.top;
   const firstCraft = first ? craftOf(first.id) : undefined;
   const project = first ? firstProjectOf(first.id) : undefined;
-  const change = worlds.length ? "/schole/discover?step=crafts" : "/schole/discover";
+  const change = worlds.length ? "/life/work/discover?step=crafts" : "/life/work/discover";
 
   return (
     <main className={PAGE}>
-      <TaskHeader back={{ href: "/schole", label: "Back to Scholē" }} title="Scholē" position="Your three crafts" />
+      <TaskHeader back={{ href: "/life/work", label: "Back to Work" }} title="Work" position="Your three crafts" />
       <KeepOnOpen ids={result.top.map((m) => m.id).filter((id) => !kept.has(id))} />
       <div className="mx-auto mt-4 grid w-full max-w-2xl grid-cols-[minmax(0,1fr)] gap-5">
         <div className="grid gap-1">
@@ -54,12 +54,12 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
 
         {first && firstCraft ? (
           <article className="bg-card overflow-hidden rounded-2xl border">
-            <Link href={`/schole/crafts/${first.id}`} className="block">
+            <Link href={`/life/work/crafts/${first.id}`} className="block">
               <Photo src={craftPhoto(first.id)?.src} name={firstCraft.label} eager className="aspect-[16/10] w-full sm:aspect-[2/1]" />
             </Link>
             <div className="grid gap-3 p-4">
               <div className="grid gap-0.5">
-                <h2 className="text-lg leading-tight font-bold"><Link href={`/schole/crafts/${first.id}`} className="hover:underline">{firstCraft.label}</Link></h2>
+                <h2 className="text-lg leading-tight font-bold"><Link href={`/life/work/crafts/${first.id}`} className="hover:underline">{firstCraft.label}</Link></h2>
                 <p className="text-muted-foreground text-sm">{why(first)}</p>
               </div>
               <div className="flex items-end justify-between gap-3 border-t pt-3">
@@ -69,10 +69,10 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
                       <span className="text-muted-foreground text-xs">First project, {project.minutes} minutes</span>
                       <span className="font-medium">{project.name}</span>
                     </div>
-                    <Button asChild size="lg" className="shrink-0"><Link href={`/schole/crafts/${first.id}/project`}>Start</Link></Button>
+                    <Button asChild size="lg" className="shrink-0"><Link href={`/life/work/crafts/${first.id}/project`}>Start</Link></Button>
                   </>
                 ) : (
-                  <Button asChild size="lg" className="ml-auto"><Link href={`/schole/crafts/${first.id}`}>Open {firstCraft.label}</Link></Button>
+                  <Button asChild size="lg" className="ml-auto"><Link href={`/life/work/crafts/${first.id}`}>Open {firstCraft.label}</Link></Button>
                 )}
               </div>
             </div>
@@ -86,7 +86,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
               const p = firstProjectOf(m.id);
               return (
                 <li key={m.id}>
-                  <Link href={`/schole/crafts/${m.id}`} className="bg-card hover:bg-accent grid h-full grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-3 rounded-2xl border p-3 transition-colors">
+                  <Link href={`/life/work/crafts/${m.id}`} className="bg-card hover:bg-accent grid h-full grid-cols-[5.5rem_minmax(0,1fr)] items-start gap-3 rounded-2xl border p-3 transition-colors">
                     <Photo src={craftPhoto(m.id)?.src} name={c.label} className="aspect-square w-full rounded-xl" />
                     <span className="grid gap-0.5">
                       <span className="font-semibold leading-tight">{c.label}</span>
@@ -101,7 +101,7 @@ export default async function MatchesPage({ searchParams }: { searchParams: Prom
         ) : null}
 
         {result.surprise && craftOf(result.surprise.id) ? (
-          <Link href={`/schole/crafts/${result.surprise.id}`} className="border-primary/60 hover:bg-primary/5 grid grid-cols-[minmax(0,1fr)_3.5rem] items-center gap-3 rounded-2xl border-2 border-dashed p-4 transition-colors">
+          <Link href={`/life/work/crafts/${result.surprise.id}`} className="border-primary/60 hover:bg-primary/5 grid grid-cols-[minmax(0,1fr)_3.5rem] items-center gap-3 rounded-2xl border-2 border-dashed p-4 transition-colors">
             <span className="grid gap-0.5">
               <span className="text-primary text-xs font-semibold">A surprise</span>
               <span className="font-semibold">{label(result.surprise.id)}</span>

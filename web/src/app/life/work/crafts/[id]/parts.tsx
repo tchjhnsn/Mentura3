@@ -141,7 +141,7 @@ export function PractiseNow({ craft, label, tried }: { craft: string; label: str
   return (
     <section aria-labelledby="practise-now" className="bg-primary/5 border-primary/30 grid gap-2 rounded-xl border p-4 sm:p-5">
       <h2 id="practise-now" className="text-lg leading-snug font-semibold tracking-tight">Do you practise this now?</h2>
-      <p className="text-muted-foreground text-sm">You have tried {label.toLowerCase()} {tried} times. If it is part of your life now, say so and Scholē keeps where you are with it.</p>
+      <p className="text-muted-foreground text-sm">You have tried {label.toLowerCase()} {tried} times. If it is part of your life now, say so and Work keeps where you are with it.</p>
       <div className="pt-1">
         <Button type="button" size="lg" disabled={pending} onClick={() => start(async () => { await setCraftStateAction(craft, "practising"); })} className="h-10 w-full sm:w-auto sm:px-8">Yes, I practise it</Button>
       </div>

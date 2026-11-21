@@ -535,6 +535,22 @@
       ]
     },
     {
+      "noun": "career pathway",
+      "level": "life",
+      "meaning": "A sequence of steps toward an occupation: the tasks and learning that lead into it",
+      "standard": "U.S. Department of Labor, career pathways (Workforce Innovation and Opportunity Act, 2014, sec. 3(7))",
+      "status": "kept",
+      "app": "work",
+      "broader": [
+        "relation"
+      ],
+      "good": "external",
+      "community": "person",
+      "kinds": [
+        "work:path"
+      ]
+    },
+    {
       "noun": "citizenship",
       "level": "life",
       "meaning": "Sharing in judging and ruling in a polis (Politics III.1, 1275a22); residence and districts",
