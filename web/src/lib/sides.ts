@@ -10,6 +10,20 @@ export type Side = "home" | "polis";
 export const SHARED_PATHS = ["/v", "/events", "/adventures", "/connect", "/p", "/life/polis"] as const;
 /** Paths that belong to neither side and open on whichever host they were asked for. */
 export const NEUTRAL_PATHS = ["/chat", "/settings", "/marketplace", "/sign-in", "/consent", "/api", "/icon", "/apple-icon", "/meetings", "/m"] as const;
+/**
+ * Mentura's pages (Torian, 2026-11-21: meetings belong to Mentura, not the personal side; the Ventures app is its Venture Studio). They are served on the main
+ * host like the neutral paths, and the sidebar shows Mentura's navigation on them.
+ */
+export const MENTURA_PATHS = ["/mentura", "/meetings", "/m", "/life/ventures"] as const;
+/** The navigation a page shows: a side, or Mentura. */
+export type Space = Side | "mentura";
+/** Which navigation a path shows: Mentura's on its pages, else its side, else null (a page on neither). */
+export function spaceOfPath(path: string): Space | null {
+  const p = path.split(/[?#]/)[0] || "/";
+  if (MENTURA_PATHS.some((b) => p === b || p.startsWith(`${b}/`))) return "mentura";
+  return sideOfPath(p);
+}
+
 /** App folders whose every page is on the shared side, checked by the wall test (sides-wall.test.ts). */
 export const SHARED_ROUTE_DIRS = ["v", "events", "adventures", "connect", "p"] as const;
 
