@@ -1,7 +1,8 @@
 "use client";
 
-// M9 Discover, after Contra's job feed and discover: tabs for people, investors, builders and ventures, a search and
-// filters (city, tags), and results as rows like Contra's job cards with Follow and Message.
+// M9 Discover, after Contra's Discover (data.ts REFS.discover): a search, tabs for people, investors, builders and
+// ventures, filters (city, tags), and people as rows with Follow and Message. Roles are attributes, so a person who is
+// both a founder and an investor shows under People and Investors.
 import { useState } from "react";
 import Link from "next/link";
 import { SearchIcon, XIcon } from "lucide-react";
@@ -9,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Num } from "@/components/studio/bits";
-import { ME, PEOPLE, SCREENS, VENTURES, type Person } from "@/components/mentura/data";
+import { ME, PEOPLE, SCREENS, VENTURES, isA, messageHref, roleLine, type Person } from "@/components/mentura/data";
 import { Face, FollowButton, Head, VentureCard } from "@/components/mentura/parts";
 
 const TABS = ["People", "Investors", "Builders", "Ventures"] as const;
@@ -24,7 +25,7 @@ export default function Discover() {
 
   const others = PEOPLE.filter((p) => p.handle !== ME);
   const cities = ["All cities", ...Array.from(new Set(others.map((p) => p.city)))];
-  const pool: Person[] = tab === "Investors" ? others.filter((p) => p.role === "Investor") : tab === "Builders" ? others.filter((p) => p.role === "Builder" || p.role === "Operator") : others;
+  const pool: Person[] = tab === "Investors" ? others.filter((p) => isA(p, "Investor")) : tab === "Builders" ? others.filter((p) => isA(p, "Builder") || isA(p, "Operator")) : others;
   const allTags = Array.from(new Set((tab === "Ventures" ? [] : pool).flatMap((p) => p.tags)));
   const needle = q.trim().toLowerCase();
 
@@ -104,10 +105,10 @@ function ResultRow({ p }: { p: Person }) {
   return (
     <li className="bg-card hover:border-foreground/30 rounded-xl border p-4 md:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1"><Face handle={p.handle} size={44} sub={`${p.role}${p.fund ? ` at ${p.fund}` : ""} · ${p.city}`} /></div>
+        <div className="min-w-0 flex-1"><Face handle={p.handle} size={44} sub={`${roleLine(p)} · ${p.city}`} /></div>
         <div className="flex shrink-0 items-center gap-2">
           <FollowButton handle={p.handle} />
-          <Button variant="outline" size="sm" asChild><Link href="/mentura/messages">Message</Link></Button>
+          <Button variant="outline" size="sm" asChild><Link href={messageHref(p.handle)}>Message</Link></Button>
         </div>
       </div>
       <p className="mt-3 text-[15px] leading-relaxed">{p.line}</p>

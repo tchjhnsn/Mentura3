@@ -1,6 +1,6 @@
 "use client";
 
-// M13 Venture page, after Contra's profile: a venture's public page with what it is, its phase, its team, its raise and
+// M13 Venture page, after Contra's Company profile (data.ts REFS.company): a venture's public page with what it is, its phase, its team, its raise and
 // its updates.
 import { use, useState } from "react";
 import Link from "next/link";
@@ -8,7 +8,7 @@ import { CheckIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Num } from "@/components/studio/bits";
-import { POSTS, ventureOf } from "@/components/mentura/data";
+import { POSTS, messageHref, ventureOf } from "@/components/mentura/data";
 import { Face, PostCard } from "@/components/mentura/parts";
 
 const PHASES = ["Discovery", "Validation", "Beachhead", "Scale", "Platform"] as const;
@@ -80,7 +80,7 @@ export default function VenturePage({ params }: { params: Promise<{ slug: string
             ) : (
               <>
                 <p className="text-muted-foreground mt-2 text-sm">{v.name} is not raising right now.</p>
-                <Button asChild className="mt-3 w-full"><Link href="/mentura/messages">Message the team</Link></Button>
+                <Button asChild className="mt-3 w-full"><Link href={messageHref(v.team[0] ?? "")}>Message the team</Link></Button>
               </>
             )}
           </section>

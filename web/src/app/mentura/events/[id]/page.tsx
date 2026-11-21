@@ -1,13 +1,14 @@
 "use client";
 
-// M11 Event, after Contra's home event card opened full: the cover, what and when, the host, who is going, your seat,
+// M11 Event, after Luma's event page (data.ts REFS.event): the cover, what and when, the host, who is going, your seat,
 // and the posts about the event.
 import { use, useState } from "react";
 import Link from "next/link";
 import { ArrowLeftIcon, CalendarIcon, CheckIcon, MapPinIcon, QrCodeIcon, ShareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Num } from "@/components/studio/bits";
-import { ME, POSTS, eventOf, personOf } from "@/components/mentura/data";
+import { ME, POSTS, eventOf, personOf, roleLine } from "@/components/mentura/data";
+import { useMentura } from "@/components/mentura/store";
 import { Face, PostCard } from "@/components/mentura/parts";
 
 const COVER_HUE: Record<string, number> = { e1: 330, e2: 140, e3: 24, e4: 100 };
@@ -16,7 +17,9 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
   const { id } = use(params);
   const ev = eventOf(id);
   const host = personOf(ev.host);
-  const [going, setGoing] = useState(ev.going.includes(ME));
+  const { has, toggle, say } = useMentura();
+  const going = has("going", ev.id);
+  const setGoing = (on: boolean) => { if (on !== going) { toggle("going", ev.id); say(on ? "Seat taken. It is on your Dashboard under You are going." : "Seat given back."); } };
   const [shared, setShared] = useState(false);
   const people = going ? (ev.going.includes(ME) ? ev.going : [...ev.going, ME]) : ev.going.filter((h) => h !== ME);
   const left = ev.seats !== undefined ? Math.max(ev.seats - people.length, 0) : undefined;
@@ -44,7 +47,7 @@ export default function EventPage({ params }: { params: Promise<{ id: string }> 
             <Num n="M11.1" className="absolute -top-2 right-0" />
             <p className="flex items-center gap-2"><CalendarIcon className="text-muted-foreground size-4 shrink-0" />{ev.when}</p>
             <p className="flex items-center gap-2"><MapPinIcon className="text-muted-foreground size-4 shrink-0" />{ev.place}</p>
-            <div className="pt-2"><Face handle={ev.host} size={40} sub={`Host · ${host.role}${host.fund ? ` at ${host.fund}` : ""}`} /></div>
+            <div className="pt-2"><Face handle={ev.host} size={40} sub={`Host · ${roleLine(host)}`} /></div>
           </section>
 
           <section className="relative">

@@ -1,6 +1,6 @@
 "use client";
 
-// M8 Get discovered, after Contra's Get discovered (data.ts CONTRA.discovered): your discovery score with a ring around
+// M8 Get discovered, after Contra's Get discovered (data.ts REFS.discovered): your discovery score with a ring around
 // your face, profile completion, the insights that raise it most, and a short FAQ.
 import Link from "next/link";
 import { CalendarDaysIcon, CameraIcon, ChevronRightIcon, HashIcon, LinkIcon } from "lucide-react";
