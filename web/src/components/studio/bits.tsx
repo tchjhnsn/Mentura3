@@ -21,7 +21,7 @@ export const useNums = () => useContext(NumsOn);
 export function Num({ n, className }: { n: string; className?: string }) {
   const { on } = useNums();
   if (!on) return null;
-  return <span data-num={n} className={cn("pointer-events-none inline-flex h-4 shrink-0 select-none items-center rounded-sm bg-fuchsia-600 px-1 font-mono text-[10px] font-semibold leading-none text-white", className)}>{n}</span>;
+  return <span data-virtu-callout={n} className={cn("pointer-events-none inline-flex h-4 shrink-0 select-none items-center rounded-sm bg-fuchsia-600 px-1 font-mono text-[10px] font-semibold leading-none text-white", className)}>{n}</span>;
 }
 
 /** C7 Face with name. People are faces with names, never pills. */
