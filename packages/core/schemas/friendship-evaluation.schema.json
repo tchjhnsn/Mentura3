@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "friendship-evaluation.schema.json",
+  "title": "Friendship evaluation",
+  "description": "One author's dated answers to the friendship questions about one friendship, at friendships/evaluations/<id>.json. A source of field values, not a life noun. Private: sharing with the friend after private reflection is not built. packages/core/src/friendship.ts reads and checks it.",
+  "x-reflect": {
+    "source": "friendship evaluation"
+  },
+  "type": "object",
+  "required": [
+    "id",
+    "friendship",
+    "date",
+    "by",
+    "status",
+    "audience",
+    "schemes",
+    "answers",
+    "created"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "friendship": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "by": {
+      "enum": [
+        "person",
+        "assistant"
+      ]
+    },
+    "status": {
+      "enum": [
+        "stated",
+        "proposed",
+        "confirmed"
+      ]
+    },
+    "audience": {
+      "const": "private"
+    },
+    "schemes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "enum": [
+          "aristotle",
+          "christian",
+          "lewis"
+        ]
+      }
+    },
+    "answers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "question",
+          "choice"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "question": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "choice": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$"
+          },
+          "words": {
+            "type": "string",
+            "maxLength": 5000
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "description": "Records the answer rests on: quotes/<id>, a journal file, or an act with the friend"
+          }
+        }
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

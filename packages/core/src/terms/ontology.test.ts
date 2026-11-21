@@ -54,7 +54,7 @@ describe("Reflect's ontology", () => {
   });
 
   it("S1 and S2: information records are sources, outside the ten Categories, never nouns", () => {
-    expect(ONTOLOGY.sources.records).toEqual(["journal entry", "reflection", "conversation", "import"]);
+    expect(ONTOLOGY.sources.records).toEqual(["journal entry", "reflection", "conversation", "import", "friendship evaluation"]);
     expect(ONTOLOGY.sources.bfo).toEqual({ class: "generically dependent continuant", iri: "http://purl.obolibrary.org/obo/BFO_0000031" });
     const o = copy();
     const meal = o.nouns.find((n) => n.noun === "meal")!;

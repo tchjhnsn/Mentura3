@@ -13,13 +13,13 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 | Path | Holds |
 |---|---|
 | `thrivesight_core/` | the hackathon reasoning engine (Python) |
-| `packages/cli/` | the `reflect` command over an instance in a folder (`init`, `write`, `add`, `close`, `list`, `check`, `present` for the presentation gate, `quote`, `tag` and `claim` for quotes and their tags, `publish`, `unpublish`, `approve` and `decline` for the `published/` folder a site reads, and `actions`, `act` and `mcp` over the core's action registry); see `packages/cli/README.md` |
+| `packages/cli/` | the `reflect` command over an instance in a folder (`init`, `write`, `add`, `close`, `list`, `check`, `present` for the presentation gate, `quote`, `tag` and `claim` for quotes and their tags, `friendship` and `friendships` for friendships and their evaluations, `publish`, `unpublish`, `approve` and `decline` for the `published/` folder a site reads, and `actions`, `act` and `mcp` over the core's action registry); see `packages/cli/README.md` |
 | `action/` | the GitHub Action an instance repository runs: refuses a public repository, checks the vault and records hand-written changes |
 | `packages/core/` | the headless core: the person's stores, journal and packs, and `published/`, the files a site reads (Reflect writes files, never a site's code), in plain TypeScript that runs in Node with no database; see `packages/core/README.md` |
 | `packages/virtu/` | the Virtu design system's editor and check, vendored from tchjhnsn/design-system-theory, and the personal site's design system (`site/`); see `packages/virtu/README.md` |
 | `lean/` | Lean 4 proofs with no Mathlib (`cd lean && lake build`): every ontology noun has one category, serves links form no cycle, every choice reaches a telos, the communities nest, every source of a value but stated starts proposed; CI builds them (`.github/workflows/lean.yml`); see `lean/README.md` |
 | `web/` | the Reflect web app (Next.js), one interface over the core; see `web/README.md` |
-| `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts, `REFLECT_FRAMEWORK_2026-11-19.md` the plan for Reflect as a framework for a life, with Aristotle's Categories as its ontology, and `REFLECT_QUOTES_2026-11-20.md` the design for claims and beliefs as tags on quotes |
+| `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts, `REFLECT_FRAMEWORK_2026-11-19.md` the plan for Reflect as a framework for a life, with Aristotle's Categories as its ontology, `REFLECT_QUOTES_2026-11-20.md` the design for claims and beliefs as tags on quotes, and `REFLECT_FRIENDSHIP_2026-11-21.md` friendship as a relation with an evaluation tool (Aristotle's Nicomachean Ethics VIII and IX as the base, Christian and Lewis schemes mapped to it; core and CLI built, app screens and sharing not) |
 | `README.md` | overview |
 | `pyproject.toml` | dependencies and scripts |
 

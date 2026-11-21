@@ -45,6 +45,12 @@ inductive Noun
   | «household»
   /-- friend group (kept; app friends; kinds friends:group). Friends and others joined for a shared pursuit (Nicomachean Ethics VIII.9, 1160a9-30) Standard: Aristotle, Nicomachean Ethics VIII.9. -/
   | «friendGroup»
+  /-- friendship (kept; app friends; kinds none). Goodwill returned and known to both, for the sake of the useful, the pleasant or the good (Nicomachean Ethics VIII.2, 1155b27-1156a5). A relation between two people, apart from the friend, who is a person; its basis, equality, community and state are kept on a friendship record (packages/core/src/friendship.ts) Standard: Aristotle, Nicomachean Ethics VIII.2-3. -/
+  | «friendship»
+  /-- goodwill (kept; app friends; kinds none). Wishing someone good for their own sake, not yet returned or not yet known to them; the beginning of friendship (Nicomachean Ethics VIII.2, 1155b32-1156a5; IX.5, 1166b30-1167a21) Standard: Aristotle, Nicomachean Ethics VIII.2, IX.5. -/
+  | «goodwill»
+  /-- fellowship (kept; app friends; kinds none). Sharing a life toward a common end in a community: koinonia (Nicomachean Ethics VIII.9, 1159b25-32; Acts 2:42). Kept on a group, not on a pair Standard: Aristotle, Nicomachean Ethics VIII.9; Acts 2:42. -/
+  | «fellowship»
   /-- venture (kept; app ventures; kinds ventures:venture). A community formed to make or provide something; in Naive, a venture Standard: Naive (venture). -/
   | «venture»
   /-- friend (kept; app friends; kinds friends:friend). A person one wishes well for their own sake, known to wish it back (Nicomachean Ethics VIII.2, 1155b31-1156a5) Standard: Aristotle, Nicomachean Ethics VIII.2. -/
@@ -147,6 +153,9 @@ def Noun.name : Noun → String
   | .«artifact» => "artifact"
   | .«household» => "household"
   | .«friendGroup» => "friend group"
+  | .«friendship» => "friendship"
+  | .«goodwill» => "goodwill"
+  | .«fellowship» => "fellowship"
   | .«venture» => "venture"
   | .«friend» => "friend"
   | .«relative» => "relative"
@@ -189,7 +198,7 @@ def Noun.name : Noun → String
   | .«lifeChange» => "life change"
 
 /-- [D] Every noun, once. -/
-def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«careerPathway», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«presentation», .«lifeChange»]
+def Noun.all : List Noun := [.«person», .«community», .«artifact», .«household», .«friendGroup», .«friendship», .«goodwill», .«fellowship», .«venture», .«friend», .«relative», .«admiredPerson», .«meal», .«firearm», .«belonging», .«letter», .«records», .«income», .«budget», .«bodyMeasure», .«hoursAvailable», .«virtue», .«craft», .«health», .«fitness», .«interest», .«preference», .«end», .«inspiration», .«careerPathway», .«citizenship», .«standing», .«duty», .«homePlace», .«need», .«credential», .«homeCard», .«meansOfGettingAround», .«estatePlan», .«work», .«purchase», .«choice», .«seekingAMate», .«date», .«election», .«adventure», .«presentation», .«lifeChange»]
 
 /-- [D] The nouns a noun names in broader. -/
 def Noun.broaderNouns : Noun → List Noun
@@ -198,6 +207,9 @@ def Noun.broaderNouns : Noun → List Noun
   | .«artifact» => []
   | .«household» => [.«community»]
   | .«friendGroup» => [.«community»]
+  | .«friendship» => []
+  | .«goodwill» => []
+  | .«fellowship» => []
   | .«venture» => [.«community»]
   | .«friend» => [.«person»]
   | .«relative» => [.«person»]
@@ -246,6 +258,9 @@ def Noun.broaderCategories : Noun → List Category
   | .«artifact» => [.«substance»]
   | .«household» => []
   | .«friendGroup» => []
+  | .«friendship» => [.«relation»]
+  | .«goodwill» => [.«relation»]
+  | .«fellowship» => [.«relation»]
   | .«venture» => []
   | .«friend» => []
   | .«relative» => []
@@ -294,6 +309,9 @@ def Noun.rank : Noun → Nat
   | .«artifact» => 0
   | .«household» => 1
   | .«friendGroup» => 1
+  | .«friendship» => 0
+  | .«goodwill» => 0
+  | .«fellowship» => 0
   | .«venture» => 1
   | .«friend» => 1
   | .«relative» => 1
@@ -342,6 +360,9 @@ def Noun.category : Noun → Category
   | .«artifact» => .«substance»
   | .«household» => .«substance»
   | .«friendGroup» => .«substance»
+  | .«friendship» => .«relation»
+  | .«goodwill» => .«relation»
+  | .«fellowship» => .«relation»
   | .«venture» => .«substance»
   | .«friend» => .«substance»
   | .«relative» => .«substance»
