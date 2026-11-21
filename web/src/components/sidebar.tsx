@@ -82,22 +82,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 
       <SidebarContent>
         {side === "mentura" ? (
-          <>
-            {/* Mentura, after Contra's sidebar (Torian, 2026-11-21): a home, the work with others, then discovery. */}
-            <Group>
-              <SidebarMenu>
-                <MenturaCreate to={to} done={done} />
-                {item("/mentura", "Home", <HomeIcon />)}
-                {item("/meetings", "Meetings", <VideoIcon />)}
-                {item("/life/ventures", "Venture Studio", <RocketIcon />)}
-                {item("/settings/profile", "Your profile", <UserRoundIcon />)}
-              </SidebarMenu>
-            </Group>
-            <Fold label="Discover">
-              {item("/v/people", "People", <UsersRoundIcon />)}
-              {item("/events", "Events", <CalendarDaysIcon />)}
-            </Fold>
-          </>
+          <MenturaTabs path={path} item={item} to={to} done={done} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -306,6 +291,72 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 ];
 
 /** The sidebar's first button: Create, a menu of what Reflect can make. */
+/** Mentura's tabs (Torian, 2026-11-21, after Productboard's rail): each tab has its own items in the panel beside it. */
+const MENTURA_TABS = [
+  { id: "home", label: "Home", href: "/mentura", icon: HomeIcon, under: ["/mentura"], opens: true },
+  { id: "meetings", label: "Meetings", href: "/meetings", icon: VideoIcon, under: ["/meetings", "/m"], opens: true },
+  { id: "studio", label: "Venture Studio", href: "/life/ventures", icon: RocketIcon, under: ["/life/ventures"], opens: true },
+  { id: "people", label: "People", href: "/v/people", icon: UsersRoundIcon, under: [], opens: false },
+  { id: "profile", label: "Profile", href: "/settings/profile", icon: UserRoundIcon, under: [], opens: false },
+] as const;
+type MenturaTab = (typeof MENTURA_TABS)[number]["id"];
+const tabOf = (path: string): MenturaTab => MENTURA_TABS.find((t) => (t.under as readonly string[]).some((u) => path === u || path.startsWith(`${u}/`)))?.id ?? "home";
+
+/** The rail of tabs at the left and the chosen tab's items beside it. A tap on a tab shows its items and opens its first page. */
+function MenturaTabs({ path, item, to, done }: { path: string; item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void }) {
+  const [tab, setTab] = useState<MenturaTab>(() => tabOf(path));
+  const [seen, setSeen] = useState(path);
+  if (seen !== path) { setSeen(path); setTab(tabOf(path)); }
+  const now = MENTURA_TABS.find((t) => t.id === tab)!;
+  return (
+    <div className="flex min-h-0 flex-1 gap-1 px-2">
+      <nav aria-label="Mentura" className="flex shrink-0 flex-col items-center gap-1 border-r pr-2">
+        {MENTURA_TABS.map((t) => {
+          const cls = cn("text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex w-12 flex-col items-center gap-1 rounded-md py-2 text-[10px] font-medium", t.id === tab && "bg-sidebar-accent text-sidebar-accent-foreground");
+          const body = <><t.icon className="size-4" /><span className="max-w-full truncate leading-none">{t.id === "studio" ? "Studio" : t.label}</span></>;
+          // People and Profile open pages outside Mentura (the shared side, Settings), so their tabs only show their items.
+          return t.opens ? (
+            <Go key={t.id} href={to(t.href)} onClick={() => { setTab(t.id); done(); }} aria-label={t.label} title={t.label} aria-current={t.id === tab ? "page" : undefined} className={cls}>{body}</Go>
+          ) : (
+            <button key={t.id} type="button" onClick={() => setTab(t.id)} aria-label={t.label} title={t.label} aria-pressed={t.id === tab} className={cls}>{body}</button>
+          );
+        })}
+      </nav>
+      <div className="min-w-0 flex-1">
+        <SidebarGroupLabel>{now.label}</SidebarGroupLabel>
+        <SidebarMenu>
+          {tab === "home" ? (
+            <>
+              <MenturaCreate to={to} done={done} />
+              {item("/mentura", "Overview", <HomeIcon />)}
+            </>
+          ) : tab === "meetings" ? (
+            <>
+              {item("/meetings", "Upcoming", <VideoIcon />)}
+              {item("/meetings?tab=past", "Past", <CalendarDaysIcon />)}
+            </>
+          ) : tab === "studio" ? (
+            <>
+              {item("/life/ventures", "Your ventures", <RocketIcon />)}
+              <li className="text-muted-foreground px-2 py-1.5 text-xs">More here once the Venture Studio is designed.</li>
+            </>
+          ) : tab === "people" ? (
+            <>
+              {item("/v/people", "People you've met", <UsersRoundIcon />)}
+              {item("/events", "Events", <CalendarDaysIcon />)}
+            </>
+          ) : (
+            <>
+              {item("/settings/profile", "What people see", <UserRoundIcon />)}
+              {item("/settings/site", "Your site", <HomeIcon />)}
+            </>
+          )}
+        </SidebarMenu>
+      </div>
+    </div>
+  );
+}
+
 /** Mentura's Create: a meeting or a venture. */
 function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
   const MADE = [
