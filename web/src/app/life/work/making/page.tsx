@@ -24,7 +24,7 @@ export default async function MakingPage() {
   for (const c of mine) if (c.craft) byGroup.set(c.craft.group, (byGroup.get(c.craft.group) ?? 0) + 1);
   return (
     <main className={PAGE}>
-      <ThingHeader crumbs={[{ label: "Scholē", href: "/schole" }]} title={door.label} />
+      <ThingHeader crumbs={[{ label: "Work", href: "/life/work" }]} title={door.label} />
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-8">
         <div className="grid gap-1.5">
           <h1 id="page-title" className="text-[28px] leading-tight font-semibold tracking-tight">
@@ -42,7 +42,7 @@ export default async function MakingPage() {
               const kept = byGroup.get(g.id) ?? 0;
               return (
                 <li key={g.id}>
-                  <Link href={`/schole/making/${g.id}`} className="hover:bg-accent grid h-full content-start gap-1.5 rounded-lg border p-4 transition">
+                  <Link href={`/life/work/making/${g.id}`} className="hover:bg-accent grid h-full content-start gap-1.5 rounded-lg border p-4 transition">
                     <span className="flex items-baseline justify-between gap-3">
                       <span className="min-w-0 font-semibold">{g.label}</span>
                       <span className="text-muted-foreground shrink-0 text-xs">{crafts.length} crafts</span>
@@ -57,7 +57,7 @@ export default async function MakingPage() {
         </section>
 
         <p className="text-sm">
-          <Link href="/schole/discover" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Not sure where to start? Discover crafts</Link>
+          <Link href="/life/work/discover" className="text-muted-foreground hover:text-foreground underline-offset-2 hover:underline">Not sure where to start? Discover crafts</Link>
         </p>
       </div>
     </main>

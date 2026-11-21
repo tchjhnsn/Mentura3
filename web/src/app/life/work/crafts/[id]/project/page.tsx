@@ -24,14 +24,14 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
   const craft = craftOf(id);
   if (!craft) notFound();
   const project = firstProjectOf(id);
-  if (!project) redirect(`/schole/crafts/${id}`);
+  if (!project) redirect(`/life/work/crafts/${id}`);
   const user = await requireUser();
   const mine = await myCraft(user.id, id);
   const photo = craftPhoto(id);
 
   return (
     <main className={PAGE}>
-      <TaskHeader back={{ href: `/schole/crafts/${id}`, label: `Back to ${craft.label}` }} title={craft.label} position="First project" />
+      <TaskHeader back={{ href: `/life/work/crafts/${id}`, label: `Back to ${craft.label}` }} title={craft.label} position="First project" />
       <article className="mx-auto mt-4 grid w-full max-w-xl grid-cols-[minmax(0,1fr)] gap-5">
         <figure className="grid gap-1">
           <Photo src={photo?.src} name={craft.label} eager className="aspect-[16/10] w-full rounded-2xl" />

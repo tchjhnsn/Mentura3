@@ -106,7 +106,7 @@ describe("interests", () => {
     expect(all.count).toBe(2);
     const make = await interests.run(ctx, { path: "make" }) as { interests: { ref: string; says: string[]; href: string; craft: { firstProject: string } }[] };
     expect(make.interests).toHaveLength(1);
-    expect(make.interests[0]).toMatchObject({ ref: "craft:baking", says: ["You make Baking: regular practice, at Adapts."], href: "/schole/crafts/baking", craft: { firstProject: "Mug cake" } });
+    expect(make.interests[0]).toMatchObject({ ref: "craft:baking", says: ["You make Baking: regular practice, at Adapts."], href: "/life/work/crafts/baking", craft: { firstProject: "Mug cake" } });
     expect(await interests.run(ctx, { path: "know" })).toMatchObject({ interests: [{ ref: "b-meditations" }] });
     const one = await interests.run(ctx, { path: "craft:baking" }) as { interest: { ref: string }; thing: { title: string; group: string; first_project: { name: string } }; more_like_it: { ref: string }[] };
     expect(one.interest.ref).toBe("craft:baking");

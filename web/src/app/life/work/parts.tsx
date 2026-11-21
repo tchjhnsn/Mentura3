@@ -19,7 +19,7 @@ const PART: Partial<Record<WorkTab, string>> = { work: "Work you do", income: "I
 /** Work's header: the tile's header with browsing work first among its icons (Torian, 2026-11-14 18:21Z: "Browse should be an icon"). */
 export function WorkHeader({ on }: { on: WorkTab | null }) {
   const part = on === "space" ? null : on === "browse" ? "Browse work" : on ? PART[on] ?? null : null;
-  return <TileHeader tile="work" label="Ergon" part={part} icons={<TileIcon label="Browse work" href="/life/work/browse" here={on === "browse"}><CompassIcon /></TileIcon>} />;
+  return <TileHeader tile="work" label="Work" part={part} icons={<TileIcon label="Browse work" href="/life/work/browse" here={on === "browse"}><CompassIcon /></TileIcon>} />;
 }
 
 /** A titled row of cards that scrolls sideways, with a link to all of them. */
@@ -155,7 +155,7 @@ export function Credit({ children }: { children: ReactNode }) {
 export function EntryTop({ kind, kindHref, title, children }: { kind: string; kindHref: string; title: string; children?: ReactNode }) {
   return (
     <>
-      <ThingHeader back={kindHref} backLabel={kind} crumbs={[{ label: "Home", href: "/" }, { label: "Ergon", href: "/life/work" }, { label: kind, href: kindHref }]} title={title} action={<Button asChild size="sm" variant="outline"><a href="#inspires"><SparklesIcon />It inspires me</a></Button>} />
+      <ThingHeader back={kindHref} backLabel={kind} crumbs={[{ label: "Home", href: "/" }, { label: "Work", href: "/life/work" }, { label: kind, href: kindHref }]} title={title} action={<Button asChild size="sm" variant="outline"><a href="#inspires"><SparklesIcon />It inspires me</a></Button>} />
       <div className="mt-4 grid gap-2">
         <p className="text-muted-foreground text-xs tracking-wide uppercase">{kind}</p>
         <h1 id="page-title" className="scroll-mt-20 text-3xl font-semibold tracking-tight first-letter:uppercase">{title}</h1>

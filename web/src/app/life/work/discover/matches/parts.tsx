@@ -26,7 +26,7 @@ export function KeepOnOpen({ ids }: { ids: string[] }) {
 export function ShareCrafts({ names }: { names: string[] }) {
   const [copied, setCopied] = useState(false);
   const share = async () => {
-    const url = `${window.location.origin}/schole/discover`;
+    const url = `${window.location.origin}/life/work/discover`;
     const text = `My three crafts to try this week: ${names.join(", ")}. Find yours:`;
     if (navigator.share) {
       try { await navigator.share({ title: "My three crafts", text, url }); } catch { /* closed the sheet */ }

@@ -18,7 +18,7 @@ import { writeTowardAction } from "./space-actions";
 import { kindLabel, STATE, WAYS } from "./aims";
 import { Steps } from "./steps";
 
-export const metadata: Metadata = { title: "Ergon" };
+export const metadata: Metadata = { title: "Work" };
 export const dynamic = "force-dynamic";
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? "";
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
