@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { courseSite } from "@reflect/core/courses";
+import { courseOf, scholeCourseUrl } from "@reflect/core/aristotle/index";
 import { EXAM } from "@reflect/core/examination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,21 @@ import { requireUser } from "@/server/session";
 import { TaskHeader } from "@/components/headers";
 import { createExaminationAction } from "../actions";
 import { reasonFor } from "@/server/learn-reason-store";
+import { Num } from "@/components/studio/bits";
+import { COURSES } from "@reflect/core/aristotle/index";
+
+/** S10 with no course named: pick the course to be examined on. */
+function ChooseCourse() {
+  return (
+    <main className={PAGE}>
+      <div className="max-w-2xl space-y-4">
+        <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">Put yourself under examination<Num n="S10" /></h1>
+        <p className="text-muted-foreground leading-relaxed">Choose the course you will answer for. You then invite people to examine you, and you meet them in person. There is no grade: each examiner writes in their own words whether they attest that you know it.</p>
+        <ul className="divide-y rounded-xl border">{COURSES.map((c) => <li key={c.id}><Link href={`/schole/examinations/new?course=${c.id}`} className="hover:bg-accent/50 flex justify-between gap-3 p-3 text-sm"><span className="font-medium">{c.title}</span><span className="text-muted-foreground">{c.level}</span></Link></li>)}</ul>
+      </div>
+    </main>
+  );
+}
 
 export const metadata: Metadata = { title: "Put yourself under examination" };
 export const dynamic = "force-dynamic";
@@ -21,16 +36,19 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) 
 export default async function NewExaminationPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await requireUser();
   const sp = await searchParams;
-  const site = courseSite(one(sp.u));
-  if (!site) notFound();
+  // ?course= names one of Scholē's Aristotle courses (S10); ?u= a Yale or MIT lecture course, as before.
+  const own = courseOf(one(sp.course));
+  const site = own ? { url: scholeCourseUrl(own.id) } : courseSite(one(sp.u));
+  if (!site) return <ChooseCourse />;
   const reason = await reasonFor(user.id, site.url);
-  const title = one(sp.t) || "This course";
+  const title = own?.title ?? (one(sp.t) || "This course");
+  const back = own ? `/schole/c/${own.id}` : `/schole/courses?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}`;
   return (
     <main className={PAGE}>
-      <TaskHeader back={{ href: `/schole/courses?u=${encodeURIComponent(site.url)}&t=${encodeURIComponent(title)}`, label: "Back to the course" }} title={title} position="Examination" />
+      <TaskHeader back={{ href: back, label: "Back to the course" }} title={title} position="Examination" />
       <div className="mt-6 max-w-2xl space-y-6">
         <header className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Put yourself under examination</h1>
+          <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">Put yourself under examination<Num n="S10" /></h1>
           <p className="text-muted-foreground leading-relaxed">Say what you know from this course and will answer for. You then invite people to examine you, and you meet them in person. There is no grade: each examiner writes in their own words whether they attest that you know it, and that is kept with your record.</p>
         </header>
         {reason ? (
