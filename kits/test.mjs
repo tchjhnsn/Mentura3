@@ -16,6 +16,8 @@ let failed = 0;
 const expect = (name, ok, detail = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
 // Naive finds Mentura's kits only through NAIVE_KITS (EE-118), so every run names this folder.
 const KITS = new URL(".", import.meta.url).pathname;
+// The upgrade lands on the framework version the installed Naive's upgrades.json names.
+const NAIVE_VERSION = JSON.parse(readFileSync(naivePath("packages/naive/src/engine/upgrades.json"), "utf8")).framework;
 const node = (args, env = {}) => spawnSync("node", args, { cwd: repo, encoding: "utf8", env: { ...process.env, NAIVE_KITS: KITS, ...env } });
 const naive = (args, env) => node([naivePath("packages/naive/src/interfaces/cli/naive.mjs"), ...args], env);
 const mentura = (args, env) => node([naivePath("packages/naive/src/interfaces/cli/mentura.mjs"), ...args], env);
@@ -40,7 +42,7 @@ expect("accepting without the typed confirmation is refused", noConfirm.status =
 const twice = naive(["upgrade", v, "--agent"], { MENTURA_AGENT_CMD: STAND_IN });
 expect("a second upgrade cannot be staged over one waiting", twice.status === 1 && /already staged/.test(twice.stderr));
 const ok = naive(["upgrade", v, "--accept", "--confirm", "upgrade", "--by", "Founder"]);
-expect("the founder accepts and the upgrade lands", ok.status === 0 && /is on Naive 0\.3\.0/.test(ok.stdout), ok.stdout + ok.stderr);
+expect("the founder accepts and the upgrade lands", ok.status === 0 && ok.stdout.includes(`is on Naive ${NAIVE_VERSION}`), ok.stdout + ok.stderr);
 expect("the agent's edit landed", /validation package for interviews/.test(readFileSync(join(v, "AGENTS.md"), "utf8")));
 expect("the migrations landed (foundation/ and decisions/ in place, pins written)", existsSync(join(v, "naive.config.json")) && !existsSync(join(v, "pillars")) && existsSync(join(v, "_private/pillars/product.md")));
 const log = entries(v);

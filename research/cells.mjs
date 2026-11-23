@@ -7,17 +7,17 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { naiveRoot } from "../../scripts/naive.ts";
+import { naiveCode, naivePhases } from "../../scripts/naive.ts";
 
 // Functions, phases and frames are Naive's records, read from the installed package.
-const repo = naiveRoot;
+const repo = naiveCode;
 const load = (p) => JSON.parse(readFileSync(join(repo, p), "utf8"));
 // The aspects the pilots use: what the situation was, what was decided, who decided, the evidence
 // at the time, and what came of it.
 export const ASPECTS = ["state", "decision", "decider", "evidence", "outcome"];
 
 export function functions() { return load("packages/naive/src/functions/departments.json").departments.map((d) => d.id); }
-export function phases() { return load("packages/naive/src/functions/products/frameworks/product-anatomy/phases.json").phases.map((p) => p.id); }
+export function phases() { return naivePhases().map((p) => p.id); }
 export function frames() {
   const dir = join(repo, "packages/naive/library", "packages");
   if (!existsSync(dir)) return [];

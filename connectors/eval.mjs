@@ -38,7 +38,7 @@ const ghMake = async ({ writes = "pull-request", search = "api" } = {}) => {
     base: (p) => gh.files()[`kb/${p}`] ?? null, later: (p, branch) => gh.files(branch)[`kb/${p}`] ?? null, pulls: () => gh.pulls };
 };
 process.env.MENTURA_EVAL_FAKE_TOKEN = "fake";
-const ghT = await contract(h, "github (fake API)", ghMake);
+const ghT = /** @type {Awaited<ReturnType<typeof ghMake>>} */ (await contract(h, "github (fake API)", ghMake));
 {
   const a = await ghT.c.read("notes/alpha.md");
   expect("github (fake API): read gives the branch's commit and a permalink to the file at that commit", /^[0-9a-f]{40}$/.test(a.commit) && a.permalink === `https://github.com/acme/knowledge/blob/${a.commit}/kb/notes/alpha.md`);
@@ -58,9 +58,14 @@ cpSync(naivePath("packages/naive/src/records/examples/workspace"), ws, { recursi
 process.env.MENTURA_WORKSPACE = ws;
 const tandem = join(ws, "ventures/tandem");
 expect("register: the GitHub connector is not Naive's; the platform adds it to the registry", !registry().has("github") && (registerPlatformConnectors(), registry().get("github")?.module.endsWith("platform/connectors/github.mjs")));
-const { call } = await import("naive-framework/src/router/router.mjs");
+const router = await import("naive-framework/src/router/router.mjs");
+/** @typedef {{ name?: string, draft?: boolean, pull_request?: string, version?: string, permalink?: string, [k: string]: unknown }} Res */
+/** @typedef {{ source?: string, address?: string, version?: string, permalink?: string, pull_request?: string, connector?: string }} Src */
+/** @typedef {{ ok: boolean, error?: string, result?: Res | null, source?: Src, pending_pull_requests?: { pull_request?: string }[], [k: string]: unknown }} Reply */
+/** The router's answer, with the fields these evals read. */
+const call = (/** @type {import("naive-framework/src/router/router.mjs").CallArgs} */ args) => /** @type {Promise<Reply>} */ (router.call(args));
 const { entries } = await import("naive-framework/src/core/provenance.mjs");
-const kettle = { ...Object.values((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result)[0], id: "kettle", name: "Kettle (in GitHub)" };
+const kettle = { ...Object.values(/** @type {Record<string, object>} */ ((await call({ venture: "tandem", route: "purpose/product", action: "read" })).result))[0], id: "kettle", name: "Kettle (in GitHub)" };
 const team = fakeGitHub({ repo: "acme/tandem", files: { "ventures/tandem/products/kettle.json": JSON.stringify(kettle, null, 2) + "\n", "ventures/tandem/notes/launch.md": "# Launch plan\n\nShip the kettle subscription in spring.\n" } });
 useFetch(team.fetch);
 process.env.MENTURA_EVAL_FAKE_TOKEN = "fake";

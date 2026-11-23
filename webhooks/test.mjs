@@ -56,7 +56,7 @@ try {
   const ok = await post("/webhooks/shop/crm", { paths: ["customers/acme.json"], version: "v2" });
   const body = /** @type {{ stale?: string[] }} */ (await ok.json());
   expect("a signed notification is accepted (202) and names what it marked", ok.status === 202 && body.stale?.includes("product/shop.json"), JSON.stringify(body));
-  const read = await call({ venture: "shop", workspace: ws, route: "product/shop", action: "read" });
+  const read = /** @type {{ ok: boolean, stale?: { because?: { source?: string, via?: string }[] } }} */ (await call({ venture: "shop", workspace: ws, route: "product/shop", action: "read" }));
   expect("the router says the summary is stale, and why", read.ok && read.stale?.because?.[0]?.source === "crm" && read.stale.because[0].via === "provenance", JSON.stringify(read.stale));
   const unknown = await post("/webhooks/shop/billing", { paths: ["x.json"] }, "billing-secret");
   expect("a correctly signed notification from a source the venture does not have is 404", unknown.status === 404);

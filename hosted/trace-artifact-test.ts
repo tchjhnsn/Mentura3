@@ -24,11 +24,13 @@ const required = [
   "platform/hosted/tenant-session.ts",
   "platform/connectors/postgres.ts",
   "console/lib/bridge.mjs",
+  "console/lib/naive-file.mjs",
   "console/lib/assertion.ts",
   "console/lib/claims.ts",
   "console/lib/phase.ts",
   "console/lib/record-forms.ts",
   "node_modules/naive-framework/package.json",
+  "node_modules/effect/package.json",
   "node_modules/pg/package.json",
 ];
 

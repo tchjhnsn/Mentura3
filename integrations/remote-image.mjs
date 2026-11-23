@@ -40,7 +40,11 @@ export async function fetchAllowed(url, hosts, { fetchImpl = fetch } = {}) {
   throw new Error(`${url}: too many redirects`);
 }
 
-/** @param {{ venture: string, workspace?: string, url: string, license?: string, credit?: string, id?: string, alt?: string, copy?: string, actor?: string, fetchImpl?: typeof fetch }} opts */
+/** @typedef {{ raw: string, copy?: string, original?: string, facts?: { type?: string, width?: number, height?: number } }} Fetched */
+/**
+ * @param {{ venture: string, workspace?: string, url: string, license?: string, credit?: string, id?: string, alt?: string, copy?: string, actor?: string, fetchImpl?: typeof fetch }} opts
+ * @returns {Promise<{ ok: boolean, error?: string, result?: Fetched }>}
+ */
 export async function fetchRemoteImage({ venture, workspace, url, license, credit, id, alt, copy, actor = "agent", fetchImpl }) {
   const dir = ventureDir(venture, workspace);
   if (!dir) return { ok: false, error: `no venture ${venture}` };
@@ -59,9 +63,9 @@ export async function fetchRemoteImage({ venture, workspace, url, license, credi
     mkdirSync(dirname(join(dir, copy)), { recursive: true });
     writeFileSync(join(dir, copy), got.buf);
     const a = await addAsset(/** @type {Parameters<typeof addAsset>[0]} */ ({ venture, workspace, path: copy, source: url, license, credit, alt, origin_url: url, actor }));
-    if (!a.ok) return a;
+    if (!a.ok) return { ok: false, error: String(a.error ?? "the asset was not added") };
   }
-  const r = await addRemote(/** @type {Parameters<typeof addRemote>[0]} */ ({ venture, workspace, url, license, credit, id, alt, fetched, copy, actor }));
+  const r = /** @type {{ ok: boolean, error?: string, result?: Fetched }} */ (await addRemote(/** @type {Parameters<typeof addRemote>[0]} */ ({ venture, workspace, url, license, credit, id, alt, fetched, copy, actor })));
   if (!r.ok) return r;
   // The original stays private: raw/sources/<id>/original.* is ignored by git (EE-070).
   const original = join(r.result.raw, `original.${EXT[f.type]}`);

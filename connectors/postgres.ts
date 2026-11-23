@@ -193,9 +193,13 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
      * Appends a row unless the newest row already holds this content; the chain is extended under a per-tenant lock.
      * `base` (a version, or null for "not there yet") refuses the write with a VersionConflict when the item moved;
      * `append` adds whole lines to the stored content. Both are checked inside the lock, by Naive's checkWrite.
+     * The table holds text, so bytes are taken only when they are valid UTF-8.
      */
-    async write(p: string, content: string, opts: { base?: string | null, append?: boolean } = {}) {
+    async write(p: string, bytes: string | Buffer, opts: { base?: string | null, append?: boolean } = {}) {
       if (writes === "none") throw new Error(`${id} is read-only`);
+      let content: string;
+      try { content = typeof bytes === "string" ? bytes : new TextDecoder("utf-8", { fatal: true }).decode(bytes); }
+      catch { throw new Error(`${id} stores text; ${p} is not valid UTF-8`); }
       const path = full(p);
       const out = await tx(async (run) => {
         await run("select pg_advisory_xact_lock(hashtext($1))", [`${TABLE}/${tenant}`]);

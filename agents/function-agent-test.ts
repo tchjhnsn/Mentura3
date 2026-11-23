@@ -41,7 +41,7 @@ ok("every suggested write glob matches a route", ids.every((id) => functionAgent
 const strategy = functionAgent("strategy");
 ok("strategy writes decisions and its own foundation and validation routes, nothing else", strategy.writes.includes("decisions/*") && strategy.writes.includes("foundation/telos") && strategy.writes.includes("validation/interviews/*") && strategy.writes.every((g) => /^(decisions|foundation|validation)\//.test(g)), JSON.stringify(strategy.writes));
 ok("no function's derived reach can write the team plan", ids.every((id) => !functionAgent(id).writes.some((g) => routeGlob(g).test("people/team-plan"))));
-ok("strategy's skills come from its module and its validation kit", ["telos", "chief-of-staff", "problem-validation", "validation-score"].every((n) => strategy.skills.some((s) => s.name === n)) && strategy.skills.length === 10, strategy.skills.map((s) => s.path).join());
+ok("strategy's skills come from its module and its validation kit", ["telos", "chief-of-staff", "problem-validation", "validation-score"].every((n) => strategy.skills.some((s) => s.name === n)) && strategy.skills.every((s) => /^\/function\/(skills|kits\/validation\/skills)\//.test(s.path)), strategy.skills.map((s) => s.path).join());
 ok("an unknown function is an error naming the valid ones", (() => { try { functionAgent("sales"); return false; } catch (e) { return /strategy/.test(String(e)); } })());
 
 // ---- A venture staffed with the strategy agent only, written as a person would ----

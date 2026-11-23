@@ -67,9 +67,9 @@ const make = async ({ writes = "direct" } = {}) => {
   for (const [p, c] of Object.entries(FIXTURE)) await seed.write(`kb/${p}`, c);
   for (const [p, c] of Object.entries(OUTSIDE)) await seed.write(p, c);
   const c = connect({ tenant, client: pool, root: "kb", writes });
-  return { c, tenant, base: async (p: string) => (await seed.read(`kb/${p}`))?.content ?? null, later: async (p: string) => (await seed.read(`kb/${p}`))?.content ?? null, pulls: () => [] };
+  return { c, tenant };
 };
-const t = await contract(h, "postgres", make);
+const t = (await contract(h, "postgres", make)) as Awaited<ReturnType<typeof make>>;
 {
   const again = await t.c.write("notes/alpha.md", (await t.c.read("notes/alpha.md"))?.content ?? "");
   expect("postgres: writing the content the store already holds appends nothing", "unchanged" in again);

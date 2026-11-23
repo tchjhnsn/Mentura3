@@ -14,6 +14,7 @@ import type { Context, Entry } from "naive-framework/src/engine/triage.ts";
 import { correctFiled, routerLedger, trialId, type Ledger, type Resolution, type Trial, type TriageRecord } from "./triage-ledger.ts";
 import { Command, triageGraph, type Deps } from "./triage-graph.ts";
 import type { JevReply, JevRequest } from "./jev.ts";
+import { naivePath } from "../../scripts/naive.ts";
 
 let failed = 0;
 const ok = (name: string, cond: boolean, detail?: unknown) => {
@@ -87,7 +88,7 @@ const run = async (unsure: Record<string, number>, answer?: Record<string, boole
 // 4. Through Naive's router, into a real venture's ledger.
 {
   const ws = mkdtempSync(join(tmpdir(), "triage-ledger-test-"));
-  const cli = new URL("../../node_modules/naive-framework/packages/naive/src/interfaces/cli/mentura.mjs", import.meta.url).pathname;
+  const cli = naivePath("packages/naive/src/interfaces/cli/mentura.mjs");
   const env = { ...process.env, MENTURA_WORKSPACE: ws };
   const made = spawnSync(process.execPath, [cli, "init", join(ws, "ventures/kettle"), "--id", "kettle"], { encoding: "utf8", env });
   ok("a venture from Naive's template starts", made.status === 0, made.stderr);
