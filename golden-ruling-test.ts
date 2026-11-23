@@ -50,8 +50,9 @@ try {
   assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "builds-on", to: "n-002" }] }).status, 0, "a relation ruling validates");
   assert.equal(validate({ ...sample, field: "relation", value: [{ relation: "inspires", to: "n-002" }] }).status, 1, "a relation outside the term engine's set is rejected");
 
-  const idea = readSchema("founder-idea");
-  const golden = readSchema("golden-ruling");
+  type Enums = Record<string, { enum?: unknown }>;
+  const idea = readSchema("founder-idea") as { properties: Enums };
+  const golden = readSchema("golden-ruling") as { $defs: Enums };
   for (const f of ["status", "importance"]) assert.deepEqual(golden.$defs[f].enum, idea.properties[f].enum, `${f} values match the idea record`);
 
   const folder = join(root, "docs/reviews/ontology-golden");

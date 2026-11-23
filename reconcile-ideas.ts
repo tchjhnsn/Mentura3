@@ -23,7 +23,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { run } from "naive-framework/src/terms/engine.ts";
-import { disagreements, readLean } from "naive-framework/src/terms/lean-agreement-test.ts";
+import { disagreements, readLean } from "naive-framework/src/terms/lean-agreement.ts";
 import type { LinkGraph } from "naive-framework/src/terms/levels.ts";
 import { typedLink } from "naive-framework/src/terms/terms.ts";
 import { recordsIn } from "naive-framework/src/records/index.mjs";
@@ -128,7 +128,7 @@ export class World {
     this.admitted = new Set(admitted.terms.flatMap((t) => [t.id, t.label]));
   }
 
-  /** The Lean agreement check (packages/naive/src/terms/lean-agreement-test.ts), plus the theorems typed-link cites. */
+  /** The Lean agreement check (packages/naive/src/terms/lean-agreement.ts), plus the theorems typed-link cites. */
   lean(): string[] {
     if (!this.leanCache) {
       const declared = readLean(this.naive).theorems;
