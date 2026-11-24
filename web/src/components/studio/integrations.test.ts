@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { MARKET } from "@reflect/core/marketplace";
 import { consoleBack } from "./connect-back";
-import { CATEGORIES, CLUSTERS, categoriesOf, forBusiness, forFunction, forGroup, functionsOf, search } from "./integrations";
+import { CATEGORIES, CLUSTERS, categoriesOf, forBusiness, forFunction, forGroup, functionsOf, search, usableBy } from "./integrations";
 import { PROCESS_GROUPS, TOOLS } from "./tools";
 
 describe("integration categories", () => {
@@ -78,6 +78,15 @@ describe("recommendations", () => {
     expect(search("stripe").map((c) => c.id)).toEqual(["stripe"]);
     expect(search("source control").map((c) => c.id)).toEqual(["github"]);
     expect(search("").length).toBe(MARKET.length);
+  });
+});
+
+describe("which businesses use a connection", () => {
+  it("opens a connection to every business when none are named, else only to those named", () => {
+    expect(usableBy({ businesses: null }, "corner-bakery")).toBe(true);
+    expect(usableBy({ businesses: ["corner-bakery"] }, "corner-bakery")).toBe(true);
+    expect(usableBy({ businesses: ["corner-bakery"] }, "haptic-plays")).toBe(false);
+    expect(usableBy({ businesses: [] }, "corner-bakery")).toBe(false);
   });
 });
 

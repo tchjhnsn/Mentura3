@@ -12,20 +12,26 @@ import { fnOf, ventureHref } from "@/components/studio/data";
 import { categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
 import { Fact, FitBadge } from "@/components/studio/integrations-ui";
 import { forBusiness } from "@/components/studio/integrations";
-import { disconnectIntegration } from "../actions";
-import { integrationsContext } from "../context";
+import { listVentures } from "@/app/studio/actions";
+import { disconnectIntegration, saveBusinesses, useHere } from "../actions";
+import { integrationsContext, usableBy } from "../context";
 
 export const dynamic = "force-dynamic";
 
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 
-export default async function IntegrationPage({ params, searchParams }: { params: Promise<{ slug: string; id: string }>; searchParams: Promise<{ connected?: string; disconnected?: string; error?: string }> }) {
+export default async function IntegrationPage({ params, searchParams }: { params: Promise<{ slug: string; id: string }>; searchParams: Promise<{ connected?: string; disconnected?: string; saved?: string; error?: string }> }) {
   const { slug, id: raw } = await params;
   const id = decodeURIComponent(raw);
   const c = integrationOf(id);
   if (!c) notFound();
   const [ctx, sp] = await Promise.all([integrationsContext(slug), searchParams]);
-  const conn = ctx.connections.find((x) => x.connector === id && x.status === "connected");
+  const mine = ctx.connections.find((x) => x.connector === id && x.status === "connected");
+  // Connected here only when this business may use it; a connection kept to other businesses offers Use it here.
+  const conn = mine && usableBy(mine, ctx.id) ? mine : undefined;
+  const others = mine && !conn ? mine : undefined;
+  const ventures = conn ? await listVentures() : null;
+  const choices = [...new Map([[ctx.id, ctx.name], ...(ventures?.ok ? ventures.value.map((v): [string, string] => [v.id, v.name]) : [])]).entries()];
   const ready = marketReady(c, process.env);
   const cats = categoriesOf(id);
   const fns = [...new Set(cats.flatMap(functionsOf))];
@@ -44,10 +50,13 @@ export default async function IntegrationPage({ params, searchParams }: { params
             </div>
           </div>
           {conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
+            : others ? <form action={useHere.bind(null, slug, id, others.id, others.businesses ?? [])}><Button type="submit">Use it in {ctx.name}</Button></form>
             : ready ? <Button asChild><Link href={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)}>Connect</Link></Button>
             : <Badge variant="outline" className="font-normal">Needs setup by Reflect</Badge>}
         </div>
         {sp.connected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is connected. Reflect reads it when you ask, and anything that writes or sends waits for your Send.</p> : null}
+        {others ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">You have connected {c.name}, but kept it to your other businesses.</p> : null}
+        {sp.saved ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">Saved which businesses can use {c.name}.</p> : null}
         {sp.disconnected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is disconnected. Reflect no longer holds your sign-in.</p> : null}
         {sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
       </div>
@@ -74,8 +83,21 @@ export default async function IntegrationPage({ params, searchParams }: { params
           ) : null}
           {conn ? (
             <section className="rounded-xl border p-4">
+              <h2 className="font-semibold">Which businesses can use it</h2>
+              <form action={saveBusinesses.bind(null, slug, id, conn.id)} className="mt-2 space-y-1 text-sm">
+                <label className="flex items-center gap-2 py-1"><input type="checkbox" name="all" defaultChecked={conn.businesses === null} />All your businesses, now and later</label>
+                <div className="text-muted-foreground pt-1 text-xs">Or only these:</div>
+                {choices.map(([bid, bname]) => (
+                  <label key={bid} className="flex items-center gap-2 py-1"><input type="checkbox" name="business" value={bid} defaultChecked={conn.businesses?.includes(bid) ?? false} />{bname}</label>
+                ))}
+                <Button type="submit" size="sm" variant="outline" className="mt-2">Save</Button>
+              </form>
+            </section>
+          ) : null}
+          {conn ? (
+            <section className="rounded-xl border p-4">
               <h2 className="font-semibold">Disconnect</h2>
-              <p className="text-muted-foreground mt-1 text-sm">Reflect forgets your sign-in. Every business you own loses it, not only {ctx.name}.</p>
+              <p className="text-muted-foreground mt-1 text-sm">Reflect forgets your sign-in. Every business that uses it loses it, not only {ctx.name}.</p>
               <form action={disconnectIntegration.bind(null, slug, id, conn.id)} className="mt-3"><Button variant="destructive" size="sm" type="submit">Disconnect {c.name}</Button></form>
             </section>
           ) : null}

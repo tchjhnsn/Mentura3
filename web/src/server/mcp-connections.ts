@@ -11,20 +11,36 @@ import { open, seal } from "./crypto";
 import { privateAddress, urlProblem } from "./link-back";
 import { siteUrl } from "./site";
 
-export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected"; connectedAt: string | null; catalog: MarketConnector | null };
+/** `businesses`: the business ids that may use it in the business console, or null for every business (migration 0066). */
+export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected"; connectedAt: string | null; catalog: MarketConnector | null; businesses: string[] | null };
 
 type Row = {
   id: string; user_id: string; connector: string; name: string; server_url: string; state: string | null;
   client_ct: string | null; tokens_ct: string | null; verifier_ct: string | null; discovery_ct: string | null;
-  status: string; connected_at: Date | null;
+  status: string; connected_at: Date | null; businesses?: string[] | null;
 };
 
 const newId = () => randomBytes(9).toString("base64url");
 export const callbackUrl = () => `${siteUrl()}/api/connectors/callback`;
 const toConnection = (r: Row): Connection => ({
   id: r.id, connector: r.connector, name: r.name, serverUrl: r.server_url, status: r.status === "connected" ? "connected" : "pending",
-  connectedAt: r.connected_at ? r.connected_at.toISOString() : null, catalog: marketById(r.connector) ?? null,
+  connectedAt: r.connected_at ? r.connected_at.toISOString() : null, catalog: marketById(r.connector) ?? null, businesses: r.businesses ?? null,
 });
+
+/**
+ * Sets which businesses may use a connection: null for every business, or a list of business ids. Only the person's
+ * own live connection changes; ids are kept as given, at most 200 of 120 characters each.
+ */
+export async function setBusinesses(userId: string, id: string, businesses: readonly string[] | null): Promise<void> {
+  const list = businesses === null ? null : [...new Set(businesses.map((b) => String(b).slice(0, 120)).filter(Boolean))].slice(0, 200);
+  try {
+    await db().query("UPDATE mcp_connection SET businesses = $3 WHERE id = $1 AND user_id = $2 AND status <> 'removed'", [id, userId, list]);
+  } catch (e) {
+    // Until migration 0066 runs there is no column to keep the choice in; say so rather than fail silently.
+    if ((e as { code?: string }).code === "42703") throw new Error("Choosing businesses needs the database updated first (migration 0066).");
+    throw e;
+  }
+}
 
 /** The person's connectors, connected and pending, newest first. */
 export async function connectionsOf(userId: string): Promise<Connection[]> {

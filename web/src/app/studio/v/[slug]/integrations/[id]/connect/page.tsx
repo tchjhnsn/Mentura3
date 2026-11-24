@@ -24,7 +24,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
   const ready = marketReady(c, process.env);
   return (
     <div className="mx-auto max-w-lg px-4 pt-8 pb-16" data-virtu-screen="V24">
-      <div className="flex items-center gap-2"><Num n="V24" /><span className="text-muted-foreground text-sm">Connecting to your account, for {ctx.name} and your other businesses</span></div>
+      <div className="flex items-center gap-2"><Num n="V24" /><span className="text-muted-foreground text-sm">Connecting your {c.by} account</span></div>
       <div className="mt-4 flex items-center gap-3">
         <Logo id={c.id} name={c.name} />
         <h1 className="text-xl font-semibold tracking-tight">Connect {c.name}</h1>
@@ -37,17 +37,18 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
         </ul>
         <p className="text-muted-foreground border-t px-4 py-3 text-sm">Reads run when you ask. Anything that writes, sends or pays waits for you to tap Send on a card that names it. You can disconnect at any time.</p>
       </section>
-      <section className="mt-4 rounded-xl border px-4 py-3 text-sm">
-        <h2 className="font-medium">Which businesses can use it</h2>
-        <p className="text-muted-foreground mt-1">All of yours. Choosing them one by one is not built yet.</p>
-      </section>
-      {sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
-      <div className="mt-6 flex justify-between gap-3">
-        <Button variant="outline" asChild><Link href={back}>Cancel</Link></Button>
-        {ready ? (
-          <form action={connectIntegration.bind(null, slug, id)}><Button type="submit">Continue to {c.by}</Button></form>
-        ) : <p className="text-muted-foreground text-sm">{c.name} needs Reflect registered with it first.</p>}
-      </div>
+      <form action={connectIntegration.bind(null, slug, id)}>
+        <fieldset className="mt-4 rounded-xl border px-4 py-3 text-sm">
+          <legend className="px-1 font-medium">Which businesses can use it</legend>
+          <label className="flex items-start gap-2 py-1"><input type="radio" name="scope" value="all" defaultChecked className="mt-1" /><span>All your businesses<span className="text-muted-foreground block">Now and any you start later.</span></span></label>
+          <label className="flex items-start gap-2 py-1"><input type="radio" name="scope" value="this" className="mt-1" /><span>Only {ctx.name}<span className="text-muted-foreground block">You can add others on its page later.</span></span></label>
+        </fieldset>
+        {sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
+        <div className="mt-6 flex justify-between gap-3">
+          <Button variant="outline" asChild><Link href={back}>Cancel</Link></Button>
+          {ready ? <Button type="submit">Continue to {c.by}</Button> : <p className="text-muted-foreground text-sm">{c.name} needs Reflect registered with it first.</p>}
+        </div>
+      </form>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { ScreenHead } from "@/components/studio/shell";
 import { ventureHref } from "@/components/studio/data";
 import { categoriesOf } from "@/components/studio/integrations";
 import { connectIntegration } from "../actions";
-import { integrationsContext } from "../context";
+import { integrationsContext, usableBy } from "../context";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +18,7 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
   const ctx = await integrationsContext(slug);
   return (
     <div className="pb-16">
-      <ScreenHead n="V25" title="Connected" job={`Accounts you have signed in to. Every business you own can use them, ${ctx.name} included.`}>
+      <ScreenHead n="V25" title="Connected" job="Accounts you have signed in to, and which of your businesses use each.">
         <Button variant="outline" size="sm" asChild><Link href={ventureHref(slug, "integrations")}>Browse integrations</Link></Button>
       </ScreenHead>
       <div className="max-w-3xl px-4 md:px-8">
@@ -31,7 +31,12 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                 <li key={c.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
                   <Logo id={c.connector} name={c.name} size="size-9" glyph="size-5" />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 text-sm font-medium">{c.name}{c.status === "pending" ? <Badge variant="outline" className="font-normal">Sign-in not finished</Badge> : null}</div>
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {c.name}
+                      {c.status === "pending" ? <Badge variant="outline" className="font-normal">Sign-in not finished</Badge> : null}
+                      {c.status === "connected" && !usableBy(c, ctx.id) ? <Badge variant="outline" className="font-normal">Not used by {ctx.name}</Badge> : null}
+                      {c.status === "connected" && c.businesses !== null && usableBy(c, ctx.id) ? <Badge variant="outline" className="font-normal">{c.businesses.length === 1 ? "Only this business" : `${c.businesses.length} businesses`}</Badge> : null}
+                    </div>
                     <div className="text-muted-foreground text-sm">
                       {[...categoriesOf(c.connector).map((k) => k.name), inCatalog ? null : "Your own server", c.connectedAt ? `Connected ${day(c.connectedAt)}` : null].filter(Boolean).join(" · ")}
                     </div>

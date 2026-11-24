@@ -113,3 +113,6 @@ export function search(q: string, list: readonly MarketConnector[] = MARKET): Ma
   if (!n) return [...list];
   return list.filter((c) => [c.name, c.by, c.line, ...c.does, ...categoriesOf(c.id).map((k) => k.name)].some((s) => s.toLowerCase().includes(n)));
 }
+
+/** Whether a business may use a connection: every business when none are named (null), else only those named. */
+export const usableBy = (c: { businesses: readonly string[] | null }, business: string): boolean => c.businesses === null || c.businesses.includes(business);
