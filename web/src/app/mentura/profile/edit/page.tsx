@@ -91,7 +91,7 @@ export default function HowYouAppear() {
             <Num n="M15.3" className="absolute -top-2 left-0" />
             <Button disabled={!roles.length} onClick={() => { setRoles(roles); setSaved(true); say("Saved. Your profile shows it now."); }}>Save</Button>
             {saved ? <span className="flex items-center gap-1.5 text-sm text-emerald-700 dark:text-emerald-400"><CheckIcon className="size-4" />Saved. Your Mentura profile now shows this.</span> : null}
-            <Link href="/settings/account" className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline sm:ml-auto">Account settings, shared with Reflect</Link>
+            <Link href="/settings/account" className="text-muted-foreground hover:text-foreground text-sm underline-offset-4 hover:underline sm:ml-auto">Account settings</Link>
           </div>
         </div>
 

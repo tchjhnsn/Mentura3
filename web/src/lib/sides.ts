@@ -14,7 +14,13 @@ export const NEUTRAL_PATHS = ["/chat", "/settings", "/marketplace", "/sign-in", 
  * Mentura's pages (Torian, 2026-11-21: meetings belong to Mentura, not the personal side; the Ventures app is its Venture Studio). They are served on the main
  * host like the neutral paths, and the sidebar shows Mentura's navigation on them.
  */
-export const MENTURA_PATHS = ["/mentura", "/meetings", "/m", "/life/ventures"] as const;
+export const MENTURA_PATHS = ["/mentura", "/meetings", "/m", "/life/ventures", "/studio"] as const;
+/** Apps with their own full-screen frame, shown without the app's sidebar: Scholē. The Venture Studio is part of
+ * Mentura and uses Mentura's sidebar (Torian, 2026-11-24: "continuity between our sidebars for the studio and Mentura"). */
+export const FULL_SCREEN_PATHS = ["/schole"] as const;
+/** Whether a path opens a full-screen app. Decided in the browser on every navigation (src/components/sidebar.tsx),
+ * because the root layout renders once and keeps its first answer when the person moves between pages. */
+export const isFullScreen = (path: string) => FULL_SCREEN_PATHS.some((b) => path === b || path.startsWith(`${b}/`));
 /** The navigation a page shows: a side, or Mentura. */
 export type Space = Side | "mentura";
 /** Which navigation a path shows: Mentura's on its pages, else its side, else null (a page on neither). */

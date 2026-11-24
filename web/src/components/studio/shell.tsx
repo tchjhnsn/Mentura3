@@ -1,71 +1,18 @@
 "use client";
 
-// The Venture Studio frame: C1 top bar with C2 venture switcher, C3 studio nav, C4 venture nav, and the slot for the
-// C5 agent chat panel. Modeled on the shared anatomy of OpenAI Platform (project switcher, grouped left nav), Replit
-// (agent beside the work, tools per project) and Base44 (prompt first, preview beside).
+// The Venture Studio frame: C1 top bar with C2 venture switcher. The C3 studio nav and C4 venture nav are listed here
+// and drawn in the app's one sidebar, under Mentura's (src/components/sidebar.tsx).
+// Modeled on OpenAI Platform (project switcher, grouped nav), Replit and Base44.
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
-import {
-  ActivityIcon, BlocksIcon, BookOpenIcon, BotIcon, CheckIcon, ChevronsUpDownIcon, FileTextIcon, GaugeIcon, GitForkIcon,
-  HashIcon, HomeIcon, LayoutGridIcon, LibraryIcon, MapIcon, MenuIcon, MessageSquareIcon, PlugIcon, PlusIcon,
-  PresentationIcon, PuzzleIcon, ScaleIcon, SendIcon, SettingsIcon, TargetIcon, WorkflowIcon, XIcon,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
+import { CheckIcon, ChevronsUpDownIcon, HashIcon, LayoutGridIcon, LibraryIcon, PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { SidebarButton } from "@/components/sidebar";
 import { Num, useNums } from "./bits";
 import { VENTURES, ventureHref, ventureOf } from "./data";
-
-type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean };
-type NavGroup = { label?: string; more?: boolean; items: NavItem[] };
-
-const STUDIO_NAV: NavGroup[] = [
-  { items: [
-    { href: "/studio", label: "Home", icon: HomeIcon, n: "S1", exact: true },
-    { href: "/studio/new", label: "New venture", icon: PlusIcon, n: "S2" },
-  ] },
-  { label: "Find", items: [
-    { href: "/studio/library", label: "Library", icon: LibraryIcon, n: "S3", exact: true },
-  ] },
-  { label: "Manage", items: [
-    { href: "/studio/usage", label: "Usage", icon: GaugeIcon, n: "S6" },
-    { href: "/studio/settings", label: "Settings", icon: SettingsIcon, n: "S7" },
-    { href: "/studio/map", label: "Screen map", icon: MapIcon, n: "S0" },
-  ] },
-];
-
-const ventureNav = (slug: string): NavGroup[] => {
-  const h = (r: string) => ventureHref(slug, r);
-  return [
-    { items: [
-      { href: h(""), label: "Overview", icon: LayoutGridIcon, n: "V1", exact: true },
-      { href: h("agents"), label: "Agents", icon: BotIcon, n: "V6" },
-      { href: h("decisions"), label: "Decisions", icon: ScaleIcon, n: "V15" },
-    ] },
-    { label: "Make", items: [
-      { href: h("files"), label: "Records and documents", icon: FileTextIcon, n: "V2" },
-      { href: h("strategy"), label: "Strategy", icon: TargetIcon, n: "V4" },
-      { href: h("decks/investor"), label: "Decks", icon: PresentationIcon, n: "V5" },
-    ] },
-    { label: "Run", items: [
-      { href: h("functions"), label: "Functions", icon: BlocksIcon, n: "V11" },
-      { href: h("skills"), label: "Skills and plugins", icon: PuzzleIcon, n: "V17" },
-      { href: h("automations"), label: "Automations", icon: WorkflowIcon, n: "V8" },
-      { href: h("outreach"), label: "Outreach", icon: SendIcon, n: "V13" },
-    ] },
-    { label: "Watch", items: [
-      { href: h("activity"), label: "Activity", icon: ActivityIcon, n: "V9" },
-    ] },
-    { label: "Connect", items: [
-      { href: h("connectors"), label: "Connectors", icon: PlugIcon, n: "V14" },
-      { href: h("settings"), label: "Settings", icon: SettingsIcon, n: "V16" },
-    ] },
-  ];
-};
-
-const slugOf = (path: string) => path.match(/^\/studio\/v\/([^/]+)/)?.[1] ?? null;
+import { slugOf } from "./nav";
 
 /** C2 Venture switcher (OpenAI Platform's project switcher). */
 function VentureSwitcher({ slug }: { slug: string | null }) {
@@ -99,31 +46,6 @@ function VentureSwitcher({ slug }: { slug: string | null }) {
   );
 }
 
-function NavList({ groups, path, onGo }: { groups: NavGroup[]; path: string; onGo?: () => void }) {
-  return (
-    <nav className="space-y-4">
-      {groups.map((g, i) => (
-        <details key={i} open={!g.more || g.items.some((it) => path.startsWith(it.href))} className="group/nav">
-          <summary className={cn("text-muted-foreground list-none px-2 pb-1 text-xs [&::-webkit-details-marker]:hidden", g.more ? "hover:text-foreground cursor-pointer" : "pointer-events-none", !g.label && "sr-only")}>{g.label ?? "Pages"}{g.more ? <span className="ml-1 group-open/nav:hidden">({g.items.length})</span> : null}</summary>
-          <ul className="space-y-0.5">
-            {g.items.map((it) => {
-              const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`) || (it.n === "V5" && path.includes("/decks/"));
-              return (
-                <li key={it.href}>
-                  <Link href={it.href} onClick={onGo} aria-current={active ? "page" : undefined}
-                    className={cn("flex items-center gap-2 rounded-md px-2 py-1.5 text-sm", active ? "bg-accent font-medium" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground")}>
-                    <it.icon className="size-4 shrink-0" /><span className="flex-1 truncate">{it.label}</span><Num n={it.n} />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </details>
-      ))}
-    </nav>
-  );
-}
-
 /** "Ask the agent" from any venture screen opens the chief of staff in the Agents view (V6). */
 export function useChat() {
   const router = useRouter();
@@ -131,27 +53,16 @@ export function useChat() {
   return { open: false, setOpen: (v: boolean) => { if (v && slug) router.push(ventureHref(slug, "agents")); } };
 }
 
-/** C1 Top bar plus the left nav (C3 studio, C4 venture) for every Studio screen. No side panels: inside a venture
- * the agents are in the nav and you talk to them in the page itself. */
+/** C1 Top bar for every Studio screen. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
+ * src/components/sidebar.tsx: C3 studio pages, C4 a venture's pages), so the Studio and Mentura share one sidebar. */
 export function StudioFrame({ children }: { children: ReactNode }) {
-  const path = usePathname() ?? "/studio";
-  const slug = slugOf(path);
-  const groups = slug ? ventureNav(slug) : STUDIO_NAV;
-  const navN = slug ? "C4" : "C3";
-  const [menu, setMenu] = useState(false);
+  const slug = slugOf(usePathname() ?? "/studio");
   const nums = useNums();
-  const nav = (onGo?: () => void) => (
-    <div className="space-y-4">
-      <NavList groups={groups} path={path} onGo={onGo} />
-    </div>
-  );
   return (
-    <div className="bg-background flex h-dvh flex-col overflow-hidden">
+    <div className="bg-background flex h-dvh flex-col overflow-hidden md:h-[calc(100dvh-1rem)]">
       <header className="relative flex h-12 shrink-0 items-center gap-1 border-b px-2 md:px-3">
         <Num n="C1" className="absolute top-0.5 left-0.5" />
-        <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setMenu(true)} aria-label="Menu"><MenuIcon /></Button>
-        <Link href="/mentura" className="hidden items-center gap-2 px-2 text-sm font-semibold md:flex">Mentura</Link>
-        <span className="text-muted-foreground hidden md:inline">/</span>
+        <SidebarButton className="-ml-1" />
         <Link href="/studio" className="hover:bg-accent hidden rounded-md px-2 py-1.5 text-sm md:block">Venture Studio</Link>
         <span className="text-muted-foreground hidden md:inline">/</span>
         <VentureSwitcher slug={slug} />
@@ -161,24 +72,11 @@ export function StudioFrame({ children }: { children: ReactNode }) {
           <span className="hidden sm:inline">{nums.on ? "Numbers on" : "Numbers off"}</span>
         </Button>
       </header>
-      <div className="flex min-h-0 flex-1">
-        <aside className="relative hidden w-56 shrink-0 overflow-y-auto border-r p-3 md:block">
-          <Num n={navN} className="absolute top-1 right-1" />
-          {nav()}
-        </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
-      </div>
-      <Sheet open={menu} onOpenChange={setMenu}>
-        <SheetContent side="left" className="w-72 overflow-y-auto p-3">
-          <SheetTitle className="px-2 pt-1 text-sm">{slug ? ventureOf(slug).name : "Venture Studio"}</SheetTitle>
-          {nav(() => setMenu(false))}
-        </SheetContent>
-      </Sheet>
+      <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }
 
-/** The heading every screen starts with: number, title, one line on its job, and the screen's main act on the right. */
 export function ScreenHead({ n, title, job, children }: { n: string; title: string; job?: string; children?: ReactNode }) {
   return (
     <div data-virtu-screen={n} className="flex flex-wrap items-start justify-between gap-3 px-4 pt-5 pb-4 md:px-8 md:pt-8">

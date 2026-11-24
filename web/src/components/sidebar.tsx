@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, RocketIcon, CheckIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
+import { CalendarDaysIcon, RocketIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -14,7 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
-import { hrefOn, spaceOfPath, type Side, type Space } from "@/lib/sides";
+import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
+import { STUDIO_NAV, slugOf, ventureNav, type NavGroup } from "@/components/studio/nav";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -42,6 +43,8 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
   const save = (o: boolean, w: number) => { document.cookie = `${SIDE_COOKIE}=${o ? 1 : 0}.${w}; path=/; max-age=31536000; samesite=lax${places.cookieDomain ? `; domain=${places.cookieDomain}` : ""}`; };
   const onOpen = (o: boolean) => { setOpen(o); save(o, live.current.width); };
   const resize = (w: number) => { setWidth(w); save(live.current.open, w); };
+  // A full-screen app brings its own frame, so the sidebar steps aside, checked on every navigation.
+  if (isFullScreen(usePathname() ?? "")) return <>{children}</>;
   return (
     <Provider open={open} onOpenChange={onOpen} style={{ "--sidebar-width": `${width}px` } as CSSProperties}>
       <Nav groups={groups} polisTiles={polisTiles} places={places} chats={chats} me={me} width={width} onWidth={setWidth} onResized={resize} />
@@ -77,12 +80,12 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   return (
     <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
-        <SideSwitcher side={side} to={to} />
+        <ProductHead side={side} to={to} />
       </SidebarHeader>
 
       <SidebarContent>
         {side === "mentura" ? (
-          <MenturaNav item={item} to={to} done={done} />
+          <MenturaNav item={item} to={to} done={done} path={path} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -110,7 +113,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
           </>
         )}
 
-        {chats.length ? (
+        {chats.length && side !== "mentura" ? (
           <Group className="group-data-[collapsible=icon]:hidden">
             <SidebarGroupLabel>Recent chats</SidebarGroupLabel>
             <SidebarMenu>
@@ -125,7 +128,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 
       <SidebarFooter>
         <SidebarMenu>
-          {me ? <Person me={me} to={to} /> : null}
+          {me ? <Person me={me} to={to} profile={side === "mentura" ? "/mentura/profile" : "/settings/profile"} /> : null}
         </SidebarMenu>
       </SidebarFooter>
 
@@ -134,50 +137,34 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   );
 }
 
-/** The spaces, like a team switcher: the Reflect console (the person and the household, private), Village and polis
- * (shared), and Mentura (ventures, meetings and work with others; Torian, 2026-11-21). */
-// Its menu opens directly below it, and the person's menu directly above theirs (Torian, 2026-11-19).
-function SideSwitcher({ side, to }: { side: Space; to: (p: string) => string }) {
-  const SIDES = [
-    { id: "home" as const, name: "Reflect console", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
-    { id: "polis" as const, name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
-    { id: "mentura" as const, name: "Mentura", about: "Ventures, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
-  ];
-  const now = SIDES.find((s) => s.id === side)!;
+/** The product this sidebar belongs to, at its top. Reflect, Village and polis, and Mentura are separate products
+ * (Torian, 2026-11-24), so there is no switcher between them; the name leads to the product's front page. */
+function ProductHead({ side, to }: { side: Space; to: (p: string) => string }) {
+  const PRODUCTS = {
+    home: { name: "Reflect", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
+    polis: { name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
+    mentura: { name: "Mentura", about: "Ventures, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
+  };
+  const now = PRODUCTS[side];
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
-              <span className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">{now.icon}</span>
-              <span className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{now.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{now.about}</span>
-              </span>
-              <ChevronsUpDownIcon className="ml-auto" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" align="start" side="bottom" sideOffset={4}>
-            <DropdownMenuLabel className="text-muted-foreground text-xs">Spaces</DropdownMenuLabel>
-            {SIDES.map((s) => (
-              <DropdownMenuItem key={s.id} asChild className="gap-2 p-2">
-                <Go href={to(s.href)}>
-                  <span className="flex size-6 items-center justify-center rounded-md border">{s.icon}</span>
-                  {s.name}
-                  {s.id === side ? <CheckIcon className="ml-auto size-4" /> : null}
-                </Go>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <SidebarMenuButton size="lg" asChild>
+          <Go href={to(now.href)}>
+            <span className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">{now.icon}</span>
+            <span className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-medium">{now.name}</span>
+              <span className="text-muted-foreground truncate text-xs">{now.about}</span>
+            </span>
+          </Go>
+        </SidebarMenuButton>
       </SidebarMenuItem>
     </SidebarMenu>
   );
 }
 
 /** The person at the foot: their face and name, opening their profile and Settings. */
-function Person({ me, to }: { me: { name: string; href: string }; to: (p: string) => string }) {
+function Person({ me, to, profile }: { me: { name: string; href: string }; to: (p: string) => string; /** Your profile in the product you are in. */ profile: string }) {
   return (
     <SidebarMenuItem>
       <DropdownMenu>
@@ -191,7 +178,7 @@ function Person({ me, to }: { me: { name: string; href: string }; to: (p: string
         <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side="top" align="start" sideOffset={4}>
           <DropdownMenuLabel className="flex items-center gap-2 font-normal"><Face name={me.name} size={32} /><span className="truncate font-medium">{me.name}</span></DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem asChild><Go href={to("/settings/profile")}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
+          <DropdownMenuItem asChild><Go href={to(profile)}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
           <DropdownMenuItem asChild><Go href={to("/settings")}><SettingsIcon />Settings</Go></DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -284,7 +271,6 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
   { href: `/chat?q=${encodeURIComponent("Make me a playlist.")}`, label: "Playlist", what: "Videos, episodes and books on a subject", icon: <ListMusicIcon /> },
   { href: `/chat?q=${encodeURIComponent("Build me a course.")}`, label: "Course", what: "A course on anything you want to learn", icon: <GraduationCapIcon /> },
   { href: "/schole/dialectic/debates/new", label: "Debate", what: "Argue a question with others", icon: <MessagesSquareIcon /> },
-  { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
   { href: "/adventures/new", label: "Adventure", what: "A trip or an experience to plan", icon: <CompassIcon /> },
   { href: "/meals/new", label: "Meal", what: "A recipe or a dish for your week", icon: <UtensilsIcon /> },
 ];
@@ -293,7 +279,8 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 /** Mentura's navigation (Torian, 2026-11-21: "use the 5-step algorithm on it, then use Contra for reference"): one flat
  * list like Contra's sidebar, not a rail of tabs with a panel each. The rail held ten links behind two levels; a flat
  * list shows all of them at once. Create first, then the pages you use daily, then the ventures in their own group. */
-function MenturaNav({ item, to, done }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void }) {
+function MenturaNav({ item, to, done, path }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void; path: string }) {
+  const slug = slugOf(path);
   return (
     <>
       <Group>
@@ -301,8 +288,8 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
           <MenturaCreate to={to} done={done} />
           {item("/mentura", "Home", <HomeIcon />)}
           {item("/meetings", "Meetings", <VideoIcon />)}
-          {item("/v/people", "People", <UsersRoundIcon />)}
-          {item("/settings/profile", "My profile", <UserRoundIcon />)}
+          {item("/mentura/discover", "People", <UsersRoundIcon />)}
+          {item("/mentura/profile", "My profile", <UserRoundIcon />)}
         </SidebarMenu>
       </Group>
       <Group>
@@ -312,6 +299,7 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
           {item("/studio", "Venture Studio", <LayoutDashboardIcon />)}
         </SidebarMenu>
       </Group>
+      {path === "/studio" || path.startsWith("/studio/") ? <StudioNav groups={slug ? ventureNav(slug) : STUDIO_NAV} path={path} done={done} /> : null}
       <Group>
         <SidebarGroupLabel>Discover</SidebarGroupLabel>
         <SidebarMenu>
@@ -319,6 +307,29 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
         </SidebarMenu>
       </Group>
     </>
+  );
+}
+
+/** The Venture Studio's pages, under Mentura's own in the one sidebar: the studio's, or one venture's. */
+function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
+  return (
+    <Group>
+      {groups.map((g, i) => (
+        <SidebarMenu key={i} className={i ? "mt-3" : undefined}>
+          {g.label ? <SidebarGroupLabel>{g.label}</SidebarGroupLabel> : null}
+          {g.items.map((it) => {
+            const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`) || (it.n === "V5" && path.includes("/decks/"));
+            return (
+              <SidebarMenuItem key={it.href}>
+                <SidebarMenuButton asChild isActive={active} tooltip={it.label}>
+                  <Link href={it.href} onClick={done}><it.icon /><span>{it.label}</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      ))}
+    </Group>
   );
 }
 
