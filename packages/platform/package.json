@@ -1,0 +1,32 @@
+{
+  "name": "@reflect/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mentura's platform library: connectors, integrations, kits, webhooks, the research engine, the agents, the outside host and the bridge into Naive. Naive itself is a dependency (tchjhnsn/naive).",
+  "type": "module",
+  "engines": {
+    "node": ">=22.19"
+  },
+  "scripts": {
+    "test": "node test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.3.5",
+    "@langchain/langgraph": "^1.7.1",
+    "@neondatabase/serverless": "1.2.0",
+    "deepagents": "^1.16.2",
+    "effect": "4.1.5",
+    "https-proxy-agent": "9.1.0",
+    "langchain": "^1.5.10",
+    "naive-framework": "git+https://github.com/tchjhnsn/naive.git#3fd21c3a189fce6b7e7e7eeb9ece030102ee432e",
+    "pg": "^8.13.1",
+    "ws": "8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/pg": "^8.11.10",
+    "@types/ws": "8.18.2",
+    "typescript": "5.9.3"
+  }
+}
