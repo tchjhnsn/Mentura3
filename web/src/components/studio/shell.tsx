@@ -52,10 +52,10 @@ function Crumbs({ path }: { path: string }) {
   if (at.kind === "studio") return <Link href="/studio" className={`${link} font-medium`}>Business Studio</Link>;
   const fn = at.kind === "function" ? FUNCTIONS.find((f) => f.id === at.fn) : undefined;
   const tool = at.kind === "function" && at.tool ? toolOf(at.tool) : undefined;
-  return <Path slug={at.slug} fn={fn} tool={tool} link={link} sep={sep} />;
+  return <Path slug={at.slug} fn={fn} tool={tool} integrations={at.kind === "integrations"} link={link} sep={sep} />;
 }
 
-function Path({ slug, fn, tool, link, sep }: { slug: string; fn?: { id: string; label: string }; tool?: { title: string }; link: string; sep: ReactNode }) {
+function Path({ slug, fn, tool, integrations, link, sep }: { slug: string; fn?: { id: string; label: string }; tool?: { title: string }; integrations?: boolean; link: string; sep: ReactNode }) {
   const at = { slug };
   const name = useBusiness(slug)?.name ?? slug;
   return (
@@ -63,6 +63,7 @@ function Path({ slug, fn, tool, link, sep }: { slug: string; fn?: { id: string; 
       <Link href={ventureHref(at.slug)} className={`${link} font-medium`}>{name}</Link>
       {fn ? <>{sep}<Link href={ventureHref(at.slug, `functions/${fn.id}`)} className={link}>{fn.label}</Link></> : null}
       {tool ? <>{sep}<span className="truncate px-2 py-1.5 text-sm">{tool.title}</span></> : null}
+      {integrations ? <>{sep}<Link href={ventureHref(at.slug, "integrations")} className={link}>Integrations</Link></> : null}
     </nav>
   );
 }

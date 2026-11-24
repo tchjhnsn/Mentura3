@@ -88,6 +88,14 @@ export const MOBBIN = {
   base44Dashboard: "https://mobbin.com/screens/e38170e7-f8b3-4496-8d86-a6860c2a9949",
   sparkAgent: "https://mobbin.com/screens/52b0d08b-e663-4e70-b753-ea5a636aa379",
   planeAi: "https://mobbin.com/screens/567b285a-8208-4b65-b8fb-fd37b2c11237",
+  vercelMarketplace: "https://mobbin.com/screens/82426445-002e-4bb6-ab23-72e90b793690",
+  vercelNativeGrid: "https://mobbin.com/screens/2010062d-7281-4d52-b761-8bcb6bf9e605",
+  vercelCategoryList: "https://mobbin.com/screens/996430ec-934f-4de3-b630-e3e9f73f4d17",
+  neonIntegrations: "https://mobbin.com/flows/61da0254-f665-4c03-ab35-657aa79b6ab6",
+  vercelIntegrationDetail: "https://mobbin.com/screens/f9ebd5a4-c177-4ad4-badd-c686bd3304cb",
+  v0InstallCheckout: "https://mobbin.com/flows/651884bb-4b77-4b24-ad0c-971e7be2dbd9",
+  gitbookPermissions: "https://mobbin.com/flows/69ba1579-3218-4974-ab40-f4954dd7b6a7",
+  vercelInstallation: "https://mobbin.com/screens/fb5f9e89-d15b-49cb-9b15-d6b67cb668b0",
 } as const;
 
 export type Screen = { id: string; title: string; path: string; job: string; refs: (keyof typeof MOBBIN)[] };
@@ -115,10 +123,17 @@ export const SCREENS: Screen[] = [
   { id: "V11", title: "Functions", path: "/studio/v/:v/functions", job: "The 13 functions of the business and the tools each one needs.", refs: ["replitTools"] },
   { id: "V12", title: "Function", path: "/studio/v/:v/functions/[fn]", job: "One function's tools, agent, automations and records.", refs: ["replitTools"] },
   { id: "V13", title: "Outreach", path: "/studio/v/:v/outreach", job: "People to reach, sequences, and every send held for your yes.", refs: [] },
-  { id: "V14", title: "Connectors", path: "/studio/v/:v/connectors", job: "Connect the business's accounts and see what each agent may touch.", refs: ["planeAi"] },
+  { id: "V14", title: "Connectors", path: "/studio/v/:v/connectors", job: "Moved to Integrations (V20); the old address opens it.", refs: ["planeAi"] },
   { id: "V15", title: "Decisions", path: "/studio/v/:v/decisions", job: "Calls only you can make, ranked, each with the agent's evidence.", refs: [] },
   { id: "V18", title: "Tool", path: "/studio/v/:v/functions/[fn]/[tool]", job: "One tool of a function, from Naive's tool catalog: what it does and the records it keeps.", refs: ["vercelSectionSidebar"] },
   { id: "V19", title: "Universal tool", path: "/studio/v/:v/tools/[tool]", job: "A tool every business gets that has no screen of its own yet.", refs: [] },
+  { id: "V20", title: "Integrations", path: "/studio/v/:v/integrations", job: "Search the catalog, see what this business should connect and why, and browse by category.", refs: ["vercelMarketplace", "vercelNativeGrid"] },
+  { id: "V21", title: "Integration category", path: "/studio/v/:v/integrations/category/[category]", job: "One kind of software, the work it serves and its integrations.", refs: ["vercelCategoryList"] },
+  { id: "V22", title: "Integrations for a function", path: "/studio/v/:v/integrations/function/[fn]", job: "What one function should connect, by the process group each kind of software serves.", refs: ["neonIntegrations"] },
+  { id: "V23", title: "Integration", path: "/studio/v/:v/integrations/[id]", job: "What an integration does, why this business would use it, and Connect.", refs: ["vercelIntegrationDetail"] },
+  { id: "V24", title: "Connect", path: "/studio/v/:v/integrations/[id]/connect", job: "What connecting allows, before the sign-in at the service.", refs: ["v0InstallCheckout", "gitbookPermissions"] },
+  { id: "V25", title: "Connected", path: "/studio/v/:v/integrations/connected", job: "Every account you have connected, and sign-ins left unfinished.", refs: ["neonIntegrations", "v0InstallCheckout"] },
+  { id: "V26", title: "Manage connection", path: "/studio/v/:v/integrations/[id]", job: "A connected integration: when it was connected, what it serves, and Disconnect.", refs: ["vercelInstallation", "gitbookPermissions"] },
   { id: "V16", title: "Business settings", path: "/studio/v/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
 ];
 
@@ -148,6 +163,7 @@ export const COMPONENTS: { id: string; name: string; where: string }[] = [
   { id: "C23", name: "Agent about panel", where: "V6: model, status, skills and plugins of the agent you are talking to" },
   { id: "C24", name: "Skill or plugin row", where: "V6, V17" },
   { id: "C25", name: "Function nav: back row, then the function's tools by process group", where: "V12, V18, left" },
+  { id: "C26", name: "Integrations nav: back row, browse, the business's functions, categories with counts", where: "V20 to V26, left" },
 ];
 
 export const ventureHref = (slug: string, rest = "") => `/studio/v/${slug}${rest ? `/${rest}` : ""}`;

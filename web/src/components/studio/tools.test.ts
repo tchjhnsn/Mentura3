@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FUNCTIONS, VENTURES } from "./data";
 import { realBusiness } from "./business-data";
-import { functionNav, ventureNav } from "./nav";
+import { functionNav, integrationsNav, ventureNav } from "./nav";
 import { TOOLS, functionGroups, levelOf, shown, statusOf, universalTools } from "./tools";
 
 // Every link the console's sidebars draw must open a page: a route file under src/app, matching [param] folders.
@@ -40,12 +40,15 @@ describe("the console's tools, from Naive's catalog", () => {
     expect(levelOf("/studio/v/haptic-plays/decisions")).toEqual({ kind: "business", slug: "haptic-plays" });
     expect(levelOf("/studio/v/haptic-plays/functions/finance/books")).toEqual({ kind: "function", slug: "haptic-plays", fn: "finance", tool: "books" });
     expect(levelOf("/studio/v/haptic-plays/functions/finance")).toEqual({ kind: "function", slug: "haptic-plays", fn: "finance", tool: null });
+    expect(levelOf("/studio/v/haptic-plays/integrations")).toEqual({ kind: "integrations", slug: "haptic-plays" });
+    expect(levelOf("/studio/v/haptic-plays/integrations/category/payments")).toEqual({ kind: "integrations", slug: "haptic-plays" });
   });
 
   it("opens a page from every row of every sidebar", () => {
     const hrefs = [
       ...VENTURES.flatMap((v) => ventureNav(v.slug)),
       ...FUNCTIONS.flatMap((f) => functionNav("haptic-plays", f.id)),
+      ...VENTURES.flatMap((v) => integrationsNav(v.slug)),
     ].flatMap((g) => [...g.items.map((i) => i.href), ...(g.back ? [g.back.href] : [])]);
     for (const h of new Set(hrefs)) expect(resolves(h), h).toBe(true);
   });
@@ -66,9 +69,20 @@ describe("the console's tools, from Naive's catalog", () => {
     expect(biz.functions).toEqual(["finance", "marketing-and-sales"]);
     const groups = ventureNav("corner-bakery", biz);
     const hrefs = groups.flatMap((g) => g.items.map((i) => i.href.replace("/studio/v/corner-bakery", "")));
-    for (const h of hrefs) expect(["", "/decisions", "/files"].includes(h) || /^\/(tools|functions)\//.test(h), h).toBe(true);
+    for (const h of hrefs) expect(["", "/decisions", "/files", "/integrations"].includes(h) || /^\/(tools|functions)\//.test(h), h).toBe(true);
     expect(hrefs).toContain("/functions/finance");
     expect(hrefs.some((h) => h === "/functions")).toBe(false);
     for (const g of groups) for (const i of g.items) expect(resolves(i.href), i.href).toBe(true);
+    const fns = integrationsNav("corner-bakery", biz).find((g) => g.label === "Functions")!;
+    expect(fns.items.map((i) => i.href)).toEqual(["/studio/v/corner-bakery/integrations/function/finance", "/studio/v/corner-bakery/integrations/function/marketing-and-sales"]);
+  });
+
+  it("opens Integrations as a level of its own, with a back row and categories with counts", () => {
+    const row = ventureNav("haptic-plays").flatMap((g) => g.items).find((i) => i.label === "Integrations")!;
+    expect(row).toMatchObject({ href: "/studio/v/haptic-plays/integrations", drills: true });
+    const [first, , cats] = integrationsNav("haptic-plays");
+    expect(first?.back).toEqual({ href: "/studio/v/haptic-plays", label: "Integrations" });
+    expect(cats?.label).toBe("Categories");
+    for (const i of cats!.items) expect(i.count).toBeGreaterThan(0);
   });
 });

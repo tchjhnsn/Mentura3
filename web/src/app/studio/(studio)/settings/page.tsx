@@ -166,7 +166,7 @@ export default function StudioSettings() {
               <div className="divide-y rounded-lg border">
                 {CONNECTORS.filter((c) => SHARED_CONNECTORS.includes(c.id)).map((c) => <ConnectorRow key={c.id} c={c} />)}
               </div>
-              <Link href="/studio/v/haptic-plays/connectors" className="text-muted-foreground hover:text-foreground mt-2 inline-block text-xs underline">Open Haptic Plays connectors</Link>
+              <Link href="/studio/v/haptic-plays/integrations" className="text-muted-foreground hover:text-foreground mt-2 inline-block text-xs underline">Open Haptic Plays integrations</Link>
             </section>
           ) : null}
 

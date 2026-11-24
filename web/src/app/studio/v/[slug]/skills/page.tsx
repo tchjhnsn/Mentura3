@@ -88,7 +88,7 @@ export default function SkillsPage({ params }: { params: Promise<{ slug: string 
                   <Agents ids={p.agents} />
                   {p.connected ? (
                     <Switch checked={p.on} onCheckedChange={(v) => setPlugins((all) => all.map((x) => (x.id === p.id ? { ...x, on: v } : x)))} aria-label={`${p.name} on`} />
-                  ) : <Button variant="outline" size="sm" asChild><Link href={ventureHref(slug, "connectors")}>Connect</Link></Button>}
+                  ) : <Button variant="outline" size="sm" asChild><Link href={ventureHref(slug, "integrations")}>Connect</Link></Button>}
                 </li>
               ))}
             </ul>
