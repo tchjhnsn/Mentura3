@@ -1,0 +1,4 @@
+time	step	choice	why	evidence
+2026-11-04T08:41:15Z	pick	N-028, the two Mentura playbooks	its only off-main sources; its memory note is on main since #187	full ledger row N-028
+2026-11-04T08:41:15Z	copy	git show of both files, unchanged	build-the-lever and subtract-before-you-add	sha256 match SHA256SUMS.txt
+2026-11-04T08:41:15Z	sidecar	PRESERVED.md naming N-028 with Claude id C-107	same marker pattern as S1-PR10.1 and S1-PR10.2	coverage drops N-028

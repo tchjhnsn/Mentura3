@@ -1,0 +1,75 @@
+{
+ "anthropic": {
+  "demand_side": "competitor (some overlap)",
+  "overlaps": [
+   {
+    "ours": "naive",
+    "theirs": "anthropic.cowork",
+    "jobs": [
+     "research"
+    ],
+    "segments": [
+     "knowledge-workers"
+    ]
+   },
+   {
+    "ours": "mentura.agents",
+    "theirs": "anthropic.cowork",
+    "jobs": [
+     "draft",
+     "research"
+    ],
+    "segments": [
+     "knowledge-workers"
+    ]
+   },
+   {
+    "ours": "mentura.agents",
+    "theirs": "anthropic.code",
+    "jobs": [
+     "build-code"
+    ],
+    "segments": [
+     "developers"
+    ]
+   }
+  ],
+  "products_without_records": [],
+  "supply_side": "unknown (no record)",
+  "not_a_competitor": "not proven"
+ },
+ "spacexai": {
+  "demand_side": "competitor (some overlap)",
+  "overlaps": [
+   {
+    "ours": "mentura.agents",
+    "theirs": "cursor",
+    "jobs": [
+     "build-code"
+    ],
+    "segments": [
+     "developers"
+    ]
+   }
+  ],
+  "products_without_records": [
+   "grokbot"
+  ],
+  "supply_side": "unknown (no record)",
+  "not_a_competitor": "not proven"
+ },
+ "typesafe": {
+  "demand_side": "no overlap on assumed tags",
+  "overlaps": [],
+  "products_without_records": [],
+  "supply_side": "unknown (no record)",
+  "not_a_competitor": "not proven"
+ },
+ "langchain": {
+  "demand_side": "no overlap on assumed tags",
+  "overlaps": [],
+  "products_without_records": [],
+  "supply_side": "unknown (no record)",
+  "not_a_competitor": "not proven"
+ }
+}

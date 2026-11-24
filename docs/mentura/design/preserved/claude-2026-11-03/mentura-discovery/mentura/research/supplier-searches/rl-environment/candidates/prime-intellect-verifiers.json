@@ -1,0 +1,34 @@
+{
+ "name": "Prime Intellect: verifiers + Environments Hub + prime-rl",
+ "venture": "prime-intellect",
+ "kind": "open-source library, plus optional hosted training",
+ "K": {
+  "K1": "pass: MIT library runs on our machines; hosted training optional",
+  "K2": "pass: MIT (GitHub repo page)",
+  "K3": "pass: library is free; compute cost is separate and unknown"
+ },
+ "R": {
+  "R1": 2,
+  "R2": 2,
+  "R3": 2,
+  "R4": 1,
+  "R5": 2
+ },
+ "evidence": {
+  "R1": "docs: an environment = dataset + harness + reward functions",
+  "R2": "verifiers: 'environments to train and evaluate LLMs'",
+  "R3": "integrated with prime-rl and Hosted Training",
+  "R4": "Python package; learning curve unknown, scored 1",
+  "R5": "Hub described as hundreds of environments and a community (docs, The Decoder)"
+ },
+ "refs": [
+  "https://docs.primeintellect.ai/tutorials-environments/environments",
+  "https://github.com/PrimeIntellect-ai/verifiers"
+ ],
+ "id": "prime-intellect-verifiers",
+ "passes_constraints": true,
+ "score": 31,
+ "max": 34,
+ "as_of": "2026-11-01T05:55:00Z",
+ "note": "scores 0-2 per requirement from the evidence listed; proposed"
+}

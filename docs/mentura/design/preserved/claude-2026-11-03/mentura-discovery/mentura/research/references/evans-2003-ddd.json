@@ -1,0 +1,11 @@
+{
+ "id": "evans-2003-ddd",
+ "title": "Domain-Driven Design: Tackling Complexity in the Heart of Software",
+ "authors": "Eric Evans",
+ "venue": "Addison-Wesley, 2003",
+ "url": null,
+ "retrieved": "2026-11-01",
+ "tier": "known book, not opened this session",
+ "quotes": [],
+ "read": "ubiquitous language: the domain's terms are used unchanged in code"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.cowork",
+  "kind": "product",
+  "parent": "anthropic",
+  "name": "Claude Cowork (merging with Claude.ai)",
+  "job": {
+    "value": "Finish knowledge work end to end: research, draft, analyse, act on the desktop.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Knowledge workers and prosumers",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "Desktop agent with computer use; merging with Claude.ai from September 2026",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

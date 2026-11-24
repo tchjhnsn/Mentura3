@@ -1,0 +1,4 @@
+time	step	choice	why	evidence
+2026-11-04T08:44:43Z	gate	G9 option B and G12 default: store PR #156 as a verbatim patch plus metadata, not applied	same as S1-PR10.5 for #155	plan lines 92 and 95
+2026-11-04T08:44:43Z	patch	gh pr diff 156, verbatim, against its stacked base	#156 targets #155s branch	git apply --check on e6a26f0 exit 0
+2026-11-04T08:44:43Z	branch	built from main, independent of the #155 unit	each S1-PR10.k is independent in content; only the inventory serializes them	plan S1-PR10 Depends on

@@ -1,0 +1,49 @@
+{
+ "id": "anthropic.claude-app",
+ "kind": "product",
+ "parent": "anthropic",
+ "name": "Claude app",
+ "as_of": "2026-11-01",
+ "refs": [
+  "claude-docs-desktop"
+ ],
+ "offering_kind": {
+  "derived_from": "naive-design/prototypes/architecture/offering-run.json",
+  "value": {
+   "Claude app (web, desktop, mobile)": [
+    "app",
+    "product"
+   ],
+   "Chat (in the Claude app)": [
+    "mode",
+    "product"
+   ],
+   "Cowork (in the Claude app)": [
+    "mode",
+    "product",
+    "framework"
+   ],
+   "Claude Code (Code tab)": [
+    "mode",
+    "product",
+    "framework"
+   ]
+  }
+ },
+ "description": "One app on web, desktop and mobile, signed in to one claude.ai account; Chat, Cowork and Code are its modes.",
+ "surfaces": {
+  "value": [
+   "claude.ai (web)",
+   "desktop (Mac, Windows)",
+   "mobile apps"
+  ],
+  "ref": {
+   "id": "claude-docs-desktop"
+  }
+ },
+ "modes": [
+  "chat",
+  "cowork",
+  "code"
+ ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "cnbc-2026-03-31-openai-round",
+  "type": "article-newspaper",
+  "title": "OpenAI closes funding round at an $852 billion valuation",
+  "container-title": "CNBC",
+  "issued": "2026-03-31",
+  "URL": "https://www.cnbc.com/2026/03/31/openai-funding-round-ipo.html",
+  "met": "2026-11-01",
+  "tier": "reputable reporting",
+  "read": true,
+  "quotes": [
+    {
+      "text": "OpenAI on Tuesday announced that it closed a record-breaking funding round at a post-money valuation of $852 billion.",
+      "locator": "para 1"
+    },
+    {
+      "text": "The company is still burning cash and is not yet profitable.",
+      "locator": "body"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T16:32:31Z	source	copy the whole folder project-files/naive-design/prototypes/architecture/ from the shared project files	every file N-002 names is there; gate G8 asked for this code and usage.json	sha256 of 120 files, read twice, unchanged
+2026-11-04T16:32:31Z	form	one patch from the empty tree, as G9 option B does for framework PRs	loose .ts under docs/ would be type-checked and .json and .lean read as live	git apply in an empty folder restores all 120 files
+2026-11-04T16:32:31Z	flags	keep confidential terms and usage.private.json as written	G14, with G10, G11 and G17 as precedent	scan counts in PRESERVED.md
+2026-11-04T16:32:31Z	ledger	name N-002 only	the row whose sources this closes	full ledger row N-002

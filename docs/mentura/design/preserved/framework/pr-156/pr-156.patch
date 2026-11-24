@@ -1,0 +1,22 @@
+diff --git a/docs/decisions/decisions.json b/docs/decisions/decisions.json
+index 508c1bd8..a190bf08 100644
+--- a/docs/decisions/decisions.json
++++ b/docs/decisions/decisions.json
+@@ -1333,6 +1333,17 @@
+         "EE-039",
+         "EE-042"
+       ]
++    },
++    {
++      "id": "EE-102",
++      "date": "2026-11-02",
++      "status": "in-force",
++      "decision": "Naive agents coordinate through typed provenance records routed by the Lead agent (the blackboard pattern), not through a standing coordination swarm. Coordination is a function of the Lead, which stays the only router. Temporary relationship child agents are spawned only for live back-and-forth between two agents, and are removed after they produce their record. Rejected: a coordination swarm of standing agents, and durable relationship child agents per pair. Not built yet: the framework does not spawn or remove a relationship child, and no check requires coordination to pass through the Lead.",
++      "why": "Torian, 2026-11-02. Agents already exchange durable records with provenance, so they can coordinate over specific record types instead of conversation. A packet that points at the full record loses less information than a retold summary. The data processing inequality says post-processing cannot increase information (Wikipedia, \"Data processing inequality\", https://en.wikipedia.org/wiki/Data_processing_inequality). Anthropic Engineering (Jun 13, 2025), \"How we built our multi-agent research system\" (https://www.anthropic.com/engineering/multi-agent-research-system), found that writing subagent outputs to a filesystem and passing lightweight references back reduces information loss. Kim, Y. et al. (2025), \"Towards a Science of Scaling Agent Systems\", arXiv:2512.08296 (https://arxiv.org/abs/2512.08296), measured trace-level error amplification of 17.2x for independent agents and 4.4x for centralized coordination. Brooks, F. P. (1975), The Mythical Man-Month, chapter 2: \"If each part of the task must be separately coordinated with each other part, the effort increases as n(n-1)/2.\" The coalition and transaction-cost note prepared 2026-11-02 (Rules A to D) is the research behind this decision, and each figure above is one that note reports from the source named with it. A standing swarm pays the pairwise channel cost. A durable child per pair would remain after its record exists.",
++      "related": [
++        "EE-029",
++        "EE-031"
++      ]
+     }
+   ]
+ }

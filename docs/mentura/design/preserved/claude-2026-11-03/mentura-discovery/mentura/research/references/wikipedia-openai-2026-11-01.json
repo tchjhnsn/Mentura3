@@ -1,0 +1,12 @@
+{
+  "id": "wikipedia-openai-2026-11-01",
+  "type": "entry-encyclopedia",
+  "title": "OpenAI",
+  "container-title": "Wikipedia",
+  "accessed": "2026-11-01",
+  "URL": "https://en.wikipedia.org/wiki/OpenAI",
+  "met": "2026-11-01",
+  "tier": "index",
+  "read": true,
+  "note": "Used as an index to primary and reported sources, never as the source of a level-2 cell. Its infobox and body disagree on equity stakes."
+}

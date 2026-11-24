@@ -1,0 +1,223 @@
+{
+  "id": "openai",
+  "kind": "venture",
+  "name": "OpenAI (OpenAI Group PBC under the OpenAI Foundation)",
+  "study": {
+    "studied_by": "mentura",
+    "status": "draft",
+    "schema": "draft shapes from everything-ecosystem PR #147 (cell, venture-anatomy); revalidate once Grokbot lands the schemas",
+    "sources": [
+      "cnbc-2026-03-31-openai-round",
+      "techcrunch-2025-10-28-openai-recap",
+      "wikipedia-openai-2026-11-01",
+      "bgov-2026-10-08-openai-run-rate",
+      "axios-2026-09-29-openai-run-rate",
+      "openai-blog-2026-06-08-draft-s1"
+    ],
+    "source_policy": "Public sources only. Company statements and reputable reporting; Wikipedia only as an index. Where sources disagree the cell is contested with each value and its source. Nothing paywalled copied; openai.com could not be fetched and was not worked around.",
+    "started": "2026-11-01"
+  },
+  "identity": {
+    "legal_form": {
+      "value": "Delaware public benefit corporation (OpenAI Group PBC) controlled by the nonprofit OpenAI Foundation, since the recapitalization of 2025-10-28",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Corporate structure"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2025-10-28",
+      "note": "Also reported by TechCrunch (2025-10-28)."
+    },
+    "founded": {
+      "value": "2015-12 as the nonprofit OpenAI, Inc.",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "History"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-11-01"
+    },
+    "founders": {
+      "value": [
+        "Sam Altman",
+        "Elon Musk",
+        "Ilya Sutskever",
+        "Greg Brockman",
+        "Trevor Blackwell",
+        "Vicki Cheung",
+        "Andrej Karpathy",
+        "Durk Kingma",
+        "John Schulman",
+        "Pamela Vagata",
+        "Wojciech Zaremba"
+      ],
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Infobox; History"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-11-01"
+    },
+    "essential_why": {
+      "value": "Ensure that artificial general intelligence benefits all of humanity.",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Lead"
+      },
+      "evidence": "demonstrated",
+      "as_of": "2026-11-01",
+      "note": "The company's long-standing published mission; not read from openai.com in this study."
+    }
+  },
+  "phase": {
+    "value": "scale",
+    "ref": {
+      "id": "cnbc-2026-03-31-openai-round",
+      "locator": "body"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01",
+    "note": "More than 900 million weekly ChatGPT users and $2B revenue a month (March 2026). Platform (others building on its API) is claimed by its reach but not established to standard here."
+  },
+  "core": {
+    "promise": {
+      "value": "Anyone can get capable help for any task by asking: one assistant (ChatGPT) and the models behind it.",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Products"
+      },
+      "evidence": "inferred",
+      "as_of": "2026-11-01",
+      "note": "Our wording."
+    },
+    "promised_to": {
+      "value": "Consumers first, then businesses and developers; enterprise revenue growing fastest in 2026.",
+      "ref": {
+        "id": "bgov-2026-10-08-openai-run-rate",
+        "locator": "headline"
+      },
+      "evidence": "inferred",
+      "as_of": "2026-11-01"
+    },
+    "must_not": {
+      "unknown": true,
+      "reason": "No public risk-factor disclosure; the draft S-1 is confidential.",
+      "as_of": "2026-11-01"
+    },
+    "competence": {
+      "value": "Frontier model research at scale, plus the largest consumer distribution of any AI product.",
+      "ref": {
+        "id": "cnbc-2026-03-31-openai-round",
+        "locator": "body"
+      },
+      "evidence": "inferred",
+      "as_of": "2026-11-01"
+    }
+  },
+  "holds": {
+    "value": [
+      "io (hardware, acquired 2025)",
+      "Statsig (acquired 2025)",
+      "other acquired teams"
+    ],
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Acquisitions"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01",
+    "note": "Held as acquisitions, not as separate ventures with their own cores. Stargate is a joint venture with SoftBank, Oracle and MGX, not held."
+  },
+  "decisions": [
+    {
+      "id": "openai-d-recap",
+      "made": "2025-10-28",
+      "decision": "Recapitalize: the for-profit becomes OpenAI Group PBC; the nonprofit, renamed the OpenAI Foundation, appoints its board.",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Corporate structure"
+      }
+    },
+    {
+      "id": "openai-d-ipo",
+      "made": "2026-06-08",
+      "decision": "Submit a confidential draft registration statement (S-1) to the SEC.",
+      "ref": {
+        "id": "openai-blog-2026-06-08-draft-s1",
+        "locator": "statement"
+      },
+      "implies": [
+        {
+          "part": "core",
+          "level": 2
+        },
+        {
+          "part": "defined-terms",
+          "level": 2
+        },
+        {
+          "part": "risk-register",
+          "level": 2
+        },
+        {
+          "part": "customers",
+          "level": 2
+        },
+        {
+          "part": "market",
+          "level": 2
+        },
+        {
+          "part": "products",
+          "level": 2
+        },
+        {
+          "part": "people",
+          "level": 2
+        },
+        {
+          "part": "control",
+          "level": 2
+        },
+        {
+          "part": "dependencies",
+          "level": 2
+        },
+        {
+          "part": "financials",
+          "level": 2
+        },
+        {
+          "part": "capital",
+          "level": 2
+        },
+        {
+          "part": "regulation",
+          "level": 2
+        },
+        {
+          "part": "related-parties",
+          "level": 2
+        }
+      ],
+      "status": {
+        "value": "Listing slipped to 2027 (Altman, Fortune, 2026-09-12, as reported)",
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "IPO"
+        },
+        "evidence": "inferred",
+        "as_of": "2026-11-01"
+      }
+    },
+    {
+      "id": "openai-d-sora-off",
+      "made": "2026-03-24",
+      "decision": "Discontinue Sora, including API access.",
+      "ref": {
+        "id": "wikipedia-openai-2026-11-01",
+        "locator": "Products"
+      }
+    }
+  ]
+}

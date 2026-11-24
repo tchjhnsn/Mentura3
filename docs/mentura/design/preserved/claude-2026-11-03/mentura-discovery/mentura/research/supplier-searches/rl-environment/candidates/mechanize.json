@@ -1,0 +1,32 @@
+{
+ "name": "Mechanize",
+ "venture": "mechanize",
+ "kind": "bespoke environments and evals for frontier coding agents",
+ "K": {
+  "K1": "fail (likely): the vendor builds and holds environments; ours would need our records",
+  "K2": "unknown",
+  "K3": "fail: Epoch reports contracts of $300k-$500k and per-task costs of $200-$2,000"
+ },
+ "R": {
+  "R1": 0,
+  "R2": 2,
+  "R3": 1,
+  "R4": 0,
+  "R5": 1
+ },
+ "evidence": {
+  "R1": "they write graders for their own coding tasks, not our checks",
+  "R2": "coding agents",
+  "K3": "Epoch AI 2026-01-12 FAQ"
+ },
+ "refs": [
+  "https://mechanize.work",
+  "https://epoch.ai/gradient-updates/state-of-rl-envs"
+ ],
+ "id": "mechanize",
+ "passes_constraints": false,
+ "score": 13,
+ "max": 34,
+ "as_of": "2026-11-01T05:55:00Z",
+ "note": "scores 0-2 per requirement from the evidence listed; proposed"
+}

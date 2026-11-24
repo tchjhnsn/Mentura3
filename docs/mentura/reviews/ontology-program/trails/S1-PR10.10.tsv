@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:54:23Z	gate	G9 option B: store closed PR #41 as a verbatim patch plus metadata, not applied	same as S1-PR10.5 to S1-PR10.9; a closed branch can be deleted	plan, gate G9
+2026-11-04T08:54:23Z	patch	gh pr diff 41, verbatim; base is the #40 branch head	build-the-lever	git apply --check on fc35bb0 exit 0
+2026-11-04T08:54:23Z	files	page pulls/41/files by page number	gh --paginate follows a repositories/{id} link the proxy refuses	250 of 250 files
+2026-11-04T08:54:23Z	ledger	name N-109 only	the only row that points at #41	full ledger row N-109

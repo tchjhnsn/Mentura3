@@ -1,0 +1,1791 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 4f4e733f..e4bf81e6 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -28,7 +28,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
+ - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
+ - `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
+ - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
+-- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function.
++- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-vocabulary.mjs` checks vocabulary parents and shapes (EE-107). `schema/vocabulary.ts` loads the objects. `schema/vocabulary-baseline.json` lists the gaps that have no parent yet and may only shrink. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function.
+ - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
+ - `node schema/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
+ - `node schema/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node schema/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
+@@ -83,4 +83,4 @@ The ecosystem is a schema; a workspace is an instance made of ventures (EE-002,
+ 
+ ## Nouns and references
+ 
+-Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, or when a function's capabilities are not nouns it owns. Each noun names its function, or null when the word is shared. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
++Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, or when a function's capabilities are not nouns it owns. Each noun names its function, or null when the word is shared. Nouns, verbs and kinds are vocabulary objects with a stable id and a JSON Schema shape (EE-107). `schema/vocabulary.ts` loads them. `node schema/check-vocabulary.mjs` fails a new missing parent or a shape mismatch. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
+diff --git a/docs/ontology.md b/docs/ontology.md
+index 8f56aafb..21114dc8 100644
+--- a/docs/ontology.md
++++ b/docs/ontology.md
+@@ -12,7 +12,8 @@ description: "The system's nouns at every level, the standard each follows, its
+ The system is opinionated: it names one default for each choice, and every default carries references to its sources and the alternatives it weighed (EE-014). Its nouns follow one rule: **standards first**. Use an established term with its standard meaning, and coin a word (marked "ours") only when none exists.
+ 
+ - Canonical: `docs/ontology.json`. This page is generated from it; regenerate with `node schema/check-nouns.mjs --md`.
+-- `node schema/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function.
++- `node schema/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function. It also runs the vocabulary check.
++- Nouns, verbs and kinds are vocabulary objects with a stable id and a JSON Schema shape (EE-107). [`schema/vocabulary.ts`](../schema/vocabulary.ts) loads them. `node schema/check-vocabulary.mjs` fails a new missing parent or a record that claims an object and does not match its shape. The gaps that have no parent yet are listed in [`schema/vocabulary-baseline.json`](../schema/vocabulary-baseline.json), and that list may only shrink. Wiring every record type, record and module is not built.
+ - Each noun names a `function` (one id from `operations/departments.json`, or nothing when the word is shared) and a handoff type (yes when that noun can type a package). A shared noun may appear in any package and never decides which function the package belongs to.
+ - `node schema/check-nouns.mjs --package <file> --function <id>` prints one verdict: admit, refer to the function that owns the type, or reject. `--record` appends that verdict to `<id>.provenance.jsonl` beside the package. The verdict is not stored on the handoff. The receiver has to be a function noun. A schema checker that cannot run exits 2 and records nothing.
+ - A scoped noun is written `name@function`. The suffix is a function id, and the noun's function is that same id. A bare name is not added beside a scoped sense. A retired bare name may stay, as the pointer to the senses that replaced it.
+diff --git a/instance/ventures/everything-ecosystem/venture.json b/instance/ventures/everything-ecosystem/venture.json
+index 46679905..bb5246a8 100644
+--- a/instance/ventures/everything-ecosystem/venture.json
++++ b/instance/ventures/everything-ecosystem/venture.json
+@@ -1,5 +1,6 @@
+ {
+   "id": "everything-ecosystem",
++  "vocabulary_parent": "noun:venture",
+   "name": "Everything Ecosystem",
+   "parent": null,
+   "phase": "discovery",
+diff --git a/schema/README.md b/schema/README.md
+index 3ea8392b..6ab2b6f7 100644
+--- a/schema/README.md
++++ b/schema/README.md
+@@ -27,12 +27,25 @@ Status:
+ | Account | `schema/account.schema.json` | defined | Optional. `accounts/<id>/account.json` inside the venture that serves it; relationship client, customer, user, member, partner or other (EE-021) |
+ | Venture folder layout | `schema/scaffold/defaults.json`, `schema/init-venture.mjs` | defined | Starting layers by phase; pillars and venture profile in every venture |
+ | Nouns | `docs/ontology.json`, `schema/check-nouns.mjs`, `schema/ontology-gate.ts` | defined | Standards first. Each noun names its function (a department id, or null when the word is shared) and whether it can type a handoff. A scoped noun `name@function` must be owned by that function. `node schema/check-nouns.mjs --package <file> --function <id>` prints one membership verdict; `--record` writes it to the sidecar beside the package. If the schema checker cannot run, crashes, or the operating-rules module cannot be read, the command exits 2 and records nothing. Only a package that fails validation is recorded as a schema reject. A fact is the boolean true or a record; any other value fails that property, and two records that disagree are a reject. A record the term cannot read fails every property of that type and is recorded as that reject |
++| Vocabulary | `schema/vocabulary.ts`, `schema/vocabulary.json`, `schema/vocabulary-baseline.json`, `schema/check-vocabulary.mjs` | defined | Nouns, verbs and kinds are vocabulary objects (EE-107). The loader joins `docs/ontology.json` to the verb and kind objects. Each object has a stable id and a JSON Schema shape. A record type or a record names its parent in `vocabulary_parent`. A code module puts `// vocabulary_parent: <id>` in its first 40 lines. `node schema/check-vocabulary.mjs` fails a new gap or a shape mismatch, and the same check runs from `node schema/check-nouns.mjs`. The baseline lists today's gaps and may only shrink. Wiring every record type, record and module is not built |
+ | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
+ | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
+ | Record generators | `schema/generators/`, `schema/generators/generate.mjs`, `schema/generators/gaps.json`, `schema/generators/generators-test.mjs` | pilots built | The script beside a schema (EE-099): it describes what to ask and drafts one record that passes the schema, and hands the draft to the write chain without storing it. A record type names its script in `generator` in the data model. Pilots so far are `glossary.mjs`, `reference.mjs` and `bug.mjs`. `check-data-model.mjs` fails a type that names no generator unless `gaps.json` lists it, and fails a listed type that has one |
+ | SDLC catalog | `schema/sdlc-catalog.schema.json`, `knowledge/sdlc/catalog.json`, `schema/check-sdlc-catalog.ts` | defined | What software work exists, after ISO/IEC/IEEE 12207: processes, activities and tasks with their decision classes, phase and owning role (R-26). No execution detail; MAD routes how. See `knowledge/sdlc/README.md` |
+ | Layer manifests | `schema/layer.schema.json`, `<layer>/layer.json`, system layer `schema/layer.json` | defined | Each layer's skills, record types it still owns, reads and writes; layer relationships are derived from them (EE-071). Venture packages are `packages/<name>/package.json` |
+ 
++## Vocabulary
++
++[`schema/vocabulary.ts`](./vocabulary.ts) is the loader other code imports. Nouns stay in [`docs/ontology.json`](../docs/ontology.json), with the fields and relations they already have. Verbs, kinds, tiers and declared shapes live in [`schema/vocabulary.json`](./vocabulary.json), and the verb set is checked against `design.diff.verbs` in [`operations/operating-rules.json`](../operations/operating-rules.json). A noun id is `noun:` plus the noun in lower case, with spaces as hyphens, so `venture` is `noun:venture` and `customer@finance` is `noun:customer@finance`. Verb ids are `verb:create`, `verb:amend` and `verb:delete`. Kind ids are `kind:originate`, `kind:derive`, `kind:append`, `kind:rename`, `kind:deprecate`, `kind:revise`, `kind:remove` and `kind:merge`. `derive` names its source. `merge` names its successor.
++
++The tier is the maximum of severity, reversibility, time to detect and blast radius. Each score is 1, 2 or 3, and that maximum selects `low`, `costly` or `one_way_door`. `tierOf` in the loader is that rule.
++
++A record type sets `vocabulary_parent` in [`schema/data-model.json`](./data-model.json). A record sets the same field on itself. A code module names its parent with a `// vocabulary_parent:` line in its first 40 lines. The shape check runs on instance records. A record type and a module are checked for a parent that resolves to a live object.
++
++`node schema/check-vocabulary.mjs` reads [`schema/vocabulary-baseline.json`](./vocabulary-baseline.json). A subject with no parent that is not listed is a new gap. A listed subject that now has a parent must come off the list. Once the baseline is on `framework`, an entry added in a later change fails unless that entry carries `approved` with who approved it and why. The wired examples are the `venture` record type, [`instance/ventures/everything-ecosystem/venture.json`](../instance/ventures/everything-ecosystem/venture.json), [`schema/vocabulary.ts`](./vocabulary.ts) and [`schema/check-vocabulary.mjs`](./check-vocabulary.mjs).
++
++Wiring every record type, record and module is not built.
++
+ ## Inside a venture, by layer
+ 
+ | Layer | Record | Where | Status |
+diff --git a/schema/check-nouns.mjs b/schema/check-nouns.mjs
+index a20a809d..240b81dd 100644
+--- a/schema/check-nouns.mjs
++++ b/schema/check-nouns.mjs
+@@ -2,8 +2,9 @@
+ // reappears in the checked files, when a noun cites a reference id that no layer's
+ // references/references.json holds, or when the ontology breaks the membership rules
+ // (a noun with no standard, a function that is not a department, a capability a function
+-// does not own). With --md, prints the glossary as Markdown instead. With --package,
+-// prints one membership verdict for that handoff.
++// does not own). It then runs the vocabulary check (EE-107): a new missing parent or a
++// shape mismatch fails. With --md, prints the glossary as Markdown instead. With
++// --package, prints one membership verdict for that handoff.
+ //
+ //   node schema/check-nouns.mjs
+ //   node schema/check-nouns.mjs --md
+@@ -15,6 +16,7 @@
+ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+ import { join, resolve } from "node:path";
+ import { checkOntology, decidePackage } from "./ontology-gate.ts";
++import { VOCABULARY_FILE, checkRepository } from "./vocabulary.ts";
+ 
+ // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
+ const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
+@@ -72,6 +74,15 @@ const known = new Set(refFiles.filter((f) => existsSync(join(root, f)))
+   .flatMap((f) => JSON.parse(readFileSync(join(root, f), "utf8")).references.map((r) => r.id)));
+ for (const n of nouns) for (const r of n.references ?? []) if (!known.has(r)) errors.push(`docs/ontology.json: ${n.noun} cites unknown reference ${r}`);
+ errors.push(...checkOntology(root));
++// The membership-rule fixtures are a directory with the ontology and no data model.
++// The vocabulary check runs wherever the catalog or the data model is present, so a
++// checkout that drops either one still fails, and those fixtures stay about nouns.
++const vocabularyRoot = root.replace(/\/$/, "");
++const vocabulary = existsSync(join(vocabularyRoot, "schema/data-model.json")) || existsSync(join(vocabularyRoot, VOCABULARY_FILE))
++  ? checkRepository(vocabularyRoot)
++  : null;
++if (vocabulary) errors.push(...vocabulary.errors);
+ 
+ if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
+ console.log(`${nouns.length} nouns (${nouns.filter((n) => n.status === "retired").length} retired), ${files.length} files checked: no retired noun in use, every reference resolves.`);
++if (vocabulary) console.log(vocabulary.summary);
+diff --git a/schema/check-vocabulary.mjs b/schema/check-vocabulary.mjs
+new file mode 100644
+index 00000000..9d269c9b
+--- /dev/null
++++ b/schema/check-vocabulary.mjs
+@@ -0,0 +1,18 @@
++// vocabulary_parent: noun:schema
++// Fails when a record type, a core module or an instance record has no vocabulary
++// parent and is not in the baseline, when the baseline gains an entry or keeps a
++// closed one, or when a record claims a vocabulary object and does not match its
++// shape (EE-107). The same check runs from schema/check-nouns.mjs.
++//
++//   node schema/check-vocabulary.mjs
++
++import { fileURLToPath } from "node:url";
++import { checkRepository } from "./vocabulary.ts";
++
++const root = process.env.EE_ROOT?.replace(/\/$/, "") || fileURLToPath(new URL("..", import.meta.url));
++const result = checkRepository(root);
++if (result.errors.length) {
++  console.error(result.errors.join("\n"));
++  process.exit(1);
++}
++console.log(`${result.summary}.`);
+diff --git a/schema/data-model.json b/schema/data-model.json
+index 85f6290f..12f825c0 100644
+--- a/schema/data-model.json
++++ b/schema/data-model.json
+@@ -109,6 +109,7 @@
+     },
+     {
+       "id": "venture",
++      "vocabulary_parent": "noun:venture",
+       "layer": "system",
+       "level": "venture",
+       "schema": "schema/venture.schema.json",
+@@ -161,7 +162,7 @@
+           "checked_by": null
+         }
+       ],
+-      "note": "The root record of a venture. It names the profile but does not contain it"
++      "note": "The root record of a venture. It names the profile but does not contain it. vocabulary_parent is the noun this record type stands for (EE-107)"
+     },
+     {
+       "id": "venture-core",
+@@ -2237,6 +2238,14 @@
+       "path": "schema/generators/gaps.json",
+       "reason": "EE-099: the record types still without a record generator, read by check-data-model.mjs; a ratchet list, not a record"
+     },
++    {
++      "path": "schema/vocabulary.json",
++      "reason": "EE-107: verbs, kinds, tiers and noun shapes, loaded with docs/ontology.json by schema/vocabulary.ts. Checked by schema/check-vocabulary.mjs. Framework machinery, not a venture record"
++    },
++    {
++      "path": "schema/vocabulary-baseline.json",
++      "reason": "EE-107: record types, modules and instance records that do not name a vocabulary parent yet. schema/check-vocabulary.mjs fails a new gap, and the list may only shrink. A ratchet list, not a record"
++    },
+     {
+       "path": "schema/fixtures/ontology-gate/pricing-admit.json",
+       "reason": "A handoff package the membership gate admits, read by schema/ontology-gate-test.ts; a fixture, not a record"
+diff --git a/schema/data-model.schema.json b/schema/data-model.schema.json
+index 61fd8094..f082eba1 100644
+--- a/schema/data-model.schema.json
++++ b/schema/data-model.schema.json
+@@ -40,6 +40,11 @@
+             "type": "string",
+             "pattern": "^[a-z0-9-]+$"
+           },
++          "vocabulary_parent": {
++            "type": "string",
++            "pattern": "^(noun:[a-z0-9@][a-z0-9@-]*|verb:[a-z][a-z-]*|kind:[a-z][a-z-]*)$",
++            "description": "The vocabulary object this record type stands for (EE-107). schema/check-vocabulary.mjs checks it. A type with no parent is a baselined gap until it names one."
++          },
+           "confidential": {
+             "type": "boolean",
+             "description": "Mentura's confidential records (platform/research/): checked like any other, left out of generated docs"
+diff --git a/schema/layer.json b/schema/layer.json
+index c1d50bd0..72ee61e3 100644
+--- a/schema/layer.json
++++ b/schema/layer.json
+@@ -50,6 +50,8 @@
+     "schema/check-data-model.mjs",
+     "schema/check-ventures.mjs",
+     "schema/check-nouns.mjs",
++    "schema/check-vocabulary.mjs",
++    "schema/vocabulary.ts",
+     "schema/ontology-gate.ts",
+     "schema/ontology-gate-test.ts",
+     "schema/check-integrations.mjs",
+diff --git a/schema/types/records.d.ts b/schema/types/records.d.ts
+index 520272f0..e084c207 100644
+--- a/schema/types/records.d.ts
++++ b/schema/types/records.d.ts
+@@ -345,6 +345,8 @@ export type DataModel = {
+   layers: string[];
+   records: {
+     id: string;
++    /** The vocabulary object this record type stands for (EE-107). schema/check-vocabulary.mjs checks it. A type with no parent is a baselined gap until it names one. */
++    vocabulary_parent?: string;
+     /** Mentura's confidential records (platform/research/): checked like any other, left out of generated docs */
+     confidential?: boolean;
+     /** The owning layer, or system for records every layer shares */
+@@ -3831,6 +3833,8 @@ export type VentureTypes = {
+ /** One venture: anything a builder undertakes, from a hobby to a company (EE-011). Each venture keeps a venture.json at its root, beside its venture profile. Its products are cards in products/, the parties it keeps records for are accounts in accounts/ (optional, EE-021), and ventures can hold ventures. Cross-venture rules are checked by schema/check-ventures.mjs. Nouns follow docs/ontology.md (EE-014). */
+ export type Venture = {
+   id: string;
++  /** The vocabulary object this venture derives from (EE-107). Optional until every record names one. schema/check-vocabulary.mjs checks it against that object's shape. */
++  vocabulary_parent?: string;
+   name: string;
+   /** venture: building a venture, whose root and strategic foundation fail closed. product: a product without a venture, which fails open (EE-054). */
+   kind?: "venture" | "product";
+diff --git a/schema/venture.schema.json b/schema/venture.schema.json
+index cac85a8e..8a9b9ebe 100644
+--- a/schema/venture.schema.json
++++ b/schema/venture.schema.json
+@@ -18,6 +18,11 @@
+       "type": "string",
+       "pattern": "^[a-z0-9-]+$"
+     },
++    "vocabulary_parent": {
++      "type": "string",
++      "pattern": "^(noun:[a-z0-9@][a-z0-9@-]*|verb:[a-z][a-z-]*|kind:[a-z][a-z-]*)$",
++      "description": "The vocabulary object this venture derives from (EE-107). Optional until every record names one. schema/check-vocabulary.mjs checks it against that object's shape."
++    },
+     "name": {
+       "type": "string"
+     },
+diff --git a/schema/vocabulary-baseline.json b/schema/vocabulary-baseline.json
+new file mode 100644
+index 00000000..c9bdac38
+--- /dev/null
++++ b/schema/vocabulary-baseline.json
+@@ -0,0 +1,394 @@
++{
++  "note": "EE-107. Record types, core modules and instance records that do not name a vocabulary parent yet. schema/check-vocabulary.mjs fails a subject that is not listed, fails a listed subject that now has a parent, and fails an entry added after this list is on framework unless that entry carries approved. The list may only shrink. Shape mismatches are never listed here.",
++  "gaps": [
++    "module:evidence/skills/design-coverage/check.mjs",
++    "module:evidence/skills/design-coverage/scan.mjs",
++    "module:evidence/skills/fidelity-ladder-audit/ladder-census.mjs",
++    "module:frameworks/ambition-tier/adapter.mjs",
++    "module:frameworks/telos/adapter.mjs",
++    "module:governance/features/decisions.steps.mjs",
++    "module:interface/acting.mjs",
++    "module:interface/adapters.mjs",
++    "module:interface/api/server.mjs",
++    "module:interface/boundaries.mjs",
++    "module:interface/brand.mjs",
++    "module:interface/cli/find-venture.mjs",
++    "module:interface/cli/freshness.mjs",
++    "module:interface/cli/guard.mjs",
++    "module:interface/cli/mentura.mjs",
++    "module:interface/cli/naive.mjs",
++    "module:interface/context.mjs",
++    "module:interface/create-venture/index.mjs",
++    "module:interface/demo/board.mjs",
++    "module:interface/demo/decision-harness.mjs",
++    "module:interface/demo/live-agent.mjs",
++    "module:interface/dev/setup.mjs",
++    "module:interface/gate-hooks.mjs",
++    "module:interface/harness/evals.mjs",
++    "module:interface/harness/run.mjs",
++    "module:interface/harness/site.mjs",
++    "module:interface/instrumentation.mjs",
++    "module:interface/kit-boundary.mjs",
++    "module:interface/mcp/server.mjs",
++    "module:interface/package-routes.mjs",
++    "module:interface/provenance.mjs",
++    "module:interface/reads.mjs",
++    "module:interface/release-card.mjs",
++    "module:interface/router.mjs",
++    "module:interface/vitals.mjs",
++    "module:interface/writes.mjs",
++    "module:knowledge/connectors/catalog.mjs",
++    "module:knowledge/connectors/contract.mjs",
++    "module:knowledge/connectors/eval.mjs",
++    "module:knowledge/connectors/filesystem.mjs",
++    "module:knowledge/connectors/index.mjs",
++    "module:knowledge/connectors/resolve.mjs",
++    "module:knowledge/connectors/suite.mjs",
++    "module:operations/marketing/check-public.mjs",
++    "module:operations/marketing/publish-build.mjs",
++    "module:operations/marketing/site/plan.mjs",
++    "module:operations/marketing/site/presence.mjs",
++    "module:platform/connectors/eval.mjs",
++    "module:platform/connectors/fake-github.mjs",
++    "module:platform/connectors/github.mjs",
++    "module:platform/integrations/jev.mjs",
++    "module:platform/integrations/langsmith-docket.mjs",
++    "module:platform/integrations/langsmith-setup.mjs",
++    "module:platform/integrations/langsmith.mjs",
++    "module:platform/integrations/remote-image.mjs",
++    "module:platform/integrations/rho.mjs",
++    "module:platform/integrations/site.mjs",
++    "module:platform/kits/agent-upgrade/run.mjs",
++    "module:platform/kits/agent-upgrade/stand-in-agent.mjs",
++    "module:platform/mcp/research.mjs",
++    "module:platform/research/adapters/http.mjs",
++    "module:platform/research/adapters/nasa.mjs",
++    "module:platform/research/adapters/sec-edgar.mjs",
++    "module:platform/research/adapters/uspto.mjs",
++    "module:platform/research/adapters/wayback.mjs",
++    "module:platform/research/cells.mjs",
++    "module:platform/research/credibility.mjs",
++    "module:platform/research/run.mjs",
++    "module:platform/research/store.mjs",
++    "module:platform/webhooks/server.mjs",
++    "module:purpose/features/strategic-foundation.steps.mjs",
++    "module:purpose/frameworks/idea-map/graph.mjs",
++    "module:purpose/frameworks/idea-map/ideamap.mjs",
++    "module:purpose/frameworks/idea-map/route.mjs",
++    "module:purpose/frameworks/product-anatomy/anatomy.mjs",
++    "module:purpose/kits/validation/features/problem-assessment.steps.mjs",
++    "module:schema/access.mjs",
++    "module:schema/activity.mjs",
++    "module:schema/add-department.mjs",
++    "module:schema/assess-problem.mjs",
++    "module:schema/assets.mjs",
++    "module:schema/bdd.mjs",
++    "module:schema/beta-gate.mjs",
++    "module:schema/brand-lint.mjs",
++    "module:schema/brand.mjs",
++    "module:schema/bugs.mjs",
++    "module:schema/build-release.mjs",
++    "module:schema/caching.mjs",
++    "module:schema/calendar.mjs",
++    "module:schema/canonical.mjs",
++    "module:schema/check-artifacts.mjs",
++    "module:schema/check-assets.mjs",
++    "module:schema/check-boundary.mjs",
++    "module:schema/check-brand.mjs",
++    "module:schema/check-config.mjs",
++    "module:schema/check-data-model.mjs",
++    "module:schema/check-data-packages.mjs",
++    "module:schema/check-delegation.mjs",
++    "module:schema/check-departments.mjs",
++    "module:schema/check-docs-claims.mjs",
++    "module:schema/check-execution.mjs",
++    "module:schema/check-frameworks.mjs",
++    "module:schema/check-governance.mjs",
++    "module:schema/check-integrations.mjs",
++    "module:schema/check-leaks.mjs",
++    "module:schema/check-nextjs-status.mjs",
++    "module:schema/check-nouns.mjs",
++    "module:schema/check-people.mjs",
++    "module:schema/check-private.mjs",
++    "module:schema/check-provenance.mjs",
++    "module:schema/check-publication.mjs",
++    "module:schema/check-publications.mjs",
++    "module:schema/check-ready.mjs",
++    "module:schema/check-reasons.mjs",
++    "module:schema/check-roadmap.mjs",
++    "module:schema/check-sdlc-catalog.ts",
++    "module:schema/check-sources.mjs",
++    "module:schema/check-team.mjs",
++    "module:schema/check-telos.mjs",
++    "module:schema/check-types.ts",
++    "module:schema/check-validation-study.mjs",
++    "module:schema/check-validation.mjs",
++    "module:schema/check-ventures.mjs",
++    "module:schema/check-visibility.mjs",
++    "module:schema/check-where-used.mjs",
++    "module:schema/clock.mjs",
++    "module:schema/decision-analytics.mjs",
++    "module:schema/decision-index.mjs",
++    "module:schema/decisions.mjs",
++    "module:schema/departments.mjs",
++    "module:schema/design-system.mjs",
++    "module:schema/docket-eval.mjs",
++    "module:schema/docket.mjs",
++    "module:schema/examples/frames/judge.mjs",
++    "module:schema/examples/migrate/agent.mjs",
++    "module:schema/examples/venture-type/jev.mjs",
++    "module:schema/feedback-route.mjs",
++    "module:schema/foundation.mjs",
++    "module:schema/founders.ts",
++    "module:schema/frames.mjs",
++    "module:schema/freshness.mjs",
++    "module:schema/gate-drafts.mjs",
++    "module:schema/gate.mjs",
++    "module:schema/generators/bug.mjs",
++    "module:schema/generators/generate.mjs",
++    "module:schema/generators/glossary.mjs",
++    "module:schema/generators/reference.mjs",
++    "module:schema/impact.mjs",
++    "module:schema/init-venture.mjs",
++    "module:schema/kits.mjs",
++    "module:schema/lifecycle.mjs",
++    "module:schema/lint-customers.mjs",
++    "module:schema/lint-finance.mjs",
++    "module:schema/lint-foundation.mjs",
++    "module:schema/lint-investors.mjs",
++    "module:schema/lint-legal.mjs",
++    "module:schema/lint-money.mjs",
++    "module:schema/lint-people.mjs",
++    "module:schema/lint-product.mjs",
++    "module:schema/lint-validation.mjs",
++    "module:schema/load-packages.mjs",
++    "module:schema/migrate-venture.mjs",
++    "module:schema/migrations/icp-profiles.mjs",
++    "module:schema/migrations/kit-to-package.mjs",
++    "module:schema/migrations/package-layout.mjs",
++    "module:schema/migrations/structured-layout.mjs",
++    "module:schema/migrations/telos-to-goals.mjs",
++    "module:schema/model-steps.mjs",
++    "module:schema/naive-config.mjs",
++    "module:schema/need-now.mjs",
++    "module:schema/ontology-gate.ts",
++    "module:schema/operating-rules.ts",
++    "module:schema/packages.mjs",
++    "module:schema/payouts.mjs",
++    "module:schema/port-venture.mjs",
++    "module:schema/premise-lint.mjs",
++    "module:schema/publish-lint.mjs",
++    "module:schema/publish.mjs",
++    "module:schema/reasons.mjs",
++    "module:schema/record-types.ts",
++    "module:schema/redact.mjs",
++    "module:schema/release-read.mjs",
++    "module:schema/releases.mjs",
++    "module:schema/roadmaps.mjs",
++    "module:schema/run-handoff.mjs",
++    "module:schema/setup.mjs",
++    "module:schema/stale.mjs",
++    "module:schema/start-release.mjs",
++    "module:schema/structure.mjs",
++    "module:schema/telemetry.mjs",
++    "module:schema/terms/admit.ts",
++    "module:schema/terms/engine.ts",
++    "module:schema/terms/levels.ts",
++    "module:schema/terms/terms.ts",
++    "module:schema/time-to-ready.mjs",
++    "module:schema/triggers.mjs",
++    "module:schema/upgrade-venture.mjs",
++    "module:schema/upgrades.mjs",
++    "module:schema/use-model.mjs",
++    "module:schema/user-frameworks.mjs",
++    "module:schema/venture-core.mjs",
++    "module:schema/venture-paths.mjs",
++    "module:schema/venture-type.mjs",
++    "module:schema/verify.mjs",
++    "module:schema/visibility.mjs",
++    "module:schema/workspace-init.mjs",
++    "module:schema/workspace.mjs",
++    "record-type:account",
++    "record-type:activity",
++    "record-type:activity-summary",
++    "record-type:adapter",
++    "record-type:agent-capability",
++    "record-type:alignment",
++    "record-type:anatomy-answers",
++    "record-type:anatomy-framework",
++    "record-type:anatomy-input",
++    "record-type:artifact",
++    "record-type:benchmark",
++    "record-type:beta-capabilities",
++    "record-type:board",
++    "record-type:bug",
++    "record-type:business-models",
++    "record-type:calendar",
++    "record-type:calendar-event",
++    "record-type:constraints",
++    "record-type:customer",
++    "record-type:data-model",
++    "record-type:data-stream",
++    "record-type:deal",
++    "record-type:decision",
++    "record-type:decision-impact",
++    "record-type:decision-record",
++    "record-type:decision-rights",
++    "record-type:decision-roadmap",
++    "record-type:delegation",
++    "record-type:department",
++    "record-type:department-catalog",
++    "record-type:design-document",
++    "record-type:design-documents-registry",
++    "record-type:eval-suite",
++    "record-type:evidence",
++    "record-type:exit",
++    "record-type:exit-criteria",
++    "record-type:founder",
++    "record-type:founder-agreement",
++    "record-type:founder-idea",
++    "record-type:founder-inspiration",
++    "record-type:founder-private",
++    "record-type:founder-reference",
++    "record-type:frame",
++    "record-type:framework",
++    "record-type:freshness-log",
++    "record-type:freshness-profiles",
++    "record-type:fund-terms",
++    "record-type:fund-thesis",
++    "record-type:glossary",
++    "record-type:goal",
++    "record-type:handoff",
++    "record-type:icp",
++    "record-type:idea-dump",
++    "record-type:idea-graph",
++    "record-type:idea-map",
++    "record-type:idea-map-conventions",
++    "record-type:integration",
++    "record-type:internal-terms",
++    "record-type:investor",
++    "record-type:judgment",
++    "record-type:kit",
++    "record-type:kit-manifest",
++    "record-type:knowledge-sources",
++    "record-type:lifecycle-playbook",
++    "record-type:marketing-brand",
++    "record-type:marketing-content",
++    "record-type:marketing-design-system",
++    "record-type:marketing-matrix",
++    "record-type:marketing-sitemap",
++    "record-type:money-account",
++    "record-type:money-summary",
++    "record-type:naive-config",
++    "record-type:need-now",
++    "record-type:nextjs-status",
++    "record-type:ontology",
++    "record-type:operating-rules",
++    "record-type:ownership",
++    "record-type:people",
++    "record-type:pillar",
++    "record-type:playbook",
++    "record-type:product",
++    "record-type:profile-attributes",
++    "record-type:provenance",
++    "record-type:public-assets",
++    "record-type:publication-policy",
++    "record-type:publications",
++    "record-type:raw-source",
++    "record-type:raw-text",
++    "record-type:reference",
++    "record-type:release",
++    "record-type:requirement",
++    "record-type:research-cell",
++    "record-type:research-citation",
++    "record-type:research-claim",
++    "record-type:research-source",
++    "record-type:role",
++    "record-type:role-template",
++    "record-type:route-aliases",
++    "record-type:scaffold",
++    "record-type:sdlc-catalog",
++    "record-type:site-presence",
++    "record-type:strategic-foundation",
++    "record-type:systems-catalog",
++    "record-type:team-plan",
++    "record-type:telemetry-event",
++    "record-type:telos",
++    "record-type:term-list",
++    "record-type:upgrade-registry",
++    "record-type:validation-feedback",
++    "record-type:validation-go-to-market",
++    "record-type:validation-interview",
++    "record-type:validation-operations-readiness",
++    "record-type:validation-pricing",
++    "record-type:validation-problem",
++    "record-type:validation-product-market-fit",
++    "record-type:validation-solution",
++    "record-type:validation-team",
++    "record-type:validation-weights",
++    "record-type:venture-core",
++    "record-type:venture-package",
++    "record-type:venture-packages",
++    "record-type:venture-profile",
++    "record-type:venture-role",
++    "record-type:venture-types",
++    "record-type:where-used",
++    "record-type:workspace",
++    "record-type:workspace-founder",
++    "record:instance/ventures/everything-ecosystem/.release/layout.json",
++    "record:instance/ventures/everything-ecosystem/decisions/hackathon.entry.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/hackathon.project.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/mentura.core.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/naive.core.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/telos.exit-criteria.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/telos.funding.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/telos.horizon.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/telos.owner-outcome.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/telos.vision.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/venture.competence.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/venture.compliance-scope.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/venture.forecast.decision.json",
++    "record:instance/ventures/everything-ecosystem/decisions/venture.whether-review.decision.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/anatomy-json-output-20261027054030.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/anatomy-json-output-20261027054049.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/anatomy-json-output-20261027054113.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/anatomy-json-output-20261027054126.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/anatomy-runner-fixes-20261027052719.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/methodology-site-refresh-20261027054211.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/naive-docs-and-marketing-site-20261028203300.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/naive-docs-and-marketing-site-20261028204112.json",
++    "record:instance/ventures/everything-ecosystem/evidence/results/naive-packages-and-design-additions-20261029005843.json",
++    "record:instance/ventures/everything-ecosystem/foundation/alignment.json",
++    "record:instance/ventures/everything-ecosystem/foundation/goals/scale.json",
++    "record:instance/ventures/everything-ecosystem/foundation/icp/ai-native-early-founders.json",
++    "record:instance/ventures/everything-ecosystem/foundation/icp/founder-mentors.json",
++    "record:instance/ventures/everything-ecosystem/foundation/problem.json",
++    "record:instance/ventures/everything-ecosystem/governance/decision-rights.json",
++    "record:instance/ventures/everything-ecosystem/governance/delegation.json",
++    "record:instance/ventures/everything-ecosystem/governance/departments/marketing-and-sales/department.json",
++    "record:instance/ventures/everything-ecosystem/governance/internal-terms.json",
++    "record:instance/ventures/everything-ecosystem/governance/publication-policy.json",
++    "record:instance/ventures/everything-ecosystem/operations/departments/marketing-and-sales/department.json",
++    "record:instance/ventures/everything-ecosystem/operations/handoffs/anatomy-json-output.json",
++    "record:instance/ventures/everything-ecosystem/operations/handoffs/anatomy-runner-fixes.json",
++    "record:instance/ventures/everything-ecosystem/operations/handoffs/methodology-site-refresh.json",
++    "record:instance/ventures/everything-ecosystem/operations/handoffs/naive-docs-and-marketing-site.json",
++    "record:instance/ventures/everything-ecosystem/operations/handoffs/naive-packages-and-design-additions.json",
++    "record:instance/ventures/everything-ecosystem/people/team-plan.json",
++    "record:instance/ventures/everything-ecosystem/product/anatomy/answers.reasoned.json",
++    "record:instance/ventures/everything-ecosystem/product/anatomy/mentura.json",
++    "record:instance/ventures/everything-ecosystem/product/anatomy/naive.json",
++    "record:instance/ventures/everything-ecosystem/product/console.json",
++    "record:instance/ventures/everything-ecosystem/product/five-step-algorithm.json",
++    "record:instance/ventures/everything-ecosystem/product/founder-development.json",
++    "record:instance/ventures/everything-ecosystem/product/knowledge-kit.json",
++    "record:instance/ventures/everything-ecosystem/product/mad.json",
++    "record:instance/ventures/everything-ecosystem/product/mentura.json",
++    "record:instance/ventures/everything-ecosystem/product/method-site.json",
++    "record:instance/ventures/everything-ecosystem/product/product-anatomy.json",
++    "record:instance/ventures/everything-ecosystem/products/kit.json",
++    "record:instance/ventures/everything-ecosystem/validation/go-to-market.json",
++    "record:instance/ventures/everything-ecosystem/validation/solution.json",
++    "record:instance/workspace.json"
++  ]
++}
+diff --git a/schema/vocabulary-test.ts b/schema/vocabulary-test.ts
+new file mode 100644
+index 00000000..9dab1249
+--- /dev/null
++++ b/schema/vocabulary-test.ts
+@@ -0,0 +1,181 @@
++// Behavior of the vocabulary check (EE-107). The repository case runs the real
++// catalog. The rest build a small vocabulary and assert the ratchet.
++//
++//   node schema/vocabulary-test.ts
++
++import { readFileSync } from "node:fs";
++import { spawnSync } from "node:child_process";
++import { join } from "node:path";
++import { fileURLToPath } from "node:url";
++import {
++  checkRepository, evaluate, loadVocabulary, nounId, parentFromModuleSource, shapeProblems, tierOf,
++  type BaselineEntry, type SchemaNode, type Subject, type Vocabulary, type VocabularyObject,
++} from "./vocabulary.ts";
++
++const root = fileURLToPath(new URL("..", import.meta.url));
++let failed = 0;
++const expect = (name: string, ok: boolean, detail?: unknown) => {
++  console.log(`${ok ? "ok  " : "FAIL"} ${name}`);
++  if (!ok) {
++    failed++;
++    if (detail !== undefined) console.log(typeof detail === "string" ? detail : JSON.stringify(detail, null, 2));
++  }
++};
++
++const ventureShape: SchemaNode = {
++  type: "object",
++  required: ["vocabulary_parent", "phase"],
++  properties: {
++    vocabulary_parent: { const: "noun:venture" },
++    phase: { enum: ["discovery", "validation"] },
++  },
++};
++
++function object(partial: Pick<VocabularyObject, "id" | "class"> & Partial<VocabularyObject>): VocabularyObject {
++  return { shape: { type: "object" }, shapeDeclared: false, ...partial };
++}
++
++function vocabulary(): Vocabulary {
++  const objects = [
++    object({ id: "noun:venture", class: "noun", shape: ventureShape, shapeDeclared: true, noun: { noun: "venture", status: "new" } }),
++    object({ id: "noun:guiding-statement", class: "noun", noun: { noun: "guiding statement", status: "retired" } }),
++    object({ id: "verb:create", class: "verb", verb: "create", shapeDeclared: true, shape: { type: "object", required: ["verb"], properties: { verb: { const: "create" } } } }),
++  ];
++  return {
++    objects,
++    byId: new Map(objects.map((item) => [item.id, item])),
++    tiers: { values: ["low", "costly", "one_way_door"], scores: ["severity", "reversibility", "time_to_detect", "blast_radius"], score_min: 1, score_max: 3, tier_of: "max", rank: { "1": "low", "2": "costly", "3": "one_way_door" } },
++  };
++}
++
++const subject = (id: string, parent: string | null, extra: Partial<Subject> = {}): Subject => ({
++  kind: id.startsWith("record:") ? "record" : id.startsWith("module:") ? "module" : "record-type",
++  id, parent, parentError: null, shapeCheck: id.startsWith("record:"), ...extra,
++});
++
++const entry = (id: string, approved?: string): BaselineEntry => approved === undefined ? { id } : { id, approved };
++const problems = (subjects: Subject[], baseline: BaselineEntry[], previous: BaselineEntry[] | null) =>
++  evaluate({ subjects, vocabulary: vocabulary(), baseline, previous });
++
++const missing = subject("record-type:workspace", null);
++expect("a missing parent fails", problems([missing], [], null).some((error) => error.includes("new gap record-type:workspace")));
++
++const mismatch = subject("record:instance/ventures/example/venture.json", "noun:venture", { value: { vocabulary_parent: "noun:venture", phase: "nope" } });
++expect("a shape mismatch fails", problems([mismatch], [], null).some((error) => error.includes("does not match its shape")));
++
++expect("a baselined gap passes", problems([missing], [entry(missing.id)], null).length === 0);
++
++const known = subject("record-type:workspace", null);
++const added = subject("module:schema/new-file.mjs", null);
++expect("a new gap fails", problems([known, added], [entry(known.id)], null).some((error) => error.includes("new gap module:schema/new-file.mjs")));
++
++const closed = subject("record-type:venture", "noun:venture");
++expect("removing an entry from the baseline is allowed", problems(
++  [known, closed],
++  [entry(known.id)],
++  [entry(known.id), entry(closed.id)],
++).length === 0);
++
++expect("adding one fails unless explicitly approved", problems(
++  [known, added],
++  [entry(known.id), entry(added.id)],
++  [entry(known.id)],
++).some((error) => error.includes("baseline adds module:schema/new-file.mjs without approval")));
++
++expect("a blank approval is not approval", problems(
++  [known, added],
++  [entry(known.id), entry(added.id, "   ")],
++  [entry(known.id)],
++).some((error) => error.includes("without approval")));
++
++expect("an approved addition passes", problems(
++  [known, added],
++  [entry(known.id), entry(added.id, "Torian, 2026-11-02: this module landed with no parent")],
++  [entry(known.id)],
++).length === 0);
++
++expect("a closed gap that stays in the baseline fails", problems(
++  [closed],
++  [entry(closed.id)],
++  null,
++).some((error) => error.includes("no longer a gap")));
++
++expect("an unknown parent fails", problems(
++  [subject("record:instance/x.json", "noun:missing", { value: {} })],
++  [],
++  null,
++).some((error) => error.includes("does not exist")));
++
++expect("a retired noun fails", problems(
++  [subject("record:instance/x.json", "noun:guiding-statement", { value: {} })],
++  [],
++  null,
++).some((error) => error.includes("retired")));
++
++expect("a module with a parent is not shape-checked", problems(
++  [subject("module:schema/vocabulary.ts", "noun:venture")],
++  [],
++  null,
++).length === 0);
++
++expect("a record that matches its shape passes", problems(
++  [subject("record:instance/ok.json", "noun:venture", { value: { vocabulary_parent: "noun:venture", phase: "discovery" } })],
++  [],
++  null,
++).length === 0);
++
++const header = parentFromModuleSource(`// vocabulary_parent: noun:schema\nexport const n = 1;\n`);
++expect("a module header names its parent", header.parent === "noun:schema" && header.error === null);
++const late = Array.from({ length: 41 }, (_, i) => i === 40 ? "// vocabulary_parent: noun:schema" : "// note").join("\n");
++expect("a parent after line 40 is not a parent", parentFromModuleSource(late).parent === null);
++expect("two parent lines fail", parentFromModuleSource("// vocabulary_parent: noun:schema\n// vocabulary_parent: noun:venture\n").error !== null);
++
++const loaded = loadVocabulary(root);
++expect("the repository vocabulary loads", loaded.errors.length === 0 && loaded.vocabulary !== null, loaded.errors.join("\n"));
++const vocab = loaded.vocabulary;
++if (vocab) {
++  const ontology = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8")) as { nouns: { noun: string }[] };
++  const preserved = ontology.nouns.every((noun) => {
++    const found = vocab.byId.get(nounId(noun.noun));
++    return !!found && JSON.stringify(found.noun) === JSON.stringify(noun);
++  });
++  expect("every ontology noun is preserved", ontology.nouns.length === 112 && preserved);
++  expect("ids do not collide", vocab.objects.length === vocab.byId.size);
++  expect("verbs and kinds are the three and the eight", vocab.byId.has("verb:create") && vocab.byId.has("verb:amend") && vocab.byId.has("verb:delete")
++    && ["originate", "derive", "append", "rename", "deprecate", "revise", "remove", "merge"].every((kind) => vocab.byId.has(`kind:${kind}`)));
++  const create = vocab.byId.get("verb:create");
++  const derive = vocab.byId.get("kind:derive");
++  const originate = vocab.byId.get("kind:originate");
++  const merge = vocab.byId.get("kind:merge");
++  expect("derive without a source fails the create shape", !!create && shapeProblems(create.shape, { verb: "create", kind: "derive", noun: "venture" }).length > 0);
++  expect("derive with a source passes", !!derive && shapeProblems(derive.shape, { verb: "create", kind: "derive", noun: "venture", source: "noun:phase" }).length === 0);
++  expect("originate needs no source", !!originate && shapeProblems(originate.shape, { verb: "create", kind: "originate", noun: "venture" }).length === 0);
++  expect("merge without a successor fails", !!merge && shapeProblems(merge.shape, { verb: "delete", kind: "merge", noun: "venture" }).length > 0);
++  const venture = vocab.byId.get("noun:venture");
++  const schema = vocab.byId.get("noun:schema");
++  expect("venture declares a shape and schema stays open", !!venture?.shapeDeclared && schema?.shapeDeclared === false);
++  expect("the max score selects the tier", tierOf({ severity: 1, reversibility: 1, time_to_detect: 1, blast_radius: 1 }, vocab.tiers) === "low"
++    && tierOf({ severity: 1, reversibility: 2, time_to_detect: 1, blast_radius: 1 }, vocab.tiers) === "costly"
++    && tierOf({ severity: 3, reversibility: 1, time_to_detect: 2, blast_radius: 1 }, vocab.tiers) === "one_way_door");
++  let threw = false;
++  try { tierOf({ severity: 4, reversibility: 1, time_to_detect: 1, blast_radius: 1 }, vocab.tiers); }
++  catch { threw = true; }
++  expect("a score outside 1 to 3 is refused", threw);
++}
++
++const repo = checkRepository(root);
++expect("the repository check passes", repo.errors.length === 0, repo.errors.join("\n"));
++expect("the wired examples name a parent", [
++  ["record-type:venture", "noun:venture"],
++  ["record:instance/ventures/everything-ecosystem/venture.json", "noun:venture"],
++  ["module:schema/vocabulary.ts", "noun:schema"],
++  ["module:schema/check-vocabulary.mjs", "noun:schema"],
++].every(([id, parent]) => repo.subjects.find((item) => item.id === id)?.parent === parent));
++expect("a test module is outside the check", repo.subjects.every((item) => item.id !== "module:schema/vocabulary-test.ts"));
++expect("the baseline matches the gaps", repo.errors.length === 0 && repo.counts.parents + repo.counts.gaps === repo.subjects.length);
++const ran = spawnSync(process.execPath, ["schema/check-vocabulary.mjs"], { cwd: root, encoding: "utf8" });
++expect("the vocabulary command passes", ran.status === 0, ran.stderr);
++console.log(repo.summary);
++
++if (failed) { console.log(`${failed} failed`); process.exit(1); }
++console.log("vocabulary: all passed");
+diff --git a/schema/vocabulary.json b/schema/vocabulary.json
+new file mode 100644
+index 00000000..d88ab2f9
+--- /dev/null
++++ b/schema/vocabulary.json
+@@ -0,0 +1,241 @@
++{
++  "version": "1",
++  "note": "Vocabulary objects for verbs, kinds, tiers, and the shapes of nouns that declare one (EE-107). Nouns stay in docs/ontology.json. schema/vocabulary.ts joins the two. Verbs and kinds must match design.diff.verbs in operations/operating-rules.json. Tiers must match questions.impact there. The tier is the max of the four scores, and score 1, 2 or 3 selects low, costly or one_way_door.",
++  "tiers": {
++    "values": ["low", "costly", "one_way_door"],
++    "scores": ["severity", "reversibility", "time_to_detect", "blast_radius"],
++    "score_min": 1,
++    "score_max": 3,
++    "tier_of": "max",
++    "rank": { "1": "low", "2": "costly", "3": "one_way_door" }
++  },
++  "verbs": [
++    {
++      "id": "verb:create",
++      "class": "verb",
++      "verb": "create",
++      "kinds": ["originate", "derive"],
++      "derive_names": "source",
++      "shape": {
++        "type": "object",
++        "description": "A create line. derive names the source it came from.",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "create" },
++          "kind": { "enum": ["originate", "derive"] },
++          "noun": { "type": "string", "minLength": 1 },
++          "source": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        },
++        "allOf": [
++          {
++            "if": {
++              "type": "object",
++              "required": ["kind"],
++              "properties": { "kind": { "const": "derive" } }
++            },
++            "then": { "required": ["source"] }
++          }
++        ]
++      }
++    },
++    {
++      "id": "verb:amend",
++      "class": "verb",
++      "verb": "amend",
++      "kinds": ["append", "rename", "deprecate", "revise"],
++      "shape": {
++        "type": "object",
++        "description": "An amend line. A move that keeps the id is a rename.",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "amend" },
++          "kind": { "enum": ["append", "rename", "deprecate", "revise"] },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "verb:delete",
++      "class": "verb",
++      "verb": "delete",
++      "kinds": ["remove", "merge"],
++      "merge_names": "successor",
++      "shape": {
++        "type": "object",
++        "description": "A delete line. merge names the successor.",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "delete" },
++          "kind": { "enum": ["remove", "merge"] },
++          "noun": { "type": "string", "minLength": 1 },
++          "successor": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        },
++        "allOf": [
++          {
++            "if": {
++              "type": "object",
++              "required": ["kind"],
++              "properties": { "kind": { "const": "merge" } }
++            },
++            "then": { "required": ["successor"] }
++          }
++        ]
++      }
++    }
++  ],
++  "kinds": [
++    {
++      "id": "kind:originate",
++      "class": "kind",
++      "verb": "create",
++      "kind": "originate",
++      "shape": {
++        "type": "object",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "create" },
++          "kind": { "const": "originate" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:derive",
++      "class": "kind",
++      "verb": "create",
++      "kind": "derive",
++      "names": "source",
++      "shape": {
++        "type": "object",
++        "description": "derive names the source the new thing came from.",
++        "required": ["verb", "kind", "noun", "source"],
++        "properties": {
++          "verb": { "const": "create" },
++          "kind": { "const": "derive" },
++          "noun": { "type": "string", "minLength": 1 },
++          "source": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:append",
++      "class": "kind",
++      "verb": "amend",
++      "kind": "append",
++      "shape": {
++        "type": "object",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "amend" },
++          "kind": { "const": "append" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:rename",
++      "class": "kind",
++      "verb": "amend",
++      "kind": "rename",
++      "shape": {
++        "type": "object",
++        "description": "A move that keeps the id is a rename.",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "amend" },
++          "kind": { "const": "rename" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:deprecate",
++      "class": "kind",
++      "verb": "amend",
++      "kind": "deprecate",
++      "shape": {
++        "type": "object",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "amend" },
++          "kind": { "const": "deprecate" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:revise",
++      "class": "kind",
++      "verb": "amend",
++      "kind": "revise",
++      "shape": {
++        "type": "object",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "amend" },
++          "kind": { "const": "revise" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:remove",
++      "class": "kind",
++      "verb": "delete",
++      "kind": "remove",
++      "shape": {
++        "type": "object",
++        "required": ["verb", "kind", "noun"],
++        "properties": {
++          "verb": { "const": "delete" },
++          "kind": { "const": "remove" },
++          "noun": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    },
++    {
++      "id": "kind:merge",
++      "class": "kind",
++      "verb": "delete",
++      "kind": "merge",
++      "names": "successor",
++      "shape": {
++        "type": "object",
++        "description": "merge names the successor that remains.",
++        "required": ["verb", "kind", "noun", "successor"],
++        "properties": {
++          "verb": { "const": "delete" },
++          "kind": { "const": "merge" },
++          "noun": { "type": "string", "minLength": 1 },
++          "successor": { "type": "string", "minLength": 1 },
++          "tier": { "enum": ["low", "costly", "one_way_door"] }
++        }
++      }
++    }
++  ],
++  "shapes": {
++    "noun:venture": {
++      "type": "object",
++      "description": "What a venture record must contain to claim the venture noun. A subset of schema/venture.schema.json.",
++      "required": ["vocabulary_parent", "id", "name", "phase", "owner", "status"],
++      "properties": {
++        "vocabulary_parent": { "const": "noun:venture" },
++        "id": { "type": "string", "minLength": 1 },
++        "name": { "type": "string", "minLength": 1 },
++        "phase": { "enum": ["discovery", "validation", "beachhead", "scale", "platform"] },
++        "owner": { "enum": ["self", "shared", "other"] },
++        "status": { "enum": ["active", "paused", "closed", "archived"] }
++      }
++    }
++  }
++}
+diff --git a/schema/vocabulary.ts b/schema/vocabulary.ts
+new file mode 100644
+index 00000000..35d738bf
+--- /dev/null
++++ b/schema/vocabulary.ts
+@@ -0,0 +1,698 @@
++// vocabulary_parent: noun:schema
++// Nouns, verbs and kinds as vocabulary objects (EE-107). Other code imports this module.
++//
++// Nouns stay in docs/ontology.json, with every field they already have. Verbs, kinds,
++// tiers and shapes live in schema/vocabulary.json, and the verb set is checked against
++// design.diff.verbs in operations/operating-rules.json. Each object has a stable id and
++// a JSON Schema shape (draft 2020-12 keywords this module enforces). A noun with no
++// declared shape has an open object shape.
++//
++// A record type names its parent with vocabulary_parent in schema/data-model.json.
++// A record uses the same field. A code module puts `// vocabulary_parent: <id>` in its
++// first 40 lines. The shape check runs on instance records. A record type and a module
++// are checked for a parent that resolves to a live object.
++//
++// schema/vocabulary-baseline.json lists subjects that have no parent yet. The list may
++// only shrink: a subject that is not listed is a new gap, a listed subject that now has
++// a parent must be removed, and an entry added after the baseline is on framework needs
++// `approved`. Shape mismatches are never baselined.
++//
++//   node schema/check-vocabulary.mjs
++
++import { spawnSync } from "node:child_process";
++import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
++import { join, relative, resolve } from "node:path";
++
++export const PARENT_FIELD = "vocabulary_parent";
++export const HEADER_LINES = 40;
++export const VOCABULARY_FILE = "schema/vocabulary.json";
++export const BASELINE_FILE = "schema/vocabulary-baseline.json";
++export const ONTOLOGY_FILE = "docs/ontology.json";
++export const OPERATING_RULES_FILE = "operations/operating-rules.json";
++
++export const MODULE_ROOTS = [
++  "schema", "interface", "knowledge", "operations", "evidence",
++  "governance", "purpose", "platform", "packages", "frameworks",
++] as const;
++
++export const TIER_NAMES = ["low", "costly", "one_way_door"] as const;
++export const TIER_SCORES = ["severity", "reversibility", "time_to_detect", "blast_radius"] as const;
++
++export type TierName = typeof TIER_NAMES[number];
++export type TierScoreName = typeof TIER_SCORES[number];
++export type TierScores = Record<TierScoreName, number>;
++export type VocabularyClass = "noun" | "verb" | "kind";
++export type SubjectKind = "record-type" | "record" | "module";
++
++export type SchemaNode = {
++  type?: string | string[];
++  const?: unknown;
++  enum?: unknown[];
++  required?: string[];
++  properties?: Record<string, SchemaNode>;
++  additionalProperties?: boolean | SchemaNode;
++  minLength?: number;
++  maxLength?: number;
++  minimum?: number;
++  maximum?: number;
++  minItems?: number;
++  maxItems?: number;
++  pattern?: string;
++  items?: SchemaNode;
++  allOf?: SchemaNode[];
++  anyOf?: SchemaNode[];
++  oneOf?: SchemaNode[];
++  if?: SchemaNode;
++  then?: SchemaNode;
++  else?: SchemaNode;
++  not?: SchemaNode;
++  title?: string;
++  description?: string;
++  $schema?: string;
++  $id?: string;
++  $comment?: string;
++};
++
++/** A noun record from docs/ontology.json, kept whole. */
++export type NounRecord = { noun: string; status?: string } & Record<string, unknown>;
++
++export type VocabularyObject = {
++  id: string;
++  class: VocabularyClass;
++  shape: SchemaNode;
++  shapeDeclared: boolean;
++  noun?: NounRecord;
++  verb?: string;
++  kind?: string;
++  kinds?: string[];
++  /** The field a derive or merge line must name: source, or successor. */
++  names?: string;
++};
++
++export type TierRule = {
++  values: TierName[];
++  scores: TierScoreName[];
++  score_min: number;
++  score_max: number;
++  tier_of: "max";
++  rank: Record<string, TierName>;
++};
++
++export type Vocabulary = {
++  objects: VocabularyObject[];
++  byId: Map<string, VocabularyObject>;
++  tiers: TierRule;
++};
++
++export type Subject = {
++  kind: SubjectKind;
++  /** Baseline id: record-type:<id>, module:<path>, or record:<path>. */
++  id: string;
++  parent: string | null;
++  /** Set when the parent line or field is present and unusable. Not counted as a gap. */
++  parentError: string | null;
++  /** Instance records are shape-checked. Record types and modules are not. */
++  shapeCheck: boolean;
++  value?: unknown;
++};
++
++export type BaselineEntry = {
++  id: string;
++  approved?: string;
++};
++
++export class VocabularyError extends Error {
++  constructor(message: string) {
++    super(message);
++    this.name = "VocabularyError";
++  }
++}
++
++const PARENT_LINE = /^\/\/ vocabulary_parent:\s+(\S+)\s*$/;
++const ID_RE = /^(noun:[a-z0-9@][a-z0-9@-]*|verb:[a-z][a-z-]*|kind:[a-z][a-z-]*)$/;
++const BASELINE_ID_RE = /^(record-type:[a-z0-9-]+|module:\S+|record:\S+)$/;
++const OPEN_SHAPE: SchemaNode = { type: "object" };
++const SHAPE_KEYS = new Set([
++  "$schema", "$id", "$comment", "title", "description",
++  "type", "const", "enum", "required", "properties", "additionalProperties",
++  "minLength", "maxLength", "minimum", "maximum", "minItems", "maxItems", "pattern",
++  "items", "allOf", "anyOf", "oneOf", "if", "then", "else", "not",
++]);
++const TYPES = new Set(["object", "array", "string", "number", "integer", "boolean", "null"]);
++
++const isRecord = (x: unknown): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x);
++
++function relPath(root: string, file: string): string {
++  return relative(resolve(root), resolve(file)).split("\\").join("/");
++}
++
++/** Stable id for a noun string. Spaces become hyphens. A scoped noun keeps its @. */
++export function nounId(noun: string): string {
++  const slug = noun.trim().toLowerCase().replace(/[^a-z0-9@]+/g, "-").replace(/^-+|-+$/g, "");
++  return `noun:${slug}`;
++}
++
++function same(a: unknown, b: unknown): boolean {
++  if (a === b) return true;
++  if (typeof a !== "object" || typeof b !== "object" || !a || !b) return false;
++  if (Array.isArray(a) || Array.isArray(b)) {
++    return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => same(v, b[i]));
++  }
++  const aKeys = Object.keys(a);
++  const bKeys = Object.keys(b as object);
++  if (aKeys.length !== bKeys.length) return false;
++  return aKeys.every((k) => same((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k]));
++}
++
++function readJson(root: string, rel: string): unknown {
++  return JSON.parse(readFileSync(join(root, rel), "utf8")) as unknown;
++}
++
++function strings(value: unknown, path: string, errors: string[]): string[] | null {
++  if (!Array.isArray(value) || !value.every((v) => typeof v === "string")) {
++    errors.push(`${path} must be an array of strings`);
++    return null;
++  }
++  return value;
++}
++
++function parseShape(value: unknown, path: string): { shape: SchemaNode | null; errors: string[] } {
++  const errors: string[] = [];
++  if (!isRecord(value)) return { shape: null, errors: [`${path} must be a JSON Schema object`] };
++  for (const key of Object.keys(value)) {
++    if (!SHAPE_KEYS.has(key)) errors.push(`${path}: unsupported keyword ${key}`);
++  }
++  if (errors.length) return { shape: null, errors };
++  const shape: SchemaNode = {};
++  if (value.type !== undefined) {
++    const type = value.type;
++    const list = Array.isArray(type) ? type : [type];
++    if (!list.every((t) => typeof t === "string" && TYPES.has(t))) errors.push(`${path}.type is not a JSON Schema type`);
++    else shape.type = Array.isArray(type) ? list.filter((t): t is string => typeof t === "string") : list[0];
++  }
++  if (value.const !== undefined) shape.const = value.const;
++  if (value.enum !== undefined) {
++    if (!Array.isArray(value.enum)) errors.push(`${path}.enum must be an array`);
++    else shape.enum = value.enum;
++  }
++  const required = value.required === undefined ? null : strings(value.required, `${path}.required`, errors);
++  if (required) shape.required = required;
++  if (value.properties !== undefined) {
++    if (!isRecord(value.properties)) errors.push(`${path}.properties must be an object`);
++    else {
++      shape.properties = {};
++      for (const [name, child] of Object.entries(value.properties)) {
++        const parsed = parseShape(child, `${path}.properties.${name}`);
++        errors.push(...parsed.errors);
++        if (parsed.shape) shape.properties[name] = parsed.shape;
++      }
++    }
++  }
++  if (value.additionalProperties !== undefined) {
++    if (typeof value.additionalProperties === "boolean") shape.additionalProperties = value.additionalProperties;
++    else {
++      const parsed = parseShape(value.additionalProperties, `${path}.additionalProperties`);
++      errors.push(...parsed.errors);
++      if (parsed.shape) shape.additionalProperties = parsed.shape;
++    }
++  }
++  for (const key of ["minLength", "maxLength", "minimum", "maximum", "minItems", "maxItems"] as const) {
++    if (value[key] === undefined) continue;
++    if (typeof value[key] !== "number" || !Number.isFinite(value[key])) errors.push(`${path}.${key} must be a number`);
++    else shape[key] = value[key] as number;
++  }
++  if (value.pattern !== undefined) {
++    if (typeof value.pattern !== "string") errors.push(`${path}.pattern must be a string`);
++    else {
++      try { new RegExp(value.pattern); shape.pattern = value.pattern; }
++      catch { errors.push(`${path}.pattern is not a regular expression`); }
++    }
++  }
++  if (value.items !== undefined) {
++    const parsed = parseShape(value.items, `${path}.items`);
++    errors.push(...parsed.errors);
++    if (parsed.shape) shape.items = parsed.shape;
++  }
++  for (const key of ["allOf", "anyOf", "oneOf"] as const) {
++    if (value[key] === undefined) continue;
++    if (!Array.isArray(value[key])) errors.push(`${path}.${key} must be an array`);
++    else {
++      shape[key] = [];
++      value[key].forEach((child, i) => {
++        const parsed = parseShape(child, `${path}.${key}[${i}]`);
++        errors.push(...parsed.errors);
++        if (parsed.shape) shape[key]?.push(parsed.shape);
++      });
++    }
++  }
++  for (const key of ["if", "then", "else", "not"] as const) {
++    if (value[key] === undefined) continue;
++    const parsed = parseShape(value[key], `${path}.${key}`);
++    errors.push(...parsed.errors);
++    if (parsed.shape) shape[key] = parsed.shape;
++  }
++  for (const key of ["title", "description", "$schema", "$id", "$comment"] as const) {
++    if (value[key] === undefined) continue;
++    if (typeof value[key] !== "string") errors.push(`${path}.${key} must be a string`);
++    else shape[key] = value[key] as string;
++  }
++  return { shape: errors.length ? null : shape, errors };
++}
++
++function jsonType(value: unknown): string | null {
++  if (value === null) return "null";
++  if (Array.isArray(value)) return "array";
++  if (typeof value === "number") return Number.isFinite(value) ? (Number.isInteger(value) ? "integer" : "number") : null;
++  if (typeof value === "string" || typeof value === "boolean") return typeof value;
++  if (isRecord(value)) return "object";
++  return null;
++}
++
++function typeMatches(value: unknown, type: string): boolean {
++  const got = jsonType(value);
++  if (type === "number") return got === "number" || got === "integer";
++  if (type === "integer") return got === "integer";
++  return got === type;
++}
++
++/** Problems that keep value from matching the shape. Empty when it matches. */
++export function shapeProblems(shape: SchemaNode, value: unknown, at = ""): string[] {
++  const where = at || "(root)";
++  const errors: string[] = [];
++  if (shape.type !== undefined) {
++    const accepted = Array.isArray(shape.type) ? shape.type : [shape.type];
++    if (!accepted.some((type) => typeMatches(value, type))) errors.push(`${where}: expected ${accepted.join(" or ")}`);
++  }
++  if (shape.const !== undefined && !same(value, shape.const)) errors.push(`${where}: expected ${JSON.stringify(shape.const)}`);
++  if (shape.enum && !shape.enum.some((item) => same(value, item))) errors.push(`${where}: expected one of ${shape.enum.map((item) => JSON.stringify(item)).join(", ")}`);
++  if (shape.not && shapeProblems(shape.not, value, at).length === 0) errors.push(`${where}: should not match the not schema`);
++  if (isRecord(value)) {
++    if (shape.required) for (const key of shape.required) if (!(key in value)) errors.push(`${at}/${key}: required`);
++    if (shape.properties) {
++      for (const [key, child] of Object.entries(shape.properties)) {
++        if (key in value) errors.push(...shapeProblems(child, value[key], `${at}/${key}`));
++      }
++    }
++    if (shape.additionalProperties !== undefined && shape.additionalProperties !== true) {
++      const known = new Set(Object.keys(shape.properties ?? {}));
++      for (const [key, child] of Object.entries(value)) {
++        if (known.has(key)) continue;
++        if (shape.additionalProperties === false) errors.push(`${at}/${key}: additional property`);
++        else errors.push(...shapeProblems(shape.additionalProperties, child, `${at}/${key}`));
++      }
++    }
++  }
++  if (typeof value === "string") {
++    if (shape.minLength !== undefined && value.length < shape.minLength) errors.push(`${where}: shorter than ${shape.minLength}`);
++    if (shape.maxLength !== undefined && value.length > shape.maxLength) errors.push(`${where}: longer than ${shape.maxLength}`);
++    if (shape.pattern !== undefined && !new RegExp(shape.pattern).test(value)) errors.push(`${where}: does not match ${shape.pattern}`);
++  }
++  if (typeof value === "number" && Number.isFinite(value)) {
++    if (shape.minimum !== undefined && value < shape.minimum) errors.push(`${where}: below ${shape.minimum}`);
++    if (shape.maximum !== undefined && value > shape.maximum) errors.push(`${where}: above ${shape.maximum}`);
++  }
++  if (Array.isArray(value)) {
++    if (shape.minItems !== undefined && value.length < shape.minItems) errors.push(`${where}: fewer than ${shape.minItems} items`);
++    if (shape.maxItems !== undefined && value.length > shape.maxItems) errors.push(`${where}: more than ${shape.maxItems} items`);
++    if (shape.items) value.forEach((item, i) => errors.push(...shapeProblems(shape.items as SchemaNode, item, `${at}/${i}`)));
++  }
++  for (const child of shape.allOf ?? []) errors.push(...shapeProblems(child, value, at));
++  if (shape.anyOf) {
++    const branches = shape.anyOf.map((child) => shapeProblems(child, value, at));
++    if (!branches.some((branch) => branch.length === 0)) errors.push(...(branches[0] ?? [`${where}: matched no anyOf branch`]));
++  }
++  if (shape.oneOf) {
++    const matched = shape.oneOf.filter((child) => shapeProblems(child, value, at).length === 0).length;
++    if (matched !== 1) errors.push(`${where}: expected one oneOf branch, matched ${matched}`);
++  }
++  if (shape.if) {
++    const condition = shapeProblems(shape.if, value, at).length === 0;
++    if (condition && shape.then) errors.push(...shapeProblems(shape.then, value, at));
++    if (!condition && shape.else) errors.push(...shapeProblems(shape.else, value, at));
++  }
++  return errors;
++}
++
++/** The tier is the maximum of the four scores. Score 1, 2 and 3 select low, costly and one_way_door. */
++export function tierOf(scores: TierScores, tiers: TierRule): TierName {
++  const values = tiers.scores.map((name) => scores[name]);
++  if (values.some((n) => typeof n !== "number" || !Number.isInteger(n) || n < tiers.score_min || n > tiers.score_max)) {
++    throw new VocabularyError(`tier scores must be integers from ${tiers.score_min} to ${tiers.score_max}`);
++  }
++  const tier = tiers.rank[String(Math.max(...values))];
++  if (!tier) throw new VocabularyError("the tier rank has no name for that score");
++  return tier;
++}
++
++function pushShape(errors: string[], parsed: { shape: SchemaNode | null; errors: string[] }): SchemaNode | null {
++  errors.push(...parsed.errors);
++  return parsed.shape;
++}
++
++function loadTiers(raw: unknown, impact: unknown, errors: string[]): TierRule | null {
++  if (!isRecord(raw)) { errors.push("schema/vocabulary.json: tiers must be an object"); return null; }
++  const values = strings(raw.values, "tiers.values", errors);
++  const scores = strings(raw.scores, "tiers.scores", errors);
++  if (!values || !scores) return null;
++  if (!same(values, [...TIER_NAMES])) errors.push(`tiers.values must be ${TIER_NAMES.join(", ")}`);
++  if (!same(scores, [...TIER_SCORES])) errors.push(`tiers.scores must be ${TIER_SCORES.join(", ")}`);
++  if (raw.tier_of !== "max") errors.push("tiers.tier_of must be max");
++  if (raw.score_min !== 1 || raw.score_max !== 3) errors.push("tiers scores run from 1 to 3");
++  if (!isRecord(raw.rank)) errors.push("tiers.rank must map each score to a tier");
++  const rank: Record<string, TierName> = {};
++  if (isRecord(raw.rank)) {
++    for (let score = 1; score <= 3; score++) {
++      const name = raw.rank[String(score)];
++      const expected = TIER_NAMES[score - 1];
++      if (name !== expected) errors.push(`tiers.rank.${score} must be ${expected}`);
++      else rank[String(score)] = expected;
++    }
++  }
++  if (!isRecord(impact)) errors.push("operations/operating-rules.json: questions.impact is missing");
++  else {
++    if (!same(impact.tiers, [...TIER_NAMES])) errors.push("questions.impact.tiers does not match the vocabulary tiers");
++    if (!same(impact.scores, [...TIER_SCORES])) errors.push("questions.impact.scores does not match the vocabulary scores");
++    if (impact.tier_of !== "max") errors.push("questions.impact.tier_of must be max");
++    if (impact.score_min !== 1 || impact.score_max !== 3) errors.push("questions.impact scores must run from 1 to 3");
++  }
++  if (errors.length) return null;
++  return { values: [...TIER_NAMES], scores: [...TIER_SCORES], score_min: 1, score_max: 3, tier_of: "max", rank };
++}
++
++function verbNames(raw: Record<string, unknown>): string | undefined {
++  if (typeof raw.derive_names === "string") return raw.derive_names;
++  if (typeof raw.merge_names === "string") return raw.merge_names;
++  return undefined;
++}
++
++/** Loads the vocabulary. errors is empty when the catalog, the ontology and the operating rules agree. */
++export function loadVocabulary(root: string): { vocabulary: Vocabulary | null; errors: string[] } {
++  const errors: string[] = [];
++  let catalog: unknown;
++  let ontology: unknown;
++  let rules: unknown;
++  try {
++    catalog = readJson(root, VOCABULARY_FILE);
++    ontology = readJson(root, ONTOLOGY_FILE);
++    rules = readJson(root, OPERATING_RULES_FILE);
++  } catch (e) {
++    return { vocabulary: null, errors: [e instanceof Error ? e.message : String(e)] };
++  }
++  if (!isRecord(catalog) || catalog.version !== "1" || !Array.isArray(catalog.verbs) || !Array.isArray(catalog.kinds) || !isRecord(catalog.shapes)) {
++    return { vocabulary: null, errors: ["schema/vocabulary.json: version 1, with verbs, kinds and shapes"] };
++  }
++  if (!isRecord(ontology) || !Array.isArray(ontology.nouns)) return { vocabulary: null, errors: ["docs/ontology.json has no nouns"] };
++  const design = isRecord(rules) && isRecord(rules.design) && isRecord(rules.design.diff) ? rules.design.diff : null;
++  const ruleVerbs = design && isRecord(design.verbs) ? design.verbs : null;
++  const impact = isRecord(rules) && isRecord(rules.questions) ? rules.questions.impact : null;
++  if (!ruleVerbs) errors.push("operations/operating-rules.json: design.diff.verbs is missing");
++  const tiers = loadTiers(catalog.tiers, impact, errors);
++
++  const objects: VocabularyObject[] = [];
++  const seen = new Set<string>();
++  const take = (object: VocabularyObject) => {
++    if (seen.has(object.id)) errors.push(`duplicate vocabulary id ${object.id}`);
++    seen.add(object.id);
++    objects.push(object);
++  };
++
++  for (const noun of ontology.nouns) {
++    if (!isRecord(noun) || typeof noun.noun !== "string") { errors.push("docs/ontology.json has a noun that is not an object"); continue; }
++    const id = nounId(noun.noun);
++    if (!ID_RE.test(id)) errors.push(`docs/ontology.json: ${noun.noun} has no stable id`);
++    take({ id, class: "noun", shape: OPEN_SHAPE, shapeDeclared: false, noun: noun as NounRecord });
++  }
++
++  const byId = new Map(objects.map((object) => [object.id, object]));
++  for (const [id, raw] of Object.entries(catalog.shapes)) {
++    const object = byId.get(id);
++    if (!object || object.class !== "noun") { errors.push(`shapes.${id} is not a noun id`); continue; }
++    const shape = pushShape(errors, parseShape(raw, `shapes.${id}`));
++    if (shape) { object.shape = shape; object.shapeDeclared = true; }
++  }
++
++  const ruleEntries = ruleVerbs ? Object.entries(ruleVerbs) : [];
++  if (catalog.verbs.length !== ruleEntries.length) errors.push("vocabulary verbs do not match design.diff.verbs");
++  catalog.verbs.forEach((raw, index) => {
++    if (!isRecord(raw) || typeof raw.verb !== "string" || raw.class !== "verb" || raw.id !== `verb:${raw.verb}`) {
++      errors.push(`verbs[${index}] needs class verb and id verb:<name>`);
++      return;
++    }
++    const kinds = strings(raw.kinds, `${raw.id}.kinds`, errors);
++    const shape = pushShape(errors, parseShape(raw.shape, `${raw.id}.shape`));
++    const rule = ruleVerbs && isRecord(ruleVerbs[raw.verb]) ? ruleVerbs[raw.verb] as Record<string, unknown> : null;
++    if (!rule) errors.push(`${raw.id} is not in design.diff.verbs`);
++    else if (kinds && !same(kinds, rule.kinds)) errors.push(`${raw.id}.kinds does not match design.diff.verbs`);
++    const names = verbNames(raw);
++    if (rule) {
++      const ruleNames = verbNames(rule);
++      if (names !== ruleNames) errors.push(`${raw.id} names ${names ?? "nothing"}, design.diff.verbs names ${ruleNames ?? "nothing"}`);
++    }
++    if (shape && kinds) take({ id: raw.id, class: "verb", shape, shapeDeclared: true, verb: raw.verb, kinds, names });
++  });
++  for (const [name] of ruleEntries) if (!catalog.verbs.some((raw) => isRecord(raw) && raw.verb === name)) errors.push(`design.diff.verbs.${name} has no vocabulary object`);
++
++  const kindOwners = new Map<string, string>();
++  for (const object of objects) if (object.class === "verb" && object.kinds && object.verb) for (const kind of object.kinds) kindOwners.set(kind, object.verb);
++
++  catalog.kinds.forEach((raw, index) => {
++    if (!isRecord(raw) || typeof raw.kind !== "string" || typeof raw.verb !== "string" || raw.class !== "kind" || raw.id !== `kind:${raw.kind}`) {
++      errors.push(`kinds[${index}] needs class kind and id kind:<name>`);
++      return;
++    }
++    const shape = pushShape(errors, parseShape(raw.shape, `${raw.id}.shape`));
++    if (kindOwners.get(raw.kind) !== raw.verb) errors.push(`${raw.id} is not a kind of verb:${raw.verb}`);
++    const names = typeof raw.names === "string" ? raw.names : undefined;
++    const owner = objects.find((object) => object.id === `verb:${raw.verb}`);
++    const expect = owner?.kinds?.includes(raw.kind) && owner.names && (raw.kind === "derive" || raw.kind === "merge") ? owner.names : undefined;
++    if (names !== expect) errors.push(`${raw.id} names ${names ?? "nothing"} and verb:${raw.verb} names ${expect ?? "nothing"}`);
++    if (shape) take({ id: raw.id, class: "kind", shape, shapeDeclared: true, verb: raw.verb, kind: raw.kind, names });
++  });
++  for (const [kind, verb] of kindOwners) if (!objects.some((object) => object.id === `kind:${kind}`)) errors.push(`kind:${kind} of verb:${verb} has no vocabulary object`);
++
++  if (errors.length || !tiers) return { vocabulary: null, errors };
++  return { vocabulary: { objects, byId: new Map(objects.map((object) => [object.id, object])), tiers }, errors: [] };
++}
++
++/** Reads a module's parent from the first 40 lines. No line means no parent. */
++export function parentFromModuleSource(source: string): { parent: string | null; error: string | null } {
++  const found: string[] = [];
++  const bad: string[] = [];
++  source.split("\n").slice(0, HEADER_LINES).forEach((line) => {
++    const match = PARENT_LINE.exec(line);
++    if (!match?.[1]) return;
++    if (!ID_RE.test(match[1])) bad.push(match[1]);
++    else found.push(match[1]);
++  });
++  if (bad.length) return { parent: null, error: `${PARENT_FIELD} is not a vocabulary id` };
++  if (found.length > 1) return { parent: null, error: `${PARENT_FIELD} is declared more than once` };
++  return { parent: found[0] ?? null, error: null };
++}
++
++function parentFromValue(value: unknown): { parent: string | null; error: string | null } {
++  if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, PARENT_FIELD)) return { parent: null, error: null };
++  const raw = value[PARENT_FIELD];
++  if (typeof raw !== "string" || !ID_RE.test(raw)) return { parent: null, error: `${PARENT_FIELD} must be a vocabulary id` };
++  return { parent: raw, error: null };
++}
++
++function walk(dir: string): string[] {
++  if (!existsSync(dir)) return [];
++  return readdirSync(dir).flatMap((name) => {
++    if (name === "node_modules" || name === ".git") return [];
++    const path = join(dir, name);
++    return statSync(path).isDirectory() ? walk(path) : [path];
++  });
++}
++
++function isTestModule(rel: string): boolean {
++  const base = rel.split("/").pop() ?? "";
++  return base.startsWith("test.") || base.includes(".test.") || /-test\.[^.]+$/.test(base);
++}
++
++/** Record types, core modules and instance JSON records, each with the parent it names. */
++export function collectSubjects(root: string): { subjects: Subject[]; errors: string[] } {
++  const subjects: Subject[] = [];
++  const errors: string[] = [];
++  const seen = new Set<string>();
++  const add = (subject: Subject) => {
++    if (seen.has(subject.id)) errors.push(`duplicate subject ${subject.id}`);
++    seen.add(subject.id);
++    subjects.push(subject);
++  };
++  let model: unknown;
++  try { model = readJson(root, "schema/data-model.json"); }
++  catch (e) { return { subjects, errors: [e instanceof Error ? e.message : String(e)] }; }
++  const records = isRecord(model) && Array.isArray(model.records) ? model.records : null;
++  if (!records) errors.push("schema/data-model.json has no records");
++  for (const record of records ?? []) {
++    if (!isRecord(record) || typeof record.id !== "string") { errors.push("a record type has no id"); continue; }
++    const named = parentFromValue(record);
++    add({ kind: "record-type", id: `record-type:${record.id}`, parent: named.parent, parentError: named.error, shapeCheck: false, value: record });
++  }
++  for (const dir of MODULE_ROOTS) {
++    for (const file of walk(join(root, dir))) {
++      const rel = relPath(root, file);
++      if (!/\.(mjs|ts|js|cjs|mts)$/.test(rel) || rel.startsWith("schema/types/") || isTestModule(rel)) continue;
++      const named = parentFromModuleSource(readFileSync(file, "utf8"));
++      add({ kind: "module", id: `module:${rel}`, parent: named.parent, parentError: named.error, shapeCheck: false });
++    }
++  }
++  for (const file of walk(join(root, "instance")).filter((path) => path.endsWith(".json"))) {
++    const rel = relPath(root, file);
++    let value: unknown;
++    try { value = JSON.parse(readFileSync(file, "utf8")) as unknown; }
++    catch { add({ kind: "record", id: `record:${rel}`, parent: null, parentError: "invalid JSON", shapeCheck: true }); continue; }
++    const named = parentFromValue(value);
++    add({ kind: "record", id: `record:${rel}`, parent: named.parent, parentError: named.error, shapeCheck: true, value });
++  }
++  return { subjects, errors };
++}
++
++export function parseBaseline(text: string): { entries: BaselineEntry[]; errors: string[] } {
++  let value: unknown;
++  try { value = JSON.parse(text) as unknown; }
++  catch (e) { return { entries: [], errors: [e instanceof Error ? e.message : String(e)] }; }
++  return baselineEntries(value);
++}
++
++export function baselineEntries(value: unknown): { entries: BaselineEntry[]; errors: string[] } {
++  const errors: string[] = [];
++  if (!isRecord(value) || !Array.isArray(value.gaps)) return { entries: [], errors: [`${BASELINE_FILE}: gaps must be an array`] };
++  const entries: BaselineEntry[] = [];
++  const seen = new Set<string>();
++  for (const gap of value.gaps) {
++    let id = "";
++    let approved: string | undefined;
++    if (typeof gap === "string") id = gap;
++    else if (isRecord(gap) && typeof gap.id === "string") {
++      id = gap.id;
++      if (gap.approved !== undefined && typeof gap.approved !== "string") errors.push(`${id}: approved must be a string`);
++      if (typeof gap.approved === "string") approved = gap.approved;
++      for (const key of Object.keys(gap)) if (key !== "id" && key !== "approved") errors.push(`${id}: unknown baseline field ${key}`);
++    } else errors.push(`${BASELINE_FILE}: a gap must be an id or an object with an id`);
++    if (!id) continue;
++    if (!BASELINE_ID_RE.test(id)) errors.push(`${id}: not a subject id`);
++    if (seen.has(id)) errors.push(`${id}: duplicate baseline entry`);
++    seen.add(id);
++    entries.push(approved === undefined ? { id } : { id, approved });
++  }
++  return { entries, errors };
++}
++
++function readBaseline(root: string): { entries: BaselineEntry[]; errors: string[] } {
++  const path = join(root, BASELINE_FILE);
++  if (!existsSync(path)) return { entries: [], errors: [`${BASELINE_FILE} is missing`] };
++  return parseBaseline(readFileSync(path, "utf8"));
++}
++
++function ownRepository(root: string): boolean {
++  const ran = spawnSync("git", ["-C", root, "rev-parse", "--git-dir"], { encoding: "utf8" });
++  if (ran.status !== 0 || !ran.stdout.trim()) return false;
++  return resolve(root, ran.stdout.trim()) === resolve(root, ".git");
++}
++
++/** The baseline at the merge base with framework, or null when this file is not on that branch yet. */
++export function previousBaseline(root: string): { entries: BaselineEntry[] | null; errors: string[] } {
++  if (!ownRepository(root)) return { entries: null, errors: [] };
++  for (const ref of ["origin/framework", "framework"]) {
++    const base = spawnSync("git", ["-C", root, "merge-base", "HEAD", ref], { encoding: "utf8" });
++    if (base.status !== 0 || !base.stdout.trim()) continue;
++    const shown = spawnSync("git", ["-C", root, "show", `${base.stdout.trim()}:${BASELINE_FILE}`], { encoding: "utf8" });
++    if (shown.status !== 0) return { entries: null, errors: [] };
++    const parsed = parseBaseline(shown.stdout);
++    return { entries: parsed.errors.length ? null : parsed.entries, errors: parsed.errors };
++  }
++  return { entries: null, errors: [] };
++}
++
++/**
++ * Decides the check. previous null means there is no baseline on the base branch yet,
++ * so the committed list is the starting ratchet and additions are not judged here.
++ * A later list may drop an entry. An entry the previous list did not have fails unless
++ * that entry carries a non-empty approved string.
++ */
++export function evaluate(input: {
++  subjects: Subject[];
++  vocabulary: Vocabulary;
++  baseline: BaselineEntry[];
++  previous: BaselineEntry[] | null;
++}): string[] {
++  const errors: string[] = [];
++  const gaps: string[] = [];
++  for (const subject of input.subjects) {
++    if (subject.parentError) { errors.push(`${subject.id}: ${subject.parentError}`); continue; }
++    if (!subject.parent) { gaps.push(subject.id); continue; }
++    const object = input.vocabulary.byId.get(subject.parent);
++    if (!object) { errors.push(`${subject.id} claims ${subject.parent} and that vocabulary object does not exist`); continue; }
++    if (object.class === "noun" && object.noun?.status === "retired") errors.push(`${subject.id} claims ${subject.parent}, which is retired`);
++    if (!subject.shapeCheck) continue;
++    const problems = shapeProblems(object.shape, subject.value);
++    if (problems.length) errors.push(`${subject.id} claims ${subject.parent} and does not match its shape: ${problems.join("; ")}`);
++  }
++  const listed = new Set(input.baseline.map((entry) => entry.id));
++  const gapSet = new Set(gaps);
++  for (const gap of gaps) if (!listed.has(gap)) errors.push(`new gap ${gap}: no vocabulary parent`);
++  for (const entry of input.baseline) if (!gapSet.has(entry.id)) errors.push(`${entry.id}: baseline entry is no longer a gap; remove it`);
++  if (input.previous) {
++    const before = new Set(input.previous.map((entry) => entry.id));
++    for (const entry of input.baseline) {
++      if (before.has(entry.id)) continue;
++      if (!entry.approved?.trim()) errors.push(`baseline adds ${entry.id} without approval`);
++    }
++  }
++  return errors;
++}
++
++export type CheckCounts = {
++  objects: number;
++  nouns: number;
++  verbs: number;
++  kinds: number;
++  recordTypes: number;
++  modules: number;
++  records: number;
++  parents: number;
++  gaps: number;
++};
++
++export type CheckResult = {
++  errors: string[];
++  summary: string;
++  counts: CheckCounts;
++  subjects: Subject[];
++  baseline: BaselineEntry[];
++  vocabulary: Vocabulary | null;
++};
++
++/** The repository check: load, collect, read the baseline, compare with the base branch. */
++export function checkRepository(root: string): CheckResult {
++  const dir = root.replace(/\/$/, "");
++  const loaded = loadVocabulary(dir);
++  const collected = loaded.vocabulary ? collectSubjects(dir) : { subjects: [], errors: [] };
++  const baseline = readBaseline(dir);
++  const previous = previousBaseline(dir);
++  const errors = [...loaded.errors, ...collected.errors, ...baseline.errors, ...previous.errors];
++  if (loaded.vocabulary && baseline.errors.length === 0 && previous.errors.length === 0) {
++    errors.push(...evaluate({
++      subjects: collected.subjects,
++      vocabulary: loaded.vocabulary,
++      baseline: baseline.entries,
++      previous: previous.entries,
++    }));
++  }
++  const subjects = collected.subjects;
++  const counts: CheckCounts = {
++    objects: loaded.vocabulary?.objects.length ?? 0,
++    nouns: loaded.vocabulary?.objects.filter((object) => object.class === "noun").length ?? 0,
++    verbs: loaded.vocabulary?.objects.filter((object) => object.class === "verb").length ?? 0,
++    kinds: loaded.vocabulary?.objects.filter((object) => object.class === "kind").length ?? 0,
++    recordTypes: subjects.filter((subject) => subject.kind === "record-type").length,
++    modules: subjects.filter((subject) => subject.kind === "module").length,
++    records: subjects.filter((subject) => subject.kind === "record").length,
++    parents: subjects.filter((subject) => subject.parent).length,
++    gaps: baseline.entries.length,
++  };
++  const summary = `${counts.objects} vocabulary objects (${counts.nouns} nouns, ${counts.verbs} verbs, ${counts.kinds} kinds); ${counts.recordTypes} record types, ${counts.modules} modules, ${counts.records} instance records; ${counts.parents} name a parent; ${counts.gaps} baselined gaps`;
++  return { errors, summary, counts, subjects, baseline: baseline.entries, vocabulary: loaded.vocabulary };
++}
+diff --git a/test.mjs b/test.mjs
+index 80e1dd1f..901aa3c3 100644
+--- a/test.mjs
++++ b/test.mjs
+@@ -23,6 +23,7 @@ const steps = [
+   ["ventures: instance", "node", ["schema/check-ventures.mjs", "instance"]],
+   ["ventures: examples", "node", ["schema/check-ventures.mjs", "schema/examples/workspace"]],
+   ["nouns", "node", ["schema/check-nouns.mjs"]],
++  ["vocabulary parents and shapes", "node", ["schema/vocabulary-test.ts"]],
+   ["ontology membership gate", "node", ["schema/ontology-gate-test.ts"]],
+   ["operating rules: default module, invalid module, venture override", "node", ["schema/operating-rules-test.ts"]],
+   ["integrations and interfaces", "node", ["schema/check-integrations.mjs"]],

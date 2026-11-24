@@ -1,0 +1,6 @@
+time	step	choice	why	evidence
+2026-11-04T01:11:30Z	gate	follow G9 option B, store the patch and metadata	plan default; the only option that is both as-is and not live; decision card put to Torian with B recommended, work proceeds on the recommendation because it is reversible	plan line 92
+2026-11-04T01:11:30Z	patch	gh pr diff 157, verbatim	build-the-lever: the plan's own command	sha256 6c70d9ce...01f5; equal to the REST diff media type; git apply --check on cb502f9 exit 0
+2026-11-04T01:11:30Z	metadata	build pr-157.json from REST pulls/157 and pulls/157/files with gh field names	gh pr view needs GraphQL, which returns HTTP 403 here	gh pr view error text
+2026-11-04T01:11:30Z	data model	no schema edit	the docs/design/preserved/**/*.json ignore from #181 covers pr-157.json	node schema/check-data-model.mjs exit 0
+2026-11-04T01:42:42Z	gate	G9 settled as option B	Torian 2026-11-04 01:22Z: "What does Pstack suggest? Do that." The plan default and pstack both point to B	project thread

@@ -1,0 +1,25 @@
+diff --git a/docs/decisions/decisions.json b/docs/decisions/decisions.json
+index 7d76b101..ca5b0884 100644
+--- a/docs/decisions/decisions.json
++++ b/docs/decisions/decisions.json
+@@ -1321,6 +1321,20 @@
+           "expect": "exists"
+         }
+       ]
++    },
++    {
++      "id": "EE-107",
++      "date": "2026-11-02",
++      "status": "in-force",
++      "decision": "Change verbs, tiers, question types, what a record type stands for, the write vocabulary, security labels, and vocabulary objects. Torian settled the change verbs and the question type on 2026-11-01. On 2026-11-02 he settled the tier's four scores, the standing-rule limits, what a record type stands for, the write vocabulary, security labels, and vocabulary objects. This record builds on EE-014. It relates to EE-105 and EE-106, which are not on framework. Not built yet: no write carries a change line, no record type names the noun it stands for, and no check requires a vocabulary parent.\n\n1. Change verbs. There are exactly three verbs, and each change line has exactly one kind. create: originate, or derive (naming the source). amend: append, rename, deprecate, revise. delete: remove, or merge (naming the successor). The set is exhaustive and non-overlapping. Rename is a kind of amend. A move that keeps the id is a rename. A compound change is split into separate lines.\n\n2. Tiers. Each change line gets a tier: low, costly or one_way_door. The tier is the maximum of four scores: severity, reversibility, time to detect and blast radius.\n\n3. Question types. A question's type is verb plus noun plus asking function. Routing rules match on that type, and the most specific rule wins. Agents may propose standing answer rules, never for deletes or one_way_door changes, and each standing rule needs founder approval.\n\n4. What a record type stands for. A record type in schema/data-model.json stands for one noun in docs/ontology.json. Under decision 7, that noun is the vocabulary parent the record type names. This clause only identifies which vocabulary object a record type derives from. The requirement that it name one, the shape, and the check are decision 7.\n\n5. Write vocabulary. Every write carries one change line (verb, kind, noun). The line's tier decides whether the write lands, drafts or waits for a person. Palantir-style named actions are not a second verb system. Where a consequential named change is needed, it is a handoff type noun with required touches and an approver.\n\n6. Security. Data-access security is handled as label nouns inherited through provenance (derived_from), not as a fourth verb. Removing a label is an amend at the one_way_door tier.\n\n7. Vocabulary objects. Nouns, verbs and kinds become vocabulary objects, each with a stable id and a shape saying what anything of that noun must contain, in the spirit of SHACL shapes. Nothing exists without a vocabulary parent: every record type, every record and every code module names the vocabulary object it derives from. A check in code, grown from schema/check-nouns.mjs, fails the build when anything has no vocabulary parent, or claims a noun but does not match that noun's shape, so code can verify a system is what it claims to be. A vocabulary change is the highest-risk change and goes through a reviewed framework pull request.",
++      "why": "Torian, 2026-11-01 and 2026-11-02. On 2026-11-01 he settled the three change verbs and their kinds, and a question type of verb plus noun plus asking function. On 2026-11-02 he settled what a record type stands for, the write vocabulary, security as label nouns, and vocabulary objects, and he closed two gaps: the tier is the maximum of severity, reversibility, time to detect and blast radius, and a standing answer rule is never for a delete or a one_way_door change and needs founder approval. The comparison behind them sets Naive's nouns, which are vocabulary terms (EE-014), beside Palantir object types, which are data schemas, and sets Naive's three verbs, which classify a change, beside Palantir action types, which are named transactions that run. Palantir counts dynamic security in the kinetic half. This record keeps security as label nouns inherited through provenance. Ids EE-101 to EE-104 are claimed by open pull requests 155, 156, 157 and 158 and, for different decisions, by pull request 160. EE-105 is draft pull request 161. EE-106 is draft pull request 162. This record is EE-107.",
++      "related": [
++        "EE-014",
++        "EE-018",
++        "EE-031",
++        "EE-105",
++        "EE-106"
++      ]
+     }
+   ]
+ }

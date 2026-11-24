@@ -1,0 +1,1239 @@
+{
+  "_about": "Public seed list for the term-harvest skill, for Grokbot to run through the term engine (Torian 2026-11-01 02:49Z). Grok is an untrusted proposer: it drafts senses and facts; only the engine and Lean admit a term. Nothing private belongs here: no founder glossary, no Mentura research engine terms.",
+  "created": "2026-11-01T02:54:05Z",
+  "how": [
+    "For each pending term: list its standard senses with a source each (standards first, EE-014), plus ours if we use it differently.",
+    "Pick the level its records live at and the facts (booleans) that tell its senses apart; reuse a level file from naive-design/prototypes/architecture/*-vocab.ts when one fits.",
+    "Write each sense as necessary properties, add predicts against its neighbours, and run it exhaustively. A refuted prediction is a finding: report it, never tune it away silently.",
+    "Mirror each confirmed relation in Lean and check it.",
+    "Add a usage note (use, avoid, instead) to usage.json.",
+    "Order by the relevance rule High = Load and (Salient or Contested); run contested terms (collides_with not empty) first."
+  ],
+  "counts": {
+    "total": 199,
+    "run": 36
+  },
+  "terms": [
+    {
+      "term": "model@logic",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "theorem",
+      "subject": "Proof and logic",
+      "status": "run",
+      "collides_with": [
+        "theorem@torian"
+      ]
+    },
+    {
+      "term": "lemma",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "corollary",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "proposition",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "axiom",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "postulate",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "definition",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "proof",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "prove",
+      "subject": "Proof and logic",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "verify",
+      "subject": "Proof and logic",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "validate",
+      "subject": "Proof and logic",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "invariant",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "precondition",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "postcondition",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "predicate",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "obligation",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "certificate",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "kernel",
+      "subject": "Proof and logic",
+      "status": "run",
+      "collides_with": [
+        "kernel@os",
+        "kernel@lean"
+      ]
+    },
+    {
+      "term": "sound",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": [
+        "sound@everyday"
+      ]
+    },
+    {
+      "term": "complete",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": [
+        "complete@everyday"
+      ]
+    },
+    {
+      "term": "consistent",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "decidable",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "undecidable",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "induction",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "deduction",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "abduction",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "inference",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "entailment",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "tautology",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "contradiction",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "interpretation",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "type",
+      "subject": "Proof and logic",
+      "status": "pending",
+      "collides_with": [
+        "type@code"
+      ]
+    },
+    {
+      "term": "standard of proof",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "burden of proof",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "claim",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "hypothesis",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "conjecture",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "assumption",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "evidence",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "corroborate",
+      "subject": "Science and evidence",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "falsifiable",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "defeasible",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "provenance",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "replication",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "confound",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "bias",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "experiment",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "observation",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "measurement",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "uncertainty",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "confidence",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "significance",
+      "subject": "Science and evidence",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "formula",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "equation",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "expression",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "function",
+      "subject": "Mathematics",
+      "status": "run",
+      "collides_with": [
+        "function@math",
+        "function@business"
+      ]
+    },
+    {
+      "term": "relation",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "set",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "graph",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "tree",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "DAG",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "lattice",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "order",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "matrix",
+      "subject": "Mathematics",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "vector",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "embedding",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "metric",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "distance",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "similarity",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "probability",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "distribution",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "expectation",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "variance",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "entropy",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "information",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "weight",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "score",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": [
+        "score@music"
+      ]
+    },
+    {
+      "term": "rank",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "threshold",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "optimization",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "constraint",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "objective",
+      "subject": "Mathematics",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "state machine",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "state",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "statechart",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "transition",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "event",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "trigger",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "guard",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "reachable",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "deadlock",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "liveness",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "safety",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "property",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "specification",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "implementation",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "module",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "interface",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": [
+        "interface@ours"
+      ]
+    },
+    {
+      "term": "boundary",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "contract",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "schema",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "migration",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "idempotent",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "deterministic",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "append-only",
+      "subject": "Computation and systems",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "job to be done",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "switching cost",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "network effect",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "value net",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "competitor",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "complementor",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "partner",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "supplier",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "customer",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "user",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "buyer",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "channel",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "substitute",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "co-opetition",
+      "subject": "Comparison and market",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "market",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "segment",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "niche",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "beachhead",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "ICP",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "moat",
+      "subject": "Comparison and market",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "parent company",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "holding company",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "venture",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "holding",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "group",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "subsidiary",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "entity",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "founder",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "co-founder",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "owner",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "contributor",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "role",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "function",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": [
+        "function@math",
+        "function@business"
+      ]
+    },
+    {
+      "term": "department",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "phase",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "gate",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "identity",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "record",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "artifact",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "view",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "scope",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "sense",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "overlay",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "register",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": [
+        "register@linguistics",
+        "register@record"
+      ]
+    },
+    {
+      "term": "suite",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "folder",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "workspace",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": [
+        "workspace@g025",
+        "workspace@claude"
+      ]
+    },
+    {
+      "term": "conversation",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "thread",
+      "subject": "Venture structure",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "triage",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "risk factor",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "related party",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "public benefit corporation",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "defined term",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "capital",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "equity",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "dilution",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "valuation",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "revenue",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "margin",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "burn",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "runway",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "material",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "control",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "prospectus",
+      "subject": "Finance and filings",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "usage note",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "decision",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "docket",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "card",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "affects",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "supersede",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "conformance",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "check",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "lint",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "test",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "review",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "handoff",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "escalation",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "loop",
+      "subject": "Method",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "skill",
+      "subject": "Method",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "procedure",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "routine",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "playbook",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "pipeline",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "glossary",
+      "subject": "Method",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "term",
+      "subject": "Method",
+      "status": "pending",
+      "collides_with": []
+    },
+    {
+      "term": "receipt",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "subject",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "sealed excerpt",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "title",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "citation",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "excerpt",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    },
+    {
+      "term": "routing",
+      "subject": "Venture structure",
+      "status": "run",
+      "collides_with": []
+    }
+  ]
+}

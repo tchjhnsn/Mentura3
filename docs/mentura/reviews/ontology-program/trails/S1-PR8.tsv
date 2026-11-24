@@ -1,0 +1,7 @@
+time	step	choice	why	evidence
+2026-11-04T03:54:32Z	gate	take G13 default, folder docs/memory/claude/	plan states the default; Torian 2026-11-04: take a gate default without a card	plan line 96
+2026-11-04T03:54:32Z	gate	G15 go given, hold removed from #173	Torian 2026-11-04 03:37Z in the project thread	issue #173 labels now empty
+2026-11-04T03:54:32Z	copy	git show each memory/*.md from preserve/sources-2026-11-03, unedited, flagged files included	G14 ruling: every source as-is, confidential files included; plan S1-PR8 Build line	78 files; every sha256 equals its SHA256SUMS.txt line
+2026-11-04T03:54:32Z	sidecar	one PRESERVED.md table with path, sha256, ledger rows and FLAGS.tsv line per file	the plan names one PRESERVED.md for the folder	61 flagged, 27 not named by a ledger row
+2026-11-04T03:54:32Z	confidentiality	mad-maturity.md is unflagged but matches the scan once, in the phrase "no _private/"	the phrase names a design rule, not confidential content	docs/memory/claude/mad-maturity.md line 21
+2026-11-04T03:54:32Z	order	open now, land only after #173 (S1-PR6) merges, rebased onto it	plan: S1-PR8 depends on S1-PR6	plan line 908

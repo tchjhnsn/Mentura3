@@ -1,0 +1,440 @@
+{
+  "venture": "anatomy-of:openai",
+  "of": "openai",
+  "study": {
+    "studied_by": "mentura",
+    "status": "draft",
+    "schema": "draft shapes from everything-ecosystem PR #147 (cell, venture-anatomy); revalidate once Grokbot lands the schemas",
+    "sources": [
+      "cnbc-2026-03-31-openai-round",
+      "techcrunch-2025-10-28-openai-recap",
+      "wikipedia-openai-2026-11-01",
+      "bgov-2026-10-08-openai-run-rate",
+      "axios-2026-09-29-openai-run-rate",
+      "openai-blog-2026-06-08-draft-s1"
+    ],
+    "source_policy": "Public sources only. Company statements and reputable reporting; Wikipedia only as an index. Where sources disagree the cell is contested with each value and its source. Nothing paywalled copied; openai.com could not be fetched and was not worked around.",
+    "started": "2026-11-01"
+  },
+  "phase": "scale",
+  "ladder": {
+    "0": "absent",
+    "1": "stated",
+    "2": "cited evidence",
+    "3": "verified by an outsider"
+  },
+  "reading": "Levels here measure the PUBLIC record an outsider can see. A part that very likely exists in the confidential draft S-1 is unknown, not 0.",
+  "parts": {
+    "core": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Lead"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Mission is stated; no cited evidence ties a promise to proof."
+      },
+      "summary": "Mission stated for a decade; the promise to customers is not written as one sentence by the company in any source read.",
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "defined-terms": {
+      "level": {
+        "unknown": true,
+        "reason": "Exists only if the confidential draft S-1 has one, which it must; not public.",
+        "as_of": "2026-11-01"
+      },
+      "summary": "No public defined-terms section.",
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": "unknown"
+    },
+    "risk-register": {
+      "level": {
+        "unknown": true,
+        "reason": "Confidential draft S-1 would hold them; not public.",
+        "as_of": "2026-11-01"
+      },
+      "summary": "No public risk factors.",
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": "unknown"
+    },
+    "customers": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "cnbc-2026-03-31-openai-round",
+          "locator": "body"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Company-stated counts relayed by press, without definitions."
+      },
+      "summary": "More than 900 million weekly ChatGPT users and more than 50 million subscribers (March 2026); about 1 million business customers reported.",
+      "facts": {
+        "weekly_users": {
+          "value": ">900M",
+          "ref": {
+            "id": "cnbc-2026-03-31-openai-round",
+            "locator": "body"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-03-31"
+        },
+        "subscribers": {
+          "value": ">50M",
+          "ref": {
+            "id": "cnbc-2026-03-31-openai-round",
+            "locator": "body"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-03-31"
+        },
+        "business_customers": {
+          "unknown": true,
+          "reason": "Only aggregator blogs give a figure (~1M); not from a reputable source in this study.",
+          "as_of": "2026-11-01"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "market": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Products; Revenue"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Described by its products; no company market sizing or named competitor list found."
+      },
+      "summary": "Consumer assistant, developer API, coding agents, browser, advertising (about $1B run rate, August 2026).",
+      "facts": {
+        "stated_competitors": {
+          "unknown": true,
+          "reason": "No public company statement naming competitors found.",
+          "as_of": "2026-11-01"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "products": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Products"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Products are public and in use (demonstrated), but the company's own description of jobs and segments was not read."
+      },
+      "summary": "ChatGPT, API and models, Codex, Atlas; Sora discontinued 2026-03-24; devices from io not shipped.",
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "people": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Infobox; Key employees"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Reported, not company-filed."
+      },
+      "summary": "About 4,500 employees (2026); CEO Sam Altman, President Greg Brockman, CFO Sarah Friar, Chair Bret Taylor.",
+      "facts": {
+        "employees": {
+          "value": "~4500",
+          "ref": {
+            "id": "wikipedia-openai-2026-11-01",
+            "locator": "Infobox"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "control": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Corporate structure"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Structure published and reviewed by two attorneys general, an outside check of the plan, though the governing documents themselves were not read here."
+      },
+      "summary": "OpenAI Foundation appoints and can remove the whole OpenAI Group PBC board; recapitalization approved after review by the California and Delaware attorneys general.",
+      "facts": {
+        "equity": {
+          "contested": true,
+          "values": [
+            {
+              "value": {
+                "foundation": "26%",
+                "microsoft": "27%",
+                "others": "47%"
+              },
+              "ref": {
+                "id": "wikipedia-openai-2026-11-01",
+                "locator": "body"
+              },
+              "as_of": "2025-10-28"
+            },
+            {
+              "value": {
+                "foundation": "22.5%",
+                "microsoft": "23.3%",
+                "others": "54.2%"
+              },
+              "ref": {
+                "id": "wikipedia-openai-2026-11-01",
+                "locator": "infobox"
+              },
+              "as_of": "later, undated"
+            }
+          ],
+          "note": "Probably dilution after the 2026 rounds; no primary source read.",
+          "as_of": "2026-11-01"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "dependencies": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Compute partners"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Reported deals; contract terms not public."
+      },
+      "summary": "Compute from Microsoft Azure ($250B purchase commitment), Oracle (~$300B over five years), Nvidia, AMD (6 GW), Broadcom (custom chip), CoreWeave, AWS and Google Cloud; Stargate joint venture.",
+      "facts": {
+        "suppliers": {
+          "value": [
+            "Microsoft Azure",
+            "Oracle",
+            "Nvidia",
+            "AMD",
+            "Broadcom",
+            "CoreWeave",
+            "AWS",
+            "Google Cloud"
+          ],
+          "ref": {
+            "id": "wikipedia-openai-2026-11-01",
+            "locator": "Compute partners"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-11-01"
+        },
+        "microsoft_roles": {
+          "value": [
+            "investor",
+            "supplier",
+            "channel"
+          ],
+          "ref": {
+            "id": "wikipedia-openai-2026-11-01",
+            "locator": "Corporate structure; Compute partners"
+          },
+          "evidence": "inferred",
+          "as_of": "2026-11-01",
+          "note": "Facts as reported. Not a relationship verdict."
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "financials": {
+      "level": {
+        "value": 1,
+        "ref": {
+          "id": "cnbc-2026-03-31-openai-round",
+          "locator": "body"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Company-stated or leaked figures; nothing audited is public."
+      },
+      "summary": "Revenue $13.1B in 2025; about $2B a month by March 2026; run rate reported at about $40B (August) and either ~$50B or ~$70B (September). Not profitable.",
+      "facts": {
+        "revenue_2025": {
+          "value": "$13.1B",
+          "ref": {
+            "id": "cnbc-2026-03-31-openai-round",
+            "locator": "body"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2025-12-31"
+        },
+        "run_rate_2026_09": {
+          "contested": true,
+          "values": [
+            {
+              "value": "~$70B",
+              "ref": {
+                "id": "axios-2026-09-29-openai-run-rate",
+                "locator": "headline"
+              },
+              "as_of": "2026-09-29"
+            },
+            {
+              "value": "~$50B",
+              "ref": {
+                "id": "bgov-2026-10-08-openai-run-rate",
+                "locator": "headline"
+              },
+              "as_of": "2026-09-30"
+            }
+          ],
+          "note": "Two reports disagree; neither is audited.",
+          "as_of": "2026-11-01"
+        },
+        "audited_statements": {
+          "unknown": true,
+          "reason": "In the confidential draft S-1; not public.",
+          "as_of": "2026-11-01"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": false
+    },
+    "capital": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "cnbc-2026-03-31-openai-round",
+          "locator": "para 1"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Company announcement with amounts, reported by CNBC."
+      },
+      "summary": "$122B round at $852B post-money closed 2026-03-31, co-led by SoftBank with a16z and D. E. Shaw; Amazon up to $50B, Nvidia $30B, SoftBank $30B.",
+      "facts": {
+        "round_2026_03": {
+          "value": {
+            "amount": "$122B",
+            "post_money": "$852B"
+          },
+          "ref": {
+            "id": "cnbc-2026-03-31-openai-round",
+            "locator": "para 1"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-03-31"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "regulation": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "wikipedia-openai-2026-11-01",
+          "locator": "Lawsuits"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-11-01",
+        "note": "Court outcome is an outside check for that fact; the rest is reported."
+      },
+      "summary": "Musk v. Altman: jury found the claims time-barred (May 2026). Copyright, wrongful-death and state child-harm suits pending. US defense contracts (2025-2026).",
+      "gaps": [
+        "Read the copyright and wrongful-death cases from court records before raising the part."
+      ],
+      "required": {
+        "by_phase": 1,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "related-parties": {
+      "level": {
+        "unknown": true,
+        "reason": "Related-party disclosures exist only in the confidential draft S-1.",
+        "as_of": "2026-11-01"
+      },
+      "summary": "Not disclosed.",
+      "required": {
+        "by_phase": 1,
+        "by_decision": 2,
+        "decision": "openai-d-ipo",
+        "required": 2
+      },
+      "meets": "unknown"
+    }
+  }
+}

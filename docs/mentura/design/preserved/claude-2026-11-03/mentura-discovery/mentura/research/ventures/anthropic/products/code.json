@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.code",
+  "kind": "product",
+  "parent": "anthropic",
+  "name": "Claude Code",
+  "job": {
+    "value": "Plan, write, test, debug and commit code across production codebases.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Software developers, increasingly non-technical teams",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "Coding agent in terminal, IDE and cloud; subscription and consumption",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Claude as a Virtual Collaborator"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

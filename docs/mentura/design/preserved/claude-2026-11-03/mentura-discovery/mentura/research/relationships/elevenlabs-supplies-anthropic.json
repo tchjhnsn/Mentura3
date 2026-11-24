@@ -1,0 +1,14 @@
+{
+ "record_type": "supplies",
+ "from": "elevenlabs",
+ "to": "anthropic",
+ "what": "text-to-speech for Claude voice mode",
+ "basis": {
+  "value": "ElevenLabs listed as TTS subcontractor",
+  "ref": {
+   "id": "decoder-2025-05-31-claude-elevenlabs"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ }
+}

@@ -1,0 +1,1396 @@
+diff --git a/docs/ontology.json b/docs/ontology.json
+index b88f71f8..0a018e98 100644
+--- a/docs/ontology.json
++++ b/docs/ontology.json
+@@ -174,6 +174,27 @@
+       "standard": "common business usage; client as a customer of professional services",
+       "status": "new"
+     },
++    {
++      "noun": "lead",
++      "level": "venture",
++      "meaning": "A person the venture may talk to who has not yet been qualified: everyone imported into validation/discovery/leads/ starts as one (status new). Agents may draft a fit rank for a lead, never qualify one",
++      "standard": "CRM usage (Salesforce, HubSpot: lead, an unqualified contact)",
++      "status": "new"
++    },
++    {
++      "noun": "prospect",
++      "level": "venture",
++      "meaning": "A lead a person has qualified for outreach (qualified_by): same record, later stage. An account can also have the status prospect before it is active",
++      "standard": "CRM usage (Salesforce, HubSpot: a qualified lead)",
++      "status": "new"
++    },
++    {
++      "noun": "dossier",
++      "level": "venture",
++      "meaning": "What is known about a lead or prospect before a discovery meeting, at validation/discovery/dossiers/<person>.json: each fact cites a public source and stays a draft until a person confirms it",
++      "standard": "common usage (a file of information about a person)",
++      "status": "new"
++    },
+     {
+       "noun": "link",
+       "level": "venture",
+diff --git a/docs/ontology.md b/docs/ontology.md
+index 86bf6b19..047315e8 100644
+--- a/docs/ontology.md
++++ b/docs/ontology.md
+@@ -53,6 +53,9 @@ The system is opinionated: it names one default for each choice, and every defau
+ | core product | The promise, who it is made to, what it must not deliver, and the competence behind it | Kotler; Prahalad and Hamel | kotler-core-product, prahalad-hamel-1990-core-competence |
+ | account | A named party a venture keeps a record for, at accounts/<id>/account.json, with a relationship: client, customer, user, member, partner or other. Optional; who a product serves in general is its market | CRM usage (Salesforce, HubSpot: account) |  |
+ | relationship | How a party or market stands to the venture: customer (buys), client (served under a professional relationship), user (uses, may not pay), member (belongs), audience (reads, watches or listens; markets only), partner | common business usage; client as a customer of professional services |  |
++| lead | A person the venture may talk to who has not yet been qualified: everyone imported into validation/discovery/leads/ starts as one (status new). Agents may draft a fit rank for a lead, never qualify one | CRM usage (Salesforce, HubSpot: lead, an unqualified contact) |  |
++| prospect | A lead a person has qualified for outreach (qualified_by): same record, later stage. An account can also have the status prospect before it is active | CRM usage (Salesforce, HubSpot: a qualified lead) |  |
++| dossier | What is known about a lead or prospect before a discovery meeting, at validation/discovery/dossiers/<person>.json: each fact cites a public source and stays a draft until a person confirms it | common usage (a file of information about a person) |  |
+ | link | What crosses from one venture into another, one way, with a border | Clark's work/family border theory |  |
+ | venture profile | The readable companion to venture.json: narrative, pillars, changelog | ours |  |
+ | function | A business function with one accountable owner. One person may own several. A solo founder owns them all. Decision rights and the team plan point at function owners (EE-071). department is the alias for one release | business function (common usage) |  |
+diff --git a/docs/reference/ROUTES.md b/docs/reference/ROUTES.md
+index 53030964..dec702b9 100644
+--- a/docs/reference/ROUTES.md
++++ b/docs/reference/ROUTES.md
+@@ -109,6 +109,12 @@ Every route works on one venture, named in front of it: its id, or its folder pa
+ | `purpose/account/[id]` | record (item) | read, view, layout, write, check | `accounts/*/account.json` |  | (beachhead) (scale) (platform) | A named party the venture keeps a record for: client, customer, user, member or partner (EE-021). Optional |
+ | `purpose/data-stream` | record (list) | read, view, layout | `customers/_streams/*/stream.json`, `investors/_streams/*/stream.json`, `money/_streams/*/stream.json` |  |  | Declares one append-only stream and whether it is sensitive (EE-070). |
+ | `purpose/data-stream/[id]` | record (item) | read, view, layout, write | `customers/_streams/*/stream.json`, `investors/_streams/*/stream.json`, `money/_streams/*/stream.json` |  |  | Declares one append-only stream and whether it is sensitive (EE-070). |
++| `purpose/discovery-dossier` | record (list) | read, view, layout | `validation/discovery/dossiers/*.json` |  |  | What is known about a lead before a meeting: each fact cites a public source and stays a draft until a person confirms it. |
++| `purpose/discovery-dossier/[id]` | record (item) | read, view, layout, write | `validation/discovery/dossiers/*.json` |  |  | What is known about a lead before a meeting: each fact cites a public source and stays a draft until a person confirms it. |
++| `purpose/discovery-lead` | record (list) | read, view, layout | `validation/discovery/leads/*.json` |  | (discovery) (validation) | A founder the venture may interview in Discovery: an opaque person id, the ICP, how they were found, and the outreach log. The real name sits in _private/people/ (Mentura discovery playbook, 2026-10-31). |
++| `purpose/discovery-lead/[id]` | record (item) | read, view, layout, write | `validation/discovery/leads/*.json` |  | (discovery) (validation) | A founder the venture may interview in Discovery: an opaque person id, the ICP, how they were found, and the outreach log. The real name sits in _private/people/ (Mentura discovery playbook, 2026-10-31). |
++| `purpose/discovery-meeting` | record (list) | read, view, layout | `validation/discovery/meetings/*.json` |  | (discovery) (validation) | One discovery conversation: the script tagged to hypotheses, the prediction written before it, and afterwards the recording, the interview filed from it and the introduction asked for. The meeting packet is a view built from these records (schema/discovery.ts packet). |
++| `purpose/discovery-meeting/[id]` | record (item) | read, view, layout, write | `validation/discovery/meetings/*.json` |  | (discovery) (validation) | One discovery conversation: the script tagged to hypotheses, the prediction written before it, and afterwards the recording, the interview filed from it and the introduction asked for. The meeting packet is a view built from these records (schema/discovery.ts packet). |
+ | `purpose/foundation` | command | run, view, layout | `schema/foundation.mjs` |  |  | The venture's strategic foundation by the Five Ws and How plus whether, each confirmed, drafted by an agent, waiting as a draft, or missing (EE-051) |
+ | `purpose/ideas` | command | run, view, layout | `purpose/frameworks/idea-map/ideamap.mjs` |  |  | The founder's idea dump mapped onto Naive's conventions: each idea verbatim with its departments, records and whether it exists, where the ideas cluster, what the dump never mentions, and what it says about whether a product exists (EE-059) |
+ | `purpose/ideas/graph` | command | run, view, layout | `purpose/frameworks/idea-map/graph.mjs` |  |  | The idea graph: which ideas build on which, each idea's signal, the lanes that move in order and the ones that can move on their own, and the ideas to develop next (EE-060) |
+@@ -155,8 +161,8 @@ A group gathers the routes need-now suggests in a phase. It changes the layout a
+ 
+ | Group | The phase asks | Routes |
+ | --- | --- | --- |
+-| `(discovery)` | Does a real problem exist, and who has it? | `.release/venture-package`, `decisions`, `decisions/[id]`, `foundation/alignment`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/problem`, `ideas/graph`, `ideas/map`, `knowledge/venture-profile`, `people`, `people/founders`, `people/founders/[id]`, `product`, `product/[id]`, `raw/dump`, `system/provenance`, `validation/interviews`, `validation/interviews/[id]` |
+-| `(validation)` | Will people adopt this solution and keep using it? | `.release/venture-package`, `decisions`, `decisions/[id]`, `evidence`, `evidence/[id]`, `foundation/alignment`, `foundation/constraints`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/problem`, `foundation/requirements`, `foundation/requirements/[id]`, `foundation/telos`, `governance/decision-impact`, `governance/decision-impact/[id]`, `governance/decision-rights`, `governance/publication-policy`, `ideas/graph`, `ideas/map`, `interface/artifact`, `interface/artifact/[id]`, `knowledge/venture-profile`, `marketing/sitemap`, `operations/department`, `operations/handoff`, `operations/handoff/[id]`, `operations/site-presence`, `people`, `people/founders`, `people/founders/[id]`, `people/team`, `people/team-plan`, `product`, `product/[id]`, `product/bugs`, `product/bugs/[id]`, `raw/dump`, `system/provenance`, `validation/feedback`, `validation/feedback/[id]`, `validation/go-to-market`, `validation/interviews`, `validation/interviews/[id]`, `validation/pricing`, `validation/product-market-fit`, `validation/solution` |
++| `(discovery)` | Does a real problem exist, and who has it? | `.release/venture-package`, `decisions`, `decisions/[id]`, `foundation/alignment`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/problem`, `ideas/graph`, `ideas/map`, `knowledge/venture-profile`, `people`, `people/founders`, `people/founders/[id]`, `product`, `product/[id]`, `purpose/discovery-lead`, `purpose/discovery-lead/[id]`, `purpose/discovery-meeting`, `purpose/discovery-meeting/[id]`, `raw/dump`, `system/provenance`, `validation/interviews`, `validation/interviews/[id]` |
++| `(validation)` | Will people adopt this solution and keep using it? | `.release/venture-package`, `decisions`, `decisions/[id]`, `evidence`, `evidence/[id]`, `foundation/alignment`, `foundation/constraints`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/problem`, `foundation/requirements`, `foundation/requirements/[id]`, `foundation/telos`, `governance/decision-impact`, `governance/decision-impact/[id]`, `governance/decision-rights`, `governance/publication-policy`, `ideas/graph`, `ideas/map`, `interface/artifact`, `interface/artifact/[id]`, `knowledge/venture-profile`, `marketing/sitemap`, `operations/department`, `operations/handoff`, `operations/handoff/[id]`, `operations/site-presence`, `people`, `people/founders`, `people/founders/[id]`, `people/team`, `people/team-plan`, `product`, `product/[id]`, `product/bugs`, `product/bugs/[id]`, `purpose/discovery-lead`, `purpose/discovery-lead/[id]`, `purpose/discovery-meeting`, `purpose/discovery-meeting/[id]`, `raw/dump`, `system/provenance`, `validation/feedback`, `validation/feedback/[id]`, `validation/go-to-market`, `validation/interviews`, `validation/interviews/[id]`, `validation/pricing`, `validation/product-market-fit`, `validation/solution` |
+ | `(beachhead)` | Can we win one segment repeatably, at a profitable cost? | `.release/venture-package`, `decisions`, `decisions/[id]`, `evidence`, `evidence/[id]`, `foundation/alignment`, `foundation/constraints`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/problem`, `foundation/requirements`, `foundation/requirements/[id]`, `foundation/telos`, `glossary`, `glossary/[id]`, `governance/decision-impact`, `governance/decision-impact/[id]`, `governance/decision-rights`, `governance/delegation`, `governance/internal-terms`, `governance/pillar`, `governance/pillar/[id]`, `governance/publication-policy`, `governance/publications`, `interface/artifact`, `interface/artifact/[id]`, `knowledge/freshness-log`, `knowledge/venture-profile`, `marketing/brand`, `marketing/content`, `marketing/design-system`, `marketing/sitemap`, `operations/department`, `operations/handoff`, `operations/handoff/[id]`, `operations/site-presence`, `people`, `people/founders`, `people/founders/[id]`, `people/team`, `people/team-plan`, `product`, `product/[id]`, `product/anatomy`, `product/anatomy-answers`, `product/anatomy/[id]`, `product/bugs`, `product/bugs/[id]`, `public/assets`, `purpose/account`, `purpose/account/[id]`, `purpose/money/summary`, `system/provenance`, `system/release`, `validation/feedback`, `validation/feedback/[id]`, `validation/go-to-market`, `validation/operations-readiness`, `validation/pricing`, `validation/product-market-fit`, `validation/solution` |
+ | `(scale)` | How fast can we take the mass market? | `.release/venture-package`, `decisions`, `decisions/[id]`, `evidence`, `evidence/[id]`, `foundation/alignment`, `foundation/constraints`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/requirements`, `foundation/requirements/[id]`, `foundation/telos`, `glossary`, `glossary/[id]`, `governance/decision-impact`, `governance/decision-impact/[id]`, `governance/decision-rights`, `governance/delegation`, `governance/exit`, `governance/internal-terms`, `governance/ownership`, `governance/pillar`, `governance/pillar/[id]`, `governance/publication-policy`, `governance/publications`, `interface/artifact`, `interface/artifact/[id]`, `knowledge/freshness-log`, `knowledge/knowledge-sources`, `knowledge/venture-profile`, `knowledge/where-used`, `marketing/brand`, `marketing/content`, `marketing/design-system`, `marketing/sitemap`, `operations/department`, `operations/handoff`, `operations/handoff/[id]`, `operations/site-presence`, `people`, `people/founders`, `people/founders/[id]`, `people/team`, `people/team-plan`, `product`, `product/[id]`, `product/anatomy`, `product/anatomy-answers`, `product/anatomy/[id]`, `product/bugs`, `product/bugs/[id]`, `public/assets`, `purpose/account`, `purpose/account/[id]`, `purpose/money/summary`, `system/provenance`, `system/release`, `validation/go-to-market`, `validation/operations-readiness`, `validation/pricing` |
+ | `(platform)` | What will others build on, so the venture can't be displaced? | `.release/venture-package`, `decisions`, `decisions/[id]`, `evidence`, `evidence/[id]`, `foundation/alignment`, `foundation/constraints`, `foundation/exit-criteria`, `foundation/exit-criteria/[id]`, `foundation/goals`, `foundation/goals/[id]`, `foundation/icp`, `foundation/icp/[id]`, `foundation/requirements`, `foundation/requirements/[id]`, `foundation/telos`, `glossary`, `glossary/[id]`, `governance/board`, `governance/decision-impact`, `governance/decision-impact/[id]`, `governance/decision-rights`, `governance/delegation`, `governance/exit`, `governance/internal-terms`, `governance/ownership`, `governance/pillar`, `governance/pillar/[id]`, `governance/publication-policy`, `governance/publications`, `interface/artifact`, `interface/artifact/[id]`, `knowledge/freshness-log`, `knowledge/knowledge-sources`, `knowledge/venture-profile`, `knowledge/where-used`, `marketing/brand`, `marketing/content`, `marketing/design-system`, `marketing/sitemap`, `operations/department`, `operations/handoff`, `operations/handoff/[id]`, `operations/site-presence`, `people`, `people/founders`, `people/founders/[id]`, `people/team-plan`, `product`, `product/[id]`, `product/anatomy`, `product/anatomy-answers`, `product/anatomy/[id]`, `product/bugs`, `product/bugs/[id]`, `public/assets`, `purpose/account`, `purpose/account/[id]`, `purpose/money/summary`, `system/provenance`, `system/release`, `validation/operations-readiness` |
+diff --git a/interface/router.mjs b/interface/router.mjs
+index 9c2161b9..b4730a4b 100644
+--- a/interface/router.mjs
++++ b/interface/router.mjs
+@@ -125,6 +125,7 @@ function buildRoutes() {
+     const short = sub && r.id.startsWith(`${sub}-`) ? r.id.slice(sub.length + 1) : r.id;
+     const filesOf = r.paths.filter((p) => p.startsWith("instance/**/")).map((p) => p.slice("instance/**/".length));
+     if (filesOf.length && filesOf.every((f) => f.startsWith(".naive/"))) continue; // .naive/ is local and never routed.
++    if (filesOf.length && filesOf.every((f) => f.startsWith("_private/"))) continue; // _private/ never reaches a model, so MCP and the API never route it.
+     // The template is the package's template dir, or <manifest folder>/templates/<record>.md, or one whose name starts <record>- (telos-based-smart.md).
+     const tdir = k?.template_dir ?? (k && !k.path.startsWith("packages/") ? join(dirname(k.path), "templates") : null);
+     const tname = tdir && existsSync(join(repo, tdir)) ? readdirSync(join(repo, tdir)).filter((f) => f === `${short}.md` || (f.startsWith(`${short}-`) && f.endsWith(".md"))).sort((a, b) => (a === `${short}.md` ? -1 : b === `${short}.md` ? 1 : a.localeCompare(b)))[0] : null;
+diff --git a/packages/validation/package.json b/packages/validation/package.json
+index 5cbd8f4e..4776d7da 100644
+--- a/packages/validation/package.json
++++ b/packages/validation/package.json
+@@ -13,7 +13,11 @@
+     "validation-product-market-fit",
+     "evidence",
+     "validation-interview",
+-    "validation-feedback"
++    "validation-feedback",
++    "discovery-lead",
++    "discovery-contact",
++    "discovery-dossier",
++    "discovery-meeting"
+   ],
+   "refs": [
+     "validation-problem",
+@@ -45,7 +49,22 @@
+     "a person has confirmed every required record and every record this package reads"
+   ],
+   "gate_rules": [
+-    { "id": "validation-low-confidence", "routes": ["validation/**", "foundation/problem", "people/team"], "actors": ["agent"], "when": { "confidence_below": "confidence" }, "then": "owner", "note": "A validation record an agent is not confident in goes to its function owner" }
++    {
++      "id": "validation-low-confidence",
++      "routes": [
++        "validation/**",
++        "foundation/problem",
++        "people/team"
++      ],
++      "actors": [
++        "agent"
++      ],
++      "when": {
++        "confidence_below": "confidence"
++      },
++      "then": "owner",
++      "note": "A validation record an agent is not confident in goes to its function owner"
++    }
+   ],
+   "schemas": [
+     "schema/validation-problem.schema.json",
+@@ -57,7 +76,11 @@
+     "schema/validation-operations-readiness.schema.json",
+     "schema/evidence.schema.json",
+     "schema/validation-interview.schema.json",
+-    "schema/validation-feedback.schema.json"
++    "schema/validation-feedback.schema.json",
++    "schema/discovery-lead.schema.json",
++    "schema/discovery-contact.schema.json",
++    "schema/discovery-dossier.schema.json",
++    "schema/discovery-meeting.schema.json"
+   ],
+   "templates": [
+     "purpose/kits/validation/templates/go-to-market.md",
+@@ -73,7 +96,8 @@
+     "schema/check-validation.mjs",
+     "schema/assess-problem.mjs",
+     "schema/bdd.mjs",
+-    "schema/lint-validation.mjs"
++    "schema/lint-validation.mjs",
++    "schema/discovery.ts"
+   ],
+   "skill": {
+     "id": "problem-validation",
+@@ -101,7 +125,11 @@
+     "validation-operations-readiness",
+     "validation-weights",
+     "validation-interview",
+-    "validation-feedback"
++    "validation-feedback",
++    "discovery-lead",
++    "discovery-contact",
++    "discovery-dossier",
++    "discovery-meeting"
+   ],
+   "reads": [
+     "venture",
+diff --git a/purpose/kits/validation/README.md b/purpose/kits/validation/README.md
+index 192eb13a..60a80fb7 100644
+--- a/purpose/kits/validation/README.md
++++ b/purpose/kits/validation/README.md
+@@ -12,3 +12,27 @@ Purpose layer, second kit (EE-026). How probable it is that a venture is validat
+ | References | `references/references.json` |
+ 
+ Sub-scores: problem, solution, product-market fit, pricing, go-to-market, team, operations readiness per MAD tier.
++
++## Discovery interviews
++
++Recruiting founders, preparing for each conversation and keeping the outreach log, before the interview itself is filed in `validation/interviews/`. `schema/discovery.ts` runs it; `schema/discovery-test.ts` tests it.
++
++| Record | Where | Holds |
++| --- | --- | --- |
++| Lead, then prospect | `validation/discovery/leads/<person>.json` | everyone imported is a lead (status `new`); a person qualifies one and it becomes a prospect (`qualified_by`). Agents may draft a `fit` rank, never qualify. It holds an opaque person id (`p-xxxx`), the ICP, how they were found (own network, community, cold), their money stage, the outreach log |
++| Contact (private) | `_private/people/<person>.json` | the real name, profile link, email and company; `private: true`, so it never reaches a model or a release |
++| Dossier | `validation/discovery/dossiers/<person>.json` | facts about the founder and their venture, each with a public source, each a draft until a person checks it |
++| Meeting | `validation/discovery/meetings/<id>.json` | the time, the script tagged to H1, H2 and the price anchor, the prediction written before it, then the recording's raw source, the interview filed from it and the introduction asked for |
++
++```sh
++node schema/discovery.ts import <venture> Connections.csv --icp <icp id> --match founder
++node schema/discovery.ts plan <venture> --person <p-id> --at 2026-11-03T15:00:00-06:00 --prediction "..."
++node schema/discovery.ts packet <venture> <meeting id> [--names]
++node schema/discovery.ts funnel <venture>
++node schema/discovery.ts check <venture>
++```
++
++- `import` reads the founder's own official LinkedIn data export (Connections.csv). Nothing fetches LinkedIn. The export's columns are inferred from public descriptions; check them against a real export.
++- `check` fails a dossier fact an agent sourced from a linkedin.com page, a fact confirmed by the agent that compiled it, a dossier, lead or meeting that names the person, a script that pitches Naive, Mentura, the puzzle or the waitlist or asks a hypothetical price, and a held meeting with no prediction.
++- The packet is a view rebuilt from the records. It keeps checked facts apart from drafts and shows every fact's source. With `--names` it reads `_private/`, so keep that copy off any model.
++
+diff --git a/purpose/kits/validation/skills/problem-validation/SKILL.md b/purpose/kits/validation/skills/problem-validation/SKILL.md
+index ff09a4c4..e19af12c 100644
+--- a/purpose/kits/validation/skills/problem-validation/SKILL.md
++++ b/purpose/kits/validation/skills/problem-validation/SKILL.md
+@@ -41,3 +41,12 @@ When the evidence supports the commitment the founder is about to make. Prototyp
+ 
+ - Never invent evidence or fill a source with a plausible URL. A missing source is an open question.
+ - Interview notes may hold personal data. Keep names out of the notes, or keep the notes out of any public repository.
++
++## Recruiting and preparing interviews
++
++When the cheapest evidence is interviews, run them through the discovery records (`purpose/kits/validation/README.md`, Discovery interviews):
++
++- Import leads from the founder's own LinkedIn export with `node schema/discovery.ts import <venture> Connections.csv --icp <icp id>`. Never read LinkedIn pages yourself. A lead has only a person id; the name stays in `_private/people/`, which you never read or quote.
++- Write a dossier as drafts, each fact with a public source. Only a person marks a fact confirmed.
++- Plan the meeting with `node schema/discovery.ts plan`, and ask the founder for a prediction before it. Never add a question that pitches the product or asks what they would pay.
++- Run `node schema/discovery.ts check <venture>` before you hand over a packet (`node schema/discovery.ts packet <venture> <meeting id>`).
+diff --git a/schema/README.md b/schema/README.md
+index f8119c58..44d01249 100644
+--- a/schema/README.md
++++ b/schema/README.md
+@@ -39,6 +39,7 @@ Status:
+ | System | Venture config (`naive.config.json`: the gate's rules, owners, check settings, thresholds, System 1 questions, pinned packages, acting) | `schema/naive-config.schema.json` at `<venture>/naive.config.json`; `schema/naive-config.mjs` (defaults), `schema/check-config.mjs`, the gate `schema/gate.mjs` and held drafts `schema/gate-drafts.mjs` (EE-073) | defined |
+ | Governance | Publication policy (the publication gate) | `schema/publication-policy.schema.json` at `<venture>/governance/publication-policy.json`; `check-publication.mjs` (EE-025) | defined |
+ | Purpose | Validation package: problem record, shared evidence item, GRADE-adapted grading | `schema/validation-problem.schema.json` and `schema/validation-evidence.schema.json` at `<venture>/purpose/validation/`; `check-validation.mjs`; package at `packages/validation/` (templates and skills still under `purpose/kits/validation/`, EE-026, EE-071) | problem built; six sub-scores to build |
++| Purpose | Discovery interviews: lead, private contact, dossier, meeting; the LinkedIn export import and the meeting packet | `schema/discovery-lead.schema.json`, `discovery-contact.schema.json`, `discovery-dossier.schema.json`, `discovery-meeting.schema.json` under `<venture>/validation/discovery/` and `_private/people/`; `schema/discovery.ts` (see `purpose/kits/validation/README.md`) | defined |
+ | Purpose | Goals and vision | `purpose/frameworks/business-discovery-framework.md` | prose |
+ | Purpose | Product Anatomy and Succession Matrix | `purpose/frameworks/product-anatomy/` (phases, gates, questions as JSON) | defined, draft |
+ | Knowledge | Venture profile | the file `venture.json` names in `profile` | prose |
+diff --git a/schema/data-model.json b/schema/data-model.json
+index 964483c6..b3745df8 100644
+--- a/schema/data-model.json
++++ b/schema/data-model.json
+@@ -382,6 +382,87 @@
+       ],
+       "note": "A beta tester's answers at one checkpoint, with where the feedback was routed and how (Jev or the fallback). The beta gate unlocks the next capability once it exists (schema/beta-gate.mjs)."
+     },
++    {
++      "id": "discovery-lead",
++      "layer": "purpose",
++      "level": "venture",
++      "schema": "schema/discovery-lead.schema.json",
++      "paths": [
++        "instance/**/validation/discovery/leads/*.json",
++        "schema/examples/**/validation/discovery/leads/*.json"
++      ],
++      "refs": [
++        {
++          "field": "icp",
++          "to": "icp",
++          "checked_by": "schema/discovery.ts"
++        },
++        {
++          "field": "meetings",
++          "to": "discovery-meeting",
++          "checked_by": "schema/discovery.ts"
++        }
++      ],
++      "note": "A founder the venture may interview in Discovery: an opaque person id, the ICP, how they were found, and the outreach log. The real name sits in _private/people/ (Mentura discovery playbook, 2026-10-31)."
++    },
++    {
++      "id": "discovery-contact",
++      "layer": "purpose",
++      "level": "venture",
++      "schema": "schema/discovery-contact.schema.json",
++      "paths": [
++        "instance/**/_private/people/*.json",
++        "schema/examples/**/_private/people/*.json"
++      ],
++      "refs": [],
++      "note": "The real person behind a lead id, private: true, so it never reaches a model or a release. Filled from the founder's official LinkedIn export (schema/discovery.ts import) or typed by a person; never scraped."
++    },
++    {
++      "id": "discovery-dossier",
++      "layer": "purpose",
++      "level": "venture",
++      "schema": "schema/discovery-dossier.schema.json",
++      "paths": [
++        "instance/**/validation/discovery/dossiers/*.json",
++        "schema/examples/**/validation/discovery/dossiers/*.json"
++      ],
++      "refs": [
++        {
++          "field": "person",
++          "to": "discovery-lead",
++          "checked_by": "schema/discovery.ts"
++        }
++      ],
++      "note": "What is known about a lead before a meeting: each fact cites a public source and stays a draft until a person confirms it."
++    },
++    {
++      "id": "discovery-meeting",
++      "layer": "purpose",
++      "level": "venture",
++      "schema": "schema/discovery-meeting.schema.json",
++      "paths": [
++        "instance/**/validation/discovery/meetings/*.json",
++        "schema/examples/**/validation/discovery/meetings/*.json"
++      ],
++      "refs": [
++        {
++          "field": "person",
++          "to": "discovery-lead",
++          "checked_by": "schema/discovery.ts"
++        },
++        {
++          "field": "interview",
++          "to": "validation-interview",
++          "checked_by": "schema/discovery.ts"
++        },
++        {
++          "field": "recording.source",
++          "to": "raw-source",
++          "checked_by": "schema/discovery.ts"
++        }
++      ],
++      "note": "One discovery conversation: the script tagged to hypotheses, the prediction written before it, and afterwards the recording, the interview filed from it and the introduction asked for. The meeting packet is a view built from these records (schema/discovery.ts packet)."
++    },
+     {
+       "id": "validation-solution",
+       "layer": "purpose",
+diff --git a/schema/discovery-contact.schema.json b/schema/discovery-contact.schema.json
+new file mode 100644
+index 00000000..0e108558
+--- /dev/null
++++ b/schema/discovery-contact.schema.json
+@@ -0,0 +1,28 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "discovery-contact.schema.json",
++  "title": "Discovery contact (private)",
++  "description": "The real person behind a lead's opaque id, at <venture>/_private/people/<person>.json. private is always true, so the record never reaches a model and never ships in a release (EE-073). Filled from the founder's own LinkedIn data export, from a connections list the founder compiled, or typed by a person. Naive itself never fetches LinkedIn.",
++  "type": "object",
++  "required": ["id", "private", "name"],
++  "additionalProperties": false,
++  "properties": {
++    "id": { "type": "string", "pattern": "^p-[a-z0-9-]+$" },
++    "private": { "const": true },
++    "name": { "type": "string", "minLength": 1 },
++    "profile_url": { "type": "string" },
++    "email": { "type": "string" },
++    "company": { "type": "string" },
++    "position": { "type": "string" },
++    "connected_on": { "type": "string", "format": "date" },
++    "imported": {
++      "type": "object",
++      "required": ["from", "at"],
++      "additionalProperties": false,
++      "properties": {
++        "from": { "enum": ["linkedin-connections-export", "connections-list", "typed"], "description": "LinkedIn's own export, a connections list the founder compiled (for example with an agent), or typed by a person" },
++        "at": { "type": "string", "format": "date-time" }
++      }
++    }
++  }
++}
+diff --git a/schema/discovery-dossier.schema.json b/schema/discovery-dossier.schema.json
+new file mode 100644
+index 00000000..ee0f14b2
+--- /dev/null
++++ b/schema/discovery-dossier.schema.json
+@@ -0,0 +1,57 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "discovery-dossier.schema.json",
++  "title": "Discovery dossier",
++  "description": "What is known about a lead and their venture before a discovery meeting, at <venture>/validation/discovery/dossiers/<person>.json. Every fact cites a public source and stays a draft until a person confirms it, so agent research is never read as the founder's own claim. Posture: they have something special, and we look for where we fit into their puzzle, not where they fit into ours.",
++  "type": "object",
++  "required": ["id", "person", "compiled", "facts"],
++  "additionalProperties": false,
++  "properties": {
++    "id": { "type": "string", "pattern": "^p-[a-z0-9-]+$", "description": "Equal to the person id and the file name" },
++    "person": { "type": "string", "pattern": "^p-[a-z0-9-]+$" },
++    "compiled": {
++      "type": "object",
++      "required": ["at", "by"],
++      "additionalProperties": false,
++      "properties": {
++        "at": { "type": "string", "format": "date-time" },
++        "by": {
++          "type": "object",
++          "required": ["kind", "id"],
++          "additionalProperties": false,
++          "properties": { "kind": { "enum": ["person", "agent"] }, "id": { "type": "string" } }
++        }
++      }
++    },
++    "facts": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": ["about", "claim", "source", "status"],
++        "additionalProperties": false,
++        "properties": {
++          "about": { "enum": ["founder", "team", "venture", "market", "money", "other"] },
++          "claim": { "type": "string", "minLength": 1 },
++          "source": {
++            "type": "object",
++            "required": ["url", "retrieved"],
++            "additionalProperties": false,
++            "properties": {
++              "url": { "type": "string", "minLength": 1, "description": "A public page, a reference id (ref:<id>), or the founder's own export (export:linkedin)" },
++              "retrieved": { "type": "string", "format": "date-time" },
++              "quote": { "type": "string", "description": "The exact words the claim rests on" }
++            }
++          },
++          "status": { "enum": ["draft", "confirmed", "rejected"] },
++          "confirmed_by": { "type": "string", "description": "The person who checked it; required when confirmed" }
++        }
++      }
++    },
++    "something_special": { "type": "string", "description": "A draft guess at what this founder has that others do not; the meeting tests it, it is never told to them" },
++    "questions": {
++      "type": "array",
++      "items": { "type": "string", "minLength": 1 },
++      "description": "Gaps the meeting could close, phrased as past facts to ask about"
++    }
++  }
++}
+diff --git a/schema/discovery-lead.schema.json b/schema/discovery-lead.schema.json
+new file mode 100644
+index 00000000..5982aa61
+--- /dev/null
++++ b/schema/discovery-lead.schema.json
+@@ -0,0 +1,190 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "discovery-lead.schema.json",
++  "title": "Discovery lead or prospect",
++  "description": "One person the venture may talk to in Discovery, at <venture>/validation/discovery/leads/<person>.json. Everyone imported starts as a lead (status new); when a person qualifies one it becomes a prospect, as in common CRM usage. Agents may rank leads, never qualify them. It holds only an opaque person id: the name, profile link, email and company sit in _private/people/<person>.json, which never reaches a model or a release. The outreach log is evidence too: who was asked, through which channel, and who said yes (Mentura discovery playbook, 2026-10-31).",
++  "type": "object",
++  "required": [
++    "id",
++    "icp",
++    "group",
++    "status"
++  ],
++  "additionalProperties": false,
++  "properties": {
++    "id": {
++      "type": "string",
++      "pattern": "^p-[a-z0-9-]+$",
++      "description": "The opaque person id, equal to the file name; never a name or contact detail"
++    },
++    "icp": {
++      "type": "string",
++      "description": "The ideal customer profile id (foundation/icp/<id>.json) this person is recruited against"
++    },
++    "group": {
++      "enum": [
++        "own-network",
++        "community",
++        "cold"
++      ],
++      "description": "How the founder was found, so the answers are not all from people who like the interviewer: your own network, a community (Capital Factory, Antler, a meetup), or someone who owes you nothing"
++    },
++    "role": {
++      "enum": [
++        "founder",
++        "builder",
++        "partner",
++        "connector",
++        "investor",
++        "other"
++      ],
++      "description": "Why they matter: a founder to interview, a builder in the ICP who is not yet a founder, a partner the venture works with, a connector who leads to more founders, an investor"
++    },
++    "community": {
++      "type": "string",
++      "description": "Which community, when group is community"
++    },
++    "money": {
++      "enum": [
++        "raising",
++        "bootstrapping",
++        "stopped",
++        "unknown"
++      ],
++      "description": "What the founder is doing about money now; interviewing only survivors biases the answers"
++    },
++    "status": {
++      "enum": [
++        "new",
++        "prospect",
++        "asked",
++        "accepted",
++        "declined",
++        "no-reply",
++        "interviewed",
++        "dropped"
++      ],
++      "description": "new: a lead, imported and not yet qualified; prospect: a person qualified them for outreach (qualified_by); the rest follow outreach; dropped: not a fit, say why in the note"
++    },
++    "qualified_by": {
++      "type": "string",
++      "description": "The person who made this lead a prospect; required from prospect on. An agent ranks leads (fit) but never qualifies one"
++    },
++    "fit": {
++      "type": "object",
++      "required": [
++        "rank",
++        "reasons",
++        "by"
++      ],
++      "additionalProperties": false,
++      "description": "How good a lead this is. A draft until a person confirms it; an agent may rank, never confirm its own rank",
++      "properties": {
++        "rank": {
++          "enum": [
++            "high",
++            "medium",
++            "low"
++          ]
++        },
++        "reasons": {
++          "type": "array",
++          "minItems": 1,
++          "items": {
++            "type": "string",
++            "minLength": 1
++          }
++        },
++        "signals": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          },
++          "description": "Evidence the lead already sees what we see (the economics of intelligence), with where it was seen; stays a draft like the rest"
++        },
++        "by": {
++          "type": "object",
++          "required": [
++            "kind",
++            "id"
++          ],
++          "additionalProperties": false,
++          "properties": {
++            "kind": {
++              "enum": [
++                "person",
++                "agent"
++              ]
++            },
++            "id": {
++              "type": "string"
++            }
++          }
++        },
++        "confirmed_by": {
++          "type": "string",
++          "description": "The person who agreed with the rank"
++        }
++      }
++    },
++    "source": {
++      "type": "string",
++      "description": "Where the lead came from: linkedin-connections-export, an introduction, an event, a person's own note"
++    },
++    "intro_from": {
++      "type": "string",
++      "pattern": "^p-[a-z0-9-]+$",
++      "description": "The person who introduced them; a given introduction is a commitment"
++    },
++    "outreach": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": [
++          "at",
++          "channel",
++          "outcome"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "at": {
++            "type": "string",
++            "format": "date"
++          },
++          "channel": {
++            "enum": [
++              "linkedin-message",
++              "email",
++              "introduction",
++              "in-person",
++              "event",
++              "other"
++            ]
++          },
++          "outcome": {
++            "enum": [
++              "pending",
++              "no-reply",
++              "declined",
++              "accepted"
++            ]
++          },
++          "sent_by": {
++            "type": "string",
++            "description": "The person who sent it; an agent may draft outreach, a person sends it"
++          }
++        }
++      }
++    },
++    "meetings": {
++      "type": "array",
++      "items": {
++        "type": "string"
++      },
++      "description": "Discovery meeting ids (validation/discovery/meetings/<id>.json)"
++    },
++    "note": {
++      "type": "string"
++    }
++  }
++}
+diff --git a/schema/discovery-meeting.schema.json b/schema/discovery-meeting.schema.json
+new file mode 100644
+index 00000000..ce5d0dd1
+--- /dev/null
++++ b/schema/discovery-meeting.schema.json
+@@ -0,0 +1,47 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "discovery-meeting.schema.json",
++  "title": "Discovery meeting",
++  "description": "One discovery conversation, planned and then held, at <venture>/validation/discovery/meetings/<id>.json: when, the script (questions tagged to the hypotheses they test), what the interviewer predicts they will hear, and afterwards the recording's raw source, the validation interview filed from it, and the introduction asked for. No pitch: the playbook keeps Naive, Mentura and the puzzle out of these meetings.",
++  "type": "object",
++  "required": ["id", "person", "at", "status", "script"],
++  "additionalProperties": false,
++  "properties": {
++    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$", "description": "Equal to the file name" },
++    "person": { "type": "string", "pattern": "^p-[a-z0-9-]+$" },
++    "at": { "type": "string", "format": "date-time" },
++    "minutes": { "type": "integer", "minimum": 5 },
++    "medium": { "enum": ["in-person", "video", "phone"] },
++    "status": { "enum": ["planned", "held", "cancelled", "no-show"] },
++    "script": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": ["ask", "tests"],
++        "additionalProperties": false,
++        "properties": {
++          "ask": { "type": "string", "minLength": 1 },
++          "tests": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Hypothesis ids the answer bears on (H1, H2, price-anchor) or problem-interview for the template's questions" }
++        }
++      }
++    },
++    "prediction": { "type": "string", "description": "What the interviewer expects to hear, written before the meeting, so the answers can surprise" },
++    "recording": {
++      "type": "object",
++      "required": ["source"],
++      "additionalProperties": false,
++      "properties": { "source": { "type": "string", "description": "The raw source id (raw/sources/<id>); the recording and notes are cited, never copied" } }
++    },
++    "interview": { "type": "string", "description": "The validation interview id (validation/interviews/<id>.json) filed from this meeting" },
++    "introduction": {
++      "type": "object",
++      "required": ["asked"],
++      "additionalProperties": false,
++      "properties": {
++        "asked": { "type": "boolean" },
++        "given": { "type": "string", "pattern": "^p-[a-z0-9-]+$", "description": "The lead they introduced" }
++      }
++    }
++  }
++}
+diff --git a/schema/discovery-test.ts b/schema/discovery-test.ts
+new file mode 100644
+index 00000000..78e653b1
+--- /dev/null
++++ b/schema/discovery-test.ts
+@@ -0,0 +1,170 @@
++// Tests the Discovery workflow (schema/discovery.ts): the LinkedIn export import keeps names in _private/,
++// the checks fail what they must, and the packet keeps checked facts apart from agent drafts.
++//
++//   node schema/discovery-test.ts
++
++import { spawnSync } from "node:child_process";
++import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
++import { tmpdir } from "node:os";
++import { dirname, join } from "node:path";
++import { routes } from "../interface/router.mjs";
++import { check, exportDate, funnel, importConnections, packet, parseConnections, planMeeting } from "./discovery.ts";
++
++const repo = new URL("..", import.meta.url).pathname;
++let failed = 0;
++const expect = (name: string, ok: boolean, detail = ""): void => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${ok ? "" : `  ${detail}`}`); if (!ok) failed++; };
++const put = (f: string, o: unknown): void => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
++const read = (f: string): Record<string, unknown> => JSON.parse(readFileSync(f, "utf8")) as Record<string, unknown>;
++const valid = (schema: string, f: string): boolean => spawnSync("python3", ["-I", join(repo, "schema/validate.py"), "--schema", schema, "--file", f], { encoding: "utf8" }).status === 0;
++
++const dir = mkdtempSync(join(tmpdir(), "discovery-test-"));
++put(join(dir, "venture.json"), { id: "dv", name: "Discovery test" });
++put(join(dir, "foundation/icp/early-founders.json"), { id: "early-founders" });
++
++// The export as LinkedIn describes it: notes above the header, quoted fields, "31 Oct 2026" dates.
++const csv = [
++  "Notes:",
++  "\"When exporting your connection data, you may notice that some of the email addresses are missing.\"",
++  "",
++  "First Name,Last Name,URL,Email Address,Company,Position,Connected On",
++  "Ada,Quill,https://www.linkedin.com/in/ada-quill,,Quill Labs,Founder & CEO,12 Mar 2025",
++  "Ben,Ortiz,https://www.linkedin.com/in/ben-ortiz,ben@example.com,\"Ortiz, Ltd\",Software Engineer,01 Jan 2024",
++  "Cam,Rhee,https://www.linkedin.com/in/cam-rhee,,Rhee Co,Co-founder,5 Oct 2026",
++].join("\n");
++
++{
++  const rows = parseConnections(csv);
++  expect("the export's notes are skipped and every row is read", rows.length === 3, JSON.stringify(rows));
++  expect("a quoted company with a comma stays one field", rows[1]?.company === "Ortiz, Ltd", String(rows[1]?.company));
++  expect("export dates become ISO dates", rows[0]?.connected_on === "2025-03-12" && exportDate("5 Oct 2026") === "2026-10-05");
++  expect("an unknown date form is left out, not guessed", exportDate("03/12/25") === undefined);
++  let threw = false;
++  try { parseConnections("a,b\n1,2"); } catch { threw = true; }
++  expect("a file that is not the export is refused", threw);
++}
++
++// A connections list the founder compiled (for example with an agent): other columns, "October 31, 2026" dates.
++{
++  const list = ["name,headline,profile_url,connected_on", "\"Dee Park\",\"Founder | Building with agents\",\"https://www.linkedin.com/in/dee-park\",\"October 31, 2026\""].join("\n");
++  const rows = parseConnections(list);
++  expect("a founder's own connections list is read too", rows.length === 1 && rows[0]?.name === "Dee Park" && rows[0]?.position === "Founder | Building with agents" && rows[0]?.connected_on === "2026-10-31", JSON.stringify(rows));
++  const other = mkdtempSync(join(tmpdir(), "discovery-list-"));
++  const r = importConnections(other, list, { icp: "early-founders" });
++  expect("its contacts say where they came from", read(join(other, `_private/people/${r.created[0]}.json`)).imported !== undefined && (read(join(other, `_private/people/${r.created[0]}.json`)).imported as { from: string }).from === "connections-list");
++  expect("its contact validates against its schema", valid("discovery-contact.schema.json", join(other, `_private/people/${r.created[0]}.json`)));
++  rmSync(other, { recursive: true, force: true });
++}
++
++const imported = importConnections(dir, csv, { icp: "early-founders", match: /founder/i, now: new Date("2026-10-31T12:00:00Z") });
++const [ada, cam] = imported.created;
++{
++  expect("only founders are imported when --match founder", imported.created.length === 2, JSON.stringify(imported));
++  const lead = readFileSync(join(dir, `validation/discovery/leads/${ada}.json`), "utf8");
++  expect("the lead record holds an opaque id and no name or link", /^p-[0-9a-f]{8}$/.test(ada ?? "") && !/Ada|Quill|linkedin/i.test(lead.replace("linkedin-connections-export", "")), lead);
++  const contact = read(join(dir, `_private/people/${ada}.json`));
++  expect("the name sits in _private/people/, marked private", contact.private === true && contact.name === "Ada Quill");
++  expect("the lead validates against its schema", valid("discovery-lead.schema.json", join(dir, `validation/discovery/leads/${ada}.json`)));
++  expect("the contact validates against its schema", valid("discovery-contact.schema.json", join(dir, `_private/people/${ada}.json`)));
++  const again = importConnections(dir, csv, { icp: "early-founders", match: /founder/i });
++  expect("a second import of the same export adds no one", again.created.length === 0 && again.skipped === 2, JSON.stringify(again));
++  expect("a clean import passes the checks", check(dir).length === 0, check(dir).join("; "));
++}
++
++// A dossier an agent compiled, one fact checked by a person.
++const dossierFile = join(dir, `validation/discovery/dossiers/${ada}.json`);
++const dossier = {
++  id: ada, person: ada,
++  compiled: { at: "2026-10-31T13:00:00Z", by: { kind: "agent", id: "research-agent" } },
++  facts: [
++    { about: "venture", claim: "Raised a pre-seed round in 2025", source: { url: "https://example.com/news/quill-labs-pre-seed", retrieved: "2026-10-31T13:00:00Z" }, status: "confirmed", confirmed_by: "torian" },
++    { about: "team", claim: "Two engineers on the team", source: { url: "https://example.com/quill-labs/about", retrieved: "2026-10-31T13:00:00Z" }, status: "draft" },
++  ],
++  something_special: "Has sold to hospital procurement before",
++  questions: ["How was the pre-seed paid back in time spent raising?"],
++};
++put(dossierFile, dossier);
++expect("the dossier validates against its schema", valid("discovery-dossier.schema.json", dossierFile));
++expect("a sourced dossier with a person's check passes", check(dir).length === 0, check(dir).join("; "));
++
++const failsWith = (name: string, mutate: () => void, pattern: RegExp): void => {
++  const saved = readdirSync(dir, { recursive: true, withFileTypes: true }).filter((e) => e.isFile()).map((e) => { const f = join(e.parentPath, e.name); return [f, readFileSync(f, "utf8")] as const; });
++  mutate();
++  const problems = check(dir);
++  expect(name, problems.some((p) => pattern.test(p)), problems.join("; ") || "no problems found");
++  rmSync(dir, { recursive: true, force: true });
++  for (const [f, text] of saved) { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, text); }
++};
++
++failsWith("a fact confirmed by the agent that compiled it fails", () => put(dossierFile, { ...dossier, facts: [{ ...dossier.facts[0], confirmed_by: "research-agent" }] }), /confirmed by the agent/);
++failsWith("a fact an agent sourced from a linkedin.com page fails (no LinkedIn scraping)", () => put(dossierFile, { ...dossier, facts: [{ ...dossier.facts[1], source: { url: "https://www.linkedin.com/in/ada-quill", retrieved: "2026-10-31T13:00:00Z" } }] }), /linkedin\.com/);
++failsWith("a dossier that names the person fails (names stay private)", () => put(dossierFile, { ...dossier, something_special: "Ada Quill has sold to hospitals" }), /names the person/);
++failsWith("a lead with no private contact fails", () => rmSync(join(dir, `_private/people/${cam}.json`)), /no private contact/);
++failsWith("a lead recruited against a missing ICP fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), icp: "nobody" }), /no ICP profile/);
++failsWith("a lead marked asked with an empty outreach log fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "asked", qualified_by: "torian" }), /outreach log is empty/);
++
++failsWith("a lead's fit confirmed by the agent that ranked it fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), fit: { rank: "high", reasons: ["builds with agents"], by: { kind: "agent", id: "ranker" }, confirmed_by: "ranker" } }), /confirmed by the agent that ranked/);
++failsWith("a lead made a prospect by no one fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "prospect" }), /no person qualified it/);
++failsWith("a lead qualified by the agent that ranked it fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "prospect", qualified_by: "ranker", fit: { rank: "high", reasons: ["x"], by: { kind: "agent", id: "ranker" } } }), /qualified by the agent/);
++failsWith("a dropped lead with no reason fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "dropped" }), /no note/);
++{
++  const f = join(dir, `validation/discovery/leads/${cam}.json`);
++  const saved = readFileSync(f, "utf8");
++  put(f, { ...read(f), role: "builder", fit: { rank: "high", reasons: ["builds with agents"], signals: ["a post on where AI goes next"], by: { kind: "agent", id: "ranker" }, confirmed_by: "torian" } });
++  expect("a ranked lead a person confirmed validates and passes", valid("discovery-lead.schema.json", f) && check(dir).length === 0, check(dir).join("; "));
++  writeFileSync(f, saved);
++}
++
++// Planning a meeting gives the playbook's script and links the lead.
++const meeting = planMeeting(dir, { person: ada as string, at: "2026-11-03T15:00:00-06:00", prediction: "Bootstrapped by choice; paid in time, not money." });
++const meetingFile = join(dir, `validation/discovery/meetings/${meeting.id}.json`);
++{
++  expect("a planned meeting validates against its schema", valid("discovery-meeting.schema.json", meetingFile));
++  expect("the lead links the meeting", (read(join(dir, `validation/discovery/leads/${ada}.json`)).meetings as string[]).includes(meeting.id));
++  expect("the default script tests H1, H2 and the price anchor", ["H1", "H2", "price-anchor"].every((t) => meeting.script.some((q) => q.tests.includes(t))));
++  expect("the default script passes the no-pitch check", check(dir).length === 0, check(dir).join("; "));
++  expect("a second meeting the same day gets its own id", planMeeting(dir, { person: ada as string, at: "2026-11-03T18:00:00-06:00" }).id === `${meeting.id}-2`);
++}
++failsWith("a script that pitches Naive fails", () => put(meetingFile, { ...meeting, script: [{ ask: "Can I show you Naive?", tests: ["H1"] }] }), /no pitch/);
++failsWith("a script that asks a hypothetical price fails", () => put(meetingFile, { ...meeting, script: [{ ask: "Would you pay for a mentor?", tests: ["price-anchor"] }] }), /hypothetical/);
++failsWith("a held meeting with no prediction fails", () => put(meetingFile, { ...meeting, status: "held", prediction: undefined }), /no prediction/);
++failsWith("a meeting that cites a missing recording fails", () => put(meetingFile, { ...meeting, recording: { source: "rec-01" } }), /no raw source/);
++failsWith("a meeting linked to another person's interview fails", () => {
++  put(join(dir, "validation/interviews/i-01.json"), { id: "i-01", person: cam, icp: "early-founders", consent: { given: true, at: "2026-11-03T21:00:00Z", method: "verbal-recorded" }, transcript: { source: "raw/sources/rec-01" }, bottlenecks: ["x"] });
++  put(meetingFile, { ...meeting, interview: "i-01" });
++}, /is about/);
++failsWith("an interviewed lead with no held meeting fails", () => put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "interviewed", qualified_by: "torian" }), /no held meeting/);
++
++// The packet.
++{
++  const plain = packet(dir, meeting.id);
++  expect("the packet without --names carries the id, not the name", plain.includes(ada as string) && !plain.includes("Ada Quill"));
++  const checked = plain.slice(plain.indexOf("## Checked facts"), plain.indexOf("## Drafts"));
++  const drafts = plain.slice(plain.indexOf("## Drafts"), plain.indexOf("## What they may"));
++  expect("checked facts and agent drafts are kept apart", checked.includes("pre-seed") && !checked.includes("Two engineers") && drafts.includes("Two engineers"), plain);
++  expect("every fact in the packet shows its source", plain.includes("source: https://example.com/news/quill-labs-pre-seed") && plain.includes("source: https://example.com/quill-labs/about"));
++  expect("the packet carries the prediction and the script", plain.includes("paid in time, not money") && plain.includes("1. Walk me through"));
++  const named = packet(dir, meeting.id, { names: true });
++  expect("with --names it shows the person and says to keep it off any model", named.includes("# Meeting packet: Ada Quill (Founder & CEO, Quill Labs)") && named.includes("keep this copy off any model"));
++}
++
++// The funnel, and the CLI end to end.
++{
++  put(join(dir, `validation/discovery/leads/${cam}.json`), { ...read(join(dir, `validation/discovery/leads/${cam}.json`)), status: "asked", qualified_by: "torian", outreach: [{ at: "2026-11-01", channel: "linkedin-message", outcome: "no-reply", sent_by: "torian" }] });
++  const f = funnel(dir);
++  expect("the funnel counts leads and who was asked, by group", f["own-network"]?.leads === 2 && f["own-network"]?.asked === 1, JSON.stringify(f));
++  const cli = (...args: string[]) => spawnSync("node", [join(repo, "schema/discovery.ts"), ...args], { encoding: "utf8" });
++  const ok = cli("check", dir);
++  expect("discovery.ts check passes a clean venture", ok.status === 0, ok.stdout + ok.stderr);
++  const pk = cli("packet", dir, meeting.id);
++  expect("discovery.ts packet prints the packet", pk.status === 0 && pk.stdout.startsWith("# Meeting packet"), pk.stderr);
++}
++
++// Private contacts are never routed, so no MCP tool or API call can read them.
++{
++  const all = (routes() as { route: string }[]).map((r) => r.route);
++  expect("no route reads _private/people/", all.some((r) => r.includes("discovery-lead")) && !all.some((r) => r.includes("discovery-contact")), all.filter((r) => r.includes("discovery")).join(", "));
++}
++
++rmSync(dir, { recursive: true, force: true });
++console.log(failed ? `\n${failed} failing` : "\nall passing");
++process.exit(failed ? 1 : 0);
+diff --git a/schema/discovery.ts b/schema/discovery.ts
+new file mode 100644
+index 00000000..6e00c034
+--- /dev/null
++++ b/schema/discovery.ts
+@@ -0,0 +1,334 @@
++// The Discovery workflow for interviewing founders (Mentura discovery playbook, 2026-10-31): leads,
++// dossiers, meetings and the packet read before a meeting. A lead is an opaque person id (p-xxxx);
++// the real name and profile sit in _private/people/<id>.json, which never reaches a model or a release.
++//
++//   node schema/discovery.ts check <dir>                                   a venture or a folder of ventures
++//   node schema/discovery.ts import <venture> <Connections.csv> --icp <id> [--match <regex>] [--group own-network]
++//   node schema/discovery.ts plan <venture> --person <p-id> --at <date-time> [--medium video] [--minutes 25] [--prediction <text>]
++//   node schema/discovery.ts packet <venture> <meeting id> [--names]
++//   node schema/discovery.ts funnel <venture>
++//
++// import reads the founder's own LinkedIn data export (Settings, Data privacy, Get a copy of your data,
++// Connections), or a connections list the founder compiled (name, headline, profile_url, connected_on). Nothing here fetches LinkedIn, and check fails a dossier fact an agent sourced from a
++// linkedin.com page (standing rule: no LinkedIn scraping). The export's columns are inferred from public
++// descriptions of it (First Name, Last Name, URL, Email Address, Company, Position, Connected On, after a few
++// lines of notes); check them against a real export before relying on the import.
++//
++// The packet is a view, not a record: it is rebuilt from the records each time. Without --names it holds
++// person ids only. With --names it reads _private/, so keep that copy for the person and off any model.
++
++import { randomBytes } from "node:crypto";
++import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
++import { dirname, join } from "node:path";
++import { ventureFile } from "./venture-paths.mjs";
++import type { DiscoveryContact, DiscoveryDossier, DiscoveryMeeting, DiscoveryLead, ValidationInterview } from "./types/records.d.ts";
++
++type Script = DiscoveryMeeting["script"];
++type Listed<T> = { file: string; record: T };
++
++const LEADS = "validation/discovery/leads";
++const DOSSIERS = "validation/discovery/dossiers";
++const MEETINGS = "validation/discovery/meetings";
++const CONTACTS = "_private/people";
++
++/** The playbook's questions, tagged to what they test. The template's five problem questions come first. */
++export const DEFAULT_SCRIPT: Script = [
++  { ask: "Walk me through the last time you were stuck on a decision about your venture. When was it?", tests: ["problem-interview"] },
++  { ask: "What did you do about it? What did that cost you, in time or money?", tests: ["problem-interview"] },
++  { ask: "How did you pay for getting from idea to your first paying customer? Walk me through it.", tests: ["H2", "price-anchor"] },
++  { ask: "Did you try to raise money, or get into an accelerator, before you had customers? What happened?", tests: ["H1"] },
++  { ask: "If you paid for it yourself: was that the plan from the start, or what you did when the other route didn't work?", tests: ["H2"] },
++  { ask: "What have you given up to get help, in money, equity or time? Who did you get it from? Was it worth it?", tests: ["price-anchor"] },
++  { ask: "Who do you go to when you're stuck on a decision? How often?", tests: ["problem-interview"] },
++  { ask: "What decision do you most wish you'd made differently in the first year? What did it cost?", tests: ["problem-interview"] },
++  { ask: "Who is another founder I should talk to about this?", tests: ["commitment"] },
++];
++
++// The playbook's "Do not": no pitch, no hypothetical prices, no waitlist as a reward.
++const PITCH = [
++  { re: /\b(naive|mentura|puzzle|waitlist)\b/i, why: "names Naive, Mentura, the puzzle or the waitlist (no pitch in discovery)" },
++  { re: /\bwould you (pay|use|buy)\b|\bhow much would\b|\bworth to you\b/i, why: "asks a hypothetical price or use; ask what they already pay instead" },
++];
++
++const readJson = <T>(f: string): T => JSON.parse(readFileSync(f, "utf8")) as T;
++const writeJson = (f: string, o: unknown): void => { mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(o, null, 2) + "\n"); };
++function list<T>(dir: string, rel: string): Listed<T>[] {
++  const d: string = ventureFile(dir, rel);
++  return existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => ({ file: f, record: readJson<T>(join(d, f)) })) : [];
++}
++const one = <T>(dir: string, rel: string, id: string): T | null => {
++  const f: string = ventureFile(dir, `${rel}/${id}.json`);
++  return existsSync(f) ? readJson<T>(f) : null;
++};
++
++/** One CSV line into fields, with double-quoted fields and "" for a quote inside one. */
++function csvFields(line: string): string[] {
++  const out: string[] = [];
++  let cur = "", quoted = false;
++  for (let i = 0; i < line.length; i++) {
++    const c = line[i];
++    if (quoted) {
++      if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
++      else if (c === '"') quoted = false;
++      else cur += c;
++    } else if (c === '"') quoted = true;
++    else if (c === ",") { out.push(cur); cur = ""; }
++    else cur += c;
++  }
++  out.push(cur);
++  return out.map((s) => s.trim());
++}
++
++const MONTHS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
++/** "31 Oct 2026", "October 31, 2026" or an ISO date into YYYY-MM-DD; anything else is left out rather than guessed. */
++export function exportDate(s: string): string | undefined {
++  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
++  const dm = /^(\d{1,2}) ([A-Za-z]{3})\w* (\d{4})$/.exec(s), md = /^([A-Za-z]{3})\w* (\d{1,2}), (\d{4})$/.exec(s);
++  const [mon, day, year] = dm ? [dm[2], dm[1], dm[3]] : md ? [md[1], md[2], md[3]] : [];
++  const month = mon ? MONTHS.indexOf(mon.toLowerCase()) : -1;
++  return day && year && month >= 0 ? `${year}-${String(month + 1).padStart(2, "0")}-${day.padStart(2, "0")}` : undefined;
++}
++
++export type Connection = { name: string; profile_url?: string; email?: string; company?: string; position?: string; connected_on?: string };
++
++/** Which file this is: LinkedIn's own Connections.csv export (First Name, Last Name, URL, Email Address,
++ *  Company, Position, Connected On, after a few lines of notes), or a connections list the founder compiled
++ *  themselves, for example with an agent (name, headline, profile_url, connected_on). */
++export type ConnectionsFormat = "linkedin-connections-export" | "connections-list";
++export function connectionsFormat(csv: string): { format: ConnectionsFormat; at: number; lines: string[] } {
++  const lines = csv.replace(/^\uFEFF/, "").split(/\r?\n/);
++  const exp = lines.findIndex((l) => /^"?First Name"?,/.test(l));
++  if (exp >= 0) return { format: "linkedin-connections-export", at: exp, lines };
++  const own = lines.findIndex((l) => /^"?name"?,/i.test(l) && /profile_url/i.test(l));
++  if (own >= 0) return { format: "connections-list", at: own, lines };
++  throw new Error("no header row: expected LinkedIn's Connections.csv (First Name, Last Name, URL, ...) or a list with name, headline, profile_url, connected_on");
++}
++
++/** The rows of either connections file. The notes above the header row are skipped. */
++export function parseConnections(csv: string): Connection[] {
++  const { format, at, lines } = connectionsFormat(csv);
++  const head = csvFields(lines[at]).map((h) => format === "connections-list" ? h.toLowerCase() : h);
++  // The same fields under each file's column names.
++  const names = format === "linkedin-connections-export"
++    ? { url: "URL", email: "Email Address", company: "Company", position: "Position", on: "Connected On" }
++    : { url: "profile_url", email: "email", company: "company", position: "headline", on: "connected_on" };
++  const col = (row: string[], name: string): string | undefined => { const i = head.indexOf(name); const v = i >= 0 ? row[i] : undefined; return v ? v : undefined; };
++  return lines.slice(at + 1).filter((l) => l.trim()).map(csvFields).flatMap((row) => {
++    const name = format === "linkedin-connections-export" ? [col(row, "First Name"), col(row, "Last Name")].filter(Boolean).join(" ") : col(row, "name") ?? "";
++    if (!name) return [];
++    const on = col(row, names.on);
++    const c: Connection = { name };
++    const url = col(row, names.url), email = col(row, names.email), company = col(row, names.company), position = col(row, names.position);
++    if (url) c.profile_url = url;
++    if (email) c.email = email;
++    if (company) c.company = company;
++    if (position) c.position = position;
++    const iso = on ? exportDate(on) : undefined;
++    if (iso) c.connected_on = iso;
++    return [c];
++  });
++}
++
++export type ImportOptions = { icp: string; match?: RegExp; group?: DiscoveryLead["group"]; now?: Date };
++
++/** Files each matching connection as a lead (person id only) and a private contact. A connection whose
++ *  profile link, or else name and company, is already a contact is skipped, so a later export only adds. */
++export function importConnections(dir: string, csv: string, o: ImportOptions): { created: string[]; skipped: number } {
++  const now = (o.now ?? new Date()).toISOString().replace(/\.\d{3}Z$/, "Z");
++  const known = new Set(list<DiscoveryContact>(dir, CONTACTS).flatMap(({ record: c }) => [c.profile_url, `${c.name}|${c.company ?? ""}`].filter((k): k is string => !!k)));
++  const created: string[] = [];
++  let skipped = 0;
++  const from = connectionsFormat(csv).format;
++  for (const c of parseConnections(csv)) {
++    if (o.match && !o.match.test(`${c.position ?? ""} ${c.company ?? ""}`)) continue;
++    if ((c.profile_url && known.has(c.profile_url)) || known.has(`${c.name}|${c.company ?? ""}`)) { skipped++; continue; }
++    let id = `p-${randomBytes(4).toString("hex")}`;
++    while (existsSync(ventureFile(dir, `${CONTACTS}/${id}.json`))) id = `p-${randomBytes(4).toString("hex")}`;
++    const contact: DiscoveryContact = { id, private: true, ...c, imported: { from, at: now } };
++    const lead: DiscoveryLead = { id, icp: o.icp, group: o.group ?? "own-network", money: "unknown", status: "new", source: from };
++    writeJson(ventureFile(dir, `${CONTACTS}/${id}.json`), contact);
++    writeJson(ventureFile(dir, `${LEADS}/${id}.json`), lead);
++    if (c.profile_url) known.add(c.profile_url);
++    known.add(`${c.name}|${c.company ?? ""}`);
++    created.push(id);
++  }
++  return { created, skipped };
++}
++
++export type PlanOptions = { person: string; at: string; medium?: DiscoveryMeeting["medium"]; minutes?: number; prediction?: string; script?: Script };
++
++/** Writes a planned meeting with the playbook's script and links it from the lead. */
++export function planMeeting(dir: string, o: PlanOptions): DiscoveryMeeting {
++  const lead = one<DiscoveryLead>(dir, LEADS, o.person);
++  if (!lead) throw new Error(`no lead ${o.person} (${LEADS}/${o.person}.json)`);
++  const base = `${o.at.slice(0, 10)}-${o.person}`;
++  let id = base;
++  for (let n = 2; existsSync(ventureFile(dir, `${MEETINGS}/${id}.json`)); n++) id = `${base}-${n}`;
++  const meeting: DiscoveryMeeting = { id, person: o.person, at: o.at, medium: o.medium ?? "video", minutes: o.minutes ?? 25, status: "planned", script: o.script ?? DEFAULT_SCRIPT };
++  if (o.prediction) meeting.prediction = o.prediction;
++  writeJson(ventureFile(dir, `${MEETINGS}/${id}.json`), meeting);
++  writeJson(ventureFile(dir, `${LEADS}/${o.person}.json`), { ...lead, meetings: [...(lead.meetings ?? []), id] });
++  return meeting;
++}
++
++/** Every problem across the discovery records of one venture. */
++export function check(dir: string): string[] {
++  const problems: string[] = [];
++  const contacts = new Map(list<DiscoveryContact>(dir, CONTACTS).map(({ record }) => [record.id, record]));
++  const leads = new Map(list<DiscoveryLead>(dir, LEADS).map(({ record }) => [record.id, record]));
++  const meetings = list<DiscoveryMeeting>(dir, MEETINGS);
++  const held = new Set(meetings.filter(({ record: m }) => m.status === "held").map(({ record: m }) => m.person));
++  const identifying = (id: string): string[] => { const c = contacts.get(id); return c ? [c.name, c.email, c.profile_url].filter((s): s is string => !!s && s.length > 3) : []; };
++  const names = (text: string, id: string, where: string): void => {
++    for (const s of identifying(id)) if (text.toLowerCase().includes(s.toLowerCase())) problems.push(`${where}: names the person behind ${id}; names stay in ${CONTACTS}/`);
++  };
++
++  for (const { file, record: c } of list<DiscoveryContact>(dir, CONTACTS))
++    if (c.id !== file.replace(/\.json$/, "")) problems.push(`${CONTACTS}/${file}: id ${c.id} is not the file name`);
++  for (const { file, record: p } of list<DiscoveryLead>(dir, LEADS)) {
++    const at = `${LEADS}/${file}`;
++    if (p.id !== file.replace(/\.json$/, "")) problems.push(`${at}: id ${p.id} is not the file name`);
++    if (!contacts.has(p.id)) problems.push(`${at}: no private contact ${CONTACTS}/${p.id}.json`);
++    if (!existsSync(ventureFile(dir, `foundation/icp/${p.icp}.json`))) problems.push(`${at}: no ICP profile ${p.icp} (foundation/icp/${p.icp}.json)`);
++    if (p.group === "community" && !p.community) problems.push(`${at}: group community, but which community is missing`);
++    if (p.intro_from && !leads.has(p.intro_from)) problems.push(`${at}: introduced by ${p.intro_from}, who is not a lead`);
++    for (const m of p.meetings ?? []) if (!meetings.some(({ record }) => record.id === m)) problems.push(`${at}: no meeting ${m}`);
++    if (p.status === "interviewed" && !held.has(p.id)) problems.push(`${at}: interviewed, but no held meeting names ${p.id}`);
++    if (p.fit?.confirmed_by && p.fit.by.kind === "agent" && p.fit.confirmed_by === p.fit.by.id) problems.push(`${at}: its fit is confirmed by the agent that ranked it; a person confirms it`);
++    if (!["new", "dropped"].includes(p.status) && !p.qualified_by) problems.push(`${at}: ${p.status}, but no person qualified it (qualified_by); a lead becomes a prospect only when a person says so`);
++    if (p.qualified_by && p.fit?.by.kind === "agent" && p.qualified_by === p.fit.by.id) problems.push(`${at}: qualified by the agent that ranked it; a person qualifies a lead`);
++    if (p.status === "dropped" && !p.note) problems.push(`${at}: dropped with no note saying why`);
++    if (p.status === "asked" && !(p.outreach ?? []).length) problems.push(`${at}: asked, but the outreach log is empty`);
++    names(JSON.stringify(p), p.id, at);
++  }
++  for (const { file, record: d } of list<DiscoveryDossier>(dir, DOSSIERS)) {
++    const at = `${DOSSIERS}/${file}`;
++    if (d.id !== file.replace(/\.json$/, "") || d.person !== d.id) problems.push(`${at}: id and person must both be the file name`);
++    if (!leads.has(d.person)) problems.push(`${at}: no lead ${d.person}`);
++    d.facts.forEach((f, i) => {
++      if (f.status === "confirmed" && !f.confirmed_by) problems.push(`${at}: fact ${i + 1} is confirmed, but by no one`);
++      if (f.status === "confirmed" && d.compiled.by.kind === "agent" && f.confirmed_by === d.compiled.by.id) problems.push(`${at}: fact ${i + 1} is confirmed by the agent that compiled it; a person checks it`);
++      if (d.compiled.by.kind === "agent" && /(^|\/\/|\.)linkedin\.com\b/i.test(f.source.url)) problems.push(`${at}: fact ${i + 1} cites a linkedin.com page an agent read; use the founder's export (export:linkedin) or a public page`);
++    });
++    names(JSON.stringify(d), d.person, at);
++  }
++  for (const { file, record: m } of meetings) {
++    const at = `${MEETINGS}/${file}`;
++    if (m.id !== file.replace(/\.json$/, "")) problems.push(`${at}: id ${m.id} is not the file name`);
++    if (!leads.has(m.person)) problems.push(`${at}: no lead ${m.person}`);
++    m.script.forEach((q, i) => { for (const p of PITCH) if (p.re.test(q.ask)) problems.push(`${at}: question ${i + 1} ${p.why}`); });
++    if (m.status === "held" && !m.prediction) problems.push(`${at}: held with no prediction written before it`);
++    if (m.recording && !existsSync(ventureFile(dir, `raw/sources/${m.recording.source.replace(/^raw\/sources\//, "")}/source.json`))) problems.push(`${at}: no raw source ${m.recording.source}`);
++    if (m.interview) {
++      const iv = one<ValidationInterview>(dir, "validation/interviews", m.interview);
++      if (!iv) problems.push(`${at}: no validation interview ${m.interview}`);
++      else if (iv.person !== m.person) problems.push(`${at}: interview ${m.interview} is about ${iv.person}, not ${m.person}`);
++    }
++    if (m.introduction?.given && !leads.has(m.introduction.given)) problems.push(`${at}: introduction to ${m.introduction.given}, who is not a lead yet`);
++    names(JSON.stringify(m), m.person, at);
++  }
++  return problems;
++}
++
++/** Who was asked, who said yes, who was interviewed, by group: the response rate is evidence too. */
++export function funnel(dir: string): Record<string, Record<string, number>> {
++  const out: Record<string, Record<string, number>> = {};
++  for (const { record: p } of list<DiscoveryLead>(dir, LEADS)) {
++    const g = (out[p.group] ??= { leads: 0, asked: 0, accepted: 0, interviewed: 0 });
++    const asked = (p.outreach ?? []).length > 0;
++    g.leads++;
++    if (asked) g.asked++;
++    if ((p.outreach ?? []).some((o) => o.outcome === "accepted") || p.status === "accepted" || p.status === "interviewed") g.accepted++;
++    if (p.status === "interviewed") g.interviewed++;
++  }
++  return out;
++}
++
++/** The meeting packet: what to read before the meeting, built from the records. Confirmed facts and agent
++ *  drafts are kept apart, and every fact shows its source. */
++export function packet(dir: string, meetingId: string, o: { names?: boolean } = {}): string {
++  const m = one<DiscoveryMeeting>(dir, MEETINGS, meetingId);
++  if (!m) throw new Error(`no meeting ${meetingId} (${MEETINGS}/${meetingId}.json)`);
++  const p = one<DiscoveryLead>(dir, LEADS, m.person);
++  const d = one<DiscoveryDossier>(dir, DOSSIERS, m.person);
++  const c = o.names ? one<DiscoveryContact>(dir, CONTACTS, m.person) : null;
++  const who = c ? `${c.name}${c.position || c.company ? ` (${[c.position, c.company].filter(Boolean).join(", ")})` : ""}` : m.person;
++  const facts = (status: string) => (d?.facts ?? []).filter((f) => f.status === status)
++    .map((f) => `- ${f.claim} [${f.about}] (source: ${f.source.url}, retrieved ${f.source.retrieved.slice(0, 10)}${f.confirmed_by ? `, checked by ${f.confirmed_by}` : ""})`);
++  const confirmed = facts("confirmed"), drafts = facts("draft");
++  const lines = [
++    `# Meeting packet: ${who}`,
++    "",
++    `${m.at} · ${m.medium ?? "video"} · ${m.minutes ?? 25} minutes · ${m.status}`,
++    "",
++    "## Who",
++    p ? `- Found through ${p.group}${p.community ? ` (${p.community})` : ""}; money now: ${p.money ?? "unknown"}; ICP ${p.icp}` : `- No lead record for ${m.person}`,
++    ...(p?.intro_from ? [`- Introduced by ${p.intro_from}`] : []),
++    ...(p?.outreach ?? []).map((x) => `- ${x.at}: ${x.channel}, ${x.outcome}`),
++    "",
++    "## Checked facts",
++    ...(confirmed.length ? confirmed : ["- None yet."]),
++    "",
++    "## Drafts, not yet checked by a person",
++    ...(drafts.length ? drafts : ["- None."]),
++    ...(d?.something_special ? ["", "## What they may have that others don't (a draft guess, never said to them)", d.something_special] : []),
++    ...(d?.questions?.length ? ["", "## Gaps to close", ...d.questions.map((q) => `- ${q}`)] : []),
++    "",
++    "## Prediction, written before the meeting",
++    m.prediction ?? "None written yet. Write one before the meeting, so the answers can surprise you.",
++    "",
++    "## Script (past facts, not opinions)",
++    ...m.script.map((q, i) => `${i + 1}. ${q.ask} (${q.tests.join(", ")})`),
++    "",
++    "## Do not",
++    "- Pitch Naive, Mentura or the puzzle, or show them anything.",
++    "- Ask \"would you pay for...?\" or \"how much would this be worth?\"",
++    "- Mention the waitlist as a reward for the interview.",
++    "",
++    "## After",
++    "- Recording and notes go in raw/; cite them, never copy them into records.",
++    "- File the interview in validation/interviews/ and link it from this meeting.",
++    "- File each finding as an evidence item, tagged H1, H2 or price-anchor.",
++    "- Ask for one introduction to another founder.",
++    "",
++    `_A view built from ${MEETINGS}/${m.id}.json${p ? `, ${LEADS}/${p.id}.json` : ""}${d ? `, ${DOSSIERS}/${d.id}.json` : ""}${c ? ` and ${CONTACTS}/${c.id}.json (private: keep this copy off any model)` : ""}._`,
++  ];
++  return lines.join("\n") + "\n";
++}
++
++const ventures = (d: string): string[] => readdirSync(d, { withFileTypes: true }).flatMap((e) =>
++  e.name === "node_modules" || e.name.startsWith(".") || !e.isDirectory() ? [] : existsSync(join(d, e.name, "venture.json")) ? [join(d, e.name), ...ventures(join(d, e.name))] : ventures(join(d, e.name)));
++
++if (import.meta.url === `file://${process.argv[1]}`) {
++  const [cmd, a, b] = process.argv.slice(2);
++  const flag = (n: string): string | undefined => { const i = process.argv.indexOf(`--${n}`); return i > 0 ? process.argv[i + 1] : undefined; };
++  const usage = () => { console.error("usage: node schema/discovery.ts check <dir> | import <venture> <Connections.csv> --icp <id> [--match <regex>] | plan <venture> --person <id> --at <date-time> | packet <venture> <meeting> [--names] | funnel <venture>"); process.exit(2); };
++  try {
++    if (cmd === "check" && a) {
++      const dirs = existsSync(join(a, "venture.json")) ? [a] : ventures(a);
++      const problems = dirs.flatMap((d) => check(d).map((p) => `${d}: ${p}`));
++      console.log(problems.length ? problems.map((p) => `FAIL  ${p}`).join("\n") : `discovery records: ${dirs.length} venture(s) checked`);
++      process.exit(problems.length ? 1 : 0);
++    } else if (cmd === "import" && a && b) {
++      const icp = flag("icp");
++      if (!icp) usage();
++      const match = flag("match");
++      const group = flag("group") as DiscoveryLead["group"] | undefined;
++      const r = importConnections(a, readFileSync(b, "utf8"), { icp: icp as string, ...(match ? { match: new RegExp(match, "i") } : {}), ...(group ? { group } : {}) });
++      console.log(`${r.created.length} lead(s) added, ${r.skipped} already known. Names are in ${CONTACTS}/ only.`);
++    } else if (cmd === "plan" && a) {
++      const person = flag("person"), at = flag("at");
++      if (!person || !at) usage();
++      const minutes = flag("minutes"), medium = flag("medium") as DiscoveryMeeting["medium"] | undefined, prediction = flag("prediction");
++      const m = planMeeting(a, { person: person as string, at: at as string, ...(medium ? { medium } : {}), ...(minutes ? { minutes: Number(minutes) } : {}), ...(prediction ? { prediction } : {}) });
++      console.log(`planned ${MEETINGS}/${m.id}.json`);
++    } else if (cmd === "packet" && a && b) {
++      process.stdout.write(packet(a, b, { names: process.argv.includes("--names") }));
++    } else if (cmd === "funnel" && a) {
++      console.log(JSON.stringify(funnel(a), null, 2));
++    } else usage();
++  } catch (e) {
++    console.error(e instanceof Error ? e.message : String(e));
++    process.exit(1);
++  }
++}
+diff --git a/schema/need-now.json b/schema/need-now.json
+index 106d6cdd..a079d2f6 100644
+--- a/schema/need-now.json
++++ b/schema/need-now.json
+@@ -920,6 +920,46 @@
+       },
+       "why": "Testers' checkpoint feedback, once someone is using what was built"
+     },
++    "discovery-lead": {
++      "base": {
++        "discovery": 0.6,
++        "validation": 0.6,
++        "beachhead": 0.2,
++        "scale": 0.1,
++        "platform": 0.1
++      },
++      "why": "Founders to interview in Discovery and Validation; the outreach log is evidence too"
++    },
++    "discovery-contact": {
++      "base": {
++        "discovery": 0.6,
++        "validation": 0.6,
++        "beachhead": 0.2,
++        "scale": 0.1,
++        "platform": 0.1
++      },
++      "why": "Kept beside each lead, so names stay out of every other record"
++    },
++    "discovery-dossier": {
++      "base": {
++        "discovery": 0.4,
++        "validation": 0.4,
++        "beachhead": 0.1,
++        "scale": 0.1,
++        "platform": 0.1
++      },
++      "why": "Preparation before a discovery meeting; useful, not required"
++    },
++    "discovery-meeting": {
++      "base": {
++        "discovery": 0.6,
++        "validation": 0.6,
++        "beachhead": 0.2,
++        "scale": 0.1,
++        "platform": 0.1
++      },
++      "why": "Each discovery conversation, planned with a prediction and linked to its interview"
++    },
+     "bug": {
+       "base": {
+         "discovery": 0.1,
+diff --git a/schema/types/records.d.ts b/schema/types/records.d.ts
+index 51ee39e8..f0a59681 100644
+--- a/schema/types/records.d.ts
++++ b/schema/types/records.d.ts
+@@ -768,6 +768,149 @@ export type Department = {
+   owner?: string;
+ };
+ 
++/** The real person behind a lead's opaque id, at <venture>/_private/people/<person>.json. private is always true, so the record never reaches a model and never ships in a release (EE-073). Filled from the founder's own LinkedIn data export, from a connections list the founder compiled, or typed by a person. Naive itself never fetches LinkedIn. */
++export type DiscoveryContact = {
++  id: string;
++  private: true;
++  name: string;
++  profile_url?: string;
++  email?: string;
++  company?: string;
++  position?: string;
++  /**
++   * @format date
++   */
++  connected_on?: string;
++  imported?: {
++    /** LinkedIn's own export, a connections list the founder compiled (for example with an agent), or typed by a person */
++    from: "linkedin-connections-export" | "connections-list" | "typed";
++    /**
++     * @format date-time
++     */
++    at: string;
++  };
++};
++
++/** What is known about a lead and their venture before a discovery meeting, at <venture>/validation/discovery/dossiers/<person>.json. Every fact cites a public source and stays a draft until a person confirms it, so agent research is never read as the founder's own claim. Posture: they have something special, and we look for where we fit into their puzzle, not where they fit into ours. */
++export type DiscoveryDossier = {
++  /** Equal to the person id and the file name */
++  id: string;
++  person: string;
++  compiled: {
++    /**
++     * @format date-time
++     */
++    at: string;
++    by: {
++      kind: "person" | "agent";
++      id: string;
++    };
++  };
++  facts: {
++    about: "founder" | "team" | "venture" | "market" | "money" | "other";
++    claim: string;
++    source: {
++      /** A public page, a reference id (ref:<id>), or the founder's own export (export:linkedin) */
++      url: string;
++      /**
++       * @format date-time
++       */
++      retrieved: string;
++      /** The exact words the claim rests on */
++      quote?: string;
++    };
++    status: "draft" | "confirmed" | "rejected";
++    /** The person who checked it; required when confirmed */
++    confirmed_by?: string;
++  }[];
++  /** A draft guess at what this founder has that others do not; the meeting tests it, it is never told to them */
++  something_special?: string;
++  /** Gaps the meeting could close, phrased as past facts to ask about */
++  questions?: string[];
++};
++
++/** One person the venture may talk to in Discovery, at <venture>/validation/discovery/leads/<person>.json. Everyone imported starts as a lead (status new); when a person qualifies one it becomes a prospect, as in common CRM usage. Agents may rank leads, never qualify them. It holds only an opaque person id: the name, profile link, email and company sit in _private/people/<person>.json, which never reaches a model or a release. The outreach log is evidence too: who was asked, through which channel, and who said yes (Mentura discovery playbook, 2026-10-31). */
++export type DiscoveryLead = {
++  /** The opaque person id, equal to the file name; never a name or contact detail */
++  id: string;
++  /** The ideal customer profile id (foundation/icp/<id>.json) this person is recruited against */
++  icp: string;
++  /** How the founder was found, so the answers are not all from people who like the interviewer: your own network, a community (Capital Factory, Antler, a meetup), or someone who owes you nothing */
++  group: "own-network" | "community" | "cold";
++  /** Why they matter: a founder to interview, a builder in the ICP who is not yet a founder, a partner the venture works with, a connector who leads to more founders, an investor */
++  role?: "founder" | "builder" | "partner" | "connector" | "investor" | "other";
++  /** Which community, when group is community */
++  community?: string;
++  /** What the founder is doing about money now; interviewing only survivors biases the answers */
++  money?: "raising" | "bootstrapping" | "stopped" | "unknown";
++  /** new: a lead, imported and not yet qualified; prospect: a person qualified them for outreach (qualified_by); the rest follow outreach; dropped: not a fit, say why in the note */
++  status: "new" | "prospect" | "asked" | "accepted" | "declined" | "no-reply" | "interviewed" | "dropped";
++  /** The person who made this lead a prospect; required from prospect on. An agent ranks leads (fit) but never qualifies one */
++  qualified_by?: string;
++  /** How good a lead this is. A draft until a person confirms it; an agent may rank, never confirm its own rank */
++  fit?: {
++    rank: "high" | "medium" | "low";
++    reasons: string[];
++    /** Evidence the lead already sees what we see (the economics of intelligence), with where it was seen; stays a draft like the rest */
++    signals?: string[];
++    by: {
++      kind: "person" | "agent";
++      id: string;
++    };
++    /** The person who agreed with the rank */
++    confirmed_by?: string;
++  };
++  /** Where the lead came from: linkedin-connections-export, an introduction, an event, a person's own note */
++  source?: string;
++  /** The person who introduced them; a given introduction is a commitment */
++  intro_from?: string;
++  outreach?: {
++    /**
++     * @format date
++     */
++    at: string;
++    channel: "linkedin-message" | "email" | "introduction" | "in-person" | "event" | "other";
++    outcome: "pending" | "no-reply" | "declined" | "accepted";
++    /** The person who sent it; an agent may draft outreach, a person sends it */
++    sent_by?: string;
++  }[];
++  /** Discovery meeting ids (validation/discovery/meetings/<id>.json) */
++  meetings?: string[];
++  note?: string;
++};
++
++/** One discovery conversation, planned and then held, at <venture>/validation/discovery/meetings/<id>.json: when, the script (questions tagged to the hypotheses they test), what the interviewer predicts they will hear, and afterwards the recording's raw source, the validation interview filed from it, and the introduction asked for. No pitch: the playbook keeps Naive, Mentura and the puzzle out of these meetings. */
++export type DiscoveryMeeting = {
++  /** Equal to the file name */
++  id: string;
++  person: string;
++  /**
++   * @format date-time
++   */
++  at: string;
++  minutes?: number;
++  medium?: "in-person" | "video" | "phone";
++  status: "planned" | "held" | "cancelled" | "no-show";
++  script: {
++    ask: string;
++    /** Hypothesis ids the answer bears on (H1, H2, price-anchor) or problem-interview for the template's questions */
++    tests: string[];
++  }[];
++  /** What the interviewer expects to hear, written before the meeting, so the answers can surprise */
++  prediction?: string;
++  recording?: {
++    /** The raw source id (raw/sources/<id>); the recording and notes are cited, never copied */
++    source: string;
++  };
++  /** The validation interview id (validation/interviews/<id>.json) filed from this meeting */
++  interview?: string;
++  introduction?: {
++    asked: boolean;
++    /** The lead they introduced */
++    given?: string;
++  };
++};
++
+ /** A set of evals for a skill, a product or the agent environment (EE-017): prompts with the expected behaviour and assertions. A run of a suite writes evidence (evidence.schema.json). Fits the existing evidence/evals/*.json files. */
+ export type EvalSuite = {
+   skill_name?: string;
+diff --git a/test.mjs b/test.mjs
+index 7a332ca2..ee3616f7 100644
+--- a/test.mjs
++++ b/test.mjs
+@@ -138,6 +138,8 @@ const steps = [
+   ["workspace: settings, cross-venture reads, naive capture and the inbox", "node", ["schema/workspace-test.mjs"]],
+   ["validation study: interviews, feedback, bugs, telemetry, the beta gate and feedback routing", "node", ["schema/validation-study-test.mjs"]],
+   ["validation study records: instance", "node", ["schema/check-validation-study.mjs", "instance"]],
++  ["discovery interviews: LinkedIn export import, names kept private, dossiers, meetings, the packet (cases that must fail)", "node", ["schema/discovery-test.ts"]],
++  ["discovery records: instance", "node", ["schema/discovery.ts", "check", "instance"]],
+   ["router, CLI, MCP server and API", "node", ["interface/test.mjs"]],
+   ["PR review agent (content findings from fixture markdown, screenshot mode, preview noindex)", "node", ["scripts/pr-review/pr-review-test.mjs"]],
+   // ESLint over Naive's own code; needs the root dev dependencies (npm ci), which CI installs.

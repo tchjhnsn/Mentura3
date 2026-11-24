@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.models",
+  "kind": "product",
+  "parent": "anthropic",
+  "name": "Claude models (Mythos, Opus, Sonnet, Haiku)",
+  "job": {
+    "value": "Do the reasoning, writing and coding work a customer sends, across the capability-cost-speed curve.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude; Select Defined Terms"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Developers and enterprises, through the API and the three major clouds",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude; Select Defined Terms"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "Metered tokens priced by model (pay-for-intelligence)",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Enterprise Adoption of Claude; Select Defined Terms"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

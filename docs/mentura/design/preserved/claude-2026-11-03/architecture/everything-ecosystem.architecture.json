@@ -1,0 +1,1544 @@
+{
+ "id": "everything-ecosystem",
+ "standard": "ISO/IEC/IEEE 42010 architecture description",
+ "status": "draft",
+ "confirmed": false,
+ "drafted_by": "agent",
+ "derived_at": {
+  "commit": "359c454"
+ },
+ "layers": [
+  "system",
+  "interface",
+  "purpose",
+  "knowledge",
+  "operations",
+  "governance",
+  "evidence",
+  "platform",
+  "verification"
+ ],
+ "context": {
+  "people": [
+   {
+    "id": "founder",
+    "says": "owns every record and decision; always a human"
+   },
+   {
+    "id": "agent",
+    "says": "contributes drafts and checks; never an owner"
+   }
+  ],
+  "harnesses": [
+   {
+    "id": "claude-code",
+    "via": [
+     "interface/mcp",
+     "interface/cli"
+    ],
+    "shows": "artifacts"
+   },
+   {
+    "id": "cursor",
+    "via": [
+     "interface/cli"
+    ],
+    "shows": "canvases"
+   },
+   {
+    "id": "terminal",
+    "via": [
+     "interface/cli"
+    ],
+    "shows": "text"
+   },
+   {
+    "id": "mentura-console",
+    "via": [
+     "console/app"
+    ],
+    "shows": "pages"
+   }
+  ],
+  "services": [
+   {
+    "id": "github",
+    "used_by": [
+     "knowledge/connectors",
+     "scripts/pr-review"
+    ]
+   },
+   {
+    "id": "vercel",
+    "used_by": [
+     "console/app"
+    ]
+   },
+   {
+    "id": "rho",
+    "used_by": [
+     "platform/integrations"
+    ]
+   },
+   {
+    "id": "npm-registry",
+    "used_by": [
+     "(root)"
+    ]
+   }
+  ],
+  "toolchains": [
+   {
+    "id": "node 22",
+    "used_by": [
+     "everything"
+    ]
+   },
+   {
+    "id": "python 3 + jsonschema",
+    "used_by": [
+     "schema/core"
+    ]
+   },
+   {
+    "id": "lean 4.35",
+    "used_by": [
+     "lean/"
+    ]
+   },
+   {
+    "id": "tlc 1.7.4 via pstack statechart",
+    "used_by": [
+     "verification"
+    ]
+   }
+  ],
+  "packages": [
+   "@base-ui/react",
+   "@better-auth/core",
+   "@eslint/js",
+   "better-auth",
+   "class-variance-authority",
+   "cn",
+   "globals",
+   "lucide-react",
+   "next",
+   "playwright",
+   "react",
+   "server-only",
+   "typescript",
+   "typescript-eslint"
+  ]
+ },
+ "elements": [
+  {
+   "id": "(root)",
+   "kind": "repo tooling",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "*.mjs"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 2,
+    "lines": 240,
+    "tests": 0,
+    "external": [
+     "@eslint/js",
+     "globals",
+     "typescript-eslint"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "console",
+   "kind": "app",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "console/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 2,
+    "lines": 69,
+    "tests": 0,
+    "external": [
+     "next"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "console/app",
+   "kind": "app",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "console/app/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 9,
+    "lines": 224,
+    "tests": 0,
+    "external": [
+     "better-auth",
+     "next"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "console/components",
+   "kind": "ui components",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "console/components/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 23,
+    "lines": 2297,
+    "tests": 0,
+    "external": [
+     "@base-ui/react",
+     "class-variance-authority",
+     "cn",
+     "lucide-react",
+     "next",
+     "react"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "console/hooks",
+   "kind": "ui hooks",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "console/hooks/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 20,
+    "tests": 0,
+    "external": [
+     "react"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "console/lib",
+   "kind": "app library",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "console/lib/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 13,
+    "lines": 1309,
+    "tests": 2,
+    "external": [
+     "@better-auth/core",
+     "better-auth",
+     "cn",
+     "next",
+     "react",
+     "server-only"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "evidence/skills",
+   "kind": "skill code",
+   "layer": "evidence",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "evidence/skills/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 3,
+    "lines": 428,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "frameworks/ambition-tier",
+   "kind": "framework",
+   "layer": "purpose",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "frameworks/ambition-tier/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 13,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "frameworks/telos",
+   "kind": "framework",
+   "layer": "purpose",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "frameworks/telos/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 1,
+    "lines": 56,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "governance/features",
+   "kind": "feature",
+   "layer": "governance",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "governance/features/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 88,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface",
+   "kind": "router and boundaries",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/"
+   ],
+   "declared": {
+    "depends_on": [
+     "frameworks/telos",
+     "interface/api",
+     "interface/mcp",
+     "knowledge/connectors",
+     "schema/core",
+     "schema/lints"
+    ]
+   },
+   "derived": {
+    "files": 19,
+    "lines": 3782,
+    "tests": 4,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "interface/api",
+   "kind": "api",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/api/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface"
+    ]
+   },
+   "derived": {
+    "files": 1,
+    "lines": 72,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "interface/cli",
+   "kind": "command line",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/cli/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "interface/demo",
+     "interface/dev",
+     "interface/mcp",
+     "schema/core",
+     "schema/migrations"
+    ]
+   },
+   "derived": {
+    "files": 5,
+    "lines": 859,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface/create-venture",
+   "kind": "generator",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/create-venture/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 2,
+    "lines": 635,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface/demo",
+   "kind": "demo",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/demo/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "interface/harness",
+     "operations/marketing",
+     "purpose/frameworks",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 3,
+    "lines": 724,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface/dev",
+   "kind": "setup page",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/dev/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 2,
+    "lines": 162,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface/harness",
+   "kind": "harness adapter",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/harness/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "interface/demo",
+     "operations/marketing",
+     "purpose/frameworks",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 3,
+    "lines": 472,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "interface/mcp",
+   "kind": "mcp server",
+   "layer": "interface",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "interface/mcp/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 1,
+    "lines": 164,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "knowledge/connectors",
+   "kind": "connector",
+   "layer": "knowledge",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "knowledge/connectors/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 7,
+    "lines": 671,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "operations/marketing",
+   "kind": "operations module",
+   "layer": "operations",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "operations/marketing/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/checks",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 6,
+    "lines": 800,
+    "tests": 2,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "platform/connectors",
+   "kind": "connector",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "platform/connectors/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "knowledge/connectors"
+    ]
+   },
+   "derived": {
+    "files": 3,
+    "lines": 358,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "platform/integrations",
+   "kind": "integration",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "platform/integrations/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 9,
+    "lines": 640,
+    "tests": 2,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "platform/kits",
+   "kind": "kit",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "platform/kits/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 3,
+    "lines": 219,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "platform/mcp",
+   "kind": "mcp server",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "platform/mcp/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 66,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "platform/webhooks",
+   "kind": "webhook",
+   "layer": "platform",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "platform/webhooks/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 2,
+    "lines": 138,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "purpose/features",
+   "kind": "feature",
+   "layer": "purpose",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "purpose/features/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 49,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "purpose/frameworks",
+   "kind": "framework",
+   "layer": "purpose",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "purpose/frameworks/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 6,
+    "lines": 910,
+    "tests": 2,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "purpose/kits",
+   "kind": "feature",
+   "layer": "purpose",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "purpose/kits/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 1,
+    "lines": 100,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "schema/checks",
+   "kind": "check",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/check-*"
+   ],
+   "declared": {
+    "depends_on": [
+     "frameworks/telos",
+     "interface",
+     "knowledge/connectors",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 35,
+    "lines": 2562,
+    "tests": 1,
+    "external": [
+     "typescript"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "schema/core",
+   "kind": "framework core",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/*.mjs (not check-*, lint-*)"
+   ],
+   "declared": {
+    "depends_on": [
+     "frameworks/ambition-tier",
+     "frameworks/telos",
+     "interface",
+     "interface/api",
+     "interface/mcp",
+     "knowledge/connectors",
+     "operations/marketing",
+     "purpose/frameworks",
+     "schema/checks",
+     "schema/migrations",
+     "scripts"
+    ]
+   },
+   "derived": {
+    "files": 112,
+    "lines": 17053,
+    "tests": 43,
+    "external": [],
+    "models": [],
+    "proofs": [
+     "lean/Naive/Founder.lean"
+    ],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "schema/examples/frames",
+   "kind": "example",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/examples/frames/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 11,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "schema/examples/migrate",
+   "kind": "example",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/examples/migrate/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 13,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "schema/examples/venture-type",
+   "kind": "example",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/examples/venture-type/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 13,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "schema/lints",
+   "kind": "lint",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/lint-*"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "schema/checks",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 18,
+    "lines": 3626,
+    "tests": 9,
+    "external": [],
+    "models": [
+     "verification/lint-customers/CustomersLint.tla",
+     "verification/lint-finance/FinanceLint.tla",
+     "verification/lint-foundation/FoundationLint.tla",
+     "verification/lint-investors/InvestorLint.tla",
+     "verification/lint-legal/LegalLint.tla",
+     "verification/lint-people/PeopleLint.tla",
+     "verification/lint-product/ProductLint.tla",
+     "verification/lint-validation/ValidationLint.tla"
+    ],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "schema/migrations",
+   "kind": "migration",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/migrations/"
+   ],
+   "declared": {
+    "depends_on": [
+     "frameworks/ambition-tier",
+     "frameworks/telos",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 5,
+    "lines": 343,
+    "tests": 0,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "schema/terms",
+   "kind": "engine",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/terms/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 5,
+    "lines": 407,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [
+     "lean/Naive/Terms.lean"
+    ],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "scripts",
+   "kind": "script",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "scripts/"
+   ],
+   "declared": {
+    "depends_on": [
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 2,
+    "lines": 715,
+    "tests": 1,
+    "external": [],
+    "models": [],
+    "proofs": [],
+    "in_knot": true
+   }
+  },
+  {
+   "id": "scripts/pr-review",
+   "kind": "script",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "scripts/pr-review/"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 3,
+    "lines": 397,
+    "tests": 1,
+    "external": [
+     "playwright"
+    ],
+    "models": [],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "verification",
+   "kind": "model",
+   "layer": "verification",
+   "status": [
+    {
+     "value": "built",
+     "valid_from": null,
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "verification/"
+   ],
+   "declared": {
+    "depends_on": [
+     "interface",
+     "operations/marketing",
+     "schema/checks",
+     "schema/core"
+    ]
+   },
+   "derived": {
+    "files": 40,
+    "lines": 5099,
+    "tests": 0,
+    "external": [],
+    "models": [
+     "verification/cursor/lint-money/MoneyLint.tla",
+     "verification/cursor/playbook-amazon-6-pager/AmazonSixPager.tla",
+     "verification/cursor/playbook-hubspot-inbound/HubspotInbound.tla",
+     "verification/cursor/playbook-stripe-docs/StripeDocs.tla",
+     "verification/cursor/playbook-y-combinator-fundraise/YCFundraise.tla",
+     "verification/lint-customers/CustomersLint.tla",
+     "verification/lint-finance/FinanceLint.tla",
+     "verification/lint-foundation/FoundationLint.tla",
+     "verification/lint-investors/InvestorLint.tla",
+     "verification/lint-legal/LegalLint.tla",
+     "verification/lint-people/PeopleLint.tla",
+     "verification/lint-product/ProductLint.tla",
+     "verification/lint-validation/ValidationLint.tla",
+     "verification/mdx-everything/PublicWords.tla",
+     "verification/playbook-apple-launch/AppleLaunch.tla",
+     "verification/playbook-basecamp-shape-up/ShapeUpCycle.tla",
+     "verification/playbook-bessemer-saas-metrics/BessemerSaasMetrics.tla",
+     "verification/playbook-jtbd/JtbdPlaybook.tla",
+     "verification/playbook-lean-validation/LeanValidation.tla",
+     "verification/playbook-netflix-culture/NetflixCulture.tla",
+     "verification/playbook-sales-founder-led/FounderLedSales.tla",
+     "verification/site-blog/BlogPost.tla",
+     "verification/site-nav/SiteNav.tla",
+     "verification/site-nextra/SiteRoutes.tla",
+     "verification/site-showcase/Showcase.tla",
+     "verification/site-templates/Templates.tla"
+    ],
+    "proofs": [],
+    "in_knot": false
+   }
+  },
+  {
+   "id": "knowledge/connectors/resolve.mjs",
+   "kind": "kernel",
+   "part_of": "knowledge/connectors",
+   "layer": "knowledge",
+   "status": [
+    {
+     "value": "built",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "knowledge/connectors/resolve.mjs"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 45,
+    "fan_in": 3,
+    "tests": 1,
+    "proofs": []
+   }
+  },
+  {
+   "id": "schema/redact.mjs",
+   "kind": "kernel",
+   "part_of": "schema/core",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/redact.mjs"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 60,
+    "fan_in": 3,
+    "tests": 1,
+    "proofs": []
+   }
+  },
+  {
+   "id": "schema/terms/engine.ts",
+   "kind": "kernel and engine",
+   "part_of": "schema/terms",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/terms/engine.ts"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 88,
+    "fan_in": 4,
+    "tests": 1,
+    "proofs": [
+     "lean/Naive/Terms.lean"
+    ]
+   }
+  },
+  {
+   "id": "schema/verify.mjs",
+   "kind": "kernel",
+   "part_of": "schema/core",
+   "layer": "system",
+   "status": [
+    {
+     "value": "built",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [
+    "schema/verify.mjs"
+   ],
+   "declared": {
+    "depends_on": []
+   },
+   "derived": {
+    "files": 1,
+    "lines": 28,
+    "fan_in": 4,
+    "tests": 1,
+    "proofs": []
+   }
+  },
+  {
+   "id": "architecture-checks",
+   "kind": "check",
+   "layer": "system",
+   "says": "A1 to A8: the architecture record against the code",
+   "status": [
+    {
+     "value": "designed",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [],
+   "declared": {
+    "depends_on": [
+     "schema/terms",
+     "schema/core"
+    ]
+   },
+   "derived": null
+  },
+  {
+   "id": "display-theorem",
+   "kind": "engine",
+   "layer": "interface",
+   "says": "chooses how a record is shown, given the record, the purpose and the surface",
+   "status": [
+    {
+     "value": "designed",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [],
+   "declared": {
+    "depends_on": [
+     "schema/terms",
+     "schema/core"
+    ]
+   },
+   "derived": null
+  },
+  {
+   "id": "conversation-engine",
+   "kind": "engine",
+   "layer": "operations",
+   "says": "admissible next question (Q1 to Q12) and the chooser",
+   "status": [
+    {
+     "value": "designed",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [],
+   "declared": {
+    "depends_on": [
+     "schema/terms"
+    ]
+   },
+   "derived": null
+  },
+  {
+   "id": "architecture-map-skill",
+   "kind": "visualization skill",
+   "layer": "interface",
+   "says": "renders this record as the architecture map in a harness",
+   "status": [
+    {
+     "value": "designed",
+     "recorded": "2026-10-31"
+    }
+   ],
+   "covers": [],
+   "declared": {
+    "depends_on": [
+     "display-theorem"
+    ]
+   },
+   "derived": null
+  }
+ ],
+ "views": [
+  {
+   "id": "architecture-map",
+   "kind": "page",
+   "url": "https://claude.ai/artifact/PpxtxLtjCkomM8NSN6woVj",
+   "reads": "declared + derived"
+  },
+  {
+   "id": "dependency-map",
+   "kind": "page",
+   "url": "https://claude.ai/artifact/NNcyZWNPS4dDiuA3akVQZ6",
+   "reads": "derived only (built before this record existed)"
+  }
+ ]
+}

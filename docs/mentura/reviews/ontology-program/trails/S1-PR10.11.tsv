@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:56:17Z	gate	G9 option B and G14: store PR #34 as a patch plus metadata, not applied, confidential included	same as S1-PR10.5 to S1-PR10.10	plan, gates G9 and G14
+2026-11-04T08:56:17Z	patch	git diff of base and head, since gh pr diff refuses more than 300 files	build-the-lever; the base is the merge base, so it is the PR diff	HTTP 406 too_large; numstat equals REST for 329 files; apply on 4bcbd01 gives the head tree
+2026-11-04T08:56:17Z	ledger	name N-133 only	its memory note is on main; N-134 to N-136 are already marked by docs/memory/claude/PRESERVED.md	full ledger rows N-133 to N-136
+2026-11-04T08:56:17Z	scan	record the confidential flag and the scan counts in the marker	PR patches have no FLAGS.tsv rows	rg -c on the patch

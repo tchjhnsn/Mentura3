@@ -1,0 +1,14 @@
+{
+ "id": "raid-log",
+ "title": "RAID log (risks, assumptions, issues, dependencies)",
+ "authors": "project management practice",
+ "venue": "TechRepublic and others, accessed 2026-11-01",
+ "url": "https://www.techrepublic.com/article/raid-log/",
+ "retrieved": "2026-11-01",
+ "tier": "practitioner sources",
+ "quotes": [
+  "A RAID log is a project management register for tracking risks, assumptions, issues, and dependencies.",
+  "An issue is a problem happening now."
+ ],
+ "read": "letters vary: Actions or Decisions for A and D"
+}

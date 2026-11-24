@@ -1,0 +1,39 @@
+{
+  "id": "openai.chatgpt",
+  "kind": "product",
+  "parent": "openai",
+  "name": "ChatGPT (with Search, Deep Research, Agents, Health)",
+  "job": {
+    "value": "Answer, write, research and act on a person's request in one assistant.",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01",
+    "note": "Our wording."
+  },
+  "served": {
+    "value": "Consumers, prosumers and workplace seats",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+  },
+  "offering": {
+    "value": "Free tier, subscriptions, workplace plans, advertising",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "OpenAI does not publish revenue by product.",
+    "as_of": "2026-11-01"
+  }
+}

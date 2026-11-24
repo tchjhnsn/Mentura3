@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T08:52:01Z	gate	G9 option B and G14: store PR #130 as a verbatim patch plus metadata, not applied, confidential included	same as S1-PR10.5 to S1-PR10.8	plan, gates G9 and G14
+2026-11-04T08:52:01Z	patch	gh pr diff 130, verbatim	build-the-lever	git apply --check on 752c483 exit 0
+2026-11-04T08:52:01Z	ledger	name N-137 only	its memory note is on main; the patch was its last off-main copy	full ledger row N-137
+2026-11-04T08:52:01Z	scan	explain the Mentura, _private, LinkedIn and foundation matches in the marker	PR patches have no FLAGS.tsv rows	rg -c on the patch

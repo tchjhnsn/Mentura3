@@ -1,0 +1,7 @@
+time	step	choice	why	evidence
+2026-11-04T04:05:23Z	owner	Claude takes over S1-PR2 from Grok Bot	Torian 2026-11-04 04:02Z asked Claude to take over; the plan lets Claude take it once Grok Bot pushed the source text, which it did	grok-memory/term-labels.txt on preserve/sources-2026-11-03
+2026-11-04T04:05:23Z	quotes	one block quote per line of term-labels.txt, unedited, in ledger order	the plan's You see check diffs the quotes against the source	diff of sed -n s/^> //p against the source prints nothing
+2026-11-04T04:05:23Z	front matter	same shape as #174, status preserved, not reconciled	plan S1-PR2 Build line	docs/design/ONTOLOGY_LAYERS_2026-11-02.md on #174
+2026-11-04T04:05:23Z	dates	line 6 recorded 2026-11-02, the rest 2026-11-03	grok-memory/README.md says so	grok-memory/README.md
+2026-11-04T04:05:23Z	diagram	one mermaid diagram of the four labels and the 10% cap	plan S1-PR2 Build line; diagram rule	docs/design/TERM_LABELS_2026-11-02.md
+2026-11-04T04:10:07Z	lane-fix	front matter names the source sha256; diagram says symbol reserved	prove-it-works: lane 4 asks for the sha256, and the quoted text hashes to it	sed -n 's/^> //p' | sha256sum gives 99c3bed5...e7e9, SHA256SUMS.txt line 31

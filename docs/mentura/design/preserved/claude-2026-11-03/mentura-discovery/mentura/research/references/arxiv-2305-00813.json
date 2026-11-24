@@ -1,0 +1,20 @@
+{
+ "id": "arxiv-2305-00813",
+ "title": "Neurosymbolic AI -- Why, What, and How",
+ "authors": [
+  "Amit Sheth",
+  "Kaushik Roy",
+  "Manas Gaur"
+ ],
+ "url": "https://arxiv.org/abs/2305.00813",
+ "published": "2023-05-01",
+ "retrieved": "2026-11-01",
+ "tier": "preprint (academic)",
+ "quotes": [
+  "Neurosymbolic AI combines neural networks and knowledge-guided symbolic approaches"
+ ],
+ "read": "abstract only",
+ "used_for": [
+  "term:neuro-symbolic-system"
+ ]
+}

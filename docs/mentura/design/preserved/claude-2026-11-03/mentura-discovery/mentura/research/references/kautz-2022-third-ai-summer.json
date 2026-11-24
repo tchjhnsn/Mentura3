@@ -1,0 +1,19 @@
+{
+ "id": "kautz-2022-third-ai-summer",
+ "title": "The Third AI Summer: AAAI Robert S. Engelmore Memorial Lecture",
+ "authors": [
+  "Henry Kautz"
+ ],
+ "url": "https://www.cs.virginia.edu/~rmw7my/papers/AI Magazine - 2022 - Kautz - The third AI summer  AAAI Robert S  Engelmore Memorial Lecture.pdf",
+ "venue": "AI Magazine 43(1):105-125",
+ "published": "2022",
+ "retrieved": "2026-11-01",
+ "tier": "peer-reviewed magazine (primary not opened)",
+ "quotes": [],
+ "read": "not opened; taxonomy read through a secondary mirror (neonvagabond.xyz/mirrors/neuro-symbolic-types.html): 'Symbolic[Neuro]' = symbolic solver using a neural model as a subroutine (AlphaGo); 'Neuro;Symbolic' = neural and symbolic parts on different tasks in one pipeline",
+ "used_for": [
+  "term:neuro-symbolic-system",
+  "claim:naive-plus-jev-is-neuro-symbolic-pipeline"
+ ],
+ "open": "read the primary PDF to confirm the six types and notation"
+}

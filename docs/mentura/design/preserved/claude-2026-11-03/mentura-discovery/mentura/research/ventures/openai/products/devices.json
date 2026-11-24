@@ -1,0 +1,30 @@
+{
+  "id": "openai.devices",
+  "kind": "product",
+  "parent": "openai",
+  "name": "Devices (from io)",
+  "job": {
+    "unknown": true,
+    "reason": "No device has shipped; announced intent only.",
+    "as_of": "2026-11-01"
+  },
+  "served": {
+    "unknown": true,
+    "reason": "No device has shipped.",
+    "as_of": "2026-11-01"
+  },
+  "offering": {
+    "value": "None shipped as of the study date",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "OpenAI does not publish revenue by product.",
+    "as_of": "2026-11-01"
+  }
+}
