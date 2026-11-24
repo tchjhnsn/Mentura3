@@ -5,7 +5,7 @@
   "description": "Mentura's platform library: connectors, integrations, kits, webhooks, the research engine, the agents, the outside host and the bridge into Naive. Naive itself is a dependency (tchjhnsn/naive).",
   "type": "module",
   "engines": {
-    "node": ">=22.18"
+    "node": ">=22.19"
   },
   "scripts": {
     "test": "node test.ts",
