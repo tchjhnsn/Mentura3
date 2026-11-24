@@ -11,7 +11,7 @@ export type NavGroup = { label?: string; more?: boolean; items: NavItem[] };
 
 export const STUDIO_NAV: NavGroup[] = [
   { items: [
-    { href: "/studio", label: "Home", icon: HomeIcon, n: "S1", exact: true },
+    { href: "/studio", label: "Studio home", icon: HomeIcon, n: "S1", exact: true },
     { href: "/studio/new", label: "New venture", icon: PlusIcon, n: "S2" },
   ] },
   { label: "Find", items: [
