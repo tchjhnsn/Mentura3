@@ -1,13 +1,18 @@
-// The Venture Studio's pages, as the app's one sidebar lists them under Mentura's (src/components/sidebar.tsx):
-// C3 the studio's pages, C4 one venture's.
+// The Business Studio's pages, as the app's one sidebar lists them in place of Mentura's (src/components/sidebar.tsx):
+// C3 the studio's pages, C4 one business's, C25 one function of a business. Each level replaces the whole sidebar.
 import {
-  ActivityIcon, BlocksIcon, BotIcon, FileTextIcon, GaugeIcon, HomeIcon, LayoutGridIcon, LibraryIcon, MapIcon, PlugIcon, PlusIcon,
-  PresentationIcon, PuzzleIcon, ScaleIcon, SendIcon, SettingsIcon, TargetIcon, WorkflowIcon,
+  ActivityIcon, BlocksIcon, BotIcon, BoxIcon, BuildingIcon, CalendarDaysIcon, FileTextIcon, FolderIcon, GaugeIcon, GlobeIcon, HandshakeIcon,
+  HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MapIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
+  PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
 } from "lucide-react";
-import { ventureHref } from "./data";
+import { fnOf, ventureHref, ventureOf, type FunctionId } from "./data";
+import { fnsAt } from "./connect-data";
+import { functionGroups, toolPath, universalTools, type Tool, type ToolKind } from "./tools";
 
-export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean };
-export type NavGroup = { label?: string; more?: boolean; items: NavItem[] };
+/** `drills`: the row replaces the whole sidebar (a function), shown with a chevron. `quiet`: muted, like Add a function. */
+export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean; drills?: boolean; quiet?: boolean };
+/** `back`: the row at the top of a replaced sidebar that returns to the level above it. */
+export type NavGroup = { label?: string; more?: boolean; back?: { href: string; label: string }; items: NavItem[] };
 
 export const STUDIO_NAV: NavGroup[] = [
   { items: [
@@ -24,33 +29,55 @@ export const STUDIO_NAV: NavGroup[] = [
   ] },
 ];
 
+/** C4 one business: its universal tools, one row per function it has turned on (each replaces the sidebar with that
+ * function's tools), then the pages used less often. Drawn from Naive's tool catalog (./tools.ts). */
 export const ventureNav = (slug: string): NavGroup[] => {
   const h = (r: string) => ventureHref(slug, r);
+  const tool = (t: Tool, exact = false): NavItem => ({ href: h(toolPath(t)), label: t.title, icon: TOOL_ICONS[t.id] ?? KIND_ICONS[t.kind], n: `T-${t.id}`, exact });
+  const universal = universalTools();
+  const daily = universal.filter((t) => !FOOT.includes(t.id));
+  const foot = universal.filter((t) => FOOT.includes(t.id));
   return [
+    { items: daily.map((t) => tool(t, t.id === "home")) },
+    { label: "Functions", items: [
+      ...fnsAt(ventureOf(slug).commitment).map((id): NavItem => ({ href: h(`functions/${id}`), label: fnOf(id).label, icon: FN_ICONS[id], n: "V12", drills: true })),
+      { href: h("functions"), label: "Add a function", icon: PlusIcon, n: "V11", exact: true, quiet: true },
+    ] },
     { items: [
-      { href: h(""), label: "Overview", icon: LayoutGridIcon, n: "V1", exact: true },
-      { href: h("agents"), label: "Agents", icon: BotIcon, n: "V6" },
-      { href: h("decisions"), label: "Decisions", icon: ScaleIcon, n: "V15" },
-    ] },
-    { label: "Make", items: [
-      { href: h("files"), label: "Records and documents", icon: FileTextIcon, n: "V2" },
-      { href: h("strategy"), label: "Strategy", icon: TargetIcon, n: "V4" },
-      { href: h("decks/investor"), label: "Decks", icon: PresentationIcon, n: "V5" },
-    ] },
-    { label: "Run", items: [
-      { href: h("functions"), label: "Functions", icon: BlocksIcon, n: "V11" },
-      { href: h("skills"), label: "Skills and plugins", icon: PuzzleIcon, n: "V17" },
+      ...foot.filter((t) => t.id !== "settings").map((t) => tool(t)),
       { href: h("automations"), label: "Automations", icon: WorkflowIcon, n: "V8" },
-      { href: h("outreach"), label: "Outreach", icon: SendIcon, n: "V13" },
-    ] },
-    { label: "Watch", items: [
-      { href: h("activity"), label: "Activity", icon: ActivityIcon, n: "V9" },
-    ] },
-    { label: "Connect", items: [
-      { href: h("connectors"), label: "Connectors", icon: PlugIcon, n: "V14" },
-      { href: h("settings"), label: "Settings", icon: SettingsIcon, n: "V16" },
+      { href: h("skills"), label: "Skills and plugins", icon: PuzzleIcon, n: "V17" },
+      ...foot.filter((t) => t.id === "settings").map((t) => tool(t)),
     ] },
   ];
+};
+
+/** C25 one function of a business: a back row to the business, the function's overview, then its tools under the
+ * process group each serves (APQC level 2), in phase order. Replaces the business's sidebar entirely, as Vercel's
+ * sections replace its project sidebar. */
+export const functionNav = (slug: string, fn: FunctionId): NavGroup[] => {
+  const h = (r: string) => ventureHref(slug, r);
+  return [
+    { back: { href: h(""), label: fnOf(fn).label }, items: [{ href: h(`functions/${fn}`), label: "Overview", icon: LayoutGridIcon, n: "V12", exact: true }] },
+    ...functionGroups(fn).map(({ group, tools }): NavGroup => ({
+      label: group.name,
+      items: tools.map((t) => ({ href: h(toolPath(t)), label: t.title, icon: TOOL_ICONS[t.id] ?? KIND_ICONS[t.kind], n: `T-${t.id}` })),
+    })),
+  ];
+};
+
+/** Records, Connections and Settings sit at the foot of a business's sidebar: used less often than the rest. */
+const FOOT = ["records", "connections", "settings"];
+
+const TOOL_ICONS: Record<string, typeof HomeIcon> = {
+  home: HomeIcon, decisions: ScaleIcon, agents: BotIcon, files: FolderIcon, records: FileTextIcon, tasks: ListTodoIcon, people: UsersRoundIcon,
+  calendar: CalendarDaysIcon, activity: ActivityIcon, connections: PlugIcon, settings: SettingsIcon,
+};
+const KIND_ICONS: Record<ToolKind, typeof HomeIcon> = { view: GaugeIcon, editor: PencilLineIcon, workflow: WorkflowIcon, storage: FolderIcon, connection: PlugIcon };
+const FN_ICONS: Record<FunctionId, typeof HomeIcon> = {
+  strategy: TargetIcon, products: BoxIcon, "marketing-and-sales": MegaphoneIcon, "supply-chain": TruckIcon, "service-delivery": HandshakeIcon,
+  "customer-service": LifeBuoyIcon, "human-capital": UsersRoundIcon, it: ServerIcon, finance: LandmarkIcon, assets: BuildingIcon,
+  "risk-and-compliance": ShieldIcon, "external-relationships": GlobeIcon, capabilities: BlocksIcon,
 };
 
 export const slugOf = (path: string) => path.match(/^\/studio\/v\/([^/]+)/)?.[1] ?? null;
