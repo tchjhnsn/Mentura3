@@ -16,6 +16,7 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 | `packages/cli/` | the `reflect` command over an instance in a folder (`init`, `write`, `add`, `close`, `list`, `check`, `present` for the presentation gate, `quote`, `tag` and `claim` for quotes and their tags, `friendship` and `friendships` for friendships and their evaluations, `publish`, `unpublish`, `approve` and `decline` for the `published/` folder a site reads, and `actions`, `act` and `mcp` over the core's action registry); see `packages/cli/README.md` |
 | `action/` | the GitHub Action an instance repository runs: refuses a public repository, checks the vault and records hand-written changes |
 | `packages/core/` | the headless core: the person's stores, journal and packs, and `published/`, the files a site reads (Reflect writes files, never a site's code), in plain TypeScript that runs in Node with no database; see `packages/core/README.md` |
+| `packages/platform/` | Mentura's platform library, moved here with its history from tchjhnsn/mentura when Reflect became the monorepo for Reflect and Mentura: connectors (GitHub, Postgres), integrations, kits, webhooks, the research engine, the agents over Naive, the outside host and `bridge/`, the one door from a web server into Naive. Depends on `naive-framework` pinned to one commit of tchjhnsn/naive; `npm install` and `npm test` there, CI in `.github/workflows/platform.yml` (needs the `NAIVE_READ_TOKEN` secret); see `packages/platform/README.md` |
 | `packages/virtu/` | the Virtu design system's editor and check, vendored from tchjhnsn/design-system-theory, and the personal site's design system (`site/`); see `packages/virtu/README.md` |
 | `lean/` | Lean 4 proofs with no Mathlib (`cd lean && lake build`): every ontology noun has one category, serves links form no cycle, every choice reaches a telos, the communities nest, every source of a value but stated starts proposed; CI builds them (`.github/workflows/lean.yml`); see `lean/README.md` |
 | `web/` | the Reflect web app (Next.js), one interface over the core; see `web/README.md` |
@@ -27,6 +28,7 @@ Reflect, an open-source reference project. Vault: `projects/reflect/`.
 
 - Python project: see `pyproject.toml` / `requirements.txt` for dependencies.
 - `cd web && pnpm test` runs the core's, the CLI's and the web app's tests (the Neon ones only with `DATABASE_URL`); `pnpm typecheck` type-checks them.
+- `cd packages/platform && npm install && npm test` runs the platform library's tests; `npx tsc -p tsconfig.json` type-checks it. Its install needs read access to tchjhnsn/naive (`NAIVE_READ_TOKEN`, see `packages/platform/README.md`).
 - The Number Theory of the Soul (the element table, its Lean model and the labeling reader) left Reflect on 2026-11-11 for its own repository. Nothing here imports it. The boundary (decided 2026-11-20): NTS models the inner mind; Reflect records what is observed, what the person says and does. A stated belief, telos or value is kept here as a statement with its source; the inner state is NTS's (`docs/design/REFLECT_FRAMEWORK_2026-11-19.md`, "Reflect and NTS").
 
 ## Rules

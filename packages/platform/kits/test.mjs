@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { entries } from "naive-framework/src/core/provenance.mjs";
 import { snapshot } from "naive-framework/src/engine/upgrades.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 const repo = new URL("../..", import.meta.url).pathname;
 let failed = 0;

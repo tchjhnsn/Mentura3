@@ -17,7 +17,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import pg from "pg";
-import { openAssertion } from "../../console/lib/assertion.ts";
+import { openAssertion } from "../bridge/assertion.ts";
 import { VersionConflict } from "naive-framework/src/store/connectors/contract.mjs";
 import { connect, poolFrom, type Client } from "../connectors/postgres.ts";
 import { publicMessage } from "./public-error.ts";

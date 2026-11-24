@@ -16,7 +16,7 @@ import { fakeModel } from "@langchain/core/testing";
 import { createDeepAgent } from "deepagents";
 import { sessions, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import { NaiveBackend } from "./naive-backend.ts";
 import { NaiveTracer } from "./naive-tracer.ts";
 

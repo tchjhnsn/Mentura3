@@ -10,7 +10,7 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { call } from "naive-framework/src/router/router.mjs";
 import { stale } from "naive-framework/src/engine/stale.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import { sign, webhooks } from "./server.mjs";
 
 let failed = 0;

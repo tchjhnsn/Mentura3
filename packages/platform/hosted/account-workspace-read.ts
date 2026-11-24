@@ -1,5 +1,5 @@
 // Second process: list this account's ventures from naive_records. It does not read console/.data.
-import { signAssertion, type Identity } from "../../console/lib/assertion.ts";
+import { signAssertion, type Identity } from "../bridge/assertion.ts";
 import { runHostedBridge, closeWorkspacePools } from "./account-workspace.ts";
 
 const [bridge, userId, key] = process.argv.slice(2);

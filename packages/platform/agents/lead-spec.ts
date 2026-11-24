@@ -24,7 +24,7 @@ import { roleOf, routeGlob } from "naive-framework/src/engine/access.mjs";
 import { routeTask } from "naive-framework/src/engine/route-task.mjs";
 import type { Context, LeadPlanBinding, Measure, Routed, Task } from "naive-framework/src/engine/route-task.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import type { FunctionId, Phase, TeamPlanRole } from "./function-spec.ts";
 import { functionAgent, functionIds, reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
 

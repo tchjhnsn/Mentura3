@@ -9,6 +9,7 @@ import { accountId, openToolHost, type HostOptions, type ToolHost } from "./host
 import { naiveRequirementCheck } from "./naive-requirement.ts";
 import { outsideLog, outsidePool, proveOutsideSeparate, type OutsidePool } from "./postgres-log.ts";
 import type { VenturePolicy } from "./policy.ts";
+import { naivePath } from "../naive.ts";
 
 const pools = new Map<string, OutsidePool>();
 
@@ -21,10 +22,8 @@ export function hostedOutsideRequired(env: NodeJS.ProcessEnv = process.env): boo
 }
 
 export function catalogFunctionIds(): readonly string[] {
-  const parsed = JSON.parse(readFileSync(new URL("../docs/decisions/decisions.json", import.meta.url), "utf8")) as { decisions: { id: string; decision: string }[] };
-  const text = parsed.decisions.find((row) => row.id === "EE-090")?.decision ?? "";
-  const listed = text.match(/named for the 13 functions of the catalog \(([^)]+)\)/);
-  const ids = (listed?.[1] ?? "").split(", ").map((id) => id.trim()).filter(Boolean);
+  const parsed = JSON.parse(readFileSync(naivePath("packages/naive/src/functions/departments.json"), "utf8")) as { departments: { id: string }[] };
+  const ids = parsed.departments.map((row) => row.id);
   if (ids.length !== 13) throw new Error("outside: function id is not one of the thirteen");
   return ids;
 }

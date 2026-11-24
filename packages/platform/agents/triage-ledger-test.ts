@@ -14,7 +14,7 @@ import type { Context, Entry } from "naive-framework/src/engine/triage.mjs";
 import { correctFiled, routerLedger, trialId, type Ledger, type Resolution, type Trial, type TriageRecord } from "./triage-ledger.ts";
 import { Command, triageGraph, type Deps } from "./triage-graph.ts";
 import type { JevReply, JevRequest } from "./jev.ts";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 let failed = 0;
 const ok = (name: string, cond: boolean, detail?: unknown) => {

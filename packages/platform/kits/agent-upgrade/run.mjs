@@ -17,7 +17,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { agentFromEnv, record } from "naive-framework/src/core/provenance.mjs";
 import { annotate, check, CONFIRM, snapshot, stage, STAGED } from "naive-framework/src/engine/upgrades.mjs";
-import { naiveCode } from "../../../scripts/naive.ts";
+import { naiveCode } from "../../naive.ts";
 
 // The upgrade guides staged.guides names are Naive's (docs/upgrades/), read from the installed package.
 const repo = naiveCode;

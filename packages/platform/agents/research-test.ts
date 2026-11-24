@@ -21,7 +21,7 @@ import { entries, record } from "naive-framework/src/core/provenance.mjs";
 import { signalId } from "naive-framework/src/core/signal-id.mjs";
 import { planRecipe } from "naive-framework/src/engine/recipes/eval-set.mjs";
 import { call } from "naive-framework/src/router/router.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import type { ModelSource } from "./function-agent.ts";
 import { runIdOf } from "./function-agent.ts";
 import { functionIds, functionResearcher, programPatterns, programSection, researcherTeamPlanEntry } from "./function-spec.ts";

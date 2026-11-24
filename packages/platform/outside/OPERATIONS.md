@@ -1,5 +1,7 @@
 # Outside host operations
 
+**Moved, 2026-11-24.** This package came to `packages/platform/outside/` in tchjhnsn/reflect from tchjhnsn/mentura. Mentura's console is retired, so where this page names `console/`, read it as the history of that console: the bridge it used is now `../bridge/`, and the Venture Studio in Reflect's `web/` takes the console's place (not built yet). The thirteen function ids now come from Naive's `departments.json`, not the EE-090 decision text.
+
 This package has no network client and no deployment of its own. It runs inside the process that constructs `openToolHost`.
 
 ## Secrets
@@ -32,7 +34,7 @@ grant execute on function outside_log_authorize(text), outside_log_account() to 
 
 Do not grant that role membership in any other role, `set` on `session_replication_role`, or `execute` on any other security-definer function. Do not make it the owner of `outside_log`, `outside_log_append_only`, or the account functions. The same role owns the table and those two functions, and that role can execute `outside_crypto.hmac`. The runtime cannot.
 
-`node outside/postgres-log.test.ts` applies the file only to a loopback database. It creates `mentura_outside_test` on the server `MENTURA_EVAL_DATABASE_URL` names when `MENTURA_OUTSIDE_DATABASE_URL` is unset. It does not apply the file to Neon. `node outside/hosted-console.test.ts` calls `openAccountOutsideHost`, the function `console/lib/outside-host.ts` uses with the session user id. A https origin with no outside URL is refused and does not create the events file. A second process reads the receipt after the pool is closed.
+`node outside/postgres-log.test.ts` applies the file only to a loopback database. It creates `mentura_outside_test` on the server `MENTURA_EVAL_DATABASE_URL` names when `MENTURA_OUTSIDE_DATABASE_URL` is unset. It does not apply the file to Neon.
 
 The Naive workspace that `console/lib/bridge.mjs` reads from the console disk is a different store. This package does not move that workspace.
 

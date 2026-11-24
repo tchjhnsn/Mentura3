@@ -6,6 +6,7 @@ import { consoleOutsideLog } from "./console-account.ts";
 import { stampedAccountOwner } from "./owner.ts";
 import { accountId, loadRequirement, openToolHost, signBody, ventureId, type CapabilityRequirement, type HostOptions, type ToolHost, type VentureScope } from "./host.ts";
 import type { VenturePolicy } from "./policy.ts";
+import { naivePath } from "../naive.ts";
 
 let failed = 0;
 const expect = (name: string, cond: boolean, detail?: unknown) => {
@@ -13,11 +14,8 @@ const expect = (name: string, cond: boolean, detail?: unknown) => {
   if (!cond) { failed++; if (detail !== undefined) console.log("      ", JSON.stringify(detail)); }
 };
 
-const decisions = JSON.parse(readFileSync(new URL("../docs/decisions/decisions.json", import.meta.url), "utf8")) as { decisions: { id: string; decision: string }[] };
-const ee090 = decisions.decisions.find((row) => row.id === "EE-090")?.decision ?? "";
-const listed = ee090.match(/named for the 13 functions of the catalog \(([^)]+)\)/);
-const functionIds = (listed?.[1] ?? "").split(", ").map((id) => id.trim());
-expect("EE-090 lists 13 function ids", functionIds.length === 13 && functionIds.includes("finance") && functionIds.includes("strategy"));
+const functionIds = (JSON.parse(readFileSync(naivePath("packages/naive/src/functions/departments.json"), "utf8")) as { departments: { id: string }[] }).departments.map((row) => row.id);
+expect("Naive lists 13 function ids", functionIds.length === 13 && functionIds.includes("finance") && functionIds.includes("strategy"));
 const sessionLog = consoleOutsideLog("/data/workspace", "better-auth-user-1", "kettle");
 const personLog = consoleOutsideLog("/data/workspace", "identity-person-1", "kettle");
 expect("the Better Auth user id and a person id are different directories", sessionLog !== personLog && sessionLog === "/data/workspace/.accounts/better-auth-user-1/outside/kettle/events.jsonl");
@@ -161,7 +159,7 @@ chmodSync(signingKeyFile, 0o600);
 expect("an agent is refused before any key is read", agentRead.status === "refused" && agentRead.reason === "agents are not admitted");
 expect("an agent refusal does not append", readFileSync(logAfterGithub, "utf8") === beforeAgent);
 expect("the host source does not offer proofForRun", !readFileSync(new URL("./host.ts", import.meta.url), "utf8").includes("proofForRun"));
-expect("the function agent does not import the outside host", !readFileSync(new URL("../platform/agents/function-agent.ts", import.meta.url), "utf8").includes("outside/"));
+expect("the function agent does not import the outside host", !readFileSync(new URL("../agents/function-agent.ts", import.meta.url), "utf8").includes("outside/"));
 
 const raw = new TextEncoder().encode("{\"echoed\":\"next\"}");
 const beforeBad = readFileSync(logAfterGithub, "utf8");

@@ -1,0 +1,35 @@
+# Type-checks and tests the platform library in packages/platform (see packages/platform/README.md).
+# naive-framework comes from tchjhnsn/naive, which is private: the repository secret NAIVE_READ_TOKEN is a read-only token for it.
+name: platform
+
+on:
+  push:
+    branches: [main]
+    paths: ["packages/platform/**", ".github/workflows/platform.yml"]
+  pull_request:
+    paths: ["packages/platform/**", ".github/workflows/platform.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  platform:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: packages/platform
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.18"
+      - name: Git can fetch naive-framework
+        run: sh naive-git-auth.sh
+        env:
+          NAIVE_READ_TOKEN: ${{ secrets.NAIVE_READ_TOKEN }}
+      - run: npm ci --no-audit --no-fund
+      - name: Type check
+        run: npx tsc -p tsconfig.json
+      - name: Tests
+        run: node test.ts

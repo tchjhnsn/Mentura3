@@ -1,6 +1,6 @@
 import { refusedPerson, signers } from "naive-framework/src/engine/decisions.mjs";
-import { stampedAccountOwner } from "../../outside/owner.ts";
-import type { VenturePolicy } from "../../outside/policy.ts";
+import { stampedAccountOwner } from "../outside/owner.ts";
+import type { VenturePolicy } from "../outside/policy.ts";
 
 /**
  * The host's person port, built from the checks `console/lib/bridge.mjs` already calls.

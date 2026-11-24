@@ -1,6 +1,8 @@
 # Outside host
 
-A venture's record store stays on Naive's connector registry. GitHub issues, projects, discussions, docs, reviews, actions, and repository files stay on `platform/connectors/github.mjs`. This package is the host for a reading that store does not hold.
+**Moved, 2026-11-24.** This package came to `packages/platform/outside/` in tchjhnsn/reflect from tchjhnsn/mentura. Mentura's console is retired, so where this page names `console/`, read it as the history of that console: the bridge it used is now `../bridge/`, and the Venture Studio in Reflect's `web/` takes the console's place (not built yet). The thirteen function ids now come from Naive's `departments.json`, not the EE-090 decision text.
+
+A venture's record store stays on Naive's connector registry. GitHub issues, projects, discussions, docs, reviews, actions, and repository files stay on `connectors/github.mjs`. This package is the host for a reading that store does not hold.
 
 Nothing here registers a connector. Nothing here calls the term engine. A catalog row does not grant authority.
 
@@ -16,7 +18,7 @@ Secret files must be mode `0600`, owned by the process user, not symlinks, and o
 
 ## What is not built
 
-Naive pin `a29321bde87cabb2ea18bc8162ef3163086e67a9` is fetched in CI with `NAIVE_READ_TOKEN` through `scripts/naive-git-auth.sh`. This environment does not have that token, and `gh` cannot see `tchjhnsn/naive`. `platform/agents/outside-policy.ts` calls `refusedPerson` and `signers`. It loads only when the pin is installed. `outside/console-account.ts` opens the host on `<workspace>/.accounts/<Better Auth session user id>/`. That id is what pull request 275, at `88c04c0c5a95c22ea32e13c71827b20603225ef5`, passes to `ensureAccount` as `providerSubject`. The identity store's `personId` is a different value and does not select the directory. The session cookie is not read here and is not sent to the marketing site. Signup is on main. `console/lib/outside-host.ts` calls `requireIdentity().userId`, and `app/actions.ts` declares that submit as a server action. This package does not import the signup mail files.
+Naive pin `a29321bde87cabb2ea18bc8162ef3163086e67a9` is fetched in CI with `NAIVE_READ_TOKEN` through `scripts/naive-git-auth.sh`. This environment does not have that token, and `gh` cannot see `tchjhnsn/naive`. `agents/outside-policy.ts` calls `refusedPerson` and `signers`. It loads only when the pin is installed. `outside/console-account.ts` opens the host on `<workspace>/.accounts/<Better Auth session user id>/`. That id is what pull request 275, at `88c04c0c5a95c22ea32e13c71827b20603225ef5`, passes to `ensureAccount` as `providerSubject`. The identity store's `personId` is a different value and does not select the directory. The session cookie is not read here and is not sent to the marketing site. Signup is on main. `console/lib/outside-host.ts` calls `requireIdentity().userId`, and `app/actions.ts` declares that submit as a server action. This package does not import the signup mail files.
 
 No vendor is selected. The research CLI for that choice is not available. A real provider is a later catalog row with a hypothesized claim, after a person names a gap GitHub does not cover.
 
@@ -24,7 +26,7 @@ No vendor is selected. The research CLI for that choice is not available. A real
 
 ```sh
 node outside/host.test.ts
-node platform/agents/outside-policy.test.ts
+node agents/outside-policy.test.ts
 ```
 
 The first test does not need Naive. The second exits 2 when the pin is not installed. `node test.mjs` runs both.

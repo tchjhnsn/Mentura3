@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { deflateSync } from "node:zlib";
 import { factsOf } from "naive-framework/src/engine/assets.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 let failed = 0;
 /** @param {string} name @param {unknown} ok @param {unknown} [detail] */

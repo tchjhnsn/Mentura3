@@ -33,7 +33,7 @@ import { PACKAGE_FUNCTION } from "naive-framework/src/core/venture-paths.mjs";
 import { readDataModel, venturePaths } from "naive-framework/src/records/index.mjs";
 import { PLANS, routeGlob } from "naive-framework/src/engine/access.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 /** Only functionAgent() makes a spec, so a spec always agrees with Naive's data. Erased at runtime. */
 declare const derived: unique symbol;

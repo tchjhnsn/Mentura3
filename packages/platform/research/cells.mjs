@@ -7,7 +7,7 @@
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { naiveCode, naivePhases } from "../../scripts/naive.ts";
+import { naiveCode, naivePhases } from "../naive.ts";
 
 // Functions, phases and frames are Naive's records, read from the installed package.
 const repo = naiveCode;

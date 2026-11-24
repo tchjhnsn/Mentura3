@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { contract, FIXTURE, harness, OUTSIDE } from "naive-framework/src/store/connectors/suite.mjs";
 import { connect, driverFrom, ensureSchema, poolFrom, TABLE, verify } from "./postgres.ts";
 import { filesOf, importFolder } from "./store-import.ts";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import { exportFolder } from "./store-export.ts";
 import { withWorkingCopy, type Store } from "../hosted/working-copy.ts";
 import { runCommand } from "../hosted/run.ts";

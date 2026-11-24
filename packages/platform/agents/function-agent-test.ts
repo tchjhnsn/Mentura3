@@ -23,7 +23,7 @@ import { span, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
 import { routeGlob } from "naive-framework/src/engine/access.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import type { ModelSource, RunResult } from "./function-agent.ts";
 import { runFunctionAgent, runIdOf } from "./function-agent.ts";
 import { functionAgent, functionIds, teamPlanEntry } from "./function-spec.ts";

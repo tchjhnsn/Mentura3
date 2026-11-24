@@ -77,9 +77,9 @@ ok("offline, the spans stay pending and nothing fails", r3[0].offline === true &
 ok("the sync state lives in the venture's .naive folder", Object.keys(JSON.parse(readFileSync(join(dir, ".naive/langsmith-sync.json"), "utf8")) as object).includes("run-1"));
 
 // The command line: no key exits 3 and names what stays pending.
-const cli = spawnSync("node", ["platform/integrations/langsmith-otel.ts", dir], { encoding: "utf8", env: { ...process.env, LANGSMITH_API_KEY: "" } });
+const cli = spawnSync("node", ["integrations/langsmith-otel.ts", dir], { encoding: "utf8", env: { ...process.env, LANGSMITH_API_KEY: "" } });
 ok("with no key the command exits 3 and the spans stay pending", cli.status === 3 && /1 spans stay pending/.test(cli.stderr), cli.stderr);
-const dry = spawnSync("node", ["platform/integrations/langsmith-otel.ts", dir, "--dry-run"], { encoding: "utf8" });
+const dry = spawnSync("node", ["integrations/langsmith-otel.ts", dir, "--dry-run"], { encoding: "utf8" });
 ok("--dry-run lists what is pending", dry.status === 0 && /run-1 {2}1 pending/.test(dry.stdout), dry.stdout + dry.stderr);
 
 if (failed) { console.error(`${failed} failed`); process.exit(1); }

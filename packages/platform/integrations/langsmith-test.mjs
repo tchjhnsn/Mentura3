@@ -10,7 +10,7 @@ import { createServer } from "node:http";
 import { cpSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 const tmp = mkdtempSync(join(tmpdir(), "langsmith-test-"));
 const ws = join(tmp, "workspace");

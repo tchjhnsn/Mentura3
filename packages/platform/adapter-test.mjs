@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { naivePath } from "../scripts/naive.ts";
+import { naivePath } from "./naive.ts";
 
 const adapter = new URL("./adapter.json", import.meta.url).pathname;
 const ws = mkdtempSync(join(tmpdir(), "adapter-test-"));

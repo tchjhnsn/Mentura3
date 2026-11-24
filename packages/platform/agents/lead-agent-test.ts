@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import { AIMessage } from "@langchain/core/messages";
 import { fakeModel } from "@langchain/core/testing";
 import { routeGlob } from "naive-framework/src/engine/access.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 import type { ModelSource } from "./function-agent.ts";
 import { runIdOf } from "./function-agent.ts";
 import type { LeadRunResult } from "./lead-agent.ts";

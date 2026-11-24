@@ -7,7 +7,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import pg from "pg";
-import { signAssertion, type Identity } from "../console/lib/assertion.ts";
+import { signAssertion, type Identity } from "../bridge/assertion.ts";
 import { outsideLog, outsidePool, runtimeCanDamageLog } from "./postgres-log.ts";
 import { applyOutsideSchema } from "./postgres-log.ts";
 

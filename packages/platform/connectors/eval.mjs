@@ -26,7 +26,7 @@ import { build, FILE, load, search } from "naive-framework/src/store/connectors/
 import { fakeGitHub } from "./fake-github.mjs";
 import { connect as ghConnect } from "./github.mjs";
 import { registerPlatformConnectors } from "./register.mjs";
-import { naivePath } from "../../scripts/naive.ts";
+import { naivePath } from "../naive.ts";
 
 const h = harness("platform-connectors");
 const { expect, throws, skip, write, scratch, finish } = h;
