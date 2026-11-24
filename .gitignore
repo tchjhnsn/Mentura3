@@ -4,3 +4,6 @@ node_modules/
 
 # Lean build output
 lean/.lake/
+
+# Naive ventures the Studio writes on a machine with a disk (web/src/server/naive.ts)
+packages/platform/.data/

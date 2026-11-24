@@ -1,0 +1,86 @@
+import "server-only";
+// The Venture Studio's door into Naive. Each call runs packages/platform/bridge/bridge.mjs in a child process with one
+// operation, signed for the signed-in person, so Naive is never bundled into the app and every write goes through
+// Naive's router, gate and provenance log (packages/platform/README.md, "The bridge").
+//
+// Where ventures live:
+// - On a machine with a disk (next dev, next start): one workspace per account under NAIVE_CONSOLE_WORKSPACE, by
+//   default packages/platform/.data/workspace. Naive must be installed there: cd packages/platform && npm install.
+// - On the hosted site: the hosted venture store, when MENTURA_PUBLIC_ORIGIN is https and NAIVE_BRIDGE_KEY is set
+//   (packages/platform/hosted). Until then the Studio says it is not connected and writes nothing.
+
+import { execFile } from "node:child_process";
+import { randomBytes } from "node:crypto";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
+import { headers } from "next/headers";
+import { signAssertion, type Identity } from "../../../packages/platform/bridge/assertion.ts";
+import { hostedWorkspaceRequired } from "../../../packages/platform/hosted/required.ts";
+import { auth } from "./auth";
+import { OWNER_ID } from "./session";
+import { openMode } from "./open-mode";
+
+const run = promisify(execFile);
+const bridge = fileURLToPath(new URL("../../../packages/platform/bridge/bridge.mjs", import.meta.url));
+
+export type VentureSummary = { id: string; name: string; phase: string; path: string };
+export type DocketDecision = { id: string; question: string; function: string; value: number; why: string[] };
+export type Docket = {
+  venture: string; phase: string; total: number;
+  next: { function: string; decision: string; question: string; value: number; dominant: boolean; why: string[] } | null;
+  functions: { id: string; function: string; attention: number; decisions: DocketDecision[] }[];
+};
+export type VentureDetail = { id: string; name: string; phase: string; founder: string | null };
+
+/** Why the Studio cannot reach Naive here, or null when it can. */
+export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string | null {
+  if (hostedWorkspaceRequired(env)) return env.NAIVE_BRIDGE_KEY ? null : "The Studio is not connected to a venture store on this site yet.";
+  // A serverless deployment has no disk that lasts, so a venture written there would vanish.
+  if (env.VERCEL) return "The Studio is not connected to a venture store on this site yet.";
+  return null;
+}
+
+const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim"]);
+const READ_MS = 15_000;
+const WRITE_MS = 120_000;
+// A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store
+// checks the assertion again in Postgres, so it needs the same key everywhere: NAIVE_BRIDGE_KEY.
+const processKey = randomBytes(32).toString("hex");
+// Writes run one at a time: each appends to a venture's hash-chained provenance log.
+let writes: Promise<unknown> = Promise.resolve();
+
+async function identity(): Promise<Identity> {
+  if (openMode()) return { userId: OWNER_ID, name: "Owner", email: "owner@reflect.local", organizationId: OWNER_ID, organizationRole: "owner" };
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) throw new Error("Sign in to use the Studio.");
+  const { id, name, email } = session.user;
+  return { userId: id, name: name || "Founder", email, organizationId: id, organizationRole: "owner" };
+}
+
+async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
+  const why = studioUnavailable();
+  if (why) throw new Error(why);
+  const timeout = WRITES.has(op) ? WRITE_MS : READ_MS;
+  const who = await identity();
+  const key = process.env.NAIVE_BRIDGE_KEY ?? processKey;
+  const assertion = signAssertion(who, { op, ...args }, key);
+  if (hostedWorkspaceRequired()) {
+    const { runHostedConsole } = await import("../../../packages/platform/bridge/hosted-call.ts");
+    return runHostedConsole<T>({ userId: who.userId, assertion, bridgePath: bridge, key, timeoutMs: timeout });
+  }
+  const { BETTER_AUTH_SECRET: _secret, ...env } = process.env;
+  // execFile's own error quotes the command line, which holds the founder's words and server paths.
+  const { stdout } = await run(process.execPath, [bridge, assertion], { maxBuffer: 32 * 1024 * 1024, timeout, env: { ...env, NAIVE_BRIDGE_KEY: key } })
+    .catch(() => { throw new Error(`Naive did not finish in ${timeout / 1000} seconds. Try again.`); });
+  const r = JSON.parse(stdout) as { ok: boolean; result?: T; error?: string };
+  if (!r.ok) throw new Error(r.error ?? "Naive refused this.");
+  return r.result as T;
+}
+
+/** One operation through Naive, as the signed-in person. */
+export function naive<T>(op: string, args: Record<string, unknown> = {}): Promise<T> {
+  if (!WRITES.has(op)) return call<T>(op, args);
+  const next = writes.then(() => call<T>(op, args));
+  writes = next.catch(() => undefined);
+  return next;
+}
