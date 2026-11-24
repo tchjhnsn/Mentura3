@@ -1,0 +1,97 @@
+---
+type: reference
+source: hybrid
+created: 2026-10-28T03:07:56Z
+ai-model: claude-opus-5.5
+tags: [everything-ecosystem, mentura, platform, framework, boundary]
+description: "The platform side of Mentura: what lives here, the boundary with the framework, and how it is enforced (EE-041)."
+---
+
+# Platform
+
+The system has two sides, the way Next.js and Vercel do (EE-041): the framework Naive and the platform Mentura.
+
+- **The framework**, Naive (EE-043), is the conventions. It works offline, with no account, and names no vendor. It covers record schemas and the data model, kits, the router and the CLI, MCP server and local API over it, routes, provenance, the checks, need-now priors, validation scoring, `init-venture`, the connector contract with the filesystem connector, and the docs. It has its own repository, tchjhnsn/naive, and this repository depends on it as the `naive-framework` package (EE-118, EE-119).
+- **The platform** hosts, connects and integrates. It holds connectors that reach a vendor over the network with credentials, the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console, and a gallery of templates. That is this folder.
+
+A template is framework, the way `create-next-app --example` is. The gallery that hosts templates is platform.
+
+## The boundary
+
+The platform builds on the framework, and never the other way round. The platform imports Naive by package name (`naive-framework/src/store/connectors/contract.mjs`), never by relative path, and by the module's `.mjs` name, which runs Naive's compiled `dist/` file and is typed from its `.ts` source, so no loader is needed. Naive's own boundary check, run in its repository, fails when Naive names a platform or console module, or registers a connector that reaches the network or names credentials.
+
+The platform hands its parts to Naive through Naive's hooks. That is inversion of control, like a Next.js deployment adapter: the framework defines the contract, and the platform implements it for a vendor.
+
+| Hook | What the platform passes |
+|---|---|
+| `registerConnector` (`naive-framework/src/store/connectors/index.mjs`) | The GitHub and Postgres connectors, from `connectors/register.mjs`. A Naive checker run as its own process gets it with `node --import ./platform/connectors/preload.mjs` |
+| `NAIVE_KITS` | This folder's `kits/`. Without it Naive has no kits |
+| `NAIVE_PLATFORM_ADAPTER` | `adapter.json`. Its `verify` paths are relative to this folder |
+| `NAIVE_SYNC_RHO` | `node platform/integrations/rho.mjs sync`, when a deployment syncs money from Rho. Naive runs it as `<command> --venture <dir>`; nothing sets it by default |
+| `NAIVE_TRACE_CMD`, `NAIVE_JUDGE_CMD`, `NAIVE_RESEARCH_MCP`, `NAIVE_SITE_CMD` | The LangSmith exporter, the judge, the research MCP server and the site reader, when a deployment names them |
+
+## What is here
+
+| Path | Holds |
+|---|---|
+| `connectors/github.mjs` | The GitHub connector: reads from a branch, writes by draft pull request (EE-037) |
+| `connectors/fake-github.mjs` | A fake of the GitHub REST API for offline evals |
+| `connectors/postgres.ts` | The Postgres connector: a tenant's records in Postgres, Neon in production (EE-118 step 9). Append-only: each write is a new row, a trigger refuses UPDATE and DELETE, and each row's hash chains to the tenant's previous one (`verify`). A read takes the newest row by numeric `seq`. The text form of `seq` is not the sort key, so a seq past 99 is still the newest. A write takes Naive's `base` and `append` options, checked under the tenant's lock: a stale `base` is refused with the current version, and an append adds whole lines, so a host can commit a working copy back safely. The table holds text, so a write given bytes takes them only when they are valid UTF-8 and otherwise is refused. The connection string is read from the variable `url` names (default `MENTURA_DATABASE_URL`) and never stored. `MENTURA_DB_DRIVER` picks the driver: `pg` (default, TCP to 5432) or `neon-ws`, Neon's serverless driver over a WebSocket on 443, which goes through `HTTPS_PROXY` when it is set, for a cloud container where raw TCP is blocked |
+| `connectors/store-import.ts` | Loads a folder into a tenant's store through the Postgres connector, skipping dot files except `.gitkeep` (which keeps an empty folder Naive expects, such as a layer folder), reads every file back and checks the chain: `node platform/connectors/store-import.ts <folder> --tenant <id> [--check]`. Running it again appends nothing. This is how the company's records, once `instance/`, moved to Neon (EE-118 step 9c) |
+| `connectors/store-export.ts` | Writes a tenant's records back out of its store into a missing or empty folder, the newest content of every path, and checks each file against the store's version: `node platform/connectors/store-export.ts <folder> --tenant <id> [--root <path>]`. Tools that read a folder of records, such as the ontology program's scripts, read an export. Keep an export out of git |
+| `connectors/postgres-eval.ts` | The Postgres connector against the contract suite, the append-only trigger, tenant isolation, the import of Naive's example workspace and the export, on a real Postgres named by `MENTURA_EVAL_DATABASE_URL` (a service in CI); without it, it skips |
+| `connectors/register.mjs`, `connectors/preload.mjs` | Register the GitHub and Postgres connectors with Naive, in this process or preloaded into a Naive checker |
+| `connectors/eval.mjs` | The GitHub connector against the framework's contract suite (`naive-framework/src/store/connectors/suite.mjs`), its registration, the router over a GitHub source, the catalog (the source map checked with Naive's `validate.mjs`, no Python), and an optional live run |
+| `intake/` | Raw intake for triage (Naive `docs/design/RAW_TRIAGE_2026-11-09.md`): an append-only claims table, a trigger that notifies when a raw entry lands in `naive_records`, and a worker that claims each entry once and hands it to triage. See `intake/README.md` |
+| `hosted/working-copy.ts` | The host side of Naive's hosted working copy (Naive `docs/design/HOSTED_WORKING_COPY_2026-11-07.md`): checks a tenant's records out of its store into a folder, runs Naive there with `NAIVE_RUNTIME=hosted`, and commits what changed with each path's base version. A record is written whole, a log only by appending its new lines, and a derived file never (each run rebuilds it). A rewritten log or a removed record refuses the commit before anything is written. On a version conflict the copy is refreshed and the request runs again, twice by default. `refresh` brings a kept copy up to date by version. Not built: a per-request sandbox and the registered hooks (`judge`, `site`, `trace`, `sandbox`, `git`) |
+| `hosted/account-workspace.ts` | The hosted console's account workspace. One `naive_records` tenant per Better Auth user id. A request checks that tenant out to a temporary folder, runs `console/lib/bridge.mjs` there, and commits only when the bridge accepts the operation. The folder is removed afterwards, including when the bridge times out or exits non-zero. The Next server does not import this file; it starts `hosted/console-child.ts`, and the signed assertion is stdin, not an argument. The console file trace lists that child, the modules it imports, the bridge sources, and the `naive-framework` and `pg` packages, and it does not list `console/.data` or an env file. A process failure, including a database the connection cannot open, returns one fixed sentence, with no command, assertion, path, host, role name, or database URL. Production identity and outside databases are sealed separately. This package does not grant this role on them and does not change their grants. A code issued for a venture on disk is refused: the hosted console does not redeem it and does not migrate it. A `https` `MENTURA_PUBLIC_ORIGIN` uses this and does not read `console/.data`. The connector schema is applied by the database owner; the runtime role does not create the table (`schema: false`). SHA-256 of `SCHEMA` in `connectors/postgres.ts` is `e0e22be5167e5d1b31bd37e47de39f7ed21dddddcac20a5b8337731d73c017d4`. The runtime role is not `mentura_console_tenant_guard`. It is a separate role, named here `mentura_console_tenant`, with `connect` on the tenant database, `usage` on `public`, `select` and `insert` on `naive_records`, and `usage` and `select` on `naive_records_seq_seq`. No `update` and no `delete`. It is not granted `select` on identity tables or `outside_log`. This package does not revoke `connect` on those other databases, and a role can still see table names in the catalog. It does not change a shared database's grants. `CONNECT` on another database is a default Postgres grant to `PUBLIC`, not a row read. The console's tenant is the account id inside the signed assertion. A different id on the call is refused and commits nothing. The shared runtime login is not a per-tenant principal by itself. `sql/002-tenant-isolation.sql` adds a row policy the login cannot set aside: a row is visible only when `mentura_authorize` has checked the signed assertion in that transaction. A tenant id, a session variable the login sets, and `set role` do not choose another account. The login cannot read the key or the grant table. `FORCE ROW LEVEL SECURITY` applies the policy to the table owner. A superuser still bypasses it, and the runtime must not be a superuser. SHA-256 of that file is `d88d63805ba9a6f3969ea5ed285a4634ac0bae48ae9d806cd387e9c395d2c12a`. SHA-256 of `sql/002-tenant-isolation-rollback.sql` is `6efd62c50fbd60f6f8fbcb9af8e39d2e61a9a429c990394f47c4989af43b1a4d`. The rollback drops the policy and the grant tables and does not delete `naive_records` rows. It revokes `mentura_console_tenant` only when that role exists, so a rehearsal login with another name can still roll back. Apply both only on a scratch database first. This process does not apply them to a database that holds personal rows. |
+| `hosted/run.ts` | Runs one Naive command for a tenant on a fresh working copy and commits: `node platform/hosted/run.ts --tenant <id> -- <command> {dir}`, with `{dir}` replaced by the copy's path. It reads the connection string from `MENTURA_DATABASE_URL` (or `--url`) |
+| `hosted/working-copy-test.ts` | Tests the working copy offline, with Naive's filesystem connector as the store; `connectors/postgres-eval.ts` also runs a Naive check on a copy of a Postgres tenant and commits its provenance line |
+| `mcp/research.mjs` | Market research for agents through Firecrawl, as an MCP server: search and read a page, every result with its URL (EE-059). Needs `FIRECRAWL_API_KEY` |
+| `integrations/jev.mjs` | Jev (TypeSafe) for typed judgments: sends a request the framework built, such as the idea map's tags, and prints the answers (EE-059). Needs `TYPESAFE_API_KEY` |
+| `agents/` | Mentura's LangChain side over Naive (EE-121, EE-122): `NaiveBackend`, a deepagents backend over Naive's agent filesystem, and `NaiveTracer`, a callback handler that writes a run as spans in the venture's trace files. On them, the function agents (EE-123): `node platform/agents/bin.ts run <function> --venture <id>` runs one in its own process, and `bin.ts mcp` offers them as MCP tools to any harness and model. Each function's researcher (autoresearch build plan item 13): `node platform/agents/bin.ts research <function> --venture <id or folder>` improves the recipes its research program lists, writing only through Naive's `recipes/<pattern>` route, within the plan's budget. See `agents/README.md` |
+| `integrations/langsmith.mjs` | Uploads a harness run's trace, with Naive's evals as feedback, to LangSmith (EE-059). Needs `LANGSMITH_API_KEY` |
+| `integrations/langsmith-otel.ts` | Ships a venture's trace files (`traces/<session>.jsonl`, EE-121) to LangSmith's OpenTelemetry endpoint when online: only the spans not yet accepted, each once, remembered in `.naive/langsmith-sync.json`; offline they stay pending. The files stay the record. Needs `LANGSMITH_API_KEY`; `--dry-run` lists what is pending. Sent as OTLP/HTTP JSON, not yet tried against LangSmith itself |
+| `integrations/langsmith-otel-test.ts` | Ships trace files to a local stand-in for LangSmith's OTel endpoint, offline |
+| `integrations/langsmith-test.mjs` | Ships a Naive trace through the exporter to a local stand-in for LangSmith, offline |
+| `integrations/langsmith-docket.mjs` | The docket's evidence as a LangSmith experiment: the scenario states as a dataset, and one scored run of the docket and the judge (Jev) as an experiment over it (EE-075). Needs `LANGSMITH_API_KEY` |
+| `integrations/rho.mjs` | Rho, the founder's bank and spend suite, as the venture's money source: syncs `money/` (accounts, a sensitive append-only transactions stream, and a summary) over Rho's MCP server, calling only read-only tools (EE-070). Rho's sandbox by default; `--live` needs `RHO_API_TOKEN` |
+| `integrations/remote-image.mjs`, `integrations/remote-image-test.mjs` | Fetches a remote image into a venture's register (only allowed hosts, images only, originals private in `raw/`, copies by license) and its offline test, which checks the note in `raw/` with Naive's `validate.mjs` |
+| `integrations/site.mjs` | Reads a venture's website: the home page and the pages it links to, as text, with where each sits (EE-062). Uses `FIRECRAWL_API_KEY` when set, a plain fetch otherwise |
+| `adapter.json` | Mentura as Naive's first adapter, as Vercel is for Next.js: with `NAIVE_PLATFORM_ADAPTER` naming it, `mentura adapters verify mentura` runs the connector contract suite, the webhooks and the kits (Z-4) |
+| `adapter-test.mjs` | Mentura is listed, refused as a venture adapter, and verified by those tests |
+| `research/research-test.mjs` | Tests for the research engine, offline: its schemas in `research/schemas/` are checked in process by Naive's validator (`naive-framework/src/records/validate.mjs`), with no Python. A schema without an `$id` is registered by its file name |
+| `kits/agent-upgrade/` | The agent-run upgrade behind `naive upgrade --agent`: an agent does the guides' by-hand steps on a staged copy, and the framework's checks decide (U-3). `stand-in-agent.mjs` runs offline |
+| `kits/validation-kickoff/` | An automation over the validation package: once the foundation is complete, it proposes the decision to start validating (M-12) |
+| `kits/test.mjs` | Tests for the kits, with the stand-in agent |
+| `webhooks/server.mjs` | Signed webhooks from systems of record: a change marks the summaries that read it stale (V-9). Secrets come from `NAIVE_WEBHOOK_SECRET_<SOURCE>` |
+| `webhooks/test.mjs` | Tests for the webhooks, offline |
+
+## Tenant boundary
+
+The console does not choose the account from the request body. The database does not trust a tenant id or a session variable from the runtime login.
+
+```
+signed session
+    |
+    |  assertion: account id inside the HMAC
+    v
+hosted child  -- verifies the signature, refuses a different id
+    |
+    |  select mentura_authorize(assertion)
+    v
+owner function -- key table is hidden from the runtime
+    |            writes an unguessable grant for that account only
+    |            SET LOCAL, gone when the transaction ends
+    v
+row policy: tenant = mentura_account()
+    |
+    v
+runtime login sees and appends only that account
+```
+
+A second request on the same pooled connection starts a new transaction and a new grant. `CONNECT` on the identity and outside databases is still the default `PUBLIC` grant. That is not a row read. This package does not revoke it and does not change those databases.
+
+## Not yet moved
+
+Each layer's `tooling/integrations.json` stays in Naive for now. Most entries are opinionated defaults with references (EE-014), plain data that calls nothing, like a framework's docs recommending a host. An entry moves here once it carries code that calls a vendor.

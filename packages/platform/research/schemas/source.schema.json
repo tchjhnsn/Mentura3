@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "source.schema.json",
+  "title": "Research source",
+  "description": "A source the research engine read, with its credibility factors scored 1-4 (section 9 of the architecture). Store the hash and a locator, never the full text.",
+  "type": "object",
+  "required": ["id", "kind", "access_level"],
+  "properties": {
+    "id": { "type": "string" },
+    "url": { "type": "string" },
+    "title": { "type": "string" },
+    "publisher": { "type": "string" },
+    "author": { "type": "string" },
+    "published_at": { "type": "string" },
+    "about_time": { "type": "string" },
+    "kind": { "enum": ["contemporaneous", "retrospective", "secondary", "primary", "tertiary"], "description": "Tertiary (an encyclopedia such as Wikipedia) never counts as a supporter" },
+    "access_level": { "enum": ["fetched", "snippet", "unread"], "description": "fetched: the page or book was read; snippet: only a search snippet; unread: known but not read" },
+    "accessed_at": { "type": "string", "format": "date-time" },
+    "archive_url": { "type": "string" },
+    "snapshot_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "license": { "type": "string" },
+    "derived_from": { "type": "string", "description": "The id of the original this source retells; retellings of one original count as one independent supporter" },
+    "factors": {
+      "type": "object",
+      "properties": {
+        "access": { "$ref": "#/$defs/level" },
+        "proximity": { "$ref": "#/$defs/level" },
+        "publisher_standards": { "$ref": "#/$defs/level" },
+        "internal_sourcing": { "$ref": "#/$defs/level" },
+        "interest": { "$ref": "#/$defs/level" },
+        "track_record": { "$ref": "#/$defs/level" }
+      },
+      "additionalProperties": false
+    },
+    "credibility": { "type": "number", "minimum": 1, "maximum": 4 }
+  },
+  "additionalProperties": false,
+  "$defs": { "level": { "type": "integer", "minimum": 1, "maximum": 4 } }
+}

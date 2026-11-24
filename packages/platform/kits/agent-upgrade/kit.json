@@ -1,0 +1,15 @@
+{
+  "name": "agent-upgrade",
+  "title": "Agent-run upgrade",
+  "purpose": "An agent works the upgrade of a venture (U-3, I-29): the framework's migrations run on a copy, the agent does what the version guides leave to a person (prose such as AGENTS.md), and the framework's checks decide. Nothing lands until the checks pass and the founder types the confirmation.",
+  "extends": { "command": "upgrade --agent" },
+  "entry": "run.mjs",
+  "agent": {
+    "command": ["claude", "-p", "--output-format", "json", "--permission-mode", "acceptEdits", "--allowedTools", "Read,Edit,Write,Glob,Grep", "--strict-mcp-config"],
+    "env": ["MENTURA_AGENT_CMD"]
+  },
+  "use_model": ["the agent edits the staged copy by the version guides' by-hand steps"],
+  "checks": ["schema/upgrades.mjs"],
+  "status": "built",
+  "note": "The agent sees only the staged copy, never _private/, and its claims are not trusted: every file it changed is found by hash and logged as an agent's write, and the framework's checks run after it. MENTURA_AGENT_CMD replaces the default agent (platform/kits/agent-upgrade/stand-in-agent.mjs is the offline stand-in the tests use)."
+}

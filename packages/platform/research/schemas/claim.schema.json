@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "claim.schema.json",
+  "title": "Research claim",
+  "description": "A typed claim for one research cell. Confidence and verdict are computed in code (platform/research/credibility.mjs), never written by a model.",
+  "type": "object",
+  "required": ["id", "cell_id", "text"],
+  "properties": {
+    "id": { "type": "string" },
+    "cell_id": { "type": "string" },
+    "text": { "type": "string" },
+    "personal": { "type": "boolean", "default": false },
+    "hindsight_risk": { "type": "boolean" },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 4 },
+    "verdict": { "enum": ["confirmed", "acceptable", "available", "possible"] },
+    "verified_by": { "type": "string" },
+    "verifier_agrees": { "type": "boolean" }
+  },
+  "additionalProperties": false
+}
