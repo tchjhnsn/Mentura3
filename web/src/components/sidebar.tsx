@@ -16,6 +16,7 @@ import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
 import { STUDIO_NAV, slugOf, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { VENTURES, ventureHref, ventureOf } from "@/components/studio/data";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -80,7 +81,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   return (
     <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
-        <ProductHead side={side} to={to} />
+        {side === "mentura" ? <VentureTiles path={path} done={done} /> : <ProductHead side={side} to={to} />}
       </SidebarHeader>
 
       <SidebarContent>
@@ -281,39 +282,49 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
  * list shows all of them at once. Create first, then the pages you use daily, then the ventures in their own group. */
 function MenturaNav({ item, to, done, path }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void; path: string }) {
   const slug = slugOf(path);
+  // A venture's tile is chosen: the sidebar is that venture's, as a business's is in Whop.
+  if (slug) return <StudioNav label={ventureOf(slug).name} groups={ventureNav(slug)} path={path} done={done} />;
   return (
     <>
       <Group>
+        <SidebarGroupLabel>Personal</SidebarGroupLabel>
         <SidebarMenu>
           <MenturaCreate to={to} done={done} />
           {item("/mentura", "Home", <HomeIcon />)}
           {item("/meetings", "Meetings", <VideoIcon />)}
           {item("/mentura/discover", "People", <UsersRoundIcon />)}
+          {item("/mentura/events", "Events", <CalendarDaysIcon />)}
           {item("/mentura/profile", "My profile", <UserRoundIcon />)}
         </SidebarMenu>
       </Group>
-      <Group>
-        <SidebarGroupLabel>Ventures</SidebarGroupLabel>
-        <SidebarMenu>
-          {item("/life/ventures", "Your ventures", <RocketIcon />)}
-          {item("/studio", "Venture Studio", <LayoutDashboardIcon />)}
-        </SidebarMenu>
-      </Group>
-      {path === "/studio" || path.startsWith("/studio/") ? <StudioNav groups={slug ? ventureNav(slug) : STUDIO_NAV} path={path} done={done} /> : null}
-      <Group>
-        <SidebarGroupLabel>Discover</SidebarGroupLabel>
-        <SidebarMenu>
-          {item("/mentura/events", "Events", <CalendarDaysIcon />)}
-        </SidebarMenu>
-      </Group>
+      <StudioNav label="Venture Studio" groups={STUDIO_NAV} path={path} done={done} />
     </>
   );
 }
 
+/** Mentura's top row, after Whop's: you first, then a tile for each venture, then a new one. Choosing a tile turns
+ * the whole sidebar into that venture's (Torian, 2026-11-24: "just toggle between ventures"). */
+function VentureTiles({ path, done }: { path: string; done: () => void }) {
+  const slug = slugOf(path);
+  const tile = (active: boolean) => cn("flex size-10 shrink-0 items-center justify-center rounded-xl text-sm font-semibold transition", active ? "ring-sidebar-foreground ring-2 ring-offset-2 ring-offset-sidebar" : "opacity-80 hover:opacity-100");
+  const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  return (
+    <nav aria-label="Personal and ventures" className="flex flex-wrap gap-2 p-1">
+      <Link href="/mentura" onClick={done} title="Personal" aria-current={slug ? undefined : "page"} className={cn(tile(!slug), "bg-sidebar-accent text-sidebar-accent-foreground")}><UserRoundIcon className="size-5" /></Link>
+      {VENTURES.map((v) => (
+        <Link key={v.slug} href={ventureHref(v.slug)} onClick={done} title={v.name} aria-current={slug === v.slug ? "page" : undefined}
+          className={cn(tile(slug === v.slug), "text-white")} style={{ background: `oklch(0.5 0.13 ${v.hue})` }}>{initials(v.name)}</Link>
+      ))}
+      <Link href="/studio/new" onClick={done} title="New venture" className={cn(tile(false), "border-sidebar-border text-muted-foreground border border-dashed")}><PlusIcon className="size-5" /></Link>
+    </nav>
+  );
+}
+
 /** The Venture Studio's pages, under Mentura's own in the one sidebar: the studio's, or one venture's. */
-function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
+function StudioNav({ label, groups, path, done }: { label: string; groups: NavGroup[]; path: string; done: () => void }) {
   return (
     <Group>
+      <SidebarGroupLabel>{label}</SidebarGroupLabel>
       {groups.map((g, i) => (
         <SidebarMenu key={i} className={i ? "mt-3" : undefined}>
           {g.label ? <SidebarGroupLabel>{g.label}</SidebarGroupLabel> : null}
@@ -337,7 +348,7 @@ function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; d
 function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
   const MADE = [
     { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
-    { href: "/life/ventures", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
+    { href: "/studio/new", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
   ];
   return (
     <SidebarMenuItem>
