@@ -18,6 +18,7 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { openAssertion } from "./assertion.ts";
+import { deleteStored, FILES_DIR, filesRoot, listFiles, makeFolder, moveStored, readStored, writeStored } from "./files.ts";
 import { naiveFile } from "./naive-file.mjs";
 import { closeClaim, openClaim, sharedRoot, stampedOwner } from "./claims.ts";
 import { gateRefusal, phaseView, statable, wanted } from "./phase.ts";
@@ -308,7 +309,60 @@ function described(readSchema, schema, f) {
 const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "venture";
 
 /** @type {Record<string, (input: any, account: { identity: import("./assertion.ts").Identity, workspace: string }) => Promise<any>>} */
+/** The venture's files folder, where its layout puts the logical path `files`.
+ *  @param {string} dir */
+async function rootOf(dir) {
+  const { ventureFile } = await fw("packages/naive/src/core/venture-paths.mjs");
+  return filesRoot(dir, ventureFile(dir, FILES_DIR));
+}
+
+/** One provenance line for a change to the venture's files, signed as the person who made it. A moved folder logs the
+ *  folder; an upload stores its bytes in the blob store, so time travel can bring a deleted file back.
+ *  @param {string} dir @param {any} identity @param {string} entity @param {string} activity @param {string} [note] @param {string} [sha256] */
+async function logFile(dir, identity, entity, activity, note, sha256) {
+  const { agentFromEnv, record } = await fw("packages/naive/src/core/provenance.mjs");
+  const agent = agentFromEnv("person", "console", { id: identity.name, account: identity.userId });
+  const { ventureFile } = await fw("packages/naive/src/core/venture-paths.mjs");
+  const p = ventureFile(dir, entity);
+  const isFolder = existsSync(p) && statSync(p).isDirectory();
+  record(dir, { entity, route: FILES_DIR, activity, agent, note, ...(sha256 ? { sha256 } : isFolder ? { content: Buffer.from(entity) } : {}) });
+}
+
 const ops = {
+  // Each venture's own storage (files.ts): the founder's files, logged in provenance as the person's acts.
+  async files({ venture }, { workspace }) {
+    return { files: listFiles(await rootOf(await dirOf(venture, workspace))) };
+  },
+
+  async fileRead({ venture, path }, { workspace }) {
+    return readStored(await rootOf(await dirOf(venture, workspace)), path);
+  },
+
+  async fileWrite({ venture, path, base64, replace }, { identity, workspace }) {
+    const dir = await dirOf(venture, workspace);
+    const out = writeStored(await rootOf(dir), path, base64, replace === true);
+    await logFile(dir, identity, `${FILES_DIR}/${out.path}`, replace === true ? "replace" : "upload");
+    return out;
+  },
+
+  async fileFolder({ venture, path }, { workspace }) {
+    return makeFolder(await rootOf(await dirOf(venture, workspace)), path);
+  },
+
+  async fileMove({ venture, from, to }, { identity, workspace }) {
+    const dir = await dirOf(venture, workspace);
+    const out = moveStored(await rootOf(dir), from, to);
+    await logFile(dir, identity, `${FILES_DIR}/${to}`, "move", `moved from ${FILES_DIR}/${from}`);
+    return out;
+  },
+
+  async fileDelete({ venture, path }, { identity, workspace }) {
+    const dir = await dirOf(venture, workspace);
+    const out = deleteStored(await rootOf(dir), path);
+    for (const f of out.removed) await logFile(dir, identity, `${FILES_DIR}/${f.path}`, "delete", undefined, f.sha256);
+    return out;
+  },
+
   // Ventures made before isolation recorded their account in a stamp, and come home here. lib/naive.ts runs
   // this once per account, in the write queue. One that cannot move safely stays put and is reported.
   async adopt(_, { identity, workspace }) {

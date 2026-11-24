@@ -1,7 +1,7 @@
 // A real venture in the Studio: its name and phase from venture.json and what it needs decided next, from Naive's
 // docket, read through src/server/naive.ts. The sample venture pages under /studio/v/ stay as the design prototype.
 import Link from "next/link";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, FolderIcon } from "lucide-react";
 import { ventureWithDocket } from "../../../actions";
 
 export const dynamic = "force-dynamic";
@@ -21,6 +21,7 @@ export default async function RealVenture({ params }: { params: Promise<{ id: st
             <span className="capitalize">{r.value.venture.phase}</span>
             {r.value.venture.founder ? <> · founded by {r.value.venture.founder}</> : null}
           </p>
+          <Link href={`/studio/r/${encodeURIComponent(id)}/files`} className="hover:bg-accent mt-4 inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm"><FolderIcon className="size-4" />Files</Link>
 
           <section className="mt-8">
             <h2 className="text-sm font-semibold">Needs you next</h2>

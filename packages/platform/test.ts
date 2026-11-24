@@ -38,6 +38,7 @@ const steps: [string, string[]][] = [
   ["site reader (offline)", ["integrations/site-test.mjs"]],
   ["Rho money source (offline)", ["integrations/rho-test.mjs"]],
   ["the bridge into Naive: signed identity, path guard, setup and judge errors", ["bridge/bridge-test.ts"]],
+  ["each venture's own storage: files/ round trip and every way out refused", ["bridge/files-test.ts"]],
 ];
 
 type Result = { name: string; code: number; out: string };
