@@ -4,10 +4,14 @@ import { ventureDetail } from "@/app/studio/actions";
 import { realBusiness } from "@/components/studio/business-data";
 import { fnsAt } from "@/components/studio/connect-data";
 import { isSample, ventureOf, type FunctionId } from "@/components/studio/data";
+import { usableBy } from "@/components/studio/integrations";
 import { connectionsOf, type Connection } from "@/server/mcp-connections";
 import { requireUser } from "@/server/session";
 
-export type IntegrationsContext = { connections: Connection[]; connected: Set<string>; functions: FunctionId[]; name: string };
+/** `connected`: catalog ids connected and open to this business. `elsewhere`: connected, but kept to other businesses. */
+export type IntegrationsContext = { id: string; connections: Connection[]; connected: Set<string>; elsewhere: Set<string>; functions: FunctionId[]; name: string };
+
+export { usableBy };
 
 export async function integrationsContext(slug: string): Promise<IntegrationsContext> {
   const user = await requireUser();
@@ -16,5 +20,11 @@ export async function integrationsContext(slug: string): Promise<IntegrationsCon
   const real = detail?.ok ? realBusiness(detail.value) : null;
   const functions = sample ? fnsAt(ventureOf(slug).commitment) : real?.functions ?? [];
   const name = sample ? ventureOf(slug).name : real?.name ?? decodeURIComponent(slug);
-  return { connections, connected: new Set(connections.filter((c) => c.status === "connected").map((c) => c.connector)), functions, name };
+  const id = decodeURIComponent(slug);
+  const live = connections.filter((c) => c.status === "connected");
+  return {
+    id, connections, functions, name,
+    connected: new Set(live.filter((c) => usableBy(c, id)).map((c) => c.connector)),
+    elsewhere: new Set(live.filter((c) => !usableBy(c, id)).map((c) => c.connector)),
+  };
 }
