@@ -1,0 +1,20 @@
+{
+ "id": "nvidia",
+ "kind": "venture",
+ "name": "NVIDIA",
+ "study": {
+  "status": "stub",
+  "scope": "research areas, products and capabilities only; no anatomy study yet",
+  "started": "2026-11-01"
+ },
+ "identity": {
+  "unknown": true,
+  "reason": "not studied",
+  "as_of": "2026-11-01"
+ },
+ "phase": {
+  "unknown": true,
+  "reason": "not studied",
+  "as_of": "2026-11-01"
+ }
+}

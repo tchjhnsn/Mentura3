@@ -1,0 +1,36 @@
+# Type-checks and tests the ontology program tools in tools/ontology (see tools/ontology/README.md).
+name: ontology
+
+on:
+  push:
+    branches: [main]
+    paths: ["tools/ontology/**", "docs/mentura/**", ".github/workflows/ontology.yml"]
+  pull_request:
+    paths: ["tools/ontology/**", "docs/mentura/**", ".github/workflows/ontology.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  ontology:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: tools/ontology
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Git can fetch naive-framework
+        run: sh ../../packages/platform/naive-git-auth.sh
+        env:
+          NAIVE_READ_TOKEN: ${{ secrets.NAIVE_READ_TOKEN }}
+      - run: npm ci --no-audit --no-fund
+      - name: Type check
+        run: npx tsc -p tsconfig.json
+      - name: Tests
+        run: node test.ts

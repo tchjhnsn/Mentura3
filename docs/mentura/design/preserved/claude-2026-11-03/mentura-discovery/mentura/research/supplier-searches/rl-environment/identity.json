@@ -1,0 +1,24 @@
+{
+ "id": "need.rl-environment",
+ "stage": "shaped-identity",
+ "stated": {"by": "Torian", "at": "2026-11-01T05:45:07Z", "text": "we would need a reinforcement learning environment"},
+ "ambition": "train our own small models on our checks (P1 symbolic checks as rewards, P2 calibration, P5 precog) once the check-outcome log has volume",
+ "function": "engineering",
+ "phase_note": "Decided 04:49Z: log outcomes now, train later. So this need has lead time; nothing is bought now.",
+ "need": "an environment that turns our records and checks into rollouts and rewards for RL on a language model",
+ "kind": ["need", "dependency", "supplier-need"],
+ "constraints": [
+  {"id": "K1", "says": "records and check outcomes never leave infrastructure we control (Mentura training pipeline is confidential)", "verifiable": true},
+  {"id": "K2", "says": "license allows use inside a closed product", "verifiable": true},
+  {"id": "K3", "says": "cost fits a pre-revenue budget", "verifiable": true, "value": "unknown", "note": "no budget record exists; finance must set it"}
+ ],
+ "requirements": [
+  {"id": "R1", "says": "rewards are our own symbolic checks (verifier functions we write)", "weight": 5},
+  {"id": "R2", "says": "built for language-model agents (text in, text out, tool calls)", "weight": 4},
+  {"id": "R3", "says": "plugs into an RL trainer (GRPO) without glue we must build", "weight": 3},
+  {"id": "R4", "says": "a solo founder can stand it up in days", "weight": 3},
+  {"id": "R5", "says": "maintained, with a user community", "weight": 2}
+ ],
+ "weights_set_by": "agent, proposed; Torian or the engineering owner sets the real weights",
+ "as_of": "2026-11-01T05:55:00Z"
+}

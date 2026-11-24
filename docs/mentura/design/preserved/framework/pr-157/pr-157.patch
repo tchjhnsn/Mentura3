@@ -1,0 +1,2082 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 4f4e733f..f457f314 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -28,7 +28,7 @@ The Everything Ecosystem methodology, packaged as one private repo (EE-001). Pro
+ - `node schema/check-types.ts` (`npm run typecheck`) type-checks the code with `tsc` and `tsconfig.json` (`allowJs`, `checkJs`). Every file must be free of errors. `tsconfig.strict.json` holds `.ts` files to strict mode, and no file may carry an `@ts-` suppression.
+ - `node schema/record-types.ts` writes `schema/types/records.d.ts`, one TypeScript type per `schema/*.schema.json` (`venture.schema.json` is `Venture`); `--check` fails when the committed file is stale, and a schema keyword or type name it cannot handle throws (`node schema/record-types-test.ts`).
+ - `node evidence/skills/design-coverage/check.mjs --entity <dir>` checks design coverage for an entity.
+-- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function.
++- `node schema/check-ventures.mjs <dir>`, `node schema/check-nouns.mjs`, `node schema/check-integrations.mjs` check the schema's cross-file rules. `node schema/check-nouns.mjs --package <file> --function <id>` is the membership gate: one verdict for whether a handoff package's ontology belongs to that function (`--record` writes the sidecar). A rejection's disposition is read from the operating-rules module (`operations/operating-rules.json`, overlaid by a venture's own `operating-rules.json`). A schema checker that cannot run, or an operating-rules module that cannot be read, exits 2 and records nothing. A scoped noun `name@function` is owned by that function, and a new sense is only for a different meaning. Nouns may relate by broader, narrower, related, part-of or derived-from; `node schema/check-nouns.mjs --graph` prints the graph (`docs/noun-graph.md`).
+ - `node schema/check-data-model.mjs` checks the data model and kit manifests (every JSON file has a record type, every skill one kit); `--md` prints the layer relationships derived from the kits (EE-018).
+ - `node schema/check-ready.mjs <venture dir> <handoff id>` checks a handoff is ready before anyone executes it (EE-019); `--record --by <who>` records it.
+ - `node schema/check-governance.mjs <dir>` checks ownership, boards, founder agreements and exits; `node schema/payouts.mjs <venture dir> [value]` computes who gets what in a sale (EE-022).
+@@ -83,4 +83,4 @@ The ecosystem is a schema; a workspace is an instance made of ventures (EE-002,
+ 
+ ## Nouns and references
+ 
+-Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, or when a function's capabilities are not nouns it owns. Each noun names its function, or null when the word is shared. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
++Standards first (EE-014): use an established term with its standard meaning, and coin one only when none exists. `docs/ontology.json` is canonical for nouns (`docs/ontology.md` is its readable form, `docs/noun-graph.md` the graph); `node schema/check-nouns.mjs` fails when a retired noun reappears, when a noun has no standard, when a function's capabilities are not nouns it owns, or when a noun relation is invalid. Each noun names its function, or null when the word is shared. A function gets a new scoped sense only when the meaning differs. Each layer keeps the sources behind its defaults in `<layer>/references/references.json`; `knowledge/skills/find-reference/` fills and re-checks them.
+diff --git a/docs/decisions/decisions.json b/docs/decisions/decisions.json
+index 7d76b101..10575d4c 100644
+--- a/docs/decisions/decisions.json
++++ b/docs/decisions/decisions.json
+@@ -1321,6 +1321,31 @@
+           "expect": "exists"
+         }
+       ]
++    },
++    {
++      "id": "EE-103",
++      "date": "2026-11-02",
++      "status": "in-force",
++      "decision": "A noun may name relations to other nouns. The types are a closed set: broader, narrower and related, from W3C SKOS, plus part-of and derived-from. broader and narrower are inverses, and related is symmetric. Stating one side is enough, and the check derives the other. When both sides are written they must agree. part-of and derived-from are stored only in the direction written. A noun does not relate to itself. A target must exist and must not be retired. broader and part-of have no cycles. The graph is generated from the ontology. A function gets a new scoped sense (name@function) only when the meaning differs. The same meaning presented differently by market or relationship is a view of the same noun, not a new sense.",
++      "why": "Torian, 2026-11-02. Nouns previously linked only to the function that owns them, so the ontology could not say that one noun is broader than another, part of another, or derived from another.",
++      "related": [
++        "EE-014"
++      ],
++      "supersedes": [],
++      "affects": [
++        {
++          "kind": "path",
++          "target": "docs/noun-graph.md",
++          "root": "repo",
++          "expect": "exists"
++        },
++        {
++          "kind": "path",
++          "target": "schema/noun-relations.ts",
++          "root": "repo",
++          "expect": "exists"
++        }
++      ]
+     }
+   ]
+ }
+diff --git a/docs/noun-graph.md b/docs/noun-graph.md
+new file mode 100644
+index 00000000..33052f93
+--- /dev/null
++++ b/docs/noun-graph.md
+@@ -0,0 +1,268 @@
++# Noun graph
++
++Generated from `docs/ontology.json` by `node schema/check-nouns.mjs --graph` (EE-103). Do not edit this file by hand.
++
++Nouns are grouped and colored by the function that owns them. A noun with no function is shared. A noun that takes part in no relation is left off the graph.
++
++Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source.
++
++```mermaid
++flowchart LR
++  subgraph g_shared["shared"]
++    n_ai_feature["AI feature"]
++    n_ai_harness["AI harness"]
++    n_everything_ecosystem["Everything Ecosystem"]
++    n_product_anatomy["Product Anatomy"]
++    n_succession_matrix["Succession Matrix"]
++    n_account["account"]
++    n_agent_harness["agent harness"]
++    n_board["board"]
++    n_brand_guidelines["brand guidelines"]
++    n_business_model["business model"]
++    n_cap_table["cap table"]
++    n_capability_register["capability register"]
++    n_central_data_management_structure["central data management structure"]
++    n_channel["channel"]
++    n_console["console"]
++    n_core_product["core product"]
++    n_custom_workbench["custom workbench"]
++    n_data_model["data model"]
++    n_decision["decision"]
++    n_decision_right["decision right"]
++    n_done_criterion["done-criterion"]
++    n_eval["eval"]
++    n_evidence["evidence"]
++    n_evidence_grade["evidence grade"]
++    n_exit_criterion["exit criterion"]
++    n_function["function"]
++    n_gate["gate"]
++    n_handoff["handoff"]
++    n_harness["harness"]
++    n_human_loop["human loop"]
++    n_integration["integration"]
++    n_investor_right["investor right"]
++    n_job["job"]
++    n_kit["kit"]
++    n_layer["layer"]
++    n_layer_manifest["layer manifest"]
++    n_layout["layout"]
++    n_link["link"]
++    n_market["market"]
++    n_method["method"]
++    n_need_now_score["need-now score"]
++    n_phase["phase"]
++    n_pillar["pillar"]
++    n_portfolio_role["portfolio role"]
++    n_preference_stack["preference stack"]
++    n_product["product"]
++    n_provenance["provenance"]
++    n_provenance_log["provenance log"]
++    n_publication["publication"]
++    n_publication_policy["publication policy"]
++    n_record_type["record type"]
++    n_relationship["relationship"]
++    n_reserved_matter["reserved matter"]
++    n_role["role"]
++    n_route["route"]
++    n_route_alias["route alias"]
++    n_route_group["route group"]
++    n_share_class["share class"]
++    n_slot["slot"]
++    n_team_plan["team plan"]
++    n_technology["technology"]
++    n_telos["telos"]
++    n_template["template"]
++    n_the_system["the system"]
++    n_validation_score["validation score"]
++    n_vault["vault"]
++    n_venture["venture"]
++    n_venture_development_framework["venture development framework"]
++    n_venture_profile["venture profile"]
++    n_venture_template["venture template"]
++    n_view["view"]
++    n_wedge["wedge"]
++    n_workbench["workbench"]
++    n_workspace["workspace"]
++  end
++  subgraph g_finance["finance"]
++    n_customer_finance["customer@finance"]
++  end
++  subgraph g_marketing_and_sales["marketing-and-sales"]
++    n_customer_marketing_and_sales["customer@marketing-and-sales"]
++  end
++  subgraph g_products["products"]
++    n_product_decision["product decision"]
++  end
++  n_agent_harness -->|broader| n_ai_harness
++  n_ai_harness -->|broader| n_harness
++  n_console -->|broader| n_custom_workbench
++  n_custom_workbench -->|broader| n_workbench
++  n_publication -->|broader| n_handoff
++  n_the_system -->|broader| n_venture_development_framework
++  n_wedge -->|broader| n_portfolio_role
++  n_preference_stack -->|derived-from| n_cap_table
++  n_channel -->|part-of| n_publication_policy
++  n_done_criterion -->|part-of| n_handoff
++  n_exit_criterion -->|part-of| n_telos
++  n_handoff -->|part-of| n_method
++  n_product_anatomy -->|part-of| n_method
++  n_record_type -->|part-of| n_data_model
++  n_share_class -->|part-of| n_cap_table
++  n_slot -->|part-of| n_view
++  n_succession_matrix -->|part-of| n_product_anatomy
++  n_template -->|part-of| n_kit
++  n_account ---|related| n_market
++  n_account ---|related| n_relationship
++  n_ai_feature ---|related| n_product
++  n_board ---|related| n_reserved_matter
++  n_brand_guidelines ---|related| n_pillar
++  n_business_model ---|related| n_product
++  n_capability_register ---|related| n_eval
++  n_central_data_management_structure ---|related| n_venture
++  n_channel ---|related| n_publication
++  n_console ---|related| n_view
++  n_customer_finance ---|related| n_customer_marketing_and_sales
++  n_data_model ---|related| n_layer
++  n_data_model ---|related| n_route
++  n_decision ---|related| n_provenance
++  n_decision_right ---|related| n_function
++  n_decision_right ---|related| n_venture_template
++  n_eval ---|related| n_evidence
++  n_everything_ecosystem ---|related| n_the_system
++  n_evidence ---|related| n_evidence_grade
++  n_evidence ---|related| n_validation_score
++  n_exit_criterion ---|related| n_gate
++  n_exit_criterion ---|related| n_phase
++  n_function ---|related| n_team_plan
++  n_gate ---|related| n_layout
++  n_gate ---|related| n_phase
++  n_gate ---|related| n_validation_score
++  n_human_loop ---|related| n_team_plan
++  n_integration ---|related| n_layer
++  n_integration ---|related| n_workbench
++  n_investor_right ---|related| n_share_class
++  n_job ---|related| n_product
++  n_job ---|related| n_technology
++  n_kit ---|related| n_layout
++  n_kit ---|related| n_route
++  n_layer ---|related| n_layer_manifest
++  n_layer ---|related| n_layout
++  n_layer ---|related| n_record_type
++  n_layer ---|related| n_route
++  n_layer ---|related| n_workbench
++  n_layout ---|related| n_need_now_score
++  n_layout ---|related| n_route
++  n_layout ---|related| n_route_group
++  n_layout ---|related| n_template
++  n_link ---|related| n_venture
++  n_market ---|related| n_product
++  n_market ---|related| n_wedge
++  n_need_now_score ---|related| n_phase
++  n_need_now_score ---|related| n_record_type
++  n_phase ---|related| n_portfolio_role
++  n_phase ---|related| n_team_plan
++  n_phase ---|related| n_venture
++  n_pillar ---|related| n_venture_template
++  n_portfolio_role ---|related| n_product
++  n_product ---|related| n_product_decision
++  n_product ---|related| n_technology
++  n_product ---|related| n_wedge
++  n_product_anatomy ---|related| n_core_product
++  n_product_anatomy ---|related| n_product
++  n_provenance ---|related| n_provenance_log
++  n_publication ---|related| n_publication_policy
++  n_record_type ---|related| n_route
++  n_role ---|related| n_team_plan
++  n_role ---|related| n_venture_template
++  n_route ---|related| n_route_alias
++  n_route ---|related| n_route_group
++  n_route ---|related| n_view
++  n_succession_matrix ---|related| n_phase
++  n_succession_matrix ---|related| n_portfolio_role
++  n_telos ---|related| n_venture
++  n_the_system ---|related| n_workspace
++  n_vault ---|related| n_workspace
++  n_venture ---|related| n_venture_profile
++  classDef c_shared fill:#f5f5f4,stroke:#57534e,color:#1c1917
++  classDef c_finance fill:#dcfce7,stroke:#15803d,color:#1c1917
++  classDef c_marketing_and_sales fill:#fce7f3,stroke:#be185d,color:#1c1917
++  classDef c_products fill:#dbeafe,stroke:#1d4ed8,color:#1c1917
++  class n_ai_feature c_shared
++  class n_ai_harness c_shared
++  class n_everything_ecosystem c_shared
++  class n_product_anatomy c_shared
++  class n_succession_matrix c_shared
++  class n_account c_shared
++  class n_agent_harness c_shared
++  class n_board c_shared
++  class n_brand_guidelines c_shared
++  class n_business_model c_shared
++  class n_cap_table c_shared
++  class n_capability_register c_shared
++  class n_central_data_management_structure c_shared
++  class n_channel c_shared
++  class n_console c_shared
++  class n_core_product c_shared
++  class n_custom_workbench c_shared
++  class n_customer_finance c_finance
++  class n_customer_marketing_and_sales c_marketing_and_sales
++  class n_data_model c_shared
++  class n_decision c_shared
++  class n_decision_right c_shared
++  class n_done_criterion c_shared
++  class n_eval c_shared
++  class n_evidence c_shared
++  class n_evidence_grade c_shared
++  class n_exit_criterion c_shared
++  class n_function c_shared
++  class n_gate c_shared
++  class n_handoff c_shared
++  class n_harness c_shared
++  class n_human_loop c_shared
++  class n_integration c_shared
++  class n_investor_right c_shared
++  class n_job c_shared
++  class n_kit c_shared
++  class n_layer c_shared
++  class n_layer_manifest c_shared
++  class n_layout c_shared
++  class n_link c_shared
++  class n_market c_shared
++  class n_method c_shared
++  class n_need_now_score c_shared
++  class n_phase c_shared
++  class n_pillar c_shared
++  class n_portfolio_role c_shared
++  class n_preference_stack c_shared
++  class n_product c_shared
++  class n_product_decision c_products
++  class n_provenance c_shared
++  class n_provenance_log c_shared
++  class n_publication c_shared
++  class n_publication_policy c_shared
++  class n_record_type c_shared
++  class n_relationship c_shared
++  class n_reserved_matter c_shared
++  class n_role c_shared
++  class n_route c_shared
++  class n_route_alias c_shared
++  class n_route_group c_shared
++  class n_share_class c_shared
++  class n_slot c_shared
++  class n_team_plan c_shared
++  class n_technology c_shared
++  class n_telos c_shared
++  class n_template c_shared
++  class n_the_system c_shared
++  class n_validation_score c_shared
++  class n_vault c_shared
++  class n_venture c_shared
++  class n_venture_development_framework c_shared
++  class n_venture_profile c_shared
++  class n_venture_template c_shared
++  class n_view c_shared
++  class n_wedge c_shared
++  class n_workbench c_shared
++  class n_workspace c_shared
++```
++
+diff --git a/docs/ontology.json b/docs/ontology.json
+index 71d5bf37..4ad0c939 100644
+--- a/docs/ontology.json
++++ b/docs/ontology.json
+@@ -1,6 +1,6 @@
+ {
+   "version": "0.6.0",
+-  "note": "The system's nouns (EE-014). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json.",
++  "note": "The system's nouns (EE-014, EE-103). Standards first: a noun uses an established term with its standard meaning, and is coined only when none exists ('ours'). Each noun names its function (one id from operations/departments.json, or null when the word is shared). A null noun may appear in any package and never decides the package's type. handoff_type is true when the noun can type a handoff package. A function is a noun at level function, and its capabilities are the nouns it owns. A new scoped sense (name@function) is only for a different meaning; the same meaning presented differently by market or relationship is a view of the same noun. A noun may carry relations, a closed set: broader, narrower, related (W3C SKOS), part-of and derived-from. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of and derived-from are one-way. No self-relations. broader and part-of have no cycles. Retired nouns list what replaced them; schema/check-nouns.mjs fails when one reappears in the checked files. References are ids in <layer>/references/references.json. node schema/check-nouns.mjs --graph prints the noun graph.",
+   "check": [
+     "schema/",
+     "docs/ontology.md",
+@@ -18,7 +18,13 @@
+       "standard": "ours",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "the system"
++        }
++      ]
+     },
+     {
+       "noun": "the system",
+@@ -27,7 +33,13 @@
+       "standard": "EOS (Wickman) for 'operating system'",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "venture development framework"
++        }
++      ]
+     },
+     {
+       "noun": "venture development framework",
+@@ -45,7 +57,13 @@
+       "standard": "master data management, centralized style (DAMA-DMBOK)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "venture"
++        }
++      ]
+     },
+     {
+       "noun": "method",
+@@ -81,7 +99,13 @@
+       "standard": "common software usage",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "the system"
++        }
++      ]
+     },
+     {
+       "noun": "layer",
+@@ -113,7 +137,13 @@
+         "moore-1995-inside-the-tornado"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "venture"
++        }
++      ]
+     },
+     {
+       "noun": "gate",
+@@ -126,7 +156,13 @@
+         "zook-allen-2012-repeatability"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "phase"
++        }
++      ]
+     },
+     {
+       "noun": "ambition",
+@@ -203,7 +239,17 @@
+       "standard": "CRM usage (Salesforce, HubSpot: account)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "market"
++        },
++        {
++          "type": "related",
++          "target": "relationship"
++        }
++      ]
+     },
+     {
+       "noun": "relationship",
+@@ -221,7 +267,13 @@
+       "standard": "Clark's work/family border theory",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "venture"
++        }
++      ]
+     },
+     {
+       "noun": "venture profile",
+@@ -230,7 +282,13 @@
+       "standard": "ours",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "venture"
++        }
++      ]
+     },
+     {
+       "noun": "function",
+@@ -239,7 +297,17 @@
+       "standard": "business function (common usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "decision right"
++        },
++        {
++          "type": "related",
++          "target": "team plan"
++        }
++      ]
+     },
+     {
+       "noun": "pillar",
+@@ -257,7 +325,21 @@
+       "standard": "ours",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "decision right"
++        },
++        {
++          "type": "related",
++          "target": "pillar"
++        },
++        {
++          "type": "related",
++          "target": "role"
++        }
++      ]
+     },
+     {
+       "noun": "product",
+@@ -278,7 +360,13 @@
+         "abell-1980-defining-the-business"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "job",
+@@ -290,7 +378,13 @@
+         "abell-1980-defining-the-business"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "technology",
+@@ -302,7 +396,17 @@
+         "abell-1980-defining-the-business"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "job"
++        },
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "offering",
+@@ -323,7 +427,13 @@
+         "gassmann-2014-business-model-navigator"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "portfolio role",
+@@ -332,7 +442,17 @@
+       "standard": "portfolio strategy",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "phase"
++        },
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "wedge",
+@@ -344,7 +464,21 @@
+         "dixon-2010-thin-edge-of-the-wedge"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "portfolio role"
++        },
++        {
++          "type": "related",
++          "target": "market"
++        },
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "Product Anatomy",
+@@ -353,7 +487,21 @@
+       "standard": "ours",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "core product"
++        },
++        {
++          "type": "related",
++          "target": "product"
++        },
++        {
++          "type": "part-of",
++          "target": "method"
++        }
++      ]
+     },
+     {
+       "noun": "Succession Matrix",
+@@ -362,7 +510,21 @@
+       "standard": "ours",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "phase"
++        },
++        {
++          "type": "related",
++          "target": "portfolio role"
++        },
++        {
++          "type": "part-of",
++          "target": "Product Anatomy"
++        }
++      ]
+     },
+     {
+       "noun": "decision",
+@@ -398,7 +560,13 @@
+       "standard": "common operations usage",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "method"
++        }
++      ]
+     },
+     {
+       "noun": "done-criterion",
+@@ -407,7 +575,13 @@
+       "standard": "definition of done (Scrum)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "handoff"
++        }
++      ]
+     },
+     {
+       "noun": "eval",
+@@ -425,7 +599,13 @@
+       "standard": "common audit usage",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "eval"
++        }
++      ]
+     },
+     {
+       "noun": "role",
+@@ -443,7 +623,17 @@
+       "standard": "workforce planning (common HR usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "phase"
++        },
++        {
++          "type": "related",
++          "target": "role"
++        }
++      ]
+     },
+     {
+       "noun": "human loop",
+@@ -452,7 +642,13 @@
+       "standard": "human-in-the-loop (common AI usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "team plan"
++        }
++      ]
+     },
+     {
+       "noun": "capability register",
+@@ -461,7 +657,13 @@
+       "standard": "ours",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "eval"
++        }
++      ]
+     },
+     {
+       "noun": "decision right",
+@@ -479,7 +681,13 @@
+       "standard": "common software usage",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "custom workbench"
++        }
++      ]
+     },
+     {
+       "noun": "workbench",
+@@ -488,7 +696,13 @@
+       "standard": "workbench (Eclipse Platform Workbench; Fowler, language workbench), narrowed",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layer"
++        }
++      ]
+     },
+     {
+       "noun": "harness",
+@@ -509,7 +723,13 @@
+         "anthropic-2024-building-effective-agents"
+       ],
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "AI harness"
++        }
++      ]
+     },
+     {
+       "noun": "AI harness",
+@@ -521,7 +741,13 @@
+       ],
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "harness"
++        }
++      ]
+     },
+     {
+       "noun": "AI feature",
+@@ -533,7 +759,13 @@
+       ],
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "custom workbench",
+@@ -542,7 +774,13 @@
+       "standard": "common software usage",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "workbench"
++        }
++      ]
+     },
+     {
+       "noun": "integration",
+@@ -551,7 +789,17 @@
+       "standard": "systems integration",
+       "status": "kept",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layer"
++        },
++        {
++          "type": "related",
++          "target": "workbench"
++        }
++      ]
+     },
+     {
+       "noun": "kit",
+@@ -668,7 +916,13 @@
+       "standard": "data model (ANSI/SPARC; entity-relationship modelling, Chen 1976)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layer"
++        }
++      ]
+     },
+     {
+       "noun": "record type",
+@@ -677,7 +931,17 @@
+       "standard": "record type (database usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layer"
++        },
++        {
++          "type": "part-of",
++          "target": "data model"
++        }
++      ]
+     },
+     {
+       "noun": "layer manifest",
+@@ -686,7 +950,13 @@
+       "standard": "package manifest (common software usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layer"
++        }
++      ]
+     },
+     {
+       "noun": "vault",
+@@ -695,7 +965,13 @@
+       "standard": "Obsidian's name for a folder of notes; generically a knowledge base",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "workspace"
++        }
++      ]
+     },
+     {
+       "noun": "repository (repo)",
+@@ -722,7 +998,13 @@
+       "standard": "corporate law (classes of stock)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "cap table"
++        }
++      ]
+     },
+     {
+       "noun": "vesting",
+@@ -758,7 +1040,13 @@
+       "standard": "corporate governance usage",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "board"
++        }
++      ]
+     },
+     {
+       "noun": "investor right",
+@@ -767,7 +1055,13 @@
+       "standard": "NVCA model legal documents",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "share class"
++        }
++      ]
+     },
+     {
+       "noun": "liquidation waterfall",
+@@ -796,7 +1090,13 @@
+       "standard": "venture finance usage (pref stack; Feld and Mendelson, Venture Deals)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "derived-from",
++          "target": "cap table"
++        }
++      ]
+     },
+     {
+       "noun": "publication policy",
+@@ -814,7 +1114,13 @@
+       "standard": "marketing channel (Kotler, Marketing Management)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "publication policy"
++        }
++      ]
+     },
+     {
+       "noun": "publication",
+@@ -823,7 +1129,21 @@
+       "standard": "common usage",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "broader",
++          "target": "handoff"
++        },
++        {
++          "type": "related",
++          "target": "channel"
++        },
++        {
++          "type": "related",
++          "target": "publication policy"
++        }
++      ]
+     },
+     {
+       "noun": "brand guidelines",
+@@ -832,7 +1152,13 @@
+       "standard": "brand guidelines or brand book (common marketing usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "pillar"
++        }
++      ]
+     },
+     {
+       "noun": "editorial guidelines",
+@@ -850,7 +1176,13 @@
+       "standard": "Aristotle (final cause); Covey, begin with the end in mind",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "venture"
++        }
++      ]
+     },
+     {
+       "noun": "exit criterion",
+@@ -859,7 +1191,21 @@
+       "standard": "Stage-Gate exit criteria (Cooper)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "gate"
++        },
++        {
++          "type": "related",
++          "target": "phase"
++        },
++        {
++          "type": "part-of",
++          "target": "telos"
++        }
++      ]
+     },
+     {
+       "noun": "template",
+@@ -868,7 +1214,13 @@
+       "standard": "common usage (document template)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "kit"
++        }
++      ]
+     },
+     {
+       "noun": "validation score",
+@@ -880,7 +1232,17 @@
+       ],
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "evidence"
++        },
++        {
++          "type": "related",
++          "target": "gate"
++        }
++      ]
+     },
+     {
+       "noun": "evidence grade",
+@@ -893,7 +1255,13 @@
+       ],
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "evidence"
++        }
++      ]
+     },
+     {
+       "noun": "need-now score",
+@@ -902,7 +1270,17 @@
+       "standard": "ours; just-in-time (lean manufacturing) and YAGNI (extreme programming) in spirit",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "phase"
++        },
++        {
++          "type": "related",
++          "target": "record type"
++        }
++      ]
+     },
+     {
+       "noun": "derived answer",
+@@ -920,7 +1298,25 @@
+       "standard": "routing in web frameworks (Next.js App Router, Rails routes)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "data model"
++        },
++        {
++          "type": "related",
++          "target": "kit"
++        },
++        {
++          "type": "related",
++          "target": "layer"
++        },
++        {
++          "type": "related",
++          "target": "record type"
++        }
++      ]
+     },
+     {
+       "noun": "draft",
+@@ -938,7 +1334,13 @@
+       "standard": "W3C PROV (PROV-DM: entity, activity, agent)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "decision"
++        }
++      ]
+     },
+     {
+       "noun": "provenance log",
+@@ -947,7 +1349,13 @@
+       "standard": "W3C PROV; hash-chained append-only log (common audit usage)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "provenance"
++        }
++      ]
+     },
+     {
+       "noun": "layout",
+@@ -956,7 +1364,33 @@
+       "standard": "Next.js App Router (layout)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "gate"
++        },
++        {
++          "type": "related",
++          "target": "kit"
++        },
++        {
++          "type": "related",
++          "target": "layer"
++        },
++        {
++          "type": "related",
++          "target": "need-now score"
++        },
++        {
++          "type": "related",
++          "target": "route"
++        },
++        {
++          "type": "related",
++          "target": "template"
++        }
++      ]
+     },
+     {
+       "noun": "view",
+@@ -965,7 +1399,17 @@
+       "standard": "Next.js App Router (page); MVC view",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "console"
++        },
++        {
++          "type": "related",
++          "target": "route"
++        }
++      ]
+     },
+     {
+       "noun": "route group",
+@@ -974,7 +1418,17 @@
+       "standard": "Next.js App Router (route groups)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "layout"
++        },
++        {
++          "type": "related",
++          "target": "route"
++        }
++      ]
+     },
+     {
+       "noun": "slot",
+@@ -983,7 +1437,13 @@
+       "standard": "Next.js App Router (parallel routes, @slot)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "part-of",
++          "target": "view"
++        }
++      ]
+     },
+     {
+       "noun": "route alias",
+@@ -992,7 +1452,13 @@
+       "standard": "common API usage (deprecation, redirects)",
+       "status": "new",
+       "function": null,
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "route"
++        }
++      ]
+     },
+     {
+       "noun": "strategic foundation",
+@@ -1068,7 +1534,13 @@
+       "standard": "Schema.org Customer",
+       "status": "proposed",
+       "function": "marketing-and-sales",
+-      "handoff_type": false
++      "handoff_type": false,
++      "relations": [
++        {
++          "type": "related",
++          "target": "customer@finance"
++        }
++      ]
+     },
+     {
+       "noun": "customer@finance",
+@@ -1098,7 +1570,13 @@
+       "standard": "APQC PCF 7.4 Cross-Industry 2.0 Develop and Manage Products and Services",
+       "status": "proposed",
+       "function": "products",
+-      "handoff_type": true
++      "handoff_type": true,
++      "relations": [
++        {
++          "type": "related",
++          "target": "product"
++        }
++      ]
+     },
+     {
+       "noun": "founder appointment",
+diff --git a/docs/ontology.md b/docs/ontology.md
+index 8f56aafb..7d626af6 100644
+--- a/docs/ontology.md
++++ b/docs/ontology.md
+@@ -4,18 +4,20 @@ source: hybrid
+ created: 2026-10-27T04:18:09Z
+ ai-model: claude-opus-5.5
+ tags: [everything-ecosystem, ontology, glossary, nouns]
+-description: "The system's nouns at every level, the standard each follows, its references, and the retired nouns with what replaced them. Generated from docs/ontology.json (canonical) by node schema/check-nouns.mjs --md (EE-014)."
++description: "The system's nouns at every level, the standard each follows, its references, its relations, and the retired nouns with what replaced them. Generated from docs/ontology.json (canonical) by node schema/check-nouns.mjs --md (EE-014). The graph is docs/noun-graph.md (EE-103)."
+ ---
+ 
+ # Ontology
+ 
+ The system is opinionated: it names one default for each choice, and every default carries references to its sources and the alternatives it weighed (EE-014). Its nouns follow one rule: **standards first**. Use an established term with its standard meaning, and coin a word (marked "ours") only when none exists.
+ 
+-- Canonical: `docs/ontology.json`. This page is generated from it; regenerate with `node schema/check-nouns.mjs --md`.
+-- `node schema/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function.
++- Canonical: `docs/ontology.json`. This page is generated from it; regenerate with `node schema/check-nouns.mjs --md`. The graph is [docs/noun-graph.md](noun-graph.md), regenerated with `node schema/check-nouns.mjs --graph`.
++- `node schema/check-nouns.mjs` fails when a retired noun reappears in the schema, design docs, Product Anatomy, AGENTS.md or README.md, when a noun has no standard, or when a function's capabilities are missing, retired or owned by another function. It also fails when a relation's type is outside the closed set, when its target is missing or retired, when a noun relates to itself, when broader and narrower disagree, or when broader or part-of cycles.
+ - Each noun names a `function` (one id from `operations/departments.json`, or nothing when the word is shared) and a handoff type (yes when that noun can type a package). A shared noun may appear in any package and never decides which function the package belongs to.
+ - `node schema/check-nouns.mjs --package <file> --function <id>` prints one verdict: admit, refer to the function that owns the type, or reject. `--record` appends that verdict to `<id>.provenance.jsonl` beside the package. The verdict is not stored on the handoff. The receiver has to be a function noun. A schema checker that cannot run exits 2 and records nothing.
+ - A scoped noun is written `name@function`. The suffix is a function id, and the noun's function is that same id. A bare name is not added beside a scoped sense. A retired bare name may stay, as the pointer to the senses that replaced it.
++- A function gets a new scoped sense (`name@function`) only when the meaning differs. The same meaning, presented differently by market or by relationship, is a view of the same noun, not a new sense.
++- A noun may carry relations to other nouns. The types are a closed set: `broader`, `narrower` and `related` (W3C SKOS), plus `part-of` and `derived-from`. `broader` and `narrower` are inverses, and `related` is symmetric. Stating one side is enough: the check derives the other, and when both sides are written they must agree. `part-of` and `derived-from` have no inverse in the set, so they are stored only in the direction written. A noun does not relate to itself. A target must be a noun that exists and is not retired. `broader` and `part-of` have no cycles.
+ - A fact value is the boolean true or a record. Any other value fails that property. Two records that give one field two values are a reject. A record the term cannot read fails every property of that type. That is a reject of the package, and it is recorded.
+ - References are ids in `<layer>/references/references.json`.
+ - The genus of the whole is open: files say "the system" until the first venture runs end to end, then it is settled as an operating system or an operating model.
+@@ -164,6 +166,103 @@ The system is opinionated: it names one default for each choice, and every defau
+ | marketing-and-sales | The function that finds the buyer and sells the offering, including the price. Capabilities: pricing decision, customer@marketing-and-sales. | APQC PCF 7.4 Cross-Industry 3.0 Market and Sell Products and Services |  | marketing-and-sales |  |
+ | finance | The function that keeps the books: revenue, cost, and the customer as an account. Capabilities: customer@finance. | APQC PCF 7.4 Cross-Industry 9.0 Manage Financial Resources |  | finance |  |
+ 
++### Relations
++
++Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. The graph is [docs/noun-graph.md](noun-graph.md).
++
++| From | Type | To |
++| --- | --- | --- |
++| account | related | market |
++| account | related | relationship |
++| agent harness | broader | AI harness |
++| AI feature | related | product |
++| AI harness | broader | harness |
++| brand guidelines | related | pillar |
++| business model | related | product |
++| capability register | related | eval |
++| central data management structure | related | venture |
++| channel | part-of | publication policy |
++| console | broader | custom workbench |
++| custom workbench | broader | workbench |
++| customer@marketing-and-sales | related | customer@finance |
++| data model | related | layer |
++| done-criterion | part-of | handoff |
++| Everything Ecosystem | related | the system |
++| evidence | related | eval |
++| evidence grade | related | evidence |
++| exit criterion | part-of | telos |
++| exit criterion | related | gate |
++| exit criterion | related | phase |
++| function | related | decision right |
++| function | related | team plan |
++| gate | related | phase |
++| handoff | part-of | method |
++| human loop | related | team plan |
++| integration | related | layer |
++| integration | related | workbench |
++| investor right | related | share class |
++| job | related | product |
++| layer manifest | related | layer |
++| layout | related | gate |
++| layout | related | kit |
++| layout | related | layer |
++| layout | related | need-now score |
++| layout | related | route |
++| layout | related | template |
++| link | related | venture |
++| market | related | product |
++| need-now score | related | phase |
++| need-now score | related | record type |
++| phase | related | venture |
++| portfolio role | related | phase |
++| portfolio role | related | product |
++| preference stack | derived-from | cap table |
++| Product Anatomy | part-of | method |
++| Product Anatomy | related | core product |
++| Product Anatomy | related | product |
++| product decision | related | product |
++| provenance | related | decision |
++| provenance log | related | provenance |
++| publication | broader | handoff |
++| publication | related | channel |
++| publication | related | publication policy |
++| record type | part-of | data model |
++| record type | related | layer |
++| reserved matter | related | board |
++| route | related | data model |
++| route | related | kit |
++| route | related | layer |
++| route | related | record type |
++| route alias | related | route |
++| route group | related | layout |
++| route group | related | route |
++| share class | part-of | cap table |
++| slot | part-of | view |
++| Succession Matrix | part-of | Product Anatomy |
++| Succession Matrix | related | phase |
++| Succession Matrix | related | portfolio role |
++| team plan | related | phase |
++| team plan | related | role |
++| technology | related | job |
++| technology | related | product |
++| telos | related | venture |
++| template | part-of | kit |
++| the system | broader | venture development framework |
++| validation score | related | evidence |
++| validation score | related | gate |
++| vault | related | workspace |
++| venture profile | related | venture |
++| venture template | related | decision right |
++| venture template | related | pillar |
++| venture template | related | role |
++| view | related | console |
++| view | related | route |
++| wedge | broader | portfolio role |
++| wedge | related | market |
++| wedge | related | product |
++| workbench | related | layer |
++| workspace | related | the system |
++
+ ### Retired
+ 
+ | Noun | Status |
+diff --git a/packages/marketing/frames/brand-audiences.frame.json b/packages/marketing/frames/brand-audiences.frame.json
+index 8cb6d137..1372b5a6 100644
+--- a/packages/marketing/frames/brand-audiences.frame.json
++++ b/packages/marketing/frames/brand-audiences.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-audiences",
+   "title": "Choose who the brand speaks to first",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "who is our brand for",
+diff --git a/packages/marketing/frames/brand-ethos.frame.json b/packages/marketing/frames/brand-ethos.frame.json
+index e1434269..82b293b4 100644
+--- a/packages/marketing/frames/brand-ethos.frame.json
++++ b/packages/marketing/frames/brand-ethos.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-ethos",
+   "title": "State what the venture stands for",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "what does our brand stand for",
+diff --git a/packages/marketing/frames/brand-first-campaign.frame.json b/packages/marketing/frames/brand-first-campaign.frame.json
+index 4e5eb004..98d4a4b3 100644
+--- a/packages/marketing/frames/brand-first-campaign.frame.json
++++ b/packages/marketing/frames/brand-first-campaign.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-first-campaign",
+   "title": "Plan the first campaign",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "how do we launch the brand",
+diff --git a/packages/marketing/frames/brand-stand.frame.json b/packages/marketing/frames/brand-stand.frame.json
+index 78dd3a16..6e7bb196 100644
+--- a/packages/marketing/frames/brand-stand.frame.json
++++ b/packages/marketing/frames/brand-stand.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-stand",
+   "title": "Take a public stand",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "should we take a stand",
+diff --git a/packages/marketing/frames/brand-tagline.frame.json b/packages/marketing/frames/brand-tagline.frame.json
+index ee7b6afa..f0f5dcad 100644
+--- a/packages/marketing/frames/brand-tagline.frame.json
++++ b/packages/marketing/frames/brand-tagline.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-tagline",
+   "title": "Say the ethos in a line",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "we need a tagline",
+diff --git a/packages/marketing/frames/brand-visual-identity.frame.json b/packages/marketing/frames/brand-visual-identity.frame.json
+index ae84070a..dc5f3c20 100644
+--- a/packages/marketing/frames/brand-visual-identity.frame.json
++++ b/packages/marketing/frames/brand-visual-identity.frame.json
+@@ -2,7 +2,7 @@
+   "id": "brand-visual-identity",
+   "title": "Give the brand a look",
+   "functions": [
+-    "marketing"
++    "marketing-and-sales"
+   ],
+   "triggers": [
+     "we need a logo designed for the company",
+diff --git a/schema/README.md b/schema/README.md
+index 3ea8392b..e7ea637e 100644
+--- a/schema/README.md
++++ b/schema/README.md
+@@ -26,7 +26,7 @@ Status:
+ | Product (card) | `schema/product.schema.json` | defined | `products/<id>.json`: market, job, technology, offering, business model, flows |
+ | Account | `schema/account.schema.json` | defined | Optional. `accounts/<id>/account.json` inside the venture that serves it; relationship client, customer, user, member, partner or other (EE-021) |
+ | Venture folder layout | `schema/scaffold/defaults.json`, `schema/init-venture.mjs` | defined | Starting layers by phase; pillars and venture profile in every venture |
+-| Nouns | `docs/ontology.json`, `schema/check-nouns.mjs`, `schema/ontology-gate.ts` | defined | Standards first. Each noun names its function (a department id, or null when the word is shared) and whether it can type a handoff. A scoped noun `name@function` must be owned by that function. `node schema/check-nouns.mjs --package <file> --function <id>` prints one membership verdict; `--record` writes it to the sidecar beside the package. If the schema checker cannot run, crashes, or the operating-rules module cannot be read, the command exits 2 and records nothing. Only a package that fails validation is recorded as a schema reject. A fact is the boolean true or a record; any other value fails that property, and two records that disagree are a reject. A record the term cannot read fails every property of that type and is recorded as that reject |
++| Nouns | `docs/ontology.json`, `schema/check-nouns.mjs`, `schema/ontology-gate.ts`, `schema/noun-relations.ts`, `docs/noun-graph.md` | defined | Standards first (EE-014, EE-103). Each noun names its function (a department id, or null when the word is shared) and whether it can type a handoff. A scoped noun `name@function` must be owned by that function, and a new scoped sense is only for a different meaning: the same meaning presented differently by market or relationship is a view of the same noun. A noun may name relations from a closed set: broader, narrower, related (W3C SKOS), part-of and derived-from. broader and narrower are inverses, and related is symmetric: one side is enough and the check derives the other. part-of and derived-from are one-way. No self-relations. broader and part-of have no cycles. `node schema/check-nouns.mjs --graph` prints the noun graph. `node schema/check-nouns.mjs --package <file> --function <id>` prints one membership verdict; `--record` writes it to the sidecar beside the package. If the schema checker cannot run, crashes, or the operating-rules module cannot be read, the command exits 2 and records nothing. Only a package that fails validation is recorded as a schema reject. A fact is the boolean true or a record; any other value fails that property, and two records that disagree are a reject. A record the term cannot read fails every property of that type and is recorded as that reject |
+ | References | `schema/reference.schema.json`, `<layer>/references/references.json` | defined | Purpose has one so far; filled by `knowledge/skills/find-reference/` |
+ | Data model | `schema/data-model.json`, `schema/data-model.schema.json`, `schema/check-data-model.mjs` | defined | Every record type, its owning layer and references; no JSON file may sit outside it |
+ | Record generators | `schema/generators/`, `schema/generators/generate.mjs`, `schema/generators/gaps.json`, `schema/generators/generators-test.mjs` | pilots built | The script beside a schema (EE-099): it describes what to ask and drafts one record that passes the schema, and hands the draft to the write chain without storing it. A record type names its script in `generator` in the data model. Pilots so far are `glossary.mjs`, `reference.mjs` and `bug.mjs`. `check-data-model.mjs` fails a type that names no generator unless `gaps.json` lists it, and fails a listed type that has one |
+diff --git a/schema/check-nouns.mjs b/schema/check-nouns.mjs
+index a20a809d..d80db1c5 100644
+--- a/schema/check-nouns.mjs
++++ b/schema/check-nouns.mjs
+@@ -1,12 +1,15 @@
+-// Checks the system's nouns (EE-014). Fails when a retired noun from docs/ontology.json
++// Checks the system's nouns (EE-014, EE-103). Fails when a retired noun from docs/ontology.json
+ // reappears in the checked files, when a noun cites a reference id that no layer's
+-// references/references.json holds, or when the ontology breaks the membership rules
++// references/references.json holds, when the ontology breaks the membership rules
+ // (a noun with no standard, a function that is not a department, a capability a function
+-// does not own). With --md, prints the glossary as Markdown instead. With --package,
+-// prints one membership verdict for that handoff.
++// does not own), or when a noun relation is outside the closed set, points at a missing
++// or retired noun, relates a noun to itself, contradicts its inverse, or cycles through
++// broader or part-of. With --md, prints the glossary as Markdown. With --graph, prints
++// the noun graph. With --package, prints one membership verdict for that handoff.
+ //
+ //   node schema/check-nouns.mjs
+ //   node schema/check-nouns.mjs --md
++//   node schema/check-nouns.mjs --graph
+ //   node schema/check-nouns.mjs --package <file> --function <id> [--record]
+ //
+ // A line that names a retired noun on purpose (to say what replaced it) carries "(was"
+@@ -15,11 +18,17 @@
+ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+ import { join, resolve } from "node:path";
+ import { checkOntology, decidePackage } from "./ontology-gate.ts";
++import { renderNounGraph, renderRelationSection } from "./noun-relations.ts";
+ 
+ // EE_ROOT points the check at another copy of the repository (used by schema/test.mjs).
+ const root = process.env.EE_ROOT?.replace(/\/?$/, "/") ?? new URL("..", import.meta.url).pathname;
+ const { check, nouns } = JSON.parse(readFileSync(join(root, "docs/ontology.json"), "utf8"));
+ 
++if (process.argv.includes("--graph")) {
++  console.log(renderNounGraph(nouns));
++  process.exit(0);
++}
++
+ if (process.argv.includes("--md")) {
+   const caps = (n) => n.level === "function" && n.capabilities?.length ? ` Capabilities: ${n.capabilities.join(", ")}.` : "";
+   const row = (n) => `| ${n.noun} | ${n.meaning}${caps(n)} | ${n.standard} | ${(n.references ?? []).join(", ")} | ${n.function ?? ""} | ${n.handoff_type ? "yes" : ""} |`;
+@@ -27,6 +36,7 @@ if (process.argv.includes("--md")) {
+     console.log(`\n### ${level[0].toUpperCase() + level.slice(1)}\n\n| Noun | Meaning | Standard | References | Function | Handoff type |\n| --- | --- | --- | --- | --- | --- |`);
+     nouns.filter((n) => n.level === level && n.status !== "retired").forEach((n) => console.log(row(n)));
+   }
++  console.log(renderRelationSection(nouns));
+   console.log(`\n### Retired\n\n| Noun | Status |\n| --- | --- |`);
+   nouns.filter((n) => n.status === "retired").forEach((n) => console.log(`| ${n.noun} | retired; use ${n.replaced_by} |`));
+   process.exit(0);
+diff --git a/schema/frames.mjs b/schema/frames.mjs
+index 7f5f5bfe..a77ba564 100644
+--- a/schema/frames.mjs
++++ b/schema/frames.mjs
+@@ -45,6 +45,14 @@ export const ATTACKS = {
+ export const NEVER = ["safe", "convertible note", "revenue-based financing", "venture debt", "dual-class", "preferred stock", "crowdfunding", "bootstrap", "term sheet", "series a"];
+ 
+ const framesDir = (pkg) => join(repo, "packages", pkg, "frames");
++function packageFunction(pkg) {
++  const file = join(repo, "packages", pkg, "package.json");
++  if (!existsSync(file)) return null;
++  const p = load(file);
++  if (typeof p.function === "string") return p.function;
++  if (typeof p.department === "string") return p.department;
++  return null;
++}
+ export function frames() {
+   if (!existsSync(join(repo, "packages"))) return [];
+   return readdirSync(join(repo, "packages")).filter((p) => existsSync(framesDir(p))).flatMap((p) =>
+@@ -65,7 +73,12 @@ export function check(f) {
+     for (const r of p.reads ?? []) if (!f.props.includes(r)) errors.push(`${f.id}: premise ${p.id} reads ${r}, which is not one of its props`);
+   }
+   for (const s of [f.goal, f.reframe]) for (const ph of placeholders(s)) if (!f.props.includes(ph)) errors.push(`${f.id}: {${ph}} is not one of its props`);
+-  if (f.package && f.package !== f.functions[0]) errors.push(`${f.id}: lives in packages/${f.package} but its first function is ${f.functions[0]}`);
++  // The package folder is not the function id. The first function has to match package.json
++  // (department or function). A check that every functions entry is a department id is not
++  // enforced yet: fund-without-ceding-control lists governance, and that id is not in
++  // operations/departments.json.
++  const owner = f.package ? packageFunction(f.package) : null;
++  if (owner && f.functions[0] !== owner) errors.push(`${f.id}: lives in packages/${f.package} (function ${owner}) but its first function is ${f.functions[0]}`);
+   for (const e of f.emits) if ((e.options_from ?? "frame") === "frame" && !e.options?.length) errors.push(`${f.id}: ${e.id} takes its options from the frame but lists none`);
+   for (const c of f.cases ?? []) for (const k of Object.keys(c.expect)) if (k !== "dichotomy" && !f.premises.some((p) => p.id === k)) errors.push(`${f.id}: case ${c.id} expects a verdict for ${k}, which is not a premise`);
+   return errors;
+diff --git a/schema/noun-relations.ts b/schema/noun-relations.ts
+new file mode 100644
+index 00000000..684f80da
+--- /dev/null
++++ b/schema/noun-relations.ts
+@@ -0,0 +1,302 @@
++// Typed relations between nouns (EE-103). The closed set is SKOS broader, narrower and
++// related, plus part-of and derived-from. broader and narrower are inverses, and related
++// is symmetric: stating one side is enough, and a stated pair must agree with its inverse.
++// part-of and derived-from have no inverse in the set. broader and part-of may not cycle.
++// A noun does not relate to itself. The graph draws each fact once.
++
++export const RELATION_TYPES = ["broader", "narrower", "related", "part-of", "derived-from"] as const;
++export type RelationType = (typeof RELATION_TYPES)[number];
++
++const RELATION_SET = new Set<string>(RELATION_TYPES);
++const FILL: Record<string, string> = {
++  shared: "#f5f5f4",
++  strategy: "#ede9fe",
++  products: "#dbeafe",
++  "marketing-and-sales": "#fce7f3",
++  finance: "#dcfce7",
++  "supply-chain": "#ffedd5",
++  "service-delivery": "#e0f2fe",
++  "customer-service": "#cffafe",
++  "human-capital": "#fef9c3",
++  it: "#e2e8f0",
++  assets: "#f3e8ff",
++  "risk-and-compliance": "#fee2e2",
++  "external-relationships": "#ccfbf1",
++  capabilities: "#fef3c7",
++};
++const STROKE: Record<string, string> = {
++  shared: "#57534e",
++  strategy: "#6d28d9",
++  products: "#1d4ed8",
++  "marketing-and-sales": "#be185d",
++  finance: "#15803d",
++  "supply-chain": "#c2410c",
++  "service-delivery": "#0369a1",
++  "customer-service": "#0e7490",
++  "human-capital": "#a16207",
++  it: "#334155",
++  assets: "#7e22ce",
++  "risk-and-compliance": "#b91c1c",
++  "external-relationships": "#0f766e",
++  capabilities: "#b45309",
++};
++
++type RelationInput = {
++  noun: string;
++  status?: string;
++  function?: string | null;
++  relations?: unknown;
++};
++
++type Stated = { from: string; type: RelationType; target: string };
++type Edge = { from: string; to: string; type: "broader" | "related" | "part-of" | "derived-from"; arrow: boolean };
++
++const isRecord = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
++const isRelationType = (value: string): value is RelationType => RELATION_SET.has(value);
++
++function nounsOf(input: readonly unknown[]): RelationInput[] {
++  const out: RelationInput[] = [];
++  for (const item of input) {
++    if (!isRecord(item) || typeof item.noun !== "string" || item.noun === "") continue;
++    const named = item.function;
++    const owner: string | null | undefined = named === null ? null : typeof named === "string" ? named : undefined;
++    out.push({
++      noun: item.noun,
++      status: typeof item.status === "string" ? item.status : undefined,
++      function: owner,
++      relations: item.relations,
++    });
++  }
++  return out;
++}
++
++function readRelations(noun: RelationInput, errors: string[]): { type: string; target: string }[] {
++  if (noun.relations === undefined) return [];
++  if (!Array.isArray(noun.relations)) {
++    errors.push(`docs/ontology.json: ${noun.noun}: relations is not a list`);
++    return [];
++  }
++  const out: { type: string; target: string }[] = [];
++  for (const item of noun.relations) {
++    if (!isRecord(item) || typeof item.type !== "string" || typeof item.target !== "string" || item.type === "" || item.target === "") {
++      errors.push(`docs/ontology.json: ${noun.noun}: a relation needs a type and a target`);
++      continue;
++    }
++    out.push({ type: item.type, target: item.target });
++  }
++  return out;
++}
++
++function pairOf(a: string, b: string): string {
++  return a < b ? `${a}\0${b}` : `${b}\0${a}`;
++}
++
++/** Directions that agree. A pair stated both ways is left out; the caller reports it. */
++function oneWay(facts: { from: string; to: string }[]): { edges: [string, string][]; conflicts: string[] } {
++  const dir = new Map<string, string>();
++  const bad = new Set<string>();
++  for (const fact of facts) {
++    const pair = pairOf(fact.from, fact.to);
++    const way = `${fact.from}\0${fact.to}`;
++    const prev = dir.get(pair);
++    if (prev && prev !== way) bad.add(pair);
++    else dir.set(pair, way);
++  }
++  const edges: [string, string][] = [];
++  const conflicts: string[] = [];
++  for (const [pair, way] of dir) {
++    if (bad.has(pair)) {
++      const [left, right] = pair.split("\0");
++      conflicts.push(`docs/ontology.json: ${left} and ${right}: broader and narrower point both ways`);
++      continue;
++    }
++    const [from, to] = way.split("\0");
++    if (from && to) edges.push([from, to]);
++  }
++  conflicts.sort();
++  return { edges, conflicts };
++}
++
++function cycleMessage(path: string[]): string {
++  const body = path.slice(0, -1);
++  let start = 0;
++  for (let i = 1; i < body.length; i++) if ((body[i] ?? "") < (body[start] ?? "")) start = i;
++  const rotated = body.slice(start).concat(body.slice(0, start));
++  return `${rotated.join(" -> ")} -> ${rotated[0]}`;
++}
++
++function cycles(label: string, edges: readonly [string, string][]): string[] {
++  const adj = new Map<string, string[]>();
++  for (const [from, to] of edges) {
++    const list = adj.get(from) ?? [];
++    if (!list.includes(to)) list.push(to);
++    adj.set(from, list);
++    if (!adj.has(to)) adj.set(to, []);
++  }
++  const found: string[] = [];
++  const color = new Map<string, number>();
++  const stack: string[] = [];
++  const visit = (node: string): void => {
++    color.set(node, 1);
++    stack.push(node);
++    for (const next of [...(adj.get(node) ?? [])].sort()) {
++      const state = color.get(next) ?? 0;
++      if (state === 0) visit(next);
++      else if (state === 1) {
++        const at = stack.indexOf(next);
++        found.push(`docs/ontology.json: ${label} cycle: ${cycleMessage(stack.slice(at).concat(next))}`);
++      }
++    }
++    stack.pop();
++    color.set(node, 2);
++  };
++  for (const node of [...adj.keys()].sort()) if ((color.get(node) ?? 0) === 0) visit(node);
++  return [...new Set(found)].sort();
++}
++
++type Resolved = { errors: string[]; stated: Stated[]; edges: Edge[]; owner: Map<string, string> };
++
++function resolve(input: readonly unknown[]): Resolved {
++  const nouns = nounsOf(input);
++  const errors: string[] = [];
++  const byName = new Map(nouns.map((noun) => [noun.noun, noun]));
++  const owner = new Map(nouns.map((noun) => [noun.noun, noun.function ? noun.function : "shared"]));
++  const stated: Stated[] = [];
++  const broaderFacts: { from: string; to: string }[] = [];
++  const partFacts: { from: string; to: string }[] = [];
++  const related = new Map<string, [string, string]>();
++  const derived: Edge[] = [];
++
++  for (const noun of nouns) {
++    const seen = new Set<string>();
++    for (const rel of readRelations(noun, errors)) {
++      if (!isRelationType(rel.type)) {
++        errors.push(`docs/ontology.json: ${noun.noun}: relation type ${rel.type} is not in the closed set`);
++        continue;
++      }
++      if (rel.target === noun.noun) {
++        errors.push(`docs/ontology.json: ${noun.noun}: ${rel.type} relates a noun to itself`);
++        continue;
++      }
++      const key = `${rel.type}\0${rel.target}`;
++      if (seen.has(key)) {
++        errors.push(`docs/ontology.json: ${noun.noun}: ${rel.type} ${rel.target} is stated twice`);
++        continue;
++      }
++      seen.add(key);
++      stated.push({ from: noun.noun, type: rel.type, target: rel.target });
++      const target = byName.get(rel.target);
++      if (!target) {
++        errors.push(`docs/ontology.json: ${noun.noun}: ${rel.type} ${rel.target} is not a noun`);
++        continue;
++      }
++      if (target.status === "retired" || noun.status === "retired") {
++        if (target.status === "retired") errors.push(`docs/ontology.json: ${noun.noun}: ${rel.type} ${rel.target} is retired`);
++        continue;
++      }
++      if (rel.type === "broader") broaderFacts.push({ from: noun.noun, to: rel.target });
++      if (rel.type === "narrower") broaderFacts.push({ from: rel.target, to: noun.noun });
++      if (rel.type === "part-of") partFacts.push({ from: noun.noun, to: rel.target });
++      if (rel.type === "related") related.set(pairOf(noun.noun, rel.target), noun.noun < rel.target ? [noun.noun, rel.target] : [rel.target, noun.noun]);
++      if (rel.type === "derived-from") derived.push({ from: noun.noun, to: rel.target, type: "derived-from", arrow: true });
++    }
++  }
++
++  const hierarchy = oneWay(broaderFacts);
++  errors.push(...hierarchy.conflicts);
++  errors.push(...cycles("broader", hierarchy.edges));
++  errors.push(...cycles("part-of", partFacts.map((fact) => [fact.from, fact.to])));
++
++  const edges: Edge[] = [
++    ...hierarchy.edges.map(([from, to]) => ({ from, to, type: "broader" as const, arrow: true })),
++    ...partFacts.map((fact) => ({ from: fact.from, to: fact.to, type: "part-of" as const, arrow: true })),
++    ...[...related.values()].map(([from, to]) => ({ from, to, type: "related" as const, arrow: false })),
++    ...derived,
++  ];
++  edges.sort((a, b) => a.type.localeCompare(b.type) || a.from.localeCompare(b.from) || a.to.localeCompare(b.to));
++  return { errors, stated, edges, owner };
++}
++
++/** Problems in noun-to-noun relations. Empty when the ontology agrees with EE-103. */
++export function relationErrors(input: readonly unknown[]): string[] {
++  return resolve(input).errors;
++}
++
++function slug(name: string): string {
++  return name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "noun";
++}
++
++function mermaidLabel(name: string): string {
++  return `"${name.replace(/"/g, "#quot;")}"`;
++}
++
++/** The whole of docs/noun-graph.md, generated from the ontology. */
++export function renderNounGraph(input: readonly unknown[]): string {
++  const { edges, owner } = resolve(input);
++  const names = [...new Set(edges.flatMap((edge) => [edge.from, edge.to]))].sort();
++  const ids = new Map<string, string>();
++  const used = new Set<string>();
++  for (const name of names) {
++    let id = `n_${slug(name)}`;
++    let n = 2;
++    while (used.has(id)) id = `n_${slug(name)}_${n++}`;
++    used.add(id);
++    ids.set(name, id);
++  }
++  const groups = new Map<string, string[]>();
++  for (const name of names) {
++    const group = owner.get(name) ?? "shared";
++    const list = groups.get(group) ?? [];
++    list.push(name);
++    groups.set(group, list);
++  }
++  const groupNames = [...groups.keys()].sort((a, b) => (a === "shared" ? -1 : b === "shared" ? 1 : a.localeCompare(b)));
++  const lines = ["flowchart LR"];
++  for (const group of groupNames) {
++    lines.push(`  subgraph g_${slug(group)}[${mermaidLabel(group)}]`);
++    for (const name of (groups.get(group) ?? []).sort()) lines.push(`    ${ids.get(name)}[${mermaidLabel(name)}]`);
++    lines.push("  end");
++  }
++  for (const edge of edges) {
++    const from = ids.get(edge.from);
++    const to = ids.get(edge.to);
++    const link = edge.arrow ? `-->|${edge.type}|` : `---|${edge.type}|`;
++    lines.push(`  ${from} ${link} ${to}`);
++  }
++  for (const group of groupNames) {
++    const fill = FILL[group] ?? "#f5f5f4";
++    const stroke = STROKE[group] ?? "#57534e";
++    lines.push(`  classDef c_${slug(group)} fill:${fill},stroke:${stroke},color:#1c1917`);
++  }
++  for (const name of names) lines.push(`  class ${ids.get(name)} c_${slug(owner.get(name) ?? "shared")}`);
++  return [
++    "# Noun graph",
++    "",
++    "Generated from `docs/ontology.json` by `node schema/check-nouns.mjs --graph` (EE-103). Do not edit this file by hand.",
++    "",
++    "Nouns are grouped and colored by the function that owns them. A noun with no function is shared. A noun that takes part in no relation is left off the graph.",
++    "",
++    "Each relation is drawn once. `broader` points from the narrower noun to the broader one, and a stated `narrower` is drawn as that same arrow. `related` is a line with no arrow, because it is symmetric. `part-of` points from the part to the whole. `derived-from` points from the derived noun to its source.",
++    "",
++    "```mermaid",
++    ...lines,
++    "```",
++    "",
++  ].join("\n");
++}
++
++/** The Relations section of docs/ontology.md. Stated rows only; inverses are derived, not repeated. */
++export function renderRelationSection(input: readonly unknown[]): string {
++  const { stated } = resolve(input);
++  const rows = [...stated].sort((a, b) => a.from.localeCompare(b.from) || a.type.localeCompare(b.type) || a.target.localeCompare(b.target));
++  return [
++    "",
++    "### Relations",
++    "",
++    "Each row is stated on the noun. `broader` and `narrower` are inverses, and `related` is symmetric, so the other side is derived and is not listed again. The graph is [docs/noun-graph.md](noun-graph.md).",
++    "",
++    "| From | Type | To |",
++    "| --- | --- | --- |",
++    ...rows.map((row) => `| ${row.from} | ${row.type} | ${row.target} |`),
++  ].join("\n");
++}
+diff --git a/schema/ontology-gate-test.ts b/schema/ontology-gate-test.ts
+index 6352002c..6d6a6129 100644
+--- a/schema/ontology-gate-test.ts
++++ b/schema/ontology-gate-test.ts
+@@ -368,6 +368,65 @@ expect("the repository ontology passes", run(process.execPath, [join(root, "sche
+   const ran = check(dir);
+   expect("a retired bare noun may sit beside its scoped senses", ran.status === 0);
+ }
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "broader", target: "wedge" }]; });
++  const ran = check(dir);
++  expect("a noun cannot relate to itself", ran.status !== 0 && /wedge: broader relates a noun to itself/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "broader", target: "no-such-noun" }]; });
++  const ran = check(dir);
++  expect("a relation target must be a noun", ran.status !== 0 && /wedge: broader no-such-noun is not a noun/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "related", target: "client" }]; });
++  const ran = check(dir);
++  expect("a relation target must not be retired", ran.status !== 0 && /wedge: related client is retired/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "contains", target: "portfolio role" }]; });
++  const ran = check(dir);
++  expect("a relation type outside the closed set fails", ran.status !== 0 && /relation type contains is not in the closed set/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => { const item = noun(o, "wedge"); if (item) item.relations = [{ type: "broader", target: "portfolio role" }, { type: "narrower", target: "portfolio role" }]; });
++  const ran = check(dir);
++  expect("broader and narrower cannot point both ways", ran.status !== 0 && /portfolio role and wedge: broader and narrower point both ways/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => {
++    const item = noun(o, "portfolio role");
++    if (item) item.relations = [{ type: "narrower", target: "wedge" }];
++  });
++  const ran = check(dir);
++  expect("a stated inverse matches the derived broader link", ran.status === 0);
++}
++{
++  const dir = sparse((o) => {
++    const job = noun(o, "job");
++    const market = noun(o, "market");
++    const technology = noun(o, "technology");
++    if (job) job.relations = [{ type: "broader", target: "market" }];
++    if (market) market.relations = [{ type: "broader", target: "technology" }];
++    if (technology) technology.relations = [{ type: "broader", target: "job" }];
++  });
++  const ran = check(dir);
++  expect("a broader cycle fails", ran.status !== 0 && /broader cycle: job -> market -> technology -> job/.test(ran.stderr));
++}
++{
++  const dir = sparse((o) => {
++    const job = noun(o, "job");
++    const market = noun(o, "market");
++    if (job) job.relations = [{ type: "part-of", target: "market" }];
++    if (market) market.relations = [{ type: "part-of", target: "job" }];
++  });
++  const ran = check(dir);
++  expect("a part-of cycle fails", ran.status !== 0 && /part-of cycle: job -> market -> job/.test(ran.stderr));
++}
++{
++  const ran = run(process.execPath, [join(root, "schema/check-nouns.mjs"), "--graph"]);
++  expect("the graph draws seeded relations, grouped by function", ran.status === 0 && /n_succession_matrix -->\|part-of\| n_product_anatomy/.test(ran.stdout) && /subgraph g_marketing_and_sales/.test(ran.stdout) && /n_customer_finance ---\|related\| n_customer_marketing_and_sales/.test(ran.stdout) && /n_wedge -->\|broader\| n_portfolio_role/.test(ran.stdout));
++}
+ 
+ function spawnGate(file: string, fn: string): Promise<{ status: number | null }> {
+   return new Promise((resolve) => {
+diff --git a/schema/ontology-gate.ts b/schema/ontology-gate.ts
+index 866463e2..2e6018bd 100644
+--- a/schema/ontology-gate.ts
++++ b/schema/ontology-gate.ts
+@@ -22,6 +22,7 @@ import { join } from "node:path";
+ import { fileURLToPath } from "node:url";
+ import { recordGate } from "../interface/provenance.mjs";
+ import { dispositionOf, operatingRulesFor, OperatingRulesError } from "./operating-rules.ts";
++import { relationErrors } from "./noun-relations.ts";
+ import { run, type Base, type Term } from "./terms/engine.ts";
+ import { TERMS } from "./terms/terms.ts";
+ import type { Handoff, OperatingRules, ProvenanceEntry } from "./types/records.d.ts";
+@@ -41,6 +42,7 @@ type Noun = {
+   term?: string;
+   properties?: string[];
+   required_touches?: string[];
++  relations?: unknown;
+   hasFunction: boolean;
+   hasHandoffType: boolean;
+ };
+@@ -80,6 +82,7 @@ function loadNouns(root: string): Noun[] {
+     term: typeof n.term === "string" ? n.term : undefined,
+     properties: strings(n.properties),
+     required_touches: strings(n.required_touches),
++    relations: Object.prototype.hasOwnProperty.call(n, "relations") ? n.relations : undefined,
+     hasFunction: Object.prototype.hasOwnProperty.call(n, "function"),
+     hasHandoffType: Object.prototype.hasOwnProperty.call(n, "handoff_type"),
+   }));
+@@ -201,6 +204,7 @@ export function checkOntology(root: string): string[] {
+     for (const cap of caps) checkCapability(noun.noun, cap, byName, errors);
+   }
+   checkScopes(nouns, departments, errors);
++  errors.push(...relationErrors(nouns));
+   return errors;
+ }
+ 
+diff --git a/test.mjs b/test.mjs
+index 80e1dd1f..6ec4daa1 100644
+--- a/test.mjs
++++ b/test.mjs
+@@ -170,6 +170,7 @@ const cheap = [
+   ["eslint (npm run lint)", "npm", ["run", "lint", "--silent"]],
+   ["types (tsc checkJs, every file)", "node", ["schema/check-types.ts"]],
+   ["docs/ontology.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --md)", "node", ["schema/check-nouns.mjs", "--md"], rendered("docs/ontology.md", "\n### System")],
++  ["docs/noun-graph.md matches docs/ontology.json (regenerate with node schema/check-nouns.mjs --graph)", "node", ["schema/check-nouns.mjs", "--graph"], rendered("docs/noun-graph.md", "# Noun graph")],
+   ["layer relationships in docs/design/LAYERS_AND_KITS_2026-10-27.md match the kits (regenerate with node schema/check-data-model.mjs --md)", "node", ["schema/check-data-model.mjs", "--md"], rendered("docs/design/LAYERS_AND_KITS_2026-10-27.md", "### Layer relationships")],
+   ["docs/reference/ROUTES.md matches the kits (regenerate with node interface/router.mjs --md)", "node", ["interface/router.mjs", "--md"], rendered("docs/reference/ROUTES.md", "## Routes")],
+ ];

@@ -1,0 +1,1655 @@
+{
+  "number": 34,
+  "title": "Mentura: frame agents, training pipeline design and own-harness idea",
+  "body": "<!-- claude-projects-attribution: {\"github_login\":\"tchjhnsn\"} -->\n_Requested by **Torian** · [project thread](https://claude.ai/code/project/chan_01TRojivaFzywKqAKrsycdv8?thread=cmsg_01TRojivaFzywKqAKrsycdv81vDy1VKeKfWw3ZBzrRwUwy)_\n\nConfidential Mentura work. All of it sits under `platform/`, so it moves with Mentura when Mentura splits into its own private repository after the demo (Torian's decision, 2026-10-29).\n\n## Frame agents (`platform/agents/frames/`)\n`run.mjs` runs one decision frame against a founder's problem, in this order:\n1. **framer** (Claude): writes the goal, the hidden decisions and the premises.\n2. **premise attacker** (Claude): writes one Noul proposition per premise.\n3. **Jev**: judges each proposition. At or above 0.7 the premise holds; at or below 0.3 it fails.\n4. **scout**: does the freshness lookup. It uses Firecrawl, or the agent's web search when there is no Firecrawl key.\n5. **reframer** (Claude): classifies the problem as a false dichotomy, a trade-off or a sequence, and writes the reframed question and the decisions.\n6. **code**: writes open decision records drafted by agents. Every option cites a source the scout found, and no agent decides.\n\nThe run produces one trace span per step. Code checks go to LangSmith as feedback with `--upload`: frame_has_no_answer, premises_judged, jev_decisive, verdict_valid, options_cited and founder_decides.\n\nFrames are read through a single adapter (`readFrame`) until the library schema lands on #33. The fixtures are a constructed frame and a constructed founder, never a real venture, and the data model check ignores them.\n\nA live run on the constructed founder used real Claude and real Jev. It returned \"false-dichotomy\", 8 propositions judged, 3 decision records and 12 cited sources, and every check scored 1 except jev_decisive, which scored 0.75.\n\n## Docs\n- `platform/design/agent-training-pipeline.md`: the agents, the split between Jev and code, the LangSmith loop, and the training signal (founder approvals now, outcomes later).\n- `platform/strategy/ideas/own-harness-home-field-2026-10-29.md`: an idea draft, not a record. It quotes Torian word for word.\n\n## Tests\n`node test.mjs` passes. It includes `platform/agents/frames/test.mjs`, which runs offline with a stand-in agent and a stand-in Jev.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01LJHEftA5fBfwCrWtkqnjkz",
+  "headRefOid": "e6240aff349a4328fa1855e4c9b1fb7aaabe0544",
+  "baseRefName": "main",
+  "baseRefOid": "4bcbd0182ea9e6ec1dc65fa8250207e9a462e819",
+  "files": [
+    {
+      "path": ".gitignore",
+      "additions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "AGENTS.md",
+      "additions": 2,
+      "deletions": 1
+    },
+    {
+      "path": "LICENSE",
+      "additions": 21,
+      "deletions": 0
+    },
+    {
+      "path": "docs/decisions/decisions.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "docs/design/LAYERS_AND_KITS_2026-10-27.md",
+      "additions": 10,
+      "deletions": 9
+    },
+    {
+      "path": "docs/design/naive-nextjs-status.json",
+      "additions": 960,
+      "deletions": 278
+    },
+    {
+      "path": "docs/reference/ROUTES.md",
+      "additions": 36,
+      "deletions": 37
+    },
+    {
+      "path": "docs/upgrades/0.2.0.md",
+      "additions": 39,
+      "deletions": 0
+    },
+    {
+      "path": "docs/upgrades/0.3.0.md",
+      "additions": 36,
+      "deletions": 0
+    },
+    {
+      "path": "governance/layer.json",
+      "additions": 2,
+      "deletions": 1
+    },
+    {
+      "path": "governance/venture-template/roles/venture-roles.json",
+      "additions": 62,
+      "deletions": 0
+    },
+    {
+      "path": "interface/acting.mjs",
+      "additions": 83,
+      "deletions": 0
+    },
+    {
+      "path": "interface/adapters.mjs",
+      "additions": 182,
+      "deletions": 0
+    },
+    {
+      "path": "interface/adapters/claude-code.json",
+      "additions": 16,
+      "deletions": 0
+    },
+    {
+      "path": "interface/adapters/codex.json",
+      "additions": 14,
+      "deletions": 0
+    },
+    {
+      "path": "interface/adapters/cursor.json",
+      "additions": 16,
+      "deletions": 0
+    },
+    {
+      "path": "interface/api/server.mjs",
+      "additions": 4,
+      "deletions": 2
+    },
+    {
+      "path": "interface/boundaries.mjs",
+      "additions": 218,
+      "deletions": 0
+    },
+    {
+      "path": "interface/brand.mjs",
+      "additions": 214,
+      "deletions": 0
+    },
+    {
+      "path": "interface/cli/find-venture.mjs",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "path": "interface/cli/freshness.mjs",
+      "additions": 59,
+      "deletions": 0
+    },
+    {
+      "path": "interface/cli/guard.mjs",
+      "additions": 6,
+      "deletions": 0
+    },
+    {
+      "path": "interface/cli/mentura.mjs",
+      "additions": 82,
+      "deletions": 8
+    },
+    {
+      "path": "interface/cli/naive.mjs",
+      "additions": 172,
+      "deletions": 13
+    },
+    {
+      "path": "interface/context-test.mjs",
+      "additions": 236,
+      "deletions": 0
+    },
+    {
+      "path": "interface/context.mjs",
+      "additions": 524,
+      "deletions": 0
+    },
+    {
+      "path": "interface/create-venture/LICENSE",
+      "additions": 21,
+      "deletions": 0
+    },
+    {
+      "path": "interface/create-venture/index.mjs",
+      "additions": 318,
+      "deletions": 0
+    },
+    {
+      "path": "interface/create-venture/package.json",
+      "additions": 25,
+      "deletions": 0
+    },
+    {
+      "path": "interface/create-venture/test.mjs",
+      "additions": 237,
+      "deletions": 0
+    },
+    {
+      "path": "interface/demo/board.mjs",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "interface/dev/setup.mjs",
+      "additions": 84,
+      "deletions": 0
+    },
+    {
+      "path": "interface/dev/test.mjs",
+      "additions": 73,
+      "deletions": 0
+    },
+    {
+      "path": "interface/gate-hooks.mjs",
+      "additions": 36,
+      "deletions": 0
+    },
+    {
+      "path": "interface/harness/evals.mjs",
+      "additions": 3,
+      "deletions": 3
+    },
+    {
+      "path": "interface/harness/run.mjs",
+      "additions": 4,
+      "deletions": 4
+    },
+    {
+      "path": "interface/instrumentation.mjs",
+      "additions": 86,
+      "deletions": 0
+    },
+    {
+      "path": "interface/kit-boundary.mjs",
+      "additions": 73,
+      "deletions": 0
+    },
+    {
+      "path": "interface/layer.json",
+      "additions": 8,
+      "deletions": 2
+    },
+    {
+      "path": "interface/mcp/server.mjs",
+      "additions": 47,
+      "deletions": 7
+    },
+    {
+      "path": "interface/package-routes.mjs",
+      "additions": 196,
+      "deletions": 0
+    },
+    {
+      "path": "interface/provenance.mjs",
+      "additions": 24,
+      "deletions": 1
+    },
+    {
+      "path": "interface/reads.mjs",
+      "additions": 173,
+      "deletions": 0
+    },
+    {
+      "path": "interface/release-card.mjs",
+      "additions": 42,
+      "deletions": 0
+    },
+    {
+      "path": "interface/router.mjs",
+      "additions": 101,
+      "deletions": 28
+    },
+    {
+      "path": "interface/skills/naive-setup/SKILL.md",
+      "additions": 71,
+      "deletions": 0
+    },
+    {
+      "path": "interface/skills/naive-setup/artifact.html",
+      "additions": 83,
+      "deletions": 0
+    },
+    {
+      "path": "interface/test.mjs",
+      "additions": 3,
+      "deletions": 3
+    },
+    {
+      "path": "interface/vitals.mjs",
+      "additions": 115,
+      "deletions": 0
+    },
+    {
+      "path": "interface/writes-test.mjs",
+      "additions": 255,
+      "deletions": 0
+    },
+    {
+      "path": "interface/writes.mjs",
+      "additions": 190,
+      "deletions": 0
+    },
+    {
+      "path": "knowledge/freshness.json",
+      "additions": 85,
+      "deletions": 0
+    },
+    {
+      "path": "knowledge/layer.json",
+      "additions": 11,
+      "deletions": 3
+    },
+    {
+      "path": "knowledge/templates/glossary.md",
+      "additions": 23,
+      "deletions": 0
+    },
+    {
+      "path": "operations/layer.json",
+      "additions": 10,
+      "deletions": 3
+    },
+    {
+      "path": "operations/templates/marketing-brand.md",
+      "additions": 46,
+      "deletions": 0
+    },
+    {
+      "path": "operations/templates/public-assets.md",
+      "additions": 39,
+      "deletions": 0
+    },
+    {
+      "path": "package.json",
+      "additions": 61,
+      "deletions": 0
+    },
+    {
+      "path": "packages/catalog.json",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "packages/customers/package.json",
+      "additions": 21,
+      "deletions": 1
+    },
+    {
+      "path": "packages/deals/package.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "packages/decisions/package.json",
+      "additions": 12,
+      "deletions": 1
+    },
+    {
+      "path": "packages/finance/frames/fund-without-ceding-control.frame.json",
+      "additions": 177,
+      "deletions": 0
+    },
+    {
+      "path": "packages/foundation/package.json",
+      "additions": 8,
+      "deletions": 1
+    },
+    {
+      "path": "packages/fund/package.json",
+      "additions": 48,
+      "deletions": 0
+    },
+    {
+      "path": "packages/marketing/package.json",
+      "additions": 10,
+      "deletions": 4
+    },
+    {
+      "path": "packages/money/package.json",
+      "additions": 24,
+      "deletions": 3
+    },
+    {
+      "path": "packages/validation/package.json",
+      "additions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "platform/README.md",
+      "additions": 10,
+      "deletions": 0
+    },
+    {
+      "path": "platform/adapter.json",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/cases/fixtures/agent.mjs",
+      "additions": 11,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/cases/reconstruct.mjs",
+      "additions": 88,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/cases/test.mjs",
+      "additions": 29,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/frames/fixtures/agent.mjs",
+      "additions": 14,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/frames/fixtures/facts.json",
+      "additions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/frames/fixtures/jev.mjs",
+      "additions": 10,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/frames/run.mjs",
+      "additions": 286,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/frames/test.mjs",
+      "additions": 50,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/outreach/fixtures/agent.mjs",
+      "additions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/outreach/fixtures/jev.mjs",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/outreach/run.mjs",
+      "additions": 127,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/outreach/send.mjs",
+      "additions": 64,
+      "deletions": 0
+    },
+    {
+      "path": "platform/agents/outreach/test.mjs",
+      "additions": 37,
+      "deletions": 0
+    },
+    {
+      "path": "platform/design/adr-viability-and-real-world-research-2026-10-29.md",
+      "additions": 52,
+      "deletions": 0
+    },
+    {
+      "path": "platform/design/agent-training-pipeline.md",
+      "additions": 98,
+      "deletions": 0
+    },
+    {
+      "path": "platform/integrations/remote-image.mjs",
+      "additions": 79,
+      "deletions": 0
+    },
+    {
+      "path": "platform/integrations/rho-test.mjs",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "platform/integrations/rho.mjs",
+      "additions": 7,
+      "deletions": 6
+    },
+    {
+      "path": "platform/kits/README.md",
+      "additions": 8,
+      "deletions": 1
+    },
+    {
+      "path": "platform/kits/agent-upgrade/kit.json",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "path": "platform/kits/agent-upgrade/run.mjs",
+      "additions": 82,
+      "deletions": 0
+    },
+    {
+      "path": "platform/kits/agent-upgrade/stand-in-agent.mjs",
+      "additions": 32,
+      "deletions": 0
+    },
+    {
+      "path": "platform/kits/test.mjs",
+      "additions": 101,
+      "deletions": 0
+    },
+    {
+      "path": "platform/kits/validation-kickoff/kit.json",
+      "additions": 29,
+      "deletions": 0
+    },
+    {
+      "path": "platform/strategy/ideas/own-harness-home-field-2026-10-29.md",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "platform/webhooks/server.mjs",
+      "additions": 70,
+      "deletions": 0
+    },
+    {
+      "path": "platform/webhooks/test.mjs",
+      "additions": 66,
+      "deletions": 0
+    },
+    {
+      "path": "purpose/frameworks/idea-map/ideamap.mjs",
+      "additions": 4,
+      "deletions": 2
+    },
+    {
+      "path": "schema/README.md",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "schema/access.mjs",
+      "additions": 57,
+      "deletions": 0
+    },
+    {
+      "path": "schema/adapter.schema.json",
+      "additions": 33,
+      "deletions": 0
+    },
+    {
+      "path": "schema/assets.mjs",
+      "additions": 212,
+      "deletions": 0
+    },
+    {
+      "path": "schema/brand-test.mjs",
+      "additions": 388,
+      "deletions": 0
+    },
+    {
+      "path": "schema/brand.mjs",
+      "additions": 373,
+      "deletions": 0
+    },
+    {
+      "path": "schema/build-release.mjs",
+      "additions": 61,
+      "deletions": 0
+    },
+    {
+      "path": "schema/caching-test.mjs",
+      "additions": 197,
+      "deletions": 0
+    },
+    {
+      "path": "schema/caching.mjs",
+      "additions": 505,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-assets.mjs",
+      "additions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-brand.mjs",
+      "additions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-config.mjs",
+      "additions": 110,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-nextjs-status.mjs",
+      "additions": 3,
+      "deletions": 1
+    },
+    {
+      "path": "schema/check-people.mjs",
+      "additions": 70,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-sources.mjs",
+      "additions": 9,
+      "deletions": 1
+    },
+    {
+      "path": "schema/check-ventures.mjs",
+      "additions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "schema/data-model.json",
+      "additions": 339,
+      "deletions": 1
+    },
+    {
+      "path": "schema/deal.schema.json",
+      "additions": 80,
+      "deletions": 0
+    },
+    {
+      "path": "schema/decisions.mjs",
+      "additions": 7,
+      "deletions": 1
+    },
+    {
+      "path": "schema/docs-commands-test.mjs",
+      "additions": 4,
+      "deletions": 2
+    },
+    {
+      "path": "schema/examples/frames/judge.mjs",
+      "additions": 10,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/venture-type/jev.mjs",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/AGENTS.md",
+      "additions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/accounts/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/decisions/discovery-goal.decision.json",
+      "additions": 23,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/decisions/statement-icp.decision.json",
+      "additions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/decisions/statement-problem.decision.json",
+      "additions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/decisions/venture.team.decision.json",
+      "additions": 37,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/knowledge/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/knowledge/sources.json",
+      "additions": 46,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/.gitignore",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000001.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000002.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000003.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000004.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000005.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000006.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000007.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000008.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000009.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000010.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000011.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000012.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000013.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/30000000-0000-4000-8000-000000000014.json",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/_streams/transactions/stream.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/money/_summary.json",
+      "additions": 30,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/customer-service/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/customer-service/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/finance/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/finance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/human-capital/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/human-capital/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/it/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/it/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/marketing-and-sales/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/marketing-and-sales/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/products/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/products/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/strategy/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/operations/departments/strategy/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/people/founders/maya-chen.json",
+      "additions": 15,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/people/people.json",
+      "additions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/pillars/brand.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/pillars/business.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/pillars/product.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/products/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/products/decisions/product.core-product.decision.json",
+      "additions": 28,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/products/decisions/product.exists.decision.json",
+      "additions": 38,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/products/decisions/product.flagship.decision.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/profile.md",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/provenance.jsonl",
+      "additions": 12,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/raw/dump.md",
+      "additions": 6,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/acme-labs/venture.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/AGENTS.md",
+      "additions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/accounts/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/deals/ductline.json",
+      "additions": 8,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/deals/kilnworks.json",
+      "additions": 14,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/decisions/venture.team.decision.json",
+      "additions": 31,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/evidence/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/fund/decisions/terms.decision.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/fund/decisions/terms.first-close.decision.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/fund/decisions/thesis.decision.json",
+      "additions": 26,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/fund/terms.json",
+      "additions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/fund/thesis.json",
+      "additions": 22,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/external-relationships/charter.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/external-relationships/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/finance/charter.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/finance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/human-capital/charter.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/human-capital/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/risk-and-compliance/charter.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/risk-and-compliance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/strategy/charter.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/governance/departments/strategy/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/knowledge/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/external-relationships/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/external-relationships/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/finance/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/finance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/human-capital/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/human-capital/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/risk-and-compliance/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/risk-and-compliance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/strategy/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/operations/departments/strategy/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/people/founders/ana-ruiz.json",
+      "additions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/people/founders/ben-okafor.json",
+      "additions": 7,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/people/people.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/pillars/brand.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/pillars/business.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/pillars/product.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/AGENTS.md",
+      "additions": 17,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/accounts/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/decisions/venture.team.decision.json",
+      "additions": 31,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/knowledge/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/customer-service/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/customer-service/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/finance/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/finance/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/human-capital/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/human-capital/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/it/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/it/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/marketing-and-sales/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/marketing-and-sales/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/products/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/products/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/strategy/README.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/operations/departments/strategy/department.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/pillars/brand.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/pillars/business.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/pillars/product.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/products/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/products/decisions/product.core-product.decision.json",
+      "additions": 28,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/products/decisions/product.exists.decision.json",
+      "additions": 32,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/products/decisions/product.flagship.decision.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/profile.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/portfolio/kilnworks/venture.json",
+      "additions": 27,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/products/.gitkeep",
+      "additions": 0,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/profile.md",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/provenance.jsonl",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/purpose/README.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "schema/examples/workspace/ventures/northstar/venture.json",
+      "additions": 49,
+      "deletions": 0
+    },
+    {
+      "path": "schema/founder.schema.json",
+      "additions": 72,
+      "deletions": 0
+    },
+    {
+      "path": "schema/frame.schema.json",
+      "additions": 240,
+      "deletions": 0
+    },
+    {
+      "path": "schema/frames-test.mjs",
+      "additions": 91,
+      "deletions": 0
+    },
+    {
+      "path": "schema/frames.mjs",
+      "additions": 228,
+      "deletions": 0
+    },
+    {
+      "path": "schema/freshness-log.schema.json",
+      "additions": 40,
+      "deletions": 0
+    },
+    {
+      "path": "schema/freshness-profiles.schema.json",
+      "additions": 44,
+      "deletions": 0
+    },
+    {
+      "path": "schema/freshness-test.mjs",
+      "additions": 189,
+      "deletions": 0
+    },
+    {
+      "path": "schema/freshness.mjs",
+      "additions": 473,
+      "deletions": 0
+    },
+    {
+      "path": "schema/fund-terms.schema.json",
+      "additions": 107,
+      "deletions": 0
+    },
+    {
+      "path": "schema/fund-thesis.schema.json",
+      "additions": 87,
+      "deletions": 0
+    },
+    {
+      "path": "schema/gate-drafts.mjs",
+      "additions": 130,
+      "deletions": 0
+    },
+    {
+      "path": "schema/gate-test.mjs",
+      "additions": 275,
+      "deletions": 0
+    },
+    {
+      "path": "schema/gate.mjs",
+      "additions": 105,
+      "deletions": 11
+    },
+    {
+      "path": "schema/glossary.schema.json",
+      "additions": 25,
+      "deletions": 0
+    },
+    {
+      "path": "schema/init-venture.mjs",
+      "additions": 38,
+      "deletions": 8
+    },
+    {
+      "path": "schema/judgment.schema.json",
+      "additions": 38,
+      "deletions": 0
+    },
+    {
+      "path": "schema/kit.schema.json",
+      "additions": 47,
+      "deletions": 0
+    },
+    {
+      "path": "schema/kits.mjs",
+      "additions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "schema/knowledge-sources.schema.json",
+      "additions": 145,
+      "deletions": 15
+    },
+    {
+      "path": "schema/layer.json",
+      "additions": 16,
+      "deletions": 3
+    },
+    {
+      "path": "schema/marketing-brand.schema.json",
+      "additions": 116,
+      "deletions": 0
+    },
+    {
+      "path": "schema/migrations/kit-to-package.mjs",
+      "additions": 94,
+      "deletions": 0
+    },
+    {
+      "path": "schema/migrations/package-layout.mjs",
+      "additions": 86,
+      "deletions": 0
+    },
+    {
+      "path": "schema/model-steps-test.mjs",
+      "additions": 307,
+      "deletions": 0
+    },
+    {
+      "path": "schema/model-steps.mjs",
+      "additions": 717,
+      "deletions": 0
+    },
+    {
+      "path": "schema/money-summary.schema.json",
+      "additions": 138,
+      "deletions": 0
+    },
+    {
+      "path": "schema/naive-config.mjs",
+      "additions": 165,
+      "deletions": 0
+    },
+    {
+      "path": "schema/naive-config.schema.json",
+      "additions": 268,
+      "deletions": 0
+    },
+    {
+      "path": "schema/need-now.json",
+      "additions": 171,
+      "deletions": 0
+    },
+    {
+      "path": "schema/need-now.mjs",
+      "additions": 3,
+      "deletions": 2
+    },
+    {
+      "path": "schema/packages.mjs",
+      "additions": 10,
+      "deletions": 5
+    },
+    {
+      "path": "schema/people.schema.json",
+      "additions": 86,
+      "deletions": 0
+    },
+    {
+      "path": "schema/public-assets.schema.json",
+      "additions": 76,
+      "deletions": 0
+    },
+    {
+      "path": "schema/release-read.mjs",
+      "additions": 111,
+      "deletions": 0
+    },
+    {
+      "path": "schema/releases-test.mjs",
+      "additions": 240,
+      "deletions": 0
+    },
+    {
+      "path": "schema/releases.mjs",
+      "additions": 497,
+      "deletions": 0
+    },
+    {
+      "path": "schema/setup-test.mjs",
+      "additions": 83,
+      "deletions": 0
+    },
+    {
+      "path": "schema/setup.mjs",
+      "additions": 164,
+      "deletions": 0
+    },
+    {
+      "path": "schema/stale.mjs",
+      "additions": 111,
+      "deletions": 0
+    },
+    {
+      "path": "schema/start-release.mjs",
+      "additions": 41,
+      "deletions": 0
+    },
+    {
+      "path": "schema/structure.mjs",
+      "additions": 186,
+      "deletions": 0
+    },
+    {
+      "path": "schema/systems-catalog.json",
+      "additions": 126,
+      "deletions": 0
+    },
+    {
+      "path": "schema/systems-catalog.schema.json",
+      "additions": 78,
+      "deletions": 0
+    },
+    {
+      "path": "schema/test.mjs",
+      "additions": 3,
+      "deletions": 1
+    },
+    {
+      "path": "schema/trigger.schema.json",
+      "additions": 44,
+      "deletions": 0
+    },
+    {
+      "path": "schema/triggers.mjs",
+      "additions": 237,
+      "deletions": 0
+    },
+    {
+      "path": "schema/upgrade-registry.schema.json",
+      "additions": 60,
+      "deletions": 0
+    },
+    {
+      "path": "schema/upgrade-venture.mjs",
+      "additions": 96,
+      "deletions": 118
+    },
+    {
+      "path": "schema/upgrades-test.mjs",
+      "additions": 251,
+      "deletions": 0
+    },
+    {
+      "path": "schema/upgrades.json",
+      "additions": 69,
+      "deletions": 0
+    },
+    {
+      "path": "schema/upgrades.mjs",
+      "additions": 385,
+      "deletions": 0
+    },
+    {
+      "path": "schema/validate.py",
+      "additions": 19,
+      "deletions": 10
+    },
+    {
+      "path": "schema/venture-role.schema.json",
+      "additions": 64,
+      "deletions": 0
+    },
+    {
+      "path": "schema/venture-type.mjs",
+      "additions": 62,
+      "deletions": 0
+    },
+    {
+      "path": "schema/venture-types.json",
+      "additions": 346,
+      "deletions": 0
+    },
+    {
+      "path": "schema/venture-types.schema.json",
+      "additions": 129,
+      "deletions": 0
+    },
+    {
+      "path": "schema/venture.schema.json",
+      "additions": 53,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/agents-and-people.mdx",
+      "additions": 228,
+      "deletions": 13
+    },
+    {
+      "path": "site/content/docs/get-started/brand-and-assets.mdx",
+      "additions": 221,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/bringing-a-project-in.mdx",
+      "additions": 155,
+      "deletions": 4
+    },
+    {
+      "path": "site/content/docs/get-started/caching.mdx",
+      "additions": 178,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/decision-library.mdx",
+      "additions": 54,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/errors.mdx",
+      "additions": 78,
+      "deletions": 7
+    },
+    {
+      "path": "site/content/docs/get-started/first-venture.mdx",
+      "additions": 0,
+      "deletions": 70
+    },
+    {
+      "path": "site/content/docs/get-started/index.mdx",
+      "additions": 4,
+      "deletions": 4
+    },
+    {
+      "path": "site/content/docs/get-started/install.mdx",
+      "additions": 266,
+      "deletions": 23
+    },
+    {
+      "path": "site/content/docs/get-started/layouts.mdx",
+      "additions": 43,
+      "deletions": 7
+    },
+    {
+      "path": "site/content/docs/get-started/meta.json",
+      "additions": 24,
+      "deletions": 1
+    },
+    {
+      "path": "site/content/docs/get-started/prefetching-and-vitals.mdx",
+      "additions": 196,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/project-structure.mdx",
+      "additions": 115,
+      "deletions": 21
+    },
+    {
+      "path": "site/content/docs/get-started/quickstart.mdx",
+      "additions": 0,
+      "deletions": 45
+    },
+    {
+      "path": "site/content/docs/get-started/releases.mdx",
+      "additions": 197,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/revalidating.mdx",
+      "additions": 211,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/routes-and-records.mdx",
+      "additions": 111,
+      "deletions": 7
+    },
+    {
+      "path": "site/content/docs/get-started/setup.mdx",
+      "additions": 73,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/the-gate.mdx",
+      "additions": 209,
+      "deletions": 16
+    },
+    {
+      "path": "site/content/docs/get-started/typegen-and-mcp.mdx",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "site/content/docs/get-started/upgrading.mdx",
+      "additions": 145,
+      "deletions": 7
+    },
+    {
+      "path": "site/content/docs/get-started/venture-types-and-roles.mdx",
+      "additions": 87,
+      "deletions": 0
+    },
+    {
+      "path": "site/content/docs/get-started/whats-built.mdx",
+      "additions": 139,
+      "deletions": 139
+    },
+    {
+      "path": "site/content/docs/get-started/writing-records.mdx",
+      "additions": 139,
+      "deletions": 11
+    },
+    {
+      "path": "site/content/docs/index.mdx",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "path": "site/content/docs/reference/mcp.mdx",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "site/next.config.mjs",
+      "additions": 4,
+      "deletions": 1
+    },
+    {
+      "path": "test.mjs",
+      "additions": 21,
+      "deletions": 0
+    }
+  ]
+}

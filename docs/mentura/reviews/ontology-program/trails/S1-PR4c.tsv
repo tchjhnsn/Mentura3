@@ -1,0 +1,7 @@
+time	step	choice	why	evidence
+2026-11-03T23:14:22Z	copy	git show both files from preserve/sources-2026-11-03, unchanged	build-the-lever and subtract-before-you-add	cmp exit 0; sha256 0e2694ba...b30b and 94a44bce...789a match SHA256SUMS.txt; 174 headings both sides
+2026-11-03T23:14:22Z	sidecar	one sidecar for both files, cite N-001 with Claude id C-084	plan names C-084; merged ledger row id is N-001 and C-084 its Claude id	grok-store/merged-ledger.full.md line 81
+2026-11-03T23:14:22Z	sidecar	count foundation by whole word and cite EE-091 as not built	S1-PR4a verifier lessons	grep -o -i -w foundation: 7 hits on lines 606, 1368, 1370, 1372, 1373
+2026-11-03T23:14:22Z	flags	commit as-is, cite FLAGS.tsv line 260	G11 decided commit as-is	FLAGS.tsv line 260
+2026-11-03T23:14:22Z	readme	keep the preserved README.md unedited though check-docs-claims scans READMEs	it passes as written; editing would break byte identity	node schema/check-docs-claims.mjs pass
+2026-11-03T23:59:46Z	swarm fixes	say the location column under export:, and at most 400000 bytes	S1-PR4c lanes worker: the ledger has no export column; readHead skips only bytes > 400000	scripts/architecture-inventory.ts readHead; merged-ledger.full.md line 81

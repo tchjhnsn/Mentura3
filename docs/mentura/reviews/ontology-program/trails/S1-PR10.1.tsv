@@ -1,0 +1,5 @@
+time	step	choice	why	evidence
+2026-11-04T07:14:18Z	pick	N-038, the Claude export artifacts, as the first S1-PR10 unit	the coverage output lists it as the one row of private store: Claude export; Grok box notes and agent memory rows have no copy on the sources branch, Mac-only rows wait on G8, repo rows wait on their own units per G12	node scripts/preservation-coverage.ts on 199faa0
+2026-11-04T07:14:18Z	copy	git show of all 26 artifacts/*.md from preserve/sources-2026-11-03, unchanged	build-the-lever and subtract-before-you-add; the ledger names 24 and the export holds 26, and G14 says nothing is held back	sha256 of all 26 match SHA256SUMS.txt
+2026-11-04T07:14:18Z	sidecar	one PRESERVED.md for the folder, as S1-PR8 did for docs/memory/claude/	one source, one marker; the marker names N-038 and the rows that already cite a file, which are covered already	coverage 55 to 54, N-038 gone
+2026-11-04T07:14:18Z	flags	cite each FLAGS.tsv line in the sidecar table	G14: flagged files are copied as-is with their rows cited	all 26 files flagged

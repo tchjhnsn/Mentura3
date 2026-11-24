@@ -1,0 +1,90 @@
+{
+  "number": 164,
+  "title": "EE-107: vocabulary objects, shapes, and a parent check",
+  "body": "<!-- CURSOR_AGENT_PR_BODY_BEGIN -->\nOne item of EE-107: nouns, verbs and kinds become vocabulary objects that other code can load, and a check can fail when something has no parent or does not match its shape. Writes, question routing, security labels, and wiring the rest of the tree are later items.\n\n## Design\n\nNouns stay in `docs/ontology.json`. Every field and relation there is unchanged. Verbs, kinds, tiers and declared shapes live in `schema/vocabulary.json`. `schema/vocabulary.ts` is the loader. It joins the two, and it refuses a verb or kind set that drifts from `design.diff.verbs` in `operations/operating-rules.json`, or a tier rule that drifts from `questions.impact`.\n\nEach object has a stable id:\n\n- A noun id is `noun:` plus the noun in lower case, spaces as hyphens. `venture` is `noun:venture`. `customer@finance` is `noun:customer@finance`.\n- Verbs are `verb:create`, `verb:amend` and `verb:delete`.\n- Kinds are `kind:originate`, `kind:derive`, `kind:append`, `kind:rename`, `kind:deprecate`, `kind:revise`, `kind:remove` and `kind:merge`. `derive` names its source. `merge` names its successor.\n\nA shape is a JSON Schema object. The checker enforces `type`, `const`, `enum`, `required`, `properties`, `additionalProperties`, string and number bounds, `pattern`, `items`, `allOf`, `anyOf`, `oneOf`, `if`/`then`/`else` and `not`. A keyword it does not enforce fails the load, so a shape cannot pass by being ignored. A noun with no declared shape has an open object shape. `noun:venture` declares a real shape. Every verb and kind declares the shape of a change line.\n\nThe tier is the maximum of severity, reversibility, time to detect and blast radius. Each score is 1, 2 or 3, and that maximum selects `low`, `costly` or `one_way_door`. `tierOf` in the loader is that rule. This pull request does not apply the tier to writes.\n\n## Parent\n\nThe field is `vocabulary_parent`.\n\n- A record type sets it in `schema/data-model.json`.\n- A record sets the same field on itself.\n- A code module puts `// vocabulary_parent: <id>` in its first 40 lines.\n\nThe shape check runs on instance records. A record type and a module are checked for a parent that resolves to a live object. A retired noun cannot be a parent. Wiring every record type, record and module is not built. The examples are the `venture` record type, `instance/ventures/everything-ecosystem/venture.json`, `schema/vocabulary.ts` and `schema/check-vocabulary.mjs`.\n\n## Baseline\n\n`schema/vocabulary-baseline.json` lists subjects that have no parent yet. The check fails a subject that is not listed, fails a listed subject that now has a parent (the list has to shrink), and, once this file is on `framework`, fails an entry that was not in that copy unless the entry carries `approved` with who approved it and why. Shape mismatches are never baselined. This pull request is the starting ratchet: the file is not on `framework` yet, so these entries are the initial list.\n\nCounted on this checkout:\n\n| Population | Scanned | Named a parent | Baselined gaps |\n| --- | --- | --- | --- |\n| Record types | 128 | 1 | 127 |\n| Core modules | 209 | 2 | 207 |\n| Instance JSON records | 56 | 1 | 55 |\n| Total | 393 | 4 | 389 |\n\nCore modules are `.mjs`, `.ts`, `.js`, `.cjs` and `.mts` under `schema`, `interface`, `knowledge`, `operations`, `evidence`, `governance`, `purpose`, `platform`, `packages` and `frameworks`, excluding tests and `schema/types/`. The two new modules name a parent, so the module gaps stay at the 207 that had none. Instance JSON files under `instance/` are 56 here.\n\n`node schema/check-vocabulary.mjs` runs the check. `node schema/check-nouns.mjs` runs it too, when the data model or the catalog is present, so the existing nouns step in CI covers it. `node test.mjs` also runs `schema/vocabulary-test.ts`.\n\n## Tests\n\n`node test.mjs` passed, including schema validation, the noun check, the vocabulary tests and the type check. The vocabulary tests assert that a missing parent fails, a shape mismatch fails, a baselined gap passes, a new gap fails, removing a baseline entry is allowed once the gap is closed, and adding an entry fails unless it is explicitly approved.\n\n## Next\n\n1. Give every record type the noun it stands for, and tighten shapes toward the record schemas. That shrinks the 127 record-type gaps.\n2. Put one change line (verb, kind, noun) on every write, and let `tierOf` decide whether the write lands, drafts or waits.\n3. Route questions by verb plus noun plus asking function, with the standing-rule limits already in the operating rules.\n4. Treat security as label nouns inherited through `derived_from`. Removing a label is an amend at `one_way_door`.\n5. Clear the 207 module gaps and the 55 instance-record gaps as each file names a parent.\n6. Let docs and READMEs read the loader. This pull request does not generate those docs.\n\n<!-- CURSOR_AGENT_PR_BODY_END -->\n\n<div><a href=\"https://cursor.com/agents/bc-9b01fdda-a759-5396-86bc-e19478d0b376?cursor_ref=pr_footer&cursor_cta=open_in_web\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cursor.com/assets/images/open-in-web-dark.png\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://cursor.com/assets/images/open-in-web-light.png\"><img alt=\"Open in Web\" width=\"114\" height=\"28\" src=\"https://cursor.com/assets/images/open-in-web-dark.png\"></picture></a>&nbsp;<a href=\"https://cursor.com/background-agent?bcId=bc-9b01fdda-a759-5396-86bc-e19478d0b376&cursor_ref=pr_footer&cursor_cta=open_in_cursor\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cursor.com/assets/images/open-in-cursor-dark.png\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://cursor.com/assets/images/open-in-cursor-light.png\"><img alt=\"Open in Cursor\" width=\"131\" height=\"28\" src=\"https://cursor.com/assets/images/open-in-cursor-dark.png\"></picture></a>&nbsp;</div>\n\n",
+  "headRefOid": "7da790900b734723ad4e7b1cecb867a5d739676d",
+  "baseRefName": "framework",
+  "baseRefOid": "cb502f9b8a68b8d90c72440e5e52a732c1bcef6e",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "path": "docs/ontology.md",
+      "additions": 2,
+      "deletions": 1
+    },
+    {
+      "path": "instance/ventures/everything-ecosystem/venture.json",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "schema/README.md",
+      "additions": 13,
+      "deletions": 0
+    },
+    {
+      "path": "schema/check-nouns.mjs",
+      "additions": 13,
+      "deletions": 2
+    },
+    {
+      "path": "schema/check-vocabulary.mjs",
+      "additions": 18,
+      "deletions": 0
+    },
+    {
+      "path": "schema/data-model.json",
+      "additions": 10,
+      "deletions": 1
+    },
+    {
+      "path": "schema/data-model.schema.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/layer.json",
+      "additions": 2,
+      "deletions": 0
+    },
+    {
+      "path": "schema/types/records.d.ts",
+      "additions": 4,
+      "deletions": 0
+    },
+    {
+      "path": "schema/venture.schema.json",
+      "additions": 5,
+      "deletions": 0
+    },
+    {
+      "path": "schema/vocabulary-baseline.json",
+      "additions": 394,
+      "deletions": 0
+    },
+    {
+      "path": "schema/vocabulary-test.ts",
+      "additions": 181,
+      "deletions": 0
+    },
+    {
+      "path": "schema/vocabulary.json",
+      "additions": 241,
+      "deletions": 0
+    },
+    {
+      "path": "schema/vocabulary.ts",
+      "additions": 698,
+      "deletions": 0
+    },
+    {
+      "path": "test.mjs",
+      "additions": 1,
+      "deletions": 0
+    }
+  ]
+}

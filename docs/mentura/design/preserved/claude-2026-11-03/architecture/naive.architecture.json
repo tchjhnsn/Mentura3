@@ -1,0 +1,2118 @@
+{
+ "id": "naive",
+ "record": "architecture record",
+ "standard": "ISO/IEC/IEEE 42010; levels from the C4 model",
+ "status": "draft",
+ "confirmed": false,
+ "drafted_by": "agent",
+ "root": "naive",
+ "derived_at": {
+  "commit": "359c454"
+ },
+ "elements": [
+  {
+   "id": "founder",
+   "term": "person",
+   "level": "context",
+   "says": "Owns every record and decision. Uses Naive directly or through a harness.",
+   "status": "built"
+  },
+  {
+   "id": "claude-code",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "AI harness: runs an agent for a person; shows artifacts",
+   "plays": "agent (a role, not a person)",
+   "status": "built"
+  },
+  {
+   "id": "cursor",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "AI harness; shows canvases",
+   "plays": "agent (a role, not a person)",
+   "status": "built"
+  },
+  {
+   "id": "grokbot",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "AI harness; shows pages (unverified)",
+   "plays": "agent (a role, not a person)",
+   "status": "built"
+  },
+  {
+   "id": "terminal",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "shell; shows text",
+   "plays": "agent (a role, not a person)",
+   "status": "built"
+  },
+  {
+   "id": "github",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "code hosting",
+   "status": "built"
+  },
+  {
+   "id": "vercel",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "web hosting",
+   "status": "built"
+  },
+  {
+   "id": "rho",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "banking",
+   "status": "built"
+  },
+  {
+   "id": "firecrawl",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "web scraping for research",
+   "status": "built"
+  },
+  {
+   "id": "jev",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "typed judgments (TypeSafe)",
+   "status": "built"
+  },
+  {
+   "id": "npm-registry",
+   "term": "software system",
+   "external": true,
+   "level": "context",
+   "says": "package registry",
+   "status": "built"
+  },
+  {
+   "id": "naive",
+   "term": "software system",
+   "also": [
+    "framework"
+   ],
+   "root": true,
+   "level": "context",
+   "says": "The venture development framework: conventions, records, routes and checks. The root of this record.",
+   "status": "built"
+  },
+  {
+   "id": "mentura",
+   "term": "software system",
+   "level": "context",
+   "says": "Moses David's model (EE-098), in the position Claude holds at Anthropic. What kind of model is open. Its parts: the weights and everything that trains them (RL programme, reward, training sets).",
+   "status": "designed"
+  },
+  {
+   "id": "naive-cli",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "The naive and mentura commands, one process per command",
+   "derived": {
+    "modules": 5,
+    "tests": 0,
+    "lines": 859,
+    "packages": []
+   },
+   "depends_on": {
+    "dev-server": 2,
+    "mcp-server": 1,
+    "naive-core": 23
+   },
+   "status": "built"
+  },
+  {
+   "id": "mcp-server",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "MCP server over stdio: agents call the router's actions as tools",
+   "derived": {
+    "modules": 1,
+    "tests": 0,
+    "lines": 164,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 5
+   },
+   "status": "built"
+  },
+  {
+   "id": "local-api",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "HTTP API on 127.0.0.1, for one builder's machine",
+   "derived": {
+    "modules": 1,
+    "tests": 0,
+    "lines": 72,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 1
+   },
+   "status": "built"
+  },
+  {
+   "id": "dev-server",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "naive dev: the setup page and the live board",
+   "derived": {
+    "modules": 4,
+    "tests": 1,
+    "lines": 886,
+    "packages": []
+   },
+   "depends_on": {
+    "agent-harness": 1,
+    "naive-core": 12
+   },
+   "status": "built"
+  },
+  {
+   "id": "agent-harness",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "Runs an agent through Discovery on a founder's idea dump, then scores the run",
+   "derived": {
+    "modules": 3,
+    "tests": 0,
+    "lines": 472,
+    "packages": []
+   },
+   "depends_on": {
+    "dev-server": 1,
+    "naive-core": 13
+   },
+   "status": "built"
+  },
+  {
+   "id": "generator-cli",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "create-venture: makes a new venture folder",
+   "derived": {
+    "modules": 1,
+    "tests": 1,
+    "lines": 635,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 1
+   },
+   "status": "built"
+  },
+  {
+   "id": "venture-workspace",
+   "term": "data store",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "The venture's records on disk: JSON files checked by schemas, plus the provenance log",
+   "derived": null,
+   "depends_on": {},
+   "status": "built"
+  },
+  {
+   "id": "naive-core",
+   "term": "container",
+   "note": "container (library)",
+   "level": "container",
+   "part_of": "naive",
+   "says": "The in-process code every Naive container loads: the router, the gate and the rest. Not run on its own; shown as one box because five containers share it",
+   "derived": {
+    "modules": 159,
+    "tests": 19,
+    "lines": 25429,
+    "packages": [
+     "typescript"
+    ]
+   },
+   "depends_on": {
+    "dev-scripts": 1
+   },
+   "status": "built"
+  },
+  {
+   "id": "test-suite",
+   "term": "container",
+   "note": "container (development)",
+   "level": "container",
+   "part_of": "naive",
+   "says": "node test.mjs: every check and test",
+   "derived": {
+    "modules": 2,
+    "tests": 0,
+    "lines": 240,
+    "packages": [
+     "@eslint/js",
+     "globals",
+     "typescript-eslint"
+    ]
+   },
+   "depends_on": {},
+   "status": "built"
+  },
+  {
+   "id": "lean-proofs",
+   "term": "container",
+   "note": "container (development)",
+   "level": "container",
+   "part_of": "naive",
+   "says": "Lean 4 library: theorems about terms and the founder definition",
+   "derived": null,
+   "depends_on": {},
+   "status": "built"
+  },
+  {
+   "id": "tla-models",
+   "term": "container",
+   "note": "container (development)",
+   "level": "container",
+   "part_of": "naive",
+   "says": "TLA+ models checked by TLC through the pstack statechart skill",
+   "derived": {
+    "modules": 40,
+    "tests": 0,
+    "lines": 5099,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 14
+   },
+   "status": "built"
+  },
+  {
+   "id": "dev-scripts",
+   "term": "container",
+   "note": "container (development)",
+   "level": "container",
+   "part_of": "naive",
+   "says": "PR review and other repo scripts",
+   "derived": {
+    "modules": 3,
+    "tests": 2,
+    "lines": 1112,
+    "packages": [
+     "playwright"
+    ]
+   },
+   "depends_on": {
+    "naive-core": 6
+   },
+   "status": "built"
+  },
+  {
+   "id": "console-app",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Next.js web app: the operator console",
+   "derived": {
+    "modules": 46,
+    "tests": 2,
+    "lines": 3919,
+    "packages": [
+     "@base-ui/react",
+     "@better-auth/core",
+     "better-auth",
+     "class-variance-authority",
+     "cn",
+     "lucide-react",
+     "next",
+     "react",
+     "server-only"
+    ]
+   },
+   "depends_on": {},
+   "status": "built"
+  },
+  {
+   "id": "webhooks-server",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Receives signed change notices from systems of record",
+   "derived": {
+    "modules": 1,
+    "tests": 1,
+    "lines": 138,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 4
+   },
+   "status": "built"
+  },
+  {
+   "id": "research-mcp",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "naive",
+   "says": "MCP server for market research through Firecrawl",
+   "derived": {
+    "modules": 1,
+    "tests": 0,
+    "lines": 66,
+    "packages": []
+   },
+   "depends_on": {},
+   "status": "built"
+  },
+  {
+   "id": "integrations",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Vendor syncs and connectors: Rho, GitHub",
+   "derived": {
+    "modules": 10,
+    "tests": 2,
+    "lines": 998,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 13
+   },
+   "status": "built"
+  },
+  {
+   "id": "hosted-kits",
+   "term": "container",
+   "note": null,
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Kits served by the platform",
+   "derived": {
+    "modules": 2,
+    "tests": 1,
+    "lines": 219,
+    "packages": []
+   },
+   "depends_on": {
+    "naive-core": 4
+   },
+   "status": "built"
+  },
+  {
+   "id": "router",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Route table and actions: every read and write goes through it",
+   "derived": {
+    "modules": 8,
+    "tests": 0,
+    "lines": 2138,
+    "packages": []
+   },
+   "depends_on": {
+    "brand": 1,
+    "connector-contract": 2,
+    "decisions": 2,
+    "lifecycle": 6,
+    "lints": 9,
+    "packages-and-kits": 3,
+    "provenance": 4,
+    "records-and-paths": 10,
+    "write-gate": 8
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "write-gate",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "The write path: containment, access, ownership gates, drafts a person accepts",
+   "derived": {
+    "modules": 11,
+    "tests": 0,
+    "lines": 1936,
+    "packages": []
+   },
+   "depends_on": {
+    "decisions": 3,
+    "lifecycle": 1,
+    "lints": 1,
+    "packages-and-kits": 3,
+    "provenance": 1,
+    "records-and-paths": 8,
+    "router": 6
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "provenance",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Append-only log of who changed what and why",
+   "derived": {
+    "modules": 2,
+    "tests": 0,
+    "lines": 170,
+    "packages": []
+   },
+   "depends_on": {
+    "lifecycle": 1,
+    "records-and-paths": 2
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "records-and-paths",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Where each record lives in a venture, the workspace and its ventures",
+   "derived": {
+    "modules": 12,
+    "tests": 0,
+    "lines": 1262,
+    "packages": []
+   },
+   "depends_on": {
+    "decisions": 1,
+    "lifecycle": 1,
+    "packages-and-kits": 3,
+    "router": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "decisions",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Decisions, the docket, frames and impact",
+   "derived": {
+    "modules": 10,
+    "tests": 0,
+    "lines": 1860,
+    "packages": []
+   },
+   "depends_on": {
+    "checks": 1,
+    "lifecycle": 4,
+    "packages-and-kits": 5,
+    "provenance": 5,
+    "records-and-paths": 9,
+    "router": 2,
+    "write-gate": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "lifecycle",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Phases, gates, exit criteria, freshness and what's stale",
+   "derived": {
+    "modules": 13,
+    "tests": 0,
+    "lines": 2516,
+    "packages": []
+   },
+   "depends_on": {
+    "connector-contract": 3,
+    "decisions": 2,
+    "provenance": 5,
+    "records-and-paths": 18,
+    "router": 3,
+    "write-gate": 3
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "packages-and-kits",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Packages, kits and the frameworks a venture adopts",
+   "derived": {
+    "modules": 21,
+    "tests": 4,
+    "lines": 2978,
+    "packages": []
+   },
+   "depends_on": {
+    "checks": 3,
+    "decisions": 1,
+    "lifecycle": 2,
+    "records-and-paths": 13,
+    "releases-and-publishing": 1,
+    "write-gate": 3
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "checks",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Checks the repo and ventures must pass",
+   "derived": {
+    "modules": 35,
+    "tests": 2,
+    "lines": 2905,
+    "packages": [
+     "typescript"
+    ]
+   },
+   "depends_on": {
+    "brand": 2,
+    "connector-contract": 3,
+    "decisions": 2,
+    "lifecycle": 1,
+    "money-and-team": 1,
+    "packages-and-kits": 1,
+    "provenance": 2,
+    "records-and-paths": 24,
+    "router": 3,
+    "write-gate": 4
+   },
+   "kernels": [
+    {
+     "id": "schema/verify.mjs",
+     "term": "module",
+     "role": "kernel",
+     "lines": 28
+    }
+   ],
+   "status": "built"
+  },
+  {
+   "id": "lints",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Lints that question a venture's records",
+   "derived": {
+    "modules": 12,
+    "tests": 11,
+    "lines": 4519,
+    "packages": []
+   },
+   "depends_on": {
+    "brand": 2,
+    "checks": 2,
+    "decisions": 2,
+    "lifecycle": 1,
+    "packages-and-kits": 1,
+    "records-and-paths": 15,
+    "router": 9,
+    "write-gate": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "term-engine",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Glossary terms: tests, cross-run, admission",
+   "derived": {
+    "modules": 4,
+    "tests": 1,
+    "lines": 407,
+    "packages": []
+   },
+   "depends_on": {},
+   "kernels": [
+    {
+     "id": "schema/terms/engine.ts",
+     "term": "module",
+     "role": "kernel and engine",
+     "lines": 88
+    }
+   ],
+   "status": "built"
+  },
+  {
+   "id": "upgrades",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Migrations, upgrades and porting",
+   "derived": {
+    "modules": 9,
+    "tests": 1,
+    "lines": 1531,
+    "packages": []
+   },
+   "depends_on": {
+    "decisions": 1,
+    "packages-and-kits": 4,
+    "provenance": 4,
+    "records-and-paths": 7,
+    "router": 3,
+    "write-gate": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "releases-and-publishing",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Frozen releases, publishing, redaction, artifacts",
+   "derived": {
+    "modules": 7,
+    "tests": 0,
+    "lines": 1103,
+    "packages": []
+   },
+   "depends_on": {
+    "checks": 2,
+    "connector-contract": 1,
+    "lints": 1,
+    "packages-and-kits": 1,
+    "provenance": 2,
+    "records-and-paths": 5,
+    "router": 1
+   },
+   "kernels": [
+    {
+     "id": "schema/redact.mjs",
+     "term": "module",
+     "role": "kernel",
+     "lines": 60
+    }
+   ],
+   "status": "built"
+  },
+  {
+   "id": "brand",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Brand tokens, voice, design system, assets",
+   "derived": {
+    "modules": 4,
+    "tests": 0,
+    "lines": 898,
+    "packages": []
+   },
+   "depends_on": {
+    "provenance": 2,
+    "records-and-paths": 4,
+    "router": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "money-and-team",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Payouts, bugs and other operational records",
+   "derived": {
+    "modules": 2,
+    "tests": 0,
+    "lines": 130,
+    "packages": []
+   },
+   "depends_on": {
+    "records-and-paths": 2
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "founders",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Founder folders above ventures",
+   "derived": {
+    "modules": 1,
+    "tests": 0,
+    "lines": 247,
+    "packages": []
+   },
+   "depends_on": {},
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "connector-contract",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "The contract every source-of-truth connector meets, plus the offline file-system connector",
+   "derived": {
+    "modules": 7,
+    "tests": 0,
+    "lines": 671,
+    "packages": []
+   },
+   "depends_on": {
+    "provenance": 1,
+    "records-and-paths": 3,
+    "router": 2
+   },
+   "kernels": [
+    {
+     "id": "knowledge/connectors/resolve.mjs",
+     "term": "module",
+     "role": "kernel",
+     "lines": 45
+    }
+   ],
+   "status": "built"
+  },
+  {
+   "id": "generator",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Creates a venture from conventions",
+   "derived": {
+    "modules": 1,
+    "tests": 0,
+    "lines": 158,
+    "packages": []
+   },
+   "depends_on": {
+    "records-and-paths": 1
+   },
+   "kernels": [],
+   "status": "built"
+  },
+  {
+   "id": "speech-to-text",
+   "term": "software system",
+   "level": "context",
+   "part_of": null,
+   "says": "Turns the founder's dictation into text. Supplier not chosen (ElevenLabs is one candidate).",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "supplier_need": true
+  },
+  {
+   "id": "library",
+   "term": "data store",
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Mentura's library: research records, references and the search cache, the glossary, and installable modules. Canonical. Confidential.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "confidential": true
+  },
+  {
+   "id": "tenant-instance",
+   "term": "data store",
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "One account's own records. Loads only the modules that account installs; never the whole library.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "id": "library-gateway",
+   "term": "container",
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Serves library records to a tenant's agents (read-through). On a miss it tells the tenant to research locally; it never accepts writes from tenants.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "id": "trace-intake",
+   "term": "container",
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Receives research traces from tenants who consented, with tenant identity and private records removed.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "id": "library-curation",
+   "term": "container",
+   "level": "container",
+   "part_of": "mentura-console",
+   "says": "Curator agents turn traces into proposed library updates. They re-read every source (U3) rather than trust a trace. A person admits.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "confidential": true
+  },
+  {
+   "id": "research-engine",
+   "term": "container",
+   "level": "container",
+   "part_of": "mentura",
+   "says": "The records gate and research: update theorem U1-U3 (U4, U5 designed), search cache, research traces. Confidential.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "confidential": true,
+   "prototype": "prototypes/architecture/gate.ts",
+   "split": {
+    "why": "placement.ts: one part with facts of two homes; each piece needs its own element",
+    "pieces": {
+     "local gate and cache (U1-U3, on a library miss)": "naive",
+     "curation re-reads": "mentura-console"
+    }
+   }
+  },
+  {
+   "id": "precog",
+   "term": "container",
+   "level": "container",
+   "part_of": "mentura",
+   "says": "A capability of Mentura (EE-098), not a product: raises needs early; only admissible anticipations reach a person (six gates). Confidential.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "confidential": true,
+   "prototype": "prototypes/architecture/precog-vocab.ts",
+   "split": {
+    "why": "placement.ts: one part with facts of two homes; each piece needs its own element",
+    "pieces": {
+     "anticipation (learned)": "mentura",
+     "need records and gates": "naive",
+     "delivery to the founder": "mentura-app"
+    }
+   }
+  },
+  {
+   "id": "function-interfaces",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Each function declares the records it owns, the events it emits, its interests and its question bank. Interests turn record events into inquiries; research is informed, never a cross-write.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z",
+   "prototype": "prototypes/architecture/identity-vocab.ts"
+  },
+  {
+   "id": "term-submission",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Each function proposes terms in its own scope. A glossary gap (a word used but undefined, or used two ways) becomes a problem record; the owning function researches it and submits; the term engine runs it.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "id": "verb-commands",
+   "term": "component",
+   "level": "component",
+   "part_of": "naive-core",
+   "says": "Glossary verbs, by scope, mapped to slash commands. Reads dictation transcripts, proposes the command it heard, and runs it only when the person confirms.",
+   "status": "designed",
+   "declared": true,
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "id": "mentura-app",
+   "level": "context",
+   "status": "designed",
+   "says": "The Mentura app (EE-098): one app on web, desktop and mobile, where founders work day to day.",
+   "term": "software system"
+  },
+  {
+   "id": "mentura-console",
+   "level": "context",
+   "status": "designed",
+   "says": "The Mentura console (EE-098): the venture development platform. Hosted, with accounts; holds the shared library and each account's records; builder screens.",
+   "term": "software system",
+   "also": [
+    "platform"
+   ]
+  }
+ ],
+ "relations": [
+  {
+   "from": "founder",
+   "to": "naive-cli",
+   "says": "runs commands"
+  },
+  {
+   "from": "founder",
+   "to": "dev-server",
+   "says": "sets up a venture"
+  },
+  {
+   "from": "founder",
+   "to": "claude-code",
+   "says": "works with an agent"
+  },
+  {
+   "from": "claude-code",
+   "to": "mcp-server",
+   "says": "calls tools"
+  },
+  {
+   "from": "cursor",
+   "to": "naive-cli",
+   "says": "runs commands"
+  },
+  {
+   "from": "grokbot",
+   "to": "mcp-server",
+   "says": "calls tools (if configured)"
+  },
+  {
+   "from": "terminal",
+   "to": "naive-cli",
+   "says": "runs commands"
+  },
+  {
+   "from": "naive-cli",
+   "to": "naive-core",
+   "says": "loads"
+  },
+  {
+   "from": "mcp-server",
+   "to": "naive-core",
+   "says": "loads"
+  },
+  {
+   "from": "local-api",
+   "to": "naive-core",
+   "says": "loads"
+  },
+  {
+   "from": "dev-server",
+   "to": "naive-core",
+   "says": "loads"
+  },
+  {
+   "from": "agent-harness",
+   "to": "naive-core",
+   "says": "loads"
+  },
+  {
+   "from": "naive-core",
+   "to": "venture-workspace",
+   "says": "reads and writes records"
+  },
+  {
+   "from": "generator-cli",
+   "to": "venture-workspace",
+   "says": "creates"
+  },
+  {
+   "from": "agent-harness",
+   "to": "jev",
+   "says": "scores site pages (through Mentura scripts)"
+  },
+  {
+   "from": "console-app",
+   "to": "vercel",
+   "says": "deployed on"
+  },
+  {
+   "from": "integrations",
+   "to": "rho",
+   "says": "syncs"
+  },
+  {
+   "from": "integrations",
+   "to": "github",
+   "says": "reads records"
+  },
+  {
+   "from": "research-mcp",
+   "to": "firecrawl",
+   "says": "searches"
+  },
+  {
+   "from": "test-suite",
+   "to": "naive-core",
+   "says": "checks"
+  },
+  {
+   "from": "tla-models",
+   "to": "naive-core",
+   "says": "models"
+  },
+  {
+   "from": "lean-proofs",
+   "to": "naive-core",
+   "says": "proves claims about"
+  },
+  {
+   "from": "tenant-instance",
+   "to": "library-gateway",
+   "says": "fetches library records first",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "library-gateway",
+   "to": "library",
+   "says": "reads",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "tenant-instance",
+   "to": "trace-intake",
+   "says": "sends research traces, with consent",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "trace-intake",
+   "to": "library-curation",
+   "says": "hands de-identified traces",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "library-curation",
+   "to": "library",
+   "says": "proposes updates; a person admits",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "library-curation",
+   "to": "research-engine",
+   "says": "re-reads sources through",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "tenant-instance",
+   "to": "research-engine",
+   "says": "researches locally on a library miss",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "precog",
+   "to": "research-engine",
+   "says": "researches through",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "precog",
+   "to": "library-gateway",
+   "says": "reads records through",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "function-interfaces",
+   "to": "provenance",
+   "says": "subscribes to record events",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "term-submission",
+   "to": "term-engine",
+   "says": "submits scoped terms",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "verb-commands",
+   "to": "term-engine",
+   "says": "reads verbs and their scopes",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "verb-commands",
+   "to": "speech-to-text",
+   "says": "takes transcripts from",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  },
+  {
+   "from": "founder",
+   "to": "verb-commands",
+   "says": "confirms commands",
+   "declared": true,
+   "status": "designed",
+   "since": "2026-11-01T06:25:00Z"
+  }
+ ],
+ "unplaced": [
+  "schema/examples/frames/judge.mjs",
+  "schema/examples/migrate/agent.mjs",
+  "schema/examples/venture-type/jev.mjs"
+ ],
+ "views": [
+  {
+   "id": "architecture-map",
+   "url": "https://claude.ai/artifact/PpxtxLtjCkomM8NSN6woVj"
+  },
+  {
+   "id": "dependency-map",
+   "url": "https://claude.ai/artifact/NNcyZWNPS4dDiuA3akVQZ6"
+  }
+ ],
+ "vocabulary": "prototypes/architecture/vocabulary.ts",
+ "needs": [
+  {
+   "id": "AN1",
+   "says": "One description of the system that people and agents build from, so they build the same thing."
+  },
+  {
+   "id": "AN2",
+   "says": "See drift: the record, the docs and the code disagree."
+  },
+  {
+   "id": "AN3",
+   "says": "See unwanted behaviour in engines, kernels and modules before it spreads."
+  },
+  {
+   "id": "AN4",
+   "says": "Change the architecture without losing what it was, or why it changed."
+  },
+  {
+   "id": "AN5",
+   "says": "Grow the library from every account's research without exposing any account's records."
+  }
+ ],
+ "requirements": [
+  {
+   "id": "AR1",
+   "traces_to": "AN1",
+   "says": "Every element has a vocabulary term and a level.",
+   "check": "A1"
+  },
+  {
+   "id": "AR2",
+   "traces_to": "AN1",
+   "says": "Every part_of and every relation end names an element that exists.",
+   "check": "A2"
+  },
+  {
+   "id": "AR3",
+   "traces_to": "AN2",
+   "says": "Every element and declared relation has a status: designed, built or retired.",
+   "check": "A3"
+  },
+  {
+   "id": "AR4",
+   "traces_to": "AN1",
+   "says": "Every requirement traces to a need, and names its check.",
+   "check": "A4"
+  },
+  {
+   "id": "AR5",
+   "traces_to": "AN3",
+   "says": "Every behaviour names its element, what a breach looks like, and how it is detected.",
+   "check": "A5"
+  },
+  {
+   "id": "AR6",
+   "traces_to": "AN4",
+   "says": "Every change is logged as an append or an amendment; an amendment cites a decision and keeps the prior version.",
+   "check": "A6"
+  },
+  {
+   "id": "AR7",
+   "traces_to": "AN2",
+   "says": "Every view says which record hash it was built from; a view built from an older hash is flagged stale.",
+   "check": "A7"
+  },
+  {
+   "id": "AR8",
+   "traces_to": "AN2",
+   "says": "Re-deriving facts from code never overwrites declared content.",
+   "check": "A8"
+  },
+  {
+   "id": "AR9",
+   "traces_to": "AN1",
+   "says": "Records are held in Mentura's database and fetched from it; Naive holds the functions and the top-level files and modules that act on records. Tenant records stay in private partitions of that database (AK2).",
+   "status": "proposed",
+   "source": {
+    "ref": "torian-2026-11-01-0640",
+    "evidence": "stated ('I believe'), not decided"
+   },
+   "check": "none yet: needs a check that no Naive component writes the library except through library-gateway"
+  },
+  {
+   "id": "AR10",
+   "traces_to": "AN2",
+   "says": "Every part, recorded or sketched, is in a legal idea stage, computed from evidence; nothing reaches code except from the record.",
+   "check": "A13"
+  },
+  {
+   "id": "AR11",
+   "traces_to": "AN1",
+   "says": "Each declared flow is implemented as designed: every step's anchor is found in its file on main, in order.",
+   "check": "A12"
+  },
+  {
+   "id": "AR12",
+   "traces_to": "AN1",
+   "says": "Every term node's children resolve: elements exist in this record, files exist on main, and kinds are term nodes or admitted terms.",
+   "check": "A14"
+  }
+ ],
+ "constraints": [
+  {
+   "id": "AK1",
+   "says": "Records are the source of truth; artifacts are views of them.",
+   "source": "decided 2026-10-29"
+  },
+  {
+   "id": "AK2",
+   "says": "No tenant's private records enter the library. Only consented, de-identified research traces cross, through trace-intake.",
+   "check": "B6, B7"
+  },
+  {
+   "id": "AK3",
+   "says": "A function writes only the records it owns.",
+   "check": "B8",
+   "proof": "Identity.lean informed_never_cross_writes"
+  },
+  {
+   "id": "AK4",
+   "says": "Nothing becomes a record unless the update theorem admits it.",
+   "check": "B5"
+  },
+  {
+   "id": "AK5",
+   "says": "Owners are people. Agents propose; a person admits or decides.",
+   "source": "standing rule"
+  },
+  {
+   "id": "AK6",
+   "says": "Confidential elements (library, research engine, curation, precog) are never sent to outside models or handoffs.",
+   "check": "A9"
+  }
+ ],
+ "behaviours": [
+  {
+   "id": "B1",
+   "element": "term-engine",
+   "expects": "The same terms and cases give the same verdicts and hashes.",
+   "breach": "a rerun changes a verdict or a freeze hash with no term change",
+   "detect": "run twice, compare (runnable)"
+  },
+  {
+   "id": "B2",
+   "element": "term-engine",
+   "expects": "Behavioural terms are position-blind.",
+   "breach": "moving an element changes a behavioural verdict",
+   "detect": "position-blind.ts (runnable)"
+  },
+  {
+   "id": "B3",
+   "element": "write-gate",
+   "expects": "Every write to the venture workspace goes through the router and write gate.",
+   "breach": "a module writes venture files directly",
+   "detect": "static scan of imports (designed)"
+  },
+  {
+   "id": "B4",
+   "element": "provenance",
+   "expects": "The log only grows.",
+   "breach": "an existing entry changes",
+   "detect": "hash chain (designed)"
+  },
+  {
+   "id": "B5",
+   "element": "research-engine",
+   "expects": "No claim is admitted unless its source was read, is not an index, and has a locator.",
+   "breach": "an admitted claim fails U3",
+   "detect": "audit the search cache (runnable)"
+  },
+  {
+   "id": "B6",
+   "element": "library-gateway",
+   "expects": "Tenants read the library; nothing a tenant sends writes to it.",
+   "breach": "any relation or call from a tenant that writes the library",
+   "detect": "relation check (runnable) + gateway logs (designed)"
+  },
+  {
+   "id": "B7",
+   "element": "trace-intake",
+   "expects": "Only consented, de-identified traces reach curation, and curation re-reads sources.",
+   "breach": "a trace carries tenant records, or a library update cites only a trace",
+   "detect": "relation check (runnable) + intake audit (designed)"
+  },
+  {
+   "id": "B8",
+   "element": "function-interfaces",
+   "expects": "Informed research writes only the asker's records.",
+   "breach": "a provenance entry whose writer function differs from the record's owner",
+   "detect": "provenance audit (designed); Lean proof of the rule"
+  },
+  {
+   "id": "B9",
+   "element": "precog",
+   "expects": "A person only sees admissible anticipations.",
+   "breach": "a shown anticipation fails a gate",
+   "detect": "gate log audit (designed)"
+  },
+  {
+   "id": "B10",
+   "element": "verb-commands",
+   "expects": "A heard command runs only after the person confirms it.",
+   "breach": "a command runs from a transcript without confirmation",
+   "detect": "command log audit (designed)"
+  }
+ ],
+ "change_rules": {
+  "vocabulary": "prototypes/architecture/verbs-vocab.ts (append, amend; 19/19)",
+  "append": {
+   "is": "adds elements, relations, needs, requirements, constraints or behaviours without changing any existing entry",
+   "needs": [
+    "all checks pass"
+   ],
+   "who": "an agent may append when every check passes; Torian confirms later (DECIDED 2026-11-01 06:20Z, card)",
+   "decided": {
+    "at": "2026-11-01T06:20:47Z",
+    "by": "Torian",
+    "how": "decision card"
+   }
+  },
+  "amend": {
+   "is": "changes or removes an existing entry, or changes what it means",
+   "needs": [
+    "a decision record (EE-NNN) cited in the log",
+    "the prior version kept",
+    "all checks pass after"
+   ],
+   "who": "a person decides"
+  },
+  "not_a_change": "re-deriving facts from code (derived fields); views rebuilt from the record"
+ },
+ "amendment_log": [
+  {
+   "at": "2026-11-01T06:25:00Z",
+   "kind": "append",
+   "by": "agent (proposed)",
+   "asked_by": "Torian 2026-11-01 06:13Z",
+   "adds": [
+    "status on every element",
+    "needs AN1-AN5",
+    "requirements AR1-AR8",
+    "constraints AK1-AK6",
+    "behaviours B1-B10",
+    "change rules",
+    "checks",
+    "speech-to-text",
+    "library",
+    "tenant-instance",
+    "library-gateway",
+    "trace-intake",
+    "library-curation",
+    "research-engine",
+    "precog",
+    "function-interfaces",
+    "term-submission",
+    "verb-commands"
+   ],
+   "decision": null,
+   "note": "Status on existing elements is new information, not a changed meaning, so this is an append."
+  },
+  {
+   "at": "2026-11-01T06:21:00Z",
+   "kind": "amend",
+   "by": "agent",
+   "decision": "Torian card 2026-11-01T06:20:47Z: 'Yes, append, I confirm later'",
+   "changes": [
+    "change_rules.append.who"
+   ],
+   "prior": "an agent may append to a draft record; a person confirms"
+  },
+  {
+   "at": "2026-11-01T06:45:00Z",
+   "kind": "amend",
+   "by": "agent",
+   "decision": "EE-097 (Torian 2026-11-01 06:26Z, in words)",
+   "changes": [
+    "elements.mentura.says",
+    "parent",
+    "siblings",
+    "elements.console-app.rehome",
+    "elements.webhooks-server.rehome",
+    "elements.research-mcp.rehome",
+    "elements.integrations.rehome",
+    "elements.hosted-kits.rehome",
+    "elements.library.rehome",
+    "elements.tenant-instance.rehome",
+    "elements.library-gateway.rehome",
+    "elements.trace-intake.rehome",
+    "elements.library-curation.rehome",
+    "elements.research-engine.rehome",
+    "elements.precog.rehome"
+   ],
+   "prior": {
+    "mentura.says": "The platform: hosted, with accounts and named vendors (EE-041). Gets its own architecture record; shown here collapsed."
+   }
+  },
+  {
+   "at": "2026-11-01T06:50:00Z",
+   "kind": "amend",
+   "by": "agent",
+   "decision": "EE-097",
+   "changes": [
+    "elements.mentura.also (removed 'platform')"
+   ],
+   "prior": {
+    "mentura.also": [
+     "platform"
+    ]
+   },
+   "note": "missed in the 06:45Z amend; found when Torian said the map looked unchanged"
+  },
+  {
+   "at": "2026-11-01T07:15:00Z",
+   "kind": "append",
+   "by": "agent",
+   "changes": [
+    "requirements.AR9 (proposed)"
+   ],
+   "note": "Torian 06:40Z said the database belongs to Mentura. Element part_of moves (rehome) are an amend and wait for the platform card; placement proposed in ventures/moses-david/placement.json"
+  },
+  {
+   "at": "2026-11-01T08:05:00Z",
+   "kind": "amend",
+   "by": "agent",
+   "decision": "EE-098",
+   "changes": [
+    "elements.mentura.says",
+    "elements +mentura-app +mentura-console",
+    "part_of of 10 rehomed containers (placement-run.json)",
+    "research-engine, precog: split pieces"
+   ],
+   "prior": {
+    "mentura": {
+     "says": "Moses David's kind of AI (EE-097): our own type of model, not a language model. No longer the platform; the containers listed under it here were platform parts and need a new home once the platform question is decided."
+    },
+    "console-app": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "webhooks-server": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "integrations": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "hosted-kits": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "library": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "tenant-instance": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "library-gateway": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "trace-intake": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "library-curation": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "research-mcp": {
+     "part_of": "mentura",
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     }
+    },
+    "research-engine": {
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     },
+     "part_of": "mentura"
+    },
+    "precog": {
+     "rehome": {
+      "pending": "EE-097 platform question",
+      "was": "part of the platform named Mentura"
+     },
+     "part_of": "mentura"
+    }
+   },
+   "note": "Torian 07:14Z in words; placement proved in placement.ts and Placement.lean"
+  },
+  {
+   "at": "2026-11-01T08:10:00Z",
+   "kind": "append",
+   "by": "agent",
+   "changes": [
+    "flows.write (13 steps, anchored in code)"
+   ],
+   "note": "Torian 07:35Z: start with the architectural chain of Naive's record system"
+  },
+  {
+   "at": "2026-11-01T08:25:00Z",
+   "kind": "append",
+   "by": "agent",
+   "changes": [
+    "pipeline (stages, transitions, sandbox rules)",
+    "requirements AR10, AR11",
+    "checks A12 (flow-check.ts), A13 (stage.ts)"
+   ],
+   "note": "Torian 07:35Z: the idea pipeline and verifying the architecture is implemented as designed"
+  },
+  {
+   "at": "2026-11-01T08:40:00Z",
+   "kind": "append",
+   "by": "agent",
+   "changes": [
+    "terms (term nodes: capability, provenance, provenance-tracking, provenance-log, provenance-module)",
+    "requirement AR12",
+    "check A14"
+   ],
+   "note": "Torian 08:27Z: terminology becomes nodes with values and links to every child; provenance first"
+  },
+  {
+   "at": "2026-11-01T09:10:00Z",
+   "kind": "append",
+   "by": "agent",
+   "changes": [
+    "flows.write.steps[].plain, plain_fail (plain-language labels, pstack technical-writing and bro)"
+   ],
+   "note": "Torian 09:00Z: the statechart's step names were jargon"
+  },
+  {
+   "at": "2026-11-01T09:20:00Z",
+   "kind": "append",
+   "by": "agent",
+   "decision": "EE-100",
+   "changes": [
+    "flows.write.steps[resolve].generative (designed: a missing record type opens research instead of only failing)"
+   ],
+   "note": "Torian 09:00Z: generative endpoints"
+  }
+ ],
+ "checks": "prototypes/architecture/arch-check.ts",
+ "parent": {
+  "record": "naive-design/ventures/moses-david/products/naive.json",
+  "venture": "moses-david",
+  "product": "naive"
+ },
+ "siblings": [
+  "mentura architecture record (not started)"
+ ],
+ "flows": [
+  {
+   "id": "write",
+   "says": "How every write to a venture's records moves through Naive (router callInAction, action write). Derived from code at main 2507d1a by reading it; each step names a literal anchor in its file so flow-check.ts can confirm the code still does this, in this order.",
+   "derived_at": "2507d1a",
+   "declared": true,
+   "steps": [
+    {
+     "n": 1,
+     "id": "resolve",
+     "does": "Find the route for the request; a renamed route answers through its alias.",
+     "file": "interface/router.mjs",
+     "anchor": "const { r, params, alias } = resolve(route);",
+     "component": "router",
+     "rules": null,
+     "on_fail": "no route: error",
+     "plain": "Find where this record goes",
+     "plain_fail": "no such record type",
+     "generative": {
+      "status": "designed",
+      "decision": "EE-100",
+      "plain": "Research the new record type",
+      "plain_admit": "a person admits its schema, generator and route",
+      "plain_reject": "a person turns it down"
+     }
+    },
+    {
+     "n": 2,
+     "id": "access",
+     "does": "The acting role may read or write this route (team-plan globs).",
+     "file": "interface/router.mjs",
+     "anchor": "if (!allowed(dir, actor_id, act, requested)",
+     "component": "write-gate",
+     "rules": "P-27, F-5",
+     "on_fail": "refused",
+     "plain": "Check you're allowed to write here",
+     "plain_fail": "not allowed to write here"
+    },
+    {
+     "n": 3,
+     "id": "decision-lock",
+     "does": "An activity a decision unlocks stays closed to agents until a person decides.",
+     "file": "interface/router.mjs",
+     "anchor": "const lock = actor !== \"person\"",
+     "component": "decisions",
+     "rules": "EE-058",
+     "on_fail": "refused, names the decision",
+     "plain": "Check no decision you haven't made yet blocks this",
+     "plain_fail": "blocked until a person decides"
+    },
+    {
+     "n": 4,
+     "id": "beta-gate",
+     "does": "A capability locked in beta is refused, naming the feedback that unlocks it.",
+     "file": "interface/router.mjs",
+     "anchor": "const beta = betaBlocked(dir, requested",
+     "component": "lifecycle",
+     "rules": null,
+     "on_fail": "refused",
+     "plain": "Check the feature isn't still locked in the beta",
+     "plain_fail": "still locked in the beta"
+    },
+    {
+     "n": 5,
+     "id": "immutable-raw",
+     "does": "Raw captures (idea dumps, raw sources) are never edited; add a new one.",
+     "file": "interface/router.mjs",
+     "anchor": "is raw and immutable",
+     "component": "records-and-paths",
+     "rules": null,
+     "on_fail": "refused",
+     "plain": "Check it isn't an edit to a raw capture",
+     "plain_fail": "raw captures can't be edited"
+    },
+    {
+     "n": 6,
+     "id": "schema",
+     "does": "The record must match its schema, checked on a scratch copy before any source is touched.",
+     "file": "interface/router.mjs",
+     "anchor": "The schema first, on a scratch copy",
+     "component": "checks",
+     "rules": null,
+     "on_fail": "refused with the fix",
+     "plain": "Check the record has the right shape",
+     "plain_fail": "wrong shape, with the fix"
+    },
+    {
+     "n": 7,
+     "id": "open-decision-hold",
+     "does": "A record waiting on an open fail-closed decision holds an agent's write as a draft.",
+     "file": "interface/router.mjs",
+     "anchor": "const held = !remote && actor !== \"person\" ? holding(dir, file)",
+     "component": "decisions",
+     "rules": "EE-054",
+     "on_fail": "draft",
+     "plain": "Hold it if an open decision affects this record",
+     "plain_fail": "saved as a draft"
+    },
+    {
+     "n": 8,
+     "id": "venture-gate",
+     "does": "The venture's gate rules: hold as a draft, send to the function owner, or refuse.",
+     "file": "interface/router.mjs",
+     "anchor": "const configured = !remote ? gateWrite(",
+     "component": "write-gate",
+     "rules": "EE-073, X-1..X-6",
+     "on_fail": "draft or refused",
+     "plain": "Apply the venture's own rules",
+     "plain_fail": "saved as a draft, or refused"
+    },
+    {
+     "n": 9,
+     "id": "person-settles",
+     "does": "Only a person settles a decision; an agent's settling write is a draft.",
+     "file": "interface/router.mjs",
+     "anchor": "const settles = isDecision",
+     "component": "decisions",
+     "rules": "EE-058",
+     "on_fail": "draft",
+     "plain": "Check only a person settles a decision",
+     "plain_fail": "saved as a draft"
+    },
+    {
+     "n": 10,
+     "id": "draft-or-record",
+     "does": "An agent's gated write lands in _drafts/ for a person to accept; otherwise it is the record.",
+     "file": "interface/router.mjs",
+     "anchor": "const gatedDraft =",
+     "component": "write-gate",
+     "rules": "X-2",
+     "on_fail": "draft",
+     "plain": "Decide whether it's the record or a draft for a person",
+     "plain_fail": "saved as a draft"
+    },
+    {
+     "n": 11,
+     "id": "store",
+     "does": "Written through the connector for the record type's source (the folder, or a pull request).",
+     "file": "interface/router.mjs",
+     "anchor": "w = await store.write(file, recordText",
+     "component": "connector-contract",
+     "rules": "EE-037, EE-042",
+     "on_fail": null,
+     "plain": "Save it"
+    },
+    {
+     "n": 12,
+     "id": "provenance",
+     "does": "One hash-chained line per write: who, what, from what, under which decision.",
+     "file": "interface/router.mjs",
+     "anchor": "const entry = log(at, draft ? \"draft\"",
+     "component": "provenance",
+     "rules": "EE-031",
+     "on_fail": null,
+     "plain": "Log who changed what, and why"
+    },
+    {
+     "n": 13,
+     "id": "answer",
+     "does": "The write answers with what changed and the next route to act on.",
+     "file": "interface/writes.mjs",
+     "anchor": "export async function changed",
+     "component": "router",
+     "rules": "M-3, M-17",
+     "on_fail": null,
+     "plain": "Tell the writer what changed and what's next"
+    }
+   ]
+  }
+ ],
+ "pipeline": {
+  "says": "How an idea moves, held statefully and sandboxed (Torian 07:35Z). Stages and gates are terms in prototypes/architecture/stage.ts (exhaustive; Stage.lean). A part's stage is computed from evidence by stage.ts, never declared.",
+  "stages": [
+   "captured",
+   "sketched",
+   "designed",
+   "architected",
+   "implemented",
+   "verified",
+   "proved",
+   "retired"
+  ],
+  "transitions": [
+   {
+    "from": "captured",
+    "to": "sketched",
+    "gate": "a drawing: a doc, artifact or diagram",
+    "by": "any agent or person, in the sandbox"
+   },
+   {
+    "from": "sketched",
+    "to": "designed",
+    "gate": "G0 vocabulary: new words run through the term engine; trace to a need",
+    "by": "any agent, in the sandbox"
+   },
+   {
+    "from": "designed",
+    "to": "architected",
+    "gate": "G1: append to the master record; arch-check passes",
+    "by": "an agent may append when every check passes; Torian confirms later (card 06:20Z)"
+   },
+   {
+    "from": "architected",
+    "to": "implemented",
+    "gate": "a pull request whose code names the element",
+    "by": "Grok builds from the PR handoff (we plan, Grok builds)"
+   },
+   {
+    "from": "implemented",
+    "to": "verified",
+    "gate": "G2 conformance (flow-check A12, derived facts) and G3 tests",
+    "by": "CI and the checks; no person needed"
+   },
+   {
+    "from": "verified",
+    "to": "proved",
+    "gate": "G4: Lean theorems for its claims build",
+    "by": "the phases thread builds Lean"
+   },
+   {
+    "from": "verified",
+    "to": "implemented",
+    "gate": "regression: a conformance or test check fails",
+    "by": "the checks, automatically"
+   },
+   {
+    "from": "*",
+    "to": "retired",
+    "gate": "an amend with a decision record",
+    "by": "a person"
+   }
+  ],
+  "sandbox": {
+   "paths": [
+    "naive-design/prototypes/",
+    "naive-design/*.md",
+    "claude.ai artifacts and docs"
+   ],
+   "rules": [
+    "SB1 below architected, an idea lives only in the sandbox: no element in the record, no code on main",
+    "SB2 code on main never imports from the sandbox",
+    "SB3 code on main for a part the record does not hold is drift: it must be architected or removed"
+   ]
+  },
+  "register": "naive-design/architecture/ideas.json"
+ },
+ "terms": [
+  {
+   "id": "capability",
+   "status": "proposed",
+   "meaning": "An ability that an organisation, person or system possesses; behaviour, not structure, so always a capability of a named holder.",
+   "values": {
+    "CP1": "an ability",
+    "CP2": "names whose ability it is",
+    "CP3": "not a structural part",
+    "CP4": "not information"
+   },
+   "defined_in": {
+    "file": "naive-design/prototypes/architecture/capability-vocab.ts",
+    "result": "15/15 predictions, exhaustive 256 cases",
+    "lean": "Capability.lean, built (6 theorems, no sorry; phases thread 08:32Z)"
+   },
+   "sources": [
+    "archimate-3-2-capability"
+   ],
+   "children": {
+    "kinds": [
+     "provenance-tracking",
+     "precog"
+    ]
+   },
+   "called_by": []
+  },
+  {
+   "id": "provenance",
+   "status": "proposed",
+   "meaning": "Information about the entities, activities and people or agents involved in producing a thing (W3C PROV). Information, not an ability.",
+   "values": {
+    "PV1": "information",
+    "PV2": "about origin"
+   },
+   "defined_in": {
+    "file": "naive-design/prototypes/architecture/capability-vocab.ts",
+    "result": "15/15 predictions, exhaustive 256 cases",
+    "lean": "Capability.lean, built (6 theorems, no sorry; phases thread 08:32Z)"
+   },
+   "sources": [
+    "w3c-prov-dm-2013"
+   ],
+   "children": {
+    "kinds": [
+     "provenance-log"
+    ]
+   },
+   "relations": {
+    "capability": "disjoint",
+    "provenance-tracking": "disjoint"
+   },
+   "called_by": []
+  },
+  {
+   "id": "provenance-tracking",
+   "status": "proposed",
+   "meaning": "The capability to keep provenance for what is written.",
+   "values": {
+    "PT1": "its doing produces provenance"
+   },
+   "defined_in": {
+    "file": "naive-design/prototypes/architecture/capability-vocab.ts",
+    "result": "15/15 predictions, exhaustive 256 cases",
+    "lean": "Capability.lean, built (6 theorems, no sorry; phases thread 08:32Z)"
+   },
+   "sources": [
+    "w3c-prov-dm-2013"
+   ],
+   "is_a": [
+    "capability"
+   ],
+   "held_by": "naive-core",
+   "children": {
+    "realised_by": [
+     "provenance"
+    ],
+    "produces": [
+     "provenance-log"
+    ]
+   },
+   "called_by": []
+  },
+  {
+   "id": "provenance-log",
+   "status": "built",
+   "meaning": "<venture>/provenance.jsonl: one append-only, hash-chained line per write (EE-031).",
+   "values": {
+    "PL1": "append-only"
+   },
+   "defined_in": {
+    "file": "naive-design/prototypes/architecture/capability-vocab.ts",
+    "result": "15/15 predictions, exhaustive 256 cases",
+    "lean": "Capability.lean, built (6 theorems, no sorry; phases thread 08:32Z)"
+   },
+   "is_a": [
+    "provenance"
+   ],
+   "children": {
+    "record_types": [
+     "provenance"
+    ],
+    "files": [
+     "schema/provenance-entry.schema.json"
+    ],
+    "paths": [
+     "instance/**/provenance.jsonl"
+    ],
+    "generator": null
+   },
+   "called_by": []
+  },
+  {
+   "id": "provenance-module",
+   "status": "built",
+   "meaning": "The structural part that realises provenance tracking.",
+   "values": {
+    "PM1": "a structural part"
+   },
+   "defined_in": {
+    "file": "naive-design/prototypes/architecture/capability-vocab.ts",
+    "result": "15/15 predictions, exhaustive 256 cases",
+    "lean": "Capability.lean, built (6 theorems, no sorry; phases thread 08:32Z)"
+   },
+   "children": {
+    "elements": [
+     "provenance"
+    ],
+    "files": [
+     "interface/provenance.mjs",
+     "schema/check-provenance.mjs"
+    ],
+    "used_by": [
+     "console/lib/bridge.mjs",
+     "interface/brand.mjs",
+     "interface/cli/freshness.mjs",
+     "interface/cli/mentura.mjs",
+     "interface/cli/naive.mjs",
+     "interface/context.mjs",
+     "interface/create-venture/index.mjs",
+     "interface/harness/run.mjs",
+     "interface/package-routes.mjs",
+     "interface/reads.mjs",
+     "interface/router.mjs",
+     "interface/vitals.mjs",
+     "knowledge/connectors/eval.mjs",
+     "platform/connectors/eval.mjs",
+     "platform/kits/agent-upgrade/run.mjs",
+     "purpose/features/strategic-foundation.steps.mjs",
+     "schema/assets.mjs",
+     "schema/caching.mjs",
+     "schema/check-config.mjs",
+     "schema/check-provenance.mjs",
+     "schema/decision-index.mjs",
+     "schema/decisions.mjs",
+     "schema/freshness.mjs",
+     "schema/impact.mjs",
+     "schema/lifecycle.mjs",
+     "schema/migrate-venture.mjs",
+     "schema/model-steps.mjs",
+     "schema/port-venture.mjs",
+     "schema/publish.mjs",
+     "schema/releases.mjs",
+     "schema/stale.mjs",
+     "schema/triggers.mjs",
+     "schema/types/records.d.ts",
+     "schema/upgrades.mjs"
+    ]
+   },
+   "called_by": []
+  }
+ ]
+}

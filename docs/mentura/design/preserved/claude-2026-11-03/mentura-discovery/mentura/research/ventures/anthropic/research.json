@@ -1,0 +1,98 @@
+{
+ "venture": "anthropic",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "anthropic",
+   "area": "language",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Claude models (S-1 Business)",
+    "ref": {
+     "id": "anthropic-s-1-2026",
+     "locator": "Business"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "anthropic",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Claude Code, Cowork; MCP",
+    "ref": {
+     "id": "anthropic-2025-12-09-aaif"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "anthropic",
+   "area": "interpretability",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "S-1 Business, research",
+    "ref": {
+     "id": "anthropic-s-1-2026",
+     "locator": "Business"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "anthropic",
+   "area": "alignment",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Responsible Scaling Policy",
+    "ref": {
+     "id": "anthropic-s-1-2026",
+     "locator": "Business"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "anthropic",
+   "area": "reinforcement-learning",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "RL in training; no opened page",
+    "ref": null,
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

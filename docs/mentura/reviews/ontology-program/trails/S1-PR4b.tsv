@@ -1,0 +1,6 @@
+time	step	choice	why	evidence
+2026-11-03T22:50:27Z	copy	git show from preserve/sources-2026-11-03, unchanged	build-the-lever and subtract-before-you-add: copies come from git and stay unedited	wc -c 26349; sha256 15f2b801cb6e19558d82be9143a583e33b01e7a672f931c7b443dc358504f73a matches SHA256SUMS.txt
+2026-11-03T22:50:27Z	sidecar	cite N-003 with Claude id C-087 and say the cited sha prefix is the other record's	N-003's sha 133c4e1b824c is naive.architecture.json (FLAGS.tsv line 259); this file is in N-003's export column	grok-store/merged-ledger.full.md line 83
+2026-11-03T22:50:27Z	data model	one ignore entry for this path plus a README sentence	check-data-model needs every JSON file covered; per-path ignore is the pattern #175 landed and the verifier accepted	node schema/check-data-model.mjs
+2026-11-03T22:50:27Z	flags	commit as-is, cite FLAGS.tsv line 257	Torian's Nov 3 hold-nothing-back ruling	FLAGS.tsv line 257
+2026-11-03T23:18:05Z	swarm fixes	FLAGS line not row, cite C-S3-archcheck, precise inventory sentence, README names one draft and the term list folder	claims audit and schema audit workers on #179	lanes179/audit-claims.md, audit-schema.md

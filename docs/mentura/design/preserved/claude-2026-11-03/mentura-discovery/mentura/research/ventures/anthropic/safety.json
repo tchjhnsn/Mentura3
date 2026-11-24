@@ -1,0 +1,35 @@
+{
+ "venture": "anthropic",
+ "record_type": "safety-set",
+ "levels": {
+  "venture": [
+   {
+    "record_type": "safety-commitment",
+    "scope": "venture",
+    "name": "Responsible Scaling Policy",
+    "basis": {
+     "value": "Company-wide policy tying model releases to safety levels",
+     "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Business"
+     },
+     "evidence": "demonstrated",
+     "as_of": "2026-11-01"
+    }
+   }
+  ],
+  "product": [
+   {
+    "record_type": "safety-commitment",
+    "scope": "product",
+    "product": "anthropic.models",
+    "name": "Model and system cards per release",
+    "basis": {
+     "unknown": true,
+     "reason": "not opened this session; read a system card before filling",
+     "as_of": "2026-11-01"
+    }
+   }
+  ]
+ }
+}

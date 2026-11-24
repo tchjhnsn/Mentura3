@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.model-hardware-standard",
+  "kind": "product",
+  "parent": "anthropic.platform",
+  "name": "Model Hardware Standard",
+  "job": {
+    "value": "Let agents operate lab and manufacturing equipment.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Frontier AI May Reshape Entire Sectors"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Labs and manufacturers",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Frontier AI May Reshape Entire Sectors"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "Standard for connecting agents to equipment",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Prospectus Summary, Frontier AI May Reshape Entire Sectors"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

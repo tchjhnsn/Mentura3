@@ -1,0 +1,17 @@
+{
+ "id": "claude-docs-agent-sdk-overview",
+ "kind": "reference",
+ "title": "Claude Code docs: Agent SDK overview",
+ "locator": "https://code.claude.com/docs/en/agent-sdk/overview",
+ "tier": "primary",
+ "read": true,
+ "accessed": "2026-11-01",
+ "quotes": [
+  "Build production AI agents with Claude Code as a library",
+  "Embed Claude Code's agent in your own Python or TypeScript application, in a process you operate",
+  "A library that runs the Claude Code binary",
+  "Managed Agents: A hosted agent harness that runs the agent loop",
+  "set your API key"
+ ],
+ "note": "platform.claude.com/docs/en/agent-sdk/overview redirects (307) to this page"
+}

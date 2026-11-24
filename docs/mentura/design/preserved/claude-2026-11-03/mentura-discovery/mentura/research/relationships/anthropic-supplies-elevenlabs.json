@@ -1,0 +1,15 @@
+{
+ "record_type": "supplies",
+ "from": "anthropic",
+ "to": "elevenlabs",
+ "what": "Claude models selectable inside ElevenAgents",
+ "basis": {
+  "value": "Claude models listed in ElevenAgents LLM settings",
+  "ref": {
+   "id": "elevenlabs-docs-agents-llm"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ },
+ "note": "Whether the contract is direct or the customer brings their own key is unknown."
+}

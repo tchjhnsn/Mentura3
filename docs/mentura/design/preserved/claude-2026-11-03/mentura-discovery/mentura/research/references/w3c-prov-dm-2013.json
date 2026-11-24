@@ -1,0 +1,11 @@
+{
+ "id": "w3c-prov-dm-2013",
+ "title": "PROV-DM: The PROV Data Model",
+ "authors": "W3C (Moreau, Missier eds.)",
+ "venue": "W3C Recommendation, 30 April 2013",
+ "url": "https://www.w3.org/TR/prov-dm/",
+ "retrieved": "2026-11-01",
+ "tier": "known standard, not opened this session; Naive's provenance-entry schema follows it",
+ "quotes": [],
+ "read": "provenance: information about entities, activities and people involved in producing a piece of data or thing"
+}

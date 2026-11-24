@@ -1,0 +1,7 @@
+time	step	choice	why	evidence
+2026-11-04T07:23:39Z	pick	N-037, the Mentura research folder, as an S1-PR10 unit built beside S1-PR10.1	N-037 is a confidential row whose only source is this export folder; each unit is independent in content and lands one at a time	full ledger row N-037 names 119 export files
+2026-11-04T07:23:39Z	copy	git show of all 119 files under project-files/mentura-discovery/mentura/research/, unchanged, layout kept	build-the-lever and subtract-before-you-add	all 119 sha256 match SHA256SUMS.txt
+2026-11-04T07:23:39Z	ledger column	read rows from grok-store/merged-ledger.full.md	the public ledger hides confidential pointers; the full ledger names the files for N-037 and N-006	N-006 names research-areas/self.json
+2026-11-04T07:23:39Z	checks	no new data-model ignore entry	docs/design/preserved/**/*.json is already ignored	node schema/check-data-model.mjs exit 0
+2026-11-04T08:05:54Z	sidecar	list N-037 on all 119 files	lane 4 verifier: N-037 names 6 files then (+113 more) and gives the folder as its location	full ledger row N-037
+2026-11-04T08:05:54Z	rebase	rebased onto 89503de after #191 merged, inventory regenerated	both PRs regenerate the inventory	architecture-inventory --check ok

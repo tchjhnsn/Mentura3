@@ -1,0 +1,60 @@
+{
+  "number": 158,
+  "title": "Decision EE-104: anticipation replaces precog in the ontology",
+  "body": "Adds to `docs/ontology.json`: anticipation (Mentura's anticipatory capability after Rosen 1985, narrowed; people decide, nothing commits the venture), impact forecast (narrower than forecast and anticipation), decision prefetch, forecast, scoped senses capability@function (owned by capabilities) and capability@product (owned by products), and a causal `driver-of` relation seeded with three links the ontology already supports. Retires precog with a pointer to anticipation (Minority Report connotations of surveillance and pre-judgment). Appends decision EE-104, including the internal codename Deluminator; the public name is still Torian's to choose.\n\n`docs/ontology.md` and `docs/noun-graph.md` regenerated; `node test.mjs` passes.\n\nStacked on #157 (base `cursor/noun-relations-graph-0d5a`); retargets to main once #157 merges. Follow-up: `site/content/marketing/how.mdx` and `site/scripts/artifact.mjs` still say Precog, left until the public name is chosen.\n\nBuilt by cloud agent bc-9758ee81 (its PR tool failed with `[unavailable] Error`, so this was opened by Grok Bot at Torian's direction).",
+  "headRefOid": "5e24e94aba92683362305f35ce5647a6efcaaed4",
+  "baseRefName": "cursor/noun-relations-graph-0d5a",
+  "baseRefOid": "04d1f2291dd82fb48008cafc61d08d0b3b1f0399",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "additions": 2,
+      "deletions": 2
+    },
+    {
+      "path": "docs/decisions/decisions.json",
+      "additions": 38,
+      "deletions": 0
+    },
+    {
+      "path": "docs/noun-graph.md",
+      "additions": 28,
+      "deletions": 1
+    },
+    {
+      "path": "docs/ontology.json",
+      "additions": 118,
+      "deletions": 3
+    },
+    {
+      "path": "docs/ontology.md",
+      "additions": 21,
+      "deletions": 4
+    },
+    {
+      "path": "schema/README.md",
+      "additions": 1,
+      "deletions": 1
+    },
+    {
+      "path": "schema/check-nouns.mjs",
+      "additions": 2,
+      "deletions": 1
+    },
+    {
+      "path": "schema/noun-relations.ts",
+      "additions": 12,
+      "deletions": 8
+    },
+    {
+      "path": "schema/ontology-gate-test.ts",
+      "additions": 26,
+      "deletions": 1
+    },
+    {
+      "path": "schema/ontology-gate.ts",
+      "additions": 13,
+      "deletions": 3
+    }
+  ]
+}

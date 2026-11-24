@@ -1,0 +1,15 @@
+{
+  "number": 161,
+  "title": "EE-105: accounts, organizations and ventures",
+  "body": "<!-- CURSOR_AGENT_PR_BODY_BEGIN -->\nEE-105 now records the settled names. The organization is the tenant. A venture is an undertaking that organization owns, moving through phases and gates. The open terminology note is gone. The entry is in force as a decision. The pull request stays a draft, and it still changes only `docs/decisions/decisions.json`.\n\nThe record has a short glossary. Each definition cites a source from the research note (W3C Organization Ontology, Merriam-Webster, Shane and Venkataraman, Gartner, AWS, GitHub, Cornell LII, PMI, Vercel, and the others named there). It restates the eleven decisions and the four puzzle decisions in these terms. Puzzle answers live in a venture inside the founder's personal organization. A venture moves between organizations by transfer. A true joint venture forms a new shared organization. Business and company are labels. Enterprise is reserved for a possible level above organizations. Workspace is a view, never a stored record.\n\nThe conflict list is the same set, reworded. `schema/venture.schema.json` and EE-011 still treat the venture folder as the tenant. `schema/account.schema.json` is still the CRM party record, not the person-only user account. Storage in one database, scoped by organization id, still needs a migration plan and Torian's OK. This pull request does not run a migration.\n\nNo docs change: the only edit is the decision log, which is the index the decisions page already renders.\n<!-- CURSOR_AGENT_PR_BODY_END -->\n\n<div><a href=\"https://cursor.com/agents/bc-cb1d3d1e-29e2-56af-97f4-b1e15f619034?cursor_ref=pr_footer&cursor_cta=open_in_web\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cursor.com/assets/images/open-in-web-dark.png\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://cursor.com/assets/images/open-in-web-light.png\"><img alt=\"Open in Web\" width=\"114\" height=\"28\" src=\"https://cursor.com/assets/images/open-in-web-dark.png\"></picture></a>&nbsp;<a href=\"https://cursor.com/background-agent?bcId=bc-cb1d3d1e-29e2-56af-97f4-b1e15f619034&cursor_ref=pr_footer&cursor_cta=open_in_cursor\"><picture><source media=\"(prefers-color-scheme: dark)\" srcset=\"https://cursor.com/assets/images/open-in-cursor-dark.png\"><source media=\"(prefers-color-scheme: light)\" srcset=\"https://cursor.com/assets/images/open-in-cursor-light.png\"><img alt=\"Open in Cursor\" width=\"131\" height=\"28\" src=\"https://cursor.com/assets/images/open-in-cursor-dark.png\"></picture></a>&nbsp;</div>\n\n",
+  "headRefOid": "33c1ae70448ab0b9409479e3385d6bce1b7e714f",
+  "baseRefName": "framework",
+  "baseRefOid": "cb502f9b8a68b8d90c72440e5e52a732c1bcef6e",
+  "files": [
+    {
+      "path": "docs/decisions/decisions.json",
+      "additions": 20,
+      "deletions": 0
+    }
+  ]
+}

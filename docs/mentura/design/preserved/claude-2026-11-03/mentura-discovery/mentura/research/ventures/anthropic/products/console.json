@@ -1,0 +1,21 @@
+{
+ "id": "anthropic.console",
+ "kind": "product",
+ "parent": "anthropic",
+ "name": "Claude Console",
+ "as_of": "2026-11-01",
+ "refs": [
+  "claude-docs-managed-agents"
+ ],
+ "offering_kind": {
+  "derived_from": "naive-design/prototypes/architecture/offering-run.json",
+  "value": {
+   "Claude Console": [
+    "app",
+    "console",
+    "platform"
+   ]
+  }
+ },
+ "description": "The builders' app: accounts, API keys, billing, and Managed Agents set up visually with the matching API request shown."
+}

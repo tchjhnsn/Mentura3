@@ -1,0 +1,9 @@
+{
+ "id": "elevenlabs-docs-agents-llm",
+ "kind": "reference",
+ "title": "ElevenLabs docs: LLM choice for agents (lists Claude models; custom LLM allowed)",
+ "locator": "https://elevenlabs.io/docs/pt/eleven-agents/customization/llm.md",
+ "tier": "primary",
+ "read": true,
+ "accessed": "2026-11-01"
+}

@@ -1,0 +1,40 @@
+{
+ "venture": "elevenlabs",
+ "record_type": "capability-set",
+ "meaning": "a product offers the capability; 'how' says whether by its own model or a supplier's",
+ "capabilities": [
+  {
+   "record_type": "has-capability",
+   "product": "elevenlabs.agents",
+   "capability": "language",
+   "what": "Agents use a language model the customer picks, Claude among them, or a custom endpoint",
+   "how": {
+    "value": "supplied: Anthropic, OpenAI, Google models selectable; ElevenLabs also hosts open-weight models",
+    "ref": {
+     "id": "elevenlabs-docs-agents-llm"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "fine_tunes_claude": {
+    "unknown": true,
+    "reason": "no source says ElevenLabs fine-tunes Claude",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "has-capability",
+   "product": "elevenlabs.agents",
+   "capability": "speech-audio",
+   "what": "Own fine-tuned ASR, TTS and turn-taking models",
+   "how": {
+    "value": "own models",
+    "ref": {
+     "id": "elevenlabs-docs-agents-overview"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

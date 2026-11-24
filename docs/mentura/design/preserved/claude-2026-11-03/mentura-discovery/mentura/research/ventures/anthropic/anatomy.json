@@ -1,0 +1,659 @@
+{
+  "venture": "anatomy-of:anthropic",
+  "of": "anthropic",
+  "study": {
+    "studied_by": "mentura",
+    "status": "draft",
+    "schema": "draft shapes from everything-ecosystem PR #147 (cell, venture-anatomy); revalidate once Grokbot lands the schemas",
+    "sources": [
+      "anthropic-s-1-2026"
+    ],
+    "source_policy": "Public sources only. Every cell cites a reference id and a locator. A fact with no public source is unknown with a reason. Wording is ours unless quoted.",
+    "started": "2026-11-01"
+  },
+  "phase": "scale",
+  "ladder": {
+    "0": "absent",
+    "1": "stated",
+    "2": "cited evidence",
+    "3": "verified by an outsider"
+  },
+  "parts": {
+    "core": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Prospectus Summary, Overview; Our Governance Structure and Its Goals"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Stated, and backed by cited adoption figures; the Company Purpose is in a filed charter. Not 3: no outsider has verified the promise is kept."
+      },
+      "summary": "A frontier AI research lab whose one promise is trustworthy delegated professional work, sold to enterprises.",
+      "facts": {
+        "company_purpose": {
+          "value": "The responsible development and maintenance of advanced AI for the long-term benefit of humanity.",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Our Governance Structure and Its Goals"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "defined-terms": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Select Defined Terms, pp. 2-5"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Each term written out and used consistently in a filed document. Not 3: definitions are not audited."
+      },
+      "summary": "A Select Defined Terms section of about 39 terms, from agent loop to tokens, including its own metrics (Run-Rate Revenue, Net Revenue Retention).",
+      "facts": {
+        "count": {
+          "value": 39,
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Select Defined Terms"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26",
+          "note": "Counted 2026-11-01 by the Anthropic S-1 study."
+        }
+      },
+      "gaps": [
+        "Run the terms through the glossary engine as term@s1 (already done for 21 of them, s1-vocab.ts)."
+      ],
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "risk-register": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Risk Factors, pp. 26-120"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Written, grouped and tied to the business with examples. Not 3: risk factors are the company's own view."
+      },
+      "summary": "Risk Factors run about 95 pages in six groups: business and industry; privacy, cybersecurity and IP; legal and regulatory; tax and accounting; governance structure; ownership of Class A stock.",
+      "facts": {
+        "groups": {
+          "value": [
+            "business and industry",
+            "privacy, cybersecurity and IP",
+            "legal and regulatory",
+            "tax and accounting",
+            "governance structure",
+            "ownership of Class A common stock"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Risk Factors"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "customers": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Prospectus Summary, Enterprise Adoption of Claude; MD&A, Our Customers and Approach to Claude Diffusion"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-09-30",
+        "note": "Counts and concentration are given with definitions. Not 3: these are unaudited operating metrics."
+      },
+      "summary": "More than 11,900 customers at $100k+ TTM, more than 1,900 at $1M+, about 250 at $10M+; about 40 million smaller customers; no customer over 10% of revenue for the nine months to 2026-09-30.",
+      "facts": {
+        "customers_100k_ttm": {
+          "value": ">11900",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Prospectus Summary"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "customers_1m_ttm": {
+          "value": ">1900",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Prospectus Summary"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "customers_10m_ttm": {
+          "value": "~250",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Prospectus Summary"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "net_revenue_retention": {
+          "value": "~900%",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Strengths of Our Financial Model"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "top_five_share": {
+          "value": "~21% of revenue for the three months to 2026-09-30 (79% from outside the top five)",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "MD&A, Our Customers"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "fortune_500": {
+          "value": "over 50% are $100k+ customers",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "MD&A, Our Customers"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "market": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Prospectus Summary, A Near-Term Opportunity; Business, Competition"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Market size cites IDC and its own method; competitors are named. Not 3: the sizing is the company's."
+      },
+      "summary": "Knowledge work worth more than $40 trillion a year (2025); names OpenAI and Google as direct model competitors, open-weight models, application vendors in select categories, and the status quo.",
+      "facts": {
+        "stated_competitors": {
+          "value": [
+            "OpenAI",
+            "Google",
+            "well-capitalized technology companies",
+            "open-weight model providers",
+            "enterprise software vendors in select categories",
+            "status quo"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Business, Competition"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26",
+          "note": "What the company says. Not a competitor verdict by our theorems."
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "products": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Prospectus Summary; Business"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Each product described with its job and audience. Not 3: no outside verification. Revenue by product is not disclosed."
+      },
+      "summary": "Delivered through models, platform and applications (Claude Code, Claude Cowork merging with Claude.ai), with Applied AI and the Model Hardware Standard.",
+      "gaps": [
+        "Revenue by product is not disclosed; product-level answers in the Product Anatomy run stay inferred."
+      ],
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "people": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Business, Our Talent; Management"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-09-30",
+        "note": "Named officers and directors with roles; headcount stated. Not 3."
+      },
+      "summary": "About 5,300 employees; seven co-founders; CEO Dario Amodei, President and Chair Daniela Amodei, CFO Krishna Rao; headcount up about 170% in a year.",
+      "facts": {
+        "employees": {
+          "value": "~5300",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Business, Our Talent"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        },
+        "revenue_per_employee_ttm": {
+          "value": ">$6.6M",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Strengths of Our Financial Model"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-09-30"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "control": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Our Governance Structure and Its Goals; Our Capital Structure; Controlled Company Status"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Spelled out in a filed charter and stockholders' agreement. Not 3 in our ladder: a filing is not an outsider's check, though the charter is a public legal record."
+      },
+      "summary": "PBC with the Company Purpose. The Long-Term Benefit Trust holds Class T stock and elects a majority of the board; a Founder LLC holds one Class F share with 50.1% of votes on general matters; Class A one vote; Class N none; Class E limited. A Nasdaq controlled company.",
+      "facts": {
+        "classes": {
+          "value": {
+            "A": "1 vote",
+            "N": "0 votes, converts to A on transfer",
+            "T": "elects Class T directors (board majority)",
+            "F": "50.1% of voting power on general matters",
+            "E": "limited matters"
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Our Capital Structure"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        },
+        "ltbt_trustees": {
+          "value": 5,
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Long-Term Benefit Trust"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "dependencies": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Risk Factors, Our reliance on a limited number of CSPs and suppliers; Prospectus Summary, Our Approach to Compute"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Named, with the conflicts described. Not 3. Contract terms are in exhibits we have not read."
+      },
+      "summary": "Compute from a limited number of CSPs (Amazon, Google, Microsoft) and suppliers such as Broadcom, on AWS Trainium, Google TPUs, NVIDIA and AMD GPUs. The same CSPs are investors, customers, distribution channels and competitors.",
+      "facts": {
+        "csps": {
+          "value": [
+            "Amazon",
+            "Google",
+            "Microsoft"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Risk Factors, CSPs"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        },
+        "suppliers": {
+          "value": [
+            "Broadcom",
+            "AWS Trainium",
+            "Google TPU",
+            "NVIDIA",
+            "AMD"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Prospectus Summary, Our Approach to Compute; Risk Factors, CSPs"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        },
+        "stated_roles_of_csps": {
+          "value": [
+            "supplier",
+            "investor",
+            "customer",
+            "channel",
+            "competitor"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Risk Factors, CSPs"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26",
+          "note": "The company's own statement that one player holds several roles. Input for the relationship theorems later; not a verdict."
+        },
+        "committed_spend": {
+          "unknown": true,
+          "reason": "Left blank in the preliminary S-1 ($ ___).",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "financials": {
+      "level": {
+        "value": 3,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Summary Consolidated Financial and Other Data; Experts"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-06-30",
+        "note": "Audited: Ernst & Young LLP (2025) and Grant Thornton LLP (2023-2024). Interim six-month figures are unaudited, so those cells are level 2."
+      },
+      "summary": "Revenue $41M (2023), $386M (2024), $4,585M (2025), $16,286M for the six months to 2026-06-30. Operating loss $693M for that half; net loss $80.7B, mostly fair-value changes on convertible notes.",
+      "facts": {
+        "revenue": {
+          "value": {
+            "2023": 41,
+            "2024": 386,
+            "2025": 4585,
+            "H1-2025": 1163,
+            "H1-2026": 16286
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Summary Consolidated Financial and Other Data"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30",
+          "note": "USD millions."
+        },
+        "operating_loss": {
+          "value": {
+            "2023": -551,
+            "2024": -2980,
+            "2025": -8060,
+            "H1-2026": -693
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Summary Consolidated Financial and Other Data"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30",
+          "note": "USD millions."
+        },
+        "net_loss": {
+          "value": {
+            "2025": -41965,
+            "H1-2026": -80748
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Summary Consolidated Financial and Other Data"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30",
+          "note": "USD millions; driven by change in fair value of convertible notes, derivatives and SAFEs."
+        },
+        "compute_and_infrastructure": {
+          "value": {
+            "2025": 7326,
+            "H1-2026": 8945
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Summary Consolidated Financial and Other Data"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30",
+          "note": "USD millions."
+        },
+        "auditors": {
+          "value": [
+            "Ernst & Young LLP (2025)",
+            "Grant Thornton LLP (2023-2024)"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Experts"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        },
+        "q3_2026_revenue": {
+          "unknown": true,
+          "reason": "Left blank in the preliminary S-1 ($ ___ for the three months ended 2026-09-30).",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "capital": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Strengths of Our Financial Model; Certain Relationships, Equity Financings; Use of Proceeds"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-06-30",
+        "note": "Stated with amounts. Not 3: offering size, price range and dilution are blank in the preliminary filing."
+      },
+      "summary": "Raised $141.1B in aggregate; cash $112.4B and short-term investments $19.3B (2026-06-30). Series H-1 at $589.0095 a share ($45.7B, May-June 2026). IPO proceeds for general purposes including compute and talent.",
+      "facts": {
+        "raised_total": {
+          "value": "$141.1B",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Strengths of Our Financial Model"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30"
+        },
+        "cash": {
+          "value": "$112.4B",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Strengths of Our Financial Model"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-06-30"
+        },
+        "series_h1": {
+          "value": {
+            "price_per_share": 589.0095,
+            "aggregate": "$45.73B",
+            "dates": "2026-05 to 2026-06"
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Certain Relationships, Series H"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        },
+        "offering_size": {
+          "unknown": true,
+          "reason": "Blank in the preliminary S-1.",
+          "as_of": "2026-10-26"
+        },
+        "dilution": {
+          "unknown": true,
+          "reason": "Blank in the preliminary S-1.",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 2,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "regulation": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Business, Government Regulation; Business, Legal Proceedings"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Described with named cases. The Bartz settlement is court-approved, which is an outsider's check, but the part as a whole is the company's account."
+      },
+      "summary": "Subject to AI-specific rules, privacy, export controls, IP and more; agreed pre-release model testing with CAISSI and the UK AI Security Institute; endorsed California SB 53. Settled Bartz (authors' copyright class action) for $1.5B, approved July 2026. Challenging federal 'supply-chain risk' actions from February-March 2026 in court.",
+      "facts": {
+        "bartz_settlement": {
+          "value": {
+            "amount": "$1.5B",
+            "approved": "2026-07"
+          },
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Business, Legal Proceedings"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26",
+          "note": "Court approval is outsider verification of this one fact (level 3 for the fact)."
+        },
+        "federal_challenged_actions": {
+          "value": "Presidential directive and Department of War supply-chain risk designation (2026-02 to 2026-03), preliminarily enjoined; litigation ongoing.",
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Business, Legal Proceedings, Other Matters"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 1,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    },
+    "related-parties": {
+      "level": {
+        "value": 2,
+        "ref": {
+          "id": "anthropic-s-1-2026",
+          "locator": "Certain Relationships and Related Person Transactions; Risk Factors, Governance Structure"
+        },
+        "evidence": "demonstrated",
+        "as_of": "2026-10-26",
+        "note": "Disclosed under the SEC's related-person rule. Not 3."
+      },
+      "summary": "Board-linked funds bought in Series G-1 and H-1 (Spark Capital, Bodhi LLC). Amazon and Google each will hold more than 5% after conversions; Amazon holds remaining convertible notes.",
+      "facts": {
+        "over_5_percent": {
+          "value": [
+            "Amazon",
+            "Google"
+          ],
+          "ref": {
+            "id": "anthropic-s-1-2026",
+            "locator": "Risk Factors, Class N common stock"
+          },
+          "evidence": "demonstrated",
+          "as_of": "2026-10-26"
+        }
+      },
+      "required": {
+        "by_phase": 1,
+        "by_decision": 2,
+        "decision": "anthropic-d-ipo",
+        "required": 2
+      },
+      "meets": true
+    }
+  }
+}

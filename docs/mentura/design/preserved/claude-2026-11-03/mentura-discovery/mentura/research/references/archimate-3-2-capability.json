@@ -1,0 +1,13 @@
+{
+ "id": "archimate-3-2-capability",
+ "title": "ArchiMate 3.2 Specification: Capability (Strategy Layer)",
+ "authors": "The Open Group",
+ "venue": "2022",
+ "url": "https://pubs.opengroup.org/architecture/archimate3-doc/",
+ "retrieved": "2026-11-01",
+ "tier": "reference card via search; spec not opened",
+ "quotes": [
+  "a capability is an ability that an active structure element, such as an organization, person, or system, possesses"
+ ],
+ "read": "capabilities are behaviour elements in the metamodel (Almeida et al. 2024 ontological analysis)"
+}

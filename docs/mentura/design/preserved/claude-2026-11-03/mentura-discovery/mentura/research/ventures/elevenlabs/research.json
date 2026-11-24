@@ -1,0 +1,43 @@
+{
+ "venture": "elevenlabs",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "elevenlabs",
+   "area": "speech-audio",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "own fine-tuned ASR, TTS and turn-taking models",
+    "ref": {
+     "id": "elevenlabs-docs-agents-overview"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "elevenlabs",
+   "area": "agents",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "ElevenAgents voice agent platform",
+    "ref": {
+     "id": "elevenlabs-docs-agents-overview"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}

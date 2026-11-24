@@ -1,0 +1,13 @@
+{
+ "id": "schank-1972-cd",
+ "title": "Conceptual dependency: A theory of natural language understanding",
+ "authors": "Roger C. Schank",
+ "venue": "Cognitive Psychology 3(4), 1972",
+ "url": "https://www.jimdavies.org/summaries/schank1972-2.html",
+ "retrieved": "2026-11-01",
+ "tier": "secondary summary (primary not opened)",
+ "quotes": [
+  "actions are broken down into primitive ACTs and do not correspond to verbs"
+ ],
+ "read": "primitive list varies by source (eleven ACTs incl. PTRANS, ATRANS, MTRANS, PROPEL, INGEST)"
+}

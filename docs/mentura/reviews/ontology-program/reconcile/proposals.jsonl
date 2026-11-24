@@ -1,0 +1,683 @@
+{"idea": "n-001", "field": "importance", "value": "medium"}
+{"idea": "n-001", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["glossary"]}
+{"idea": "n-001", "field": "status", "value": "open"}
+{"idea": "n-002", "field": "importance", "value": "low"}
+{"idea": "n-002", "field": "relation", "value": [{"relation": "related", "to": "n-001"}]}
+{"idea": "n-002", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-002", "field": "status", "value": "open"}
+{"idea": "n-003", "field": "importance", "value": "low"}
+{"idea": "n-003", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-003", "field": "status", "value": "open"}
+{"idea": "n-004", "field": "importance", "value": "high"}
+{"idea": "n-004", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture development framework"]}
+{"idea": "n-004", "field": "status", "value": "open"}
+{"idea": "n-005", "field": "importance", "value": "high"}
+{"idea": "n-005", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["goal"]}
+{"idea": "n-005", "field": "status", "value": "open"}
+{"idea": "n-006", "field": "importance", "value": "high"}
+{"idea": "n-006", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["positioning"]}
+{"idea": "n-006", "field": "status", "value": "open"}
+{"idea": "n-007", "field": "importance", "value": "medium"}
+{"idea": "n-007", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["README"]}
+{"idea": "n-007", "field": "status", "value": "open"}
+{"idea": "n-008", "field": "importance", "value": "high"}
+{"idea": "n-008", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["function"]}
+{"idea": "n-008", "field": "status", "value": "open"}
+{"idea": "n-009", "field": "importance", "value": "high"}
+{"idea": "n-009", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["venture"]}
+{"idea": "n-009", "field": "status", "value": "open"}
+{"idea": "n-010", "field": "importance", "value": "high"}
+{"idea": "n-010", "field": "relation", "value": [{"relation": "builds-on", "to": "n-105"}]}
+{"idea": "n-010", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["meta-schema"]}
+{"idea": "n-010", "field": "status", "value": "open"}
+{"idea": "n-011", "field": "importance", "value": "medium"}
+{"idea": "n-011", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["module"]}
+{"idea": "n-011", "field": "status", "value": "open"}
+{"idea": "n-012", "field": "importance", "value": "medium"}
+{"idea": "n-012", "field": "scope", "value": {"scope": "naive@risk-and-compliance", "via": "appends-to"}, "terms": ["gate"]}
+{"idea": "n-012", "field": "status", "value": "open"}
+{"idea": "n-013", "field": "importance", "value": "low"}
+{"idea": "n-013", "field": "relation", "value": [{"relation": "builds-on", "to": "n-164"}]}
+{"idea": "n-013", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-013", "field": "status", "value": "open"}
+{"idea": "n-014", "field": "importance", "value": "low"}
+{"idea": "n-014", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-014", "field": "status", "value": "open"}
+{"idea": "n-015", "field": "importance", "value": "medium"}
+{"idea": "n-015", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["pipeline"]}
+{"idea": "n-015", "field": "status", "value": "open"}
+{"idea": "n-016", "field": "importance", "value": "medium"}
+{"idea": "n-016", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["clock"]}
+{"idea": "n-016", "field": "status", "value": "open"}
+{"idea": "n-017", "field": "importance", "value": "medium"}
+{"idea": "n-017", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["idea"]}
+{"idea": "n-017", "field": "status", "value": "open"}
+{"idea": "n-018", "field": "importance", "value": "medium"}
+{"idea": "n-018", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["term", "provenance"]}
+{"idea": "n-018", "field": "status", "value": "open"}
+{"idea": "n-019", "field": "importance", "value": "medium"}
+{"idea": "n-019", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["evidence"]}
+{"idea": "n-019", "field": "status", "value": "open"}
+{"idea": "n-020", "field": "importance", "value": "medium"}
+{"idea": "n-020", "field": "relation", "value": [{"relation": "builds-on", "to": "n-019"}]}
+{"idea": "n-020", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["pipeline"]}
+{"idea": "n-020", "field": "status", "value": "open"}
+{"idea": "n-021", "field": "importance", "value": "medium"}
+{"idea": "n-021", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["problem"]}
+{"idea": "n-021", "field": "status", "value": "open"}
+{"idea": "n-022", "field": "importance", "value": "medium"}
+{"idea": "n-022", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["conversation"]}
+{"idea": "n-022", "field": "status", "value": "open"}
+{"idea": "n-023", "field": "importance", "value": "medium"}
+{"idea": "n-023", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["conversation"]}
+{"idea": "n-023", "field": "status", "value": "open"}
+{"idea": "n-024", "field": "importance", "value": "medium"}
+{"idea": "n-024", "field": "scope", "value": {"scope": "naive@human-capital", "via": "appends-to"}, "terms": ["role"]}
+{"idea": "n-024", "field": "status", "value": "open"}
+{"idea": "n-025", "field": "importance", "value": "medium"}
+{"idea": "n-025", "field": "scope", "value": {"scope": "naive@human-capital", "via": "appends-to"}, "terms": ["glossary"]}
+{"idea": "n-025", "field": "status", "value": "open"}
+{"idea": "n-026", "field": "importance", "value": "medium"}
+{"idea": "n-026", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["prompt"]}
+{"idea": "n-026", "field": "status", "value": "open"}
+{"idea": "n-027", "field": "importance", "value": "medium"}
+{"idea": "n-027", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["module"]}
+{"idea": "n-027", "field": "status", "value": "open"}
+{"idea": "n-028", "field": "importance", "value": "medium"}
+{"idea": "n-028", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["waitlist"]}
+{"idea": "n-028", "field": "status", "value": "open"}
+{"idea": "n-029", "field": "importance", "value": "medium"}
+{"idea": "n-029", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["record"]}
+{"idea": "n-029", "field": "status", "value": "open"}
+{"idea": "n-030", "field": "importance", "value": "medium"}
+{"idea": "n-030", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["docs"]}
+{"idea": "n-030", "field": "status", "value": "open"}
+{"idea": "n-031", "field": "importance", "value": "medium"}
+{"idea": "n-031", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["industry"]}
+{"idea": "n-031", "field": "status", "value": "open"}
+{"idea": "n-032", "field": "importance", "value": "medium"}
+{"idea": "n-032", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["kit"]}
+{"idea": "n-032", "field": "status", "value": "open"}
+{"idea": "n-033", "field": "importance", "value": "medium"}
+{"idea": "n-033", "field": "scope", "value": {"scope": "naive@capital", "via": "creates"}, "terms": ["function"]}
+{"idea": "n-033", "field": "status", "value": "open"}
+{"idea": "n-034", "field": "importance", "value": "low"}
+{"idea": "n-034", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["website"]}
+{"idea": "n-034", "field": "status", "value": "open"}
+{"idea": "n-035", "field": "importance", "value": "medium"}
+{"idea": "n-035", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["function"]}
+{"idea": "n-035", "field": "status", "value": "open"}
+{"idea": "n-036", "field": "importance", "value": "medium"}
+{"idea": "n-036", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["gate"]}
+{"idea": "n-036", "field": "status", "value": "open"}
+{"idea": "n-037", "field": "importance", "value": "low"}
+{"idea": "n-037", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-037", "field": "status", "value": "open"}
+{"idea": "n-038", "field": "importance", "value": "low"}
+{"idea": "n-038", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-038", "field": "status", "value": "open"}
+{"idea": "n-039", "field": "importance", "value": "low"}
+{"idea": "n-039", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-039", "field": "status", "value": "dropped"}
+{"idea": "n-040", "field": "importance", "value": "low"}
+{"idea": "n-040", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-040", "field": "status", "value": "dropped"}
+{"idea": "n-041", "field": "importance", "value": "low"}
+{"idea": "n-041", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-041", "field": "status", "value": "dropped"}
+{"idea": "n-042", "field": "importance", "value": "low"}
+{"idea": "n-042", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-042", "field": "status", "value": "dropped"}
+{"idea": "n-043", "field": "importance", "value": "low"}
+{"idea": "n-043", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-043", "field": "status", "value": "dropped"}
+{"idea": "n-044", "field": "importance", "value": "medium"}
+{"idea": "n-044", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["glossary"]}
+{"idea": "n-044", "field": "status", "value": "open"}
+{"idea": "n-045", "field": "importance", "value": "medium"}
+{"idea": "n-045", "field": "relation", "value": [{"relation": "builds-on", "to": "n-150"}]}
+{"idea": "n-045", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["record"]}
+{"idea": "n-045", "field": "status", "value": "open"}
+{"idea": "n-046", "field": "importance", "value": "medium"}
+{"idea": "n-046", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["architecture view"]}
+{"idea": "n-046", "field": "status", "value": "open"}
+{"idea": "n-047", "field": "importance", "value": "high"}
+{"idea": "n-047", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["ontology"]}
+{"idea": "n-047", "field": "status", "value": "open"}
+{"idea": "n-048", "field": "importance", "value": "high"}
+{"idea": "n-048", "field": "relation", "value": [{"relation": "part-of", "to": "n-047"}]}
+{"idea": "n-048", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["metamodel"]}
+{"idea": "n-048", "field": "status", "value": "open"}
+{"idea": "n-049", "field": "importance", "value": "high"}
+{"idea": "n-049", "field": "relation", "value": [{"relation": "part-of", "to": "n-047"}]}
+{"idea": "n-049", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["top-category"]}
+{"idea": "n-049", "field": "status", "value": "open"}
+{"idea": "n-050", "field": "importance", "value": "high"}
+{"idea": "n-050", "field": "relation", "value": [{"relation": "part-of", "to": "n-047"}]}
+{"idea": "n-050", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["catalog"]}
+{"idea": "n-050", "field": "status", "value": "open"}
+{"idea": "n-051", "field": "importance", "value": "medium"}
+{"idea": "n-051", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["term"]}
+{"idea": "n-051", "field": "status", "value": "open"}
+{"idea": "n-052", "field": "importance", "value": "medium"}
+{"idea": "n-052", "field": "relation", "value": [{"relation": "builds-on", "to": "n-051"}]}
+{"idea": "n-052", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["designation"]}
+{"idea": "n-052", "field": "status", "value": "open"}
+{"idea": "n-053", "field": "importance", "value": "medium"}
+{"idea": "n-053", "field": "relation", "value": [{"relation": "builds-on", "to": "n-052"}]}
+{"idea": "n-053", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["appellation"]}
+{"idea": "n-053", "field": "status", "value": "open"}
+{"idea": "n-054", "field": "importance", "value": "medium"}
+{"idea": "n-054", "field": "relation", "value": [{"relation": "broader", "to": "n-051"}]}
+{"idea": "n-054", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["term"]}
+{"idea": "n-054", "field": "status", "value": "open"}
+{"idea": "n-055", "field": "importance", "value": "medium"}
+{"idea": "n-055", "field": "relation", "value": [{"relation": "builds-on", "to": "n-051"}]}
+{"idea": "n-055", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["term"]}
+{"idea": "n-055", "field": "status", "value": "open"}
+{"idea": "n-056", "field": "importance", "value": "medium"}
+{"idea": "n-056", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["reference"]}
+{"idea": "n-056", "field": "status", "value": "open"}
+{"idea": "n-057", "field": "importance", "value": "medium"}
+{"idea": "n-057", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["glossary"]}
+{"idea": "n-057", "field": "status", "value": "open"}
+{"idea": "n-058", "field": "importance", "value": "medium"}
+{"idea": "n-058", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["ontology"]}
+{"idea": "n-058", "field": "status", "value": "open"}
+{"idea": "n-059", "field": "importance", "value": "low"}
+{"idea": "n-059", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["agent"]}
+{"idea": "n-059", "field": "status", "value": "open"}
+{"idea": "n-060", "field": "importance", "value": "medium"}
+{"idea": "n-060", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["hook"]}
+{"idea": "n-060", "field": "status", "value": "open"}
+{"idea": "n-061", "field": "importance", "value": "medium"}
+{"idea": "n-061", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["route"]}
+{"idea": "n-061", "field": "status", "value": "open"}
+{"idea": "n-062", "field": "importance", "value": "medium"}
+{"idea": "n-062", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["account"]}
+{"idea": "n-062", "field": "status", "value": "open"}
+{"idea": "n-063", "field": "importance", "value": "low"}
+{"idea": "n-063", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-063", "field": "status", "value": "shelved"}
+{"idea": "n-064", "field": "importance", "value": "medium"}
+{"idea": "n-064", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["agent"]}
+{"idea": "n-064", "field": "status", "value": "open"}
+{"idea": "n-065", "field": "importance", "value": "medium"}
+{"idea": "n-065", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["question"]}
+{"idea": "n-065", "field": "status", "value": "open"}
+{"idea": "n-066", "field": "importance", "value": "low"}
+{"idea": "n-066", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-066", "field": "status", "value": "open"}
+{"idea": "n-067", "field": "importance", "value": "low"}
+{"idea": "n-067", "field": "scope", "value": {"scope": "naive@strategy", "via": "derives-from"}}
+{"idea": "n-067", "field": "status", "value": "open"}
+{"idea": "n-068", "field": "importance", "value": "low"}
+{"idea": "n-068", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-068", "field": "status", "value": "open"}
+{"idea": "n-069", "field": "importance", "value": "low"}
+{"idea": "n-069", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-069", "field": "status", "value": "open"}
+{"idea": "n-070", "field": "importance", "value": "low"}
+{"idea": "n-070", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-070", "field": "status", "value": "open"}
+{"idea": "n-071", "field": "importance", "value": "low"}
+{"idea": "n-071", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-071", "field": "status", "value": "open"}
+{"idea": "n-072", "field": "importance", "value": "low"}
+{"idea": "n-072", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-072", "field": "status", "value": "open"}
+{"idea": "n-073", "field": "importance", "value": "low"}
+{"idea": "n-073", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-073", "field": "status", "value": "open"}
+{"idea": "n-074", "field": "importance", "value": "low"}
+{"idea": "n-074", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-074", "field": "status", "value": "open"}
+{"idea": "n-075", "field": "importance", "value": "low"}
+{"idea": "n-075", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-075", "field": "status", "value": "open"}
+{"idea": "n-076", "field": "importance", "value": "low"}
+{"idea": "n-076", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-076", "field": "status", "value": "open"}
+{"idea": "n-077", "field": "importance", "value": "low"}
+{"idea": "n-077", "field": "relation", "value": [{"relation": "related", "to": "n-075"}]}
+{"idea": "n-077", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-077", "field": "status", "value": "open"}
+{"idea": "n-078", "field": "importance", "value": "low"}
+{"idea": "n-078", "field": "relation", "value": [{"relation": "related", "to": "n-075"}]}
+{"idea": "n-078", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-078", "field": "status", "value": "open"}
+{"idea": "n-079", "field": "importance", "value": "low"}
+{"idea": "n-079", "field": "relation", "value": [{"relation": "related", "to": "n-068"}]}
+{"idea": "n-079", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-079", "field": "status", "value": "open"}
+{"idea": "n-080", "field": "importance", "value": "low"}
+{"idea": "n-080", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-080", "field": "status", "value": "open"}
+{"idea": "n-081", "field": "importance", "value": "low"}
+{"idea": "n-081", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-081", "field": "status", "value": "open"}
+{"idea": "n-082", "field": "importance", "value": "low"}
+{"idea": "n-082", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "derives-from"}}
+{"idea": "n-082", "field": "status", "value": "open"}
+{"idea": "n-083", "field": "importance", "value": "low"}
+{"idea": "n-083", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-083", "field": "status", "value": "open"}
+{"idea": "n-084", "field": "importance", "value": "low"}
+{"idea": "n-084", "field": "relation", "value": [{"relation": "related", "to": "n-074"}]}
+{"idea": "n-084", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-084", "field": "status", "value": "open"}
+{"idea": "n-085", "field": "importance", "value": "low"}
+{"idea": "n-085", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-085", "field": "status", "value": "open"}
+{"idea": "n-086", "field": "importance", "value": "low"}
+{"idea": "n-086", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-086", "field": "status", "value": "open"}
+{"idea": "n-087", "field": "importance", "value": "high"}
+{"idea": "n-087", "field": "scope", "value": {"scope": "naive@products", "via": "amends"}, "terms": ["product decision"]}
+{"idea": "n-087", "field": "status", "value": "open"}
+{"idea": "n-088", "field": "importance", "value": "medium"}
+{"idea": "n-088", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["market"]}
+{"idea": "n-088", "field": "status", "value": "open"}
+{"idea": "n-089", "field": "importance", "value": "medium"}
+{"idea": "n-089", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["draft"]}
+{"idea": "n-089", "field": "status", "value": "open"}
+{"idea": "n-090", "field": "importance", "value": "medium"}
+{"idea": "n-090", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["writing framework"]}
+{"idea": "n-090", "field": "status", "value": "open"}
+{"idea": "n-091", "field": "importance", "value": "high"}
+{"idea": "n-091", "field": "scope", "value": {"scope": "naive@products", "via": "appends-to"}, "terms": ["MVP"]}
+{"idea": "n-091", "field": "status", "value": "open"}
+{"idea": "n-092", "field": "importance", "value": "medium"}
+{"idea": "n-092", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["docket"]}
+{"idea": "n-092", "field": "status", "value": "open"}
+{"idea": "n-093", "field": "importance", "value": "medium"}
+{"idea": "n-093", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["record"]}
+{"idea": "n-093", "field": "status", "value": "open"}
+{"idea": "n-094", "field": "importance", "value": "medium"}
+{"idea": "n-094", "field": "relation", "value": [{"relation": "builds-on", "to": "n-170"}]}
+{"idea": "n-094", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["kit"]}
+{"idea": "n-094", "field": "status", "value": "open"}
+{"idea": "n-095", "field": "importance", "value": "high"}
+{"idea": "n-095", "field": "relation", "value": [{"relation": "contradicts", "to": "n-096"}]}
+{"idea": "n-095", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["layer"]}
+{"idea": "n-095", "field": "status", "value": "open"}
+{"idea": "n-096", "field": "importance", "value": "high"}
+{"idea": "n-096", "field": "relation", "value": [{"relation": "contradicts", "to": "n-095"}]}
+{"idea": "n-096", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["layer", "area"]}
+{"idea": "n-096", "field": "status", "value": "open"}
+{"idea": "n-097", "field": "importance", "value": "medium"}
+{"idea": "n-097", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["trigger rule"]}
+{"idea": "n-097", "field": "status", "value": "open"}
+{"idea": "n-098", "field": "importance", "value": "high"}
+{"idea": "n-098", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["mentor", "coach"]}
+{"idea": "n-098", "field": "status", "value": "open"}
+{"idea": "n-099", "field": "importance", "value": "medium"}
+{"idea": "n-099", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["decision"]}
+{"idea": "n-099", "field": "status", "value": "open"}
+{"idea": "n-100", "field": "importance", "value": "high"}
+{"idea": "n-100", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["view"]}
+{"idea": "n-100", "field": "status", "value": "open"}
+{"idea": "n-101", "field": "importance", "value": "medium"}
+{"idea": "n-101", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["exit criterion"]}
+{"idea": "n-101", "field": "status", "value": "open"}
+{"idea": "n-102", "field": "importance", "value": "medium"}
+{"idea": "n-102", "field": "scope", "value": {"scope": "naive@service-delivery", "via": "appends-to"}, "terms": ["offering"]}
+{"idea": "n-102", "field": "status", "value": "open"}
+{"idea": "n-103", "field": "importance", "value": "high"}
+{"idea": "n-103", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["business model"]}
+{"idea": "n-103", "field": "status", "value": "open"}
+{"idea": "n-104", "field": "importance", "value": "medium"}
+{"idea": "n-104", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["verb"]}
+{"idea": "n-104", "field": "status", "value": "open"}
+{"idea": "n-105", "field": "importance", "value": "medium"}
+{"idea": "n-105", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture type"]}
+{"idea": "n-105", "field": "status", "value": "open"}
+{"idea": "n-106", "field": "importance", "value": "medium"}
+{"idea": "n-106", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["port", "migrate", "upgrade"]}
+{"idea": "n-106", "field": "status", "value": "open"}
+{"idea": "n-107", "field": "importance", "value": "medium"}
+{"idea": "n-107", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["mentor"]}
+{"idea": "n-107", "field": "status", "value": "open"}
+{"idea": "n-108", "field": "importance", "value": "medium"}
+{"idea": "n-108", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["research engine"]}
+{"idea": "n-108", "field": "status", "value": "open"}
+{"idea": "n-109", "field": "importance", "value": "low"}
+{"idea": "n-109", "field": "scope", "value": {"scope": "shared", "via": "derives-from"}}
+{"idea": "n-109", "field": "status", "value": "dropped"}
+{"idea": "n-110", "field": "importance", "value": "high"}
+{"idea": "n-110", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["provenance log"]}
+{"idea": "n-110", "field": "status", "value": "open"}
+{"idea": "n-111", "field": "importance", "value": "high"}
+{"idea": "n-111", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["agent"]}
+{"idea": "n-111", "field": "status", "value": "open"}
+{"idea": "n-112", "field": "importance", "value": "medium"}
+{"idea": "n-112", "field": "relation", "value": [{"relation": "derived-from", "to": "n-070"}]}
+{"idea": "n-112", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["anticipation"]}
+{"idea": "n-112", "field": "status", "value": "open"}
+{"idea": "n-113", "field": "importance", "value": "medium"}
+{"idea": "n-113", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["vocabulary"]}
+{"idea": "n-113", "field": "status", "value": "open"}
+{"idea": "n-114", "field": "importance", "value": "high"}
+{"idea": "n-114", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["vocabulary object"]}
+{"idea": "n-114", "field": "status", "value": "open"}
+{"idea": "n-115", "field": "importance", "value": "medium"}
+{"idea": "n-115", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["record type"]}
+{"idea": "n-115", "field": "status", "value": "open"}
+{"idea": "n-116", "field": "importance", "value": "medium"}
+{"idea": "n-116", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["business", "company"]}
+{"idea": "n-116", "field": "status", "value": "open"}
+{"idea": "n-117", "field": "importance", "value": "high"}
+{"idea": "n-117", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["statement"]}
+{"idea": "n-117", "field": "status", "value": "open"}
+{"idea": "n-118", "field": "importance", "value": "medium"}
+{"idea": "n-118", "field": "relation", "value": [{"relation": "builds-on", "to": "n-117"}]}
+{"idea": "n-118", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["judgment"]}
+{"idea": "n-118", "field": "status", "value": "open"}
+{"idea": "n-119", "field": "importance", "value": "medium"}
+{"idea": "n-119", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["tier"]}
+{"idea": "n-119", "field": "status", "value": "open"}
+{"idea": "n-120", "field": "importance", "value": "medium"}
+{"idea": "n-120", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["policy"]}
+{"idea": "n-120", "field": "status", "value": "open"}
+{"idea": "n-121", "field": "importance", "value": "medium"}
+{"idea": "n-121", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["draft"]}
+{"idea": "n-121", "field": "status", "value": "open"}
+{"idea": "n-122", "field": "importance", "value": "medium"}
+{"idea": "n-122", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["knowledge graph"]}
+{"idea": "n-122", "field": "status", "value": "open"}
+{"idea": "n-123", "field": "importance", "value": "medium"}
+{"idea": "n-123", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["interface"]}
+{"idea": "n-123", "field": "status", "value": "open"}
+{"idea": "n-124", "field": "importance", "value": "medium"}
+{"idea": "n-124", "field": "scope", "value": {"scope": "naive@human-capital", "via": "appends-to"}, "terms": ["role"]}
+{"idea": "n-124", "field": "status", "value": "open"}
+{"idea": "n-125", "field": "importance", "value": "high"}
+{"idea": "n-125", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["agent"]}
+{"idea": "n-125", "field": "status", "value": "open"}
+{"idea": "n-126", "field": "importance", "value": "high"}
+{"idea": "n-126", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["system of record"]}
+{"idea": "n-126", "field": "status", "value": "open"}
+{"idea": "n-127", "field": "importance", "value": "medium"}
+{"idea": "n-127", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["typed-link"]}
+{"idea": "n-127", "field": "status", "value": "open"}
+{"idea": "n-128", "field": "importance", "value": "high"}
+{"idea": "n-128", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["language model"]}
+{"idea": "n-128", "field": "status", "value": "open"}
+{"idea": "n-129", "field": "importance", "value": "medium"}
+{"idea": "n-129", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["provenance"]}
+{"idea": "n-129", "field": "status", "value": "open"}
+{"idea": "n-130", "field": "importance", "value": "medium"}
+{"idea": "n-130", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["question"]}
+{"idea": "n-130", "field": "status", "value": "open"}
+{"idea": "n-131", "field": "importance", "value": "medium"}
+{"idea": "n-131", "field": "scope", "value": {"scope": "naive@risk-and-compliance", "via": "appends-to"}, "terms": ["security label"]}
+{"idea": "n-131", "field": "status", "value": "open"}
+{"idea": "n-132", "field": "importance", "value": "medium"}
+{"idea": "n-132", "field": "relation", "value": [{"relation": "builds-on", "to": "n-199"}]}
+{"idea": "n-132", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["README"]}
+{"idea": "n-132", "field": "status", "value": "open"}
+{"idea": "n-133", "field": "importance", "value": "medium"}
+{"idea": "n-133", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["pipeline"]}
+{"idea": "n-133", "field": "status", "value": "open"}
+{"idea": "n-134", "field": "importance", "value": "medium"}
+{"idea": "n-134", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["viability ladder"]}
+{"idea": "n-134", "field": "status", "value": "open"}
+{"idea": "n-135", "field": "importance", "value": "medium"}
+{"idea": "n-135", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["outreach"]}
+{"idea": "n-135", "field": "status", "value": "open"}
+{"idea": "n-136", "field": "importance", "value": "medium"}
+{"idea": "n-136", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["seed case"]}
+{"idea": "n-136", "field": "status", "value": "open"}
+{"idea": "n-137", "field": "importance", "value": "medium"}
+{"idea": "n-137", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["lead"]}
+{"idea": "n-137", "field": "status", "value": "open"}
+{"idea": "n-138", "field": "importance", "value": "medium"}
+{"idea": "n-138", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["pull request"]}
+{"idea": "n-138", "field": "status", "value": "open"}
+{"idea": "n-139", "field": "importance", "value": "low"}
+{"idea": "n-139", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["tooling"]}
+{"idea": "n-139", "field": "status", "value": "open"}
+{"idea": "n-140", "field": "importance", "value": "medium"}
+{"idea": "n-140", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["marketing site"]}
+{"idea": "n-140", "field": "status", "value": "open"}
+{"idea": "n-141", "field": "importance", "value": "medium"}
+{"idea": "n-141", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["router"]}
+{"idea": "n-141", "field": "status", "value": "open"}
+{"idea": "n-142", "field": "importance", "value": "high"}
+{"idea": "n-142", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["glossary"]}
+{"idea": "n-142", "field": "status", "value": "in-venture"}
+{"idea": "n-143", "field": "importance", "value": "medium"}
+{"idea": "n-143", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["endpoint"]}
+{"idea": "n-143", "field": "status", "value": "in-venture"}
+{"idea": "n-144", "field": "importance", "value": "medium"}
+{"idea": "n-144", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["relationship"]}
+{"idea": "n-144", "field": "status", "value": "in-venture"}
+{"idea": "n-145", "field": "importance", "value": "medium"}
+{"idea": "n-145", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["vocabulary"]}
+{"idea": "n-145", "field": "status", "value": "in-venture"}
+{"idea": "n-146", "field": "importance", "value": "medium"}
+{"idea": "n-146", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["decision"]}
+{"idea": "n-146", "field": "status", "value": "in-venture"}
+{"idea": "n-147", "field": "importance", "value": "medium"}
+{"idea": "n-147", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["blackboard"]}
+{"idea": "n-147", "field": "status", "value": "in-venture"}
+{"idea": "n-148", "field": "importance", "value": "medium"}
+{"idea": "n-148", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["product"]}
+{"idea": "n-148", "field": "status", "value": "in-venture"}
+{"idea": "n-149", "field": "importance", "value": "medium"}
+{"idea": "n-149", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["ontology"]}
+{"idea": "n-149", "field": "status", "value": "in-venture"}
+{"idea": "n-150", "field": "importance", "value": "medium"}
+{"idea": "n-150", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["destination stage"]}
+{"idea": "n-150", "field": "status", "value": "in-venture"}
+{"idea": "n-151", "field": "importance", "value": "high"}
+{"idea": "n-151", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture development framework"]}
+{"idea": "n-151", "field": "status", "value": "in-venture"}
+{"idea": "n-152", "field": "importance", "value": "medium"}
+{"idea": "n-152", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture development framework"]}
+{"idea": "n-152", "field": "status", "value": "in-venture"}
+{"idea": "n-153", "field": "importance", "value": "high"}
+{"idea": "n-153", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture development framework"]}
+{"idea": "n-153", "field": "status", "value": "in-venture"}
+{"idea": "n-154", "field": "importance", "value": "high"}
+{"idea": "n-154", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["central data management structure"]}
+{"idea": "n-154", "field": "status", "value": "in-venture"}
+{"idea": "n-155", "field": "importance", "value": "low"}
+{"idea": "n-155", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["tagline"]}
+{"idea": "n-155", "field": "status", "value": "in-venture"}
+{"idea": "n-156", "field": "importance", "value": "high"}
+{"idea": "n-156", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["phase"]}
+{"idea": "n-156", "field": "status", "value": "in-venture"}
+{"idea": "n-157", "field": "importance", "value": "high"}
+{"idea": "n-157", "field": "relation", "value": [{"relation": "builds-on", "to": "n-156"}]}
+{"idea": "n-157", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["function", "phase"]}
+{"idea": "n-157", "field": "status", "value": "in-venture"}
+{"idea": "n-158", "field": "importance", "value": "high"}
+{"idea": "n-158", "field": "relation", "value": [{"relation": "contradicts", "to": "n-159"}]}
+{"idea": "n-158", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["function"]}
+{"idea": "n-158", "field": "status", "value": "in-venture"}
+{"idea": "n-159", "field": "importance", "value": "high"}
+{"idea": "n-159", "field": "relation", "value": [{"relation": "contradicts", "to": "n-158"}]}
+{"idea": "n-159", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["function"]}
+{"idea": "n-159", "field": "status", "value": "in-venture"}
+{"idea": "n-160", "field": "importance", "value": "medium"}
+{"idea": "n-160", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["function module"]}
+{"idea": "n-160", "field": "status", "value": "in-venture"}
+{"idea": "n-161", "field": "importance", "value": "medium"}
+{"idea": "n-161", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["foundation"]}
+{"idea": "n-161", "field": "status", "value": "in-venture"}
+{"idea": "n-162", "field": "importance", "value": "medium"}
+{"idea": "n-162", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["requirement"]}
+{"idea": "n-162", "field": "status", "value": "in-venture"}
+{"idea": "n-163", "field": "importance", "value": "medium"}
+{"idea": "n-163", "field": "relation", "value": [{"relation": "broader", "to": "n-179"}]}
+{"idea": "n-163", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["publication"]}
+{"idea": "n-163", "field": "status", "value": "in-venture"}
+{"idea": "n-164", "field": "importance", "value": "high"}
+{"idea": "n-164", "field": "scope", "value": {"scope": "naive@products", "via": "appends-to"}, "terms": ["MVP"]}
+{"idea": "n-164", "field": "status", "value": "in-venture"}
+{"idea": "n-165", "field": "importance", "value": "high"}
+{"idea": "n-165", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["venture", "draft"]}
+{"idea": "n-165", "field": "status", "value": "in-venture"}
+{"idea": "n-166", "field": "importance", "value": "medium"}
+{"idea": "n-166", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["decision"]}
+{"idea": "n-166", "field": "status", "value": "in-venture"}
+{"idea": "n-167", "field": "importance", "value": "medium"}
+{"idea": "n-167", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["phase"]}
+{"idea": "n-167", "field": "status", "value": "in-venture"}
+{"idea": "n-168", "field": "importance", "value": "medium"}
+{"idea": "n-168", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["alignment"]}
+{"idea": "n-168", "field": "status", "value": "in-venture"}
+{"idea": "n-169", "field": "importance", "value": "medium"}
+{"idea": "n-169", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["review"]}
+{"idea": "n-169", "field": "status", "value": "open"}
+{"idea": "n-170", "field": "importance", "value": "high"}
+{"idea": "n-170", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["package", "kit"]}
+{"idea": "n-170", "field": "status", "value": "in-venture"}
+{"idea": "n-171", "field": "importance", "value": "medium"}
+{"idea": "n-171", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["package"]}
+{"idea": "n-171", "field": "status", "value": "in-venture"}
+{"idea": "n-172", "field": "importance", "value": "medium"}
+{"idea": "n-172", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["pipeline"]}
+{"idea": "n-172", "field": "status", "value": "in-venture"}
+{"idea": "n-173", "field": "importance", "value": "medium"}
+{"idea": "n-173", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["venture"]}
+{"idea": "n-173", "field": "status", "value": "in-venture"}
+{"idea": "n-174", "field": "importance", "value": "medium"}
+{"idea": "n-174", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["layout"]}
+{"idea": "n-174", "field": "status", "value": "in-venture"}
+{"idea": "n-175", "field": "importance", "value": "medium"}
+{"idea": "n-175", "field": "relation", "value": [{"relation": "builds-on", "to": "n-174"}]}
+{"idea": "n-175", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["route"]}
+{"idea": "n-175", "field": "status", "value": "in-venture"}
+{"idea": "n-176", "field": "importance", "value": "medium"}
+{"idea": "n-176", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["venture", "role"]}
+{"idea": "n-176", "field": "status", "value": "in-venture"}
+{"idea": "n-177", "field": "importance", "value": "medium"}
+{"idea": "n-177", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["fact"]}
+{"idea": "n-177", "field": "status", "value": "in-venture"}
+{"idea": "n-178", "field": "importance", "value": "medium"}
+{"idea": "n-178", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["harness", "workbench"]}
+{"idea": "n-178", "field": "status", "value": "in-venture"}
+{"idea": "n-179", "field": "importance", "value": "medium"}
+{"idea": "n-179", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["publication policy"]}
+{"idea": "n-179", "field": "status", "value": "in-venture"}
+{"idea": "n-180", "field": "importance", "value": "low"}
+{"idea": "n-180", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["tooling"]}
+{"idea": "n-180", "field": "status", "value": "in-venture"}
+{"idea": "n-181", "field": "importance", "value": "medium"}
+{"idea": "n-181", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["idea"]}
+{"idea": "n-181", "field": "status", "value": "in-venture"}
+{"idea": "n-182", "field": "importance", "value": "medium"}
+{"idea": "n-182", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["technology"]}
+{"idea": "n-182", "field": "status", "value": "in-venture"}
+{"idea": "n-183", "field": "importance", "value": "medium"}
+{"idea": "n-183", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["repository (repo)"]}
+{"idea": "n-183", "field": "status", "value": "in-venture"}
+{"idea": "n-184", "field": "importance", "value": "medium"}
+{"idea": "n-184", "field": "scope", "value": {"scope": "naive@risk-and-compliance", "via": "appends-to"}, "terms": ["confidentiality"]}
+{"idea": "n-184", "field": "status", "value": "in-venture"}
+{"idea": "n-185", "field": "importance", "value": "medium"}
+{"idea": "n-185", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["function"]}
+{"idea": "n-185", "field": "status", "value": "in-venture"}
+{"idea": "n-186", "field": "importance", "value": "low"}
+{"idea": "n-186", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["integration"]}
+{"idea": "n-186", "field": "status", "value": "in-venture"}
+{"idea": "n-187", "field": "importance", "value": "medium"}
+{"idea": "n-187", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["generator"]}
+{"idea": "n-187", "field": "status", "value": "in-venture"}
+{"idea": "n-188", "field": "importance", "value": "high"}
+{"idea": "n-188", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["layer"]}
+{"idea": "n-188", "field": "status", "value": "in-venture"}
+{"idea": "n-189", "field": "importance", "value": "medium"}
+{"idea": "n-189", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["plugin"]}
+{"idea": "n-189", "field": "status", "value": "in-venture"}
+{"idea": "n-190", "field": "importance", "value": "medium"}
+{"idea": "n-190", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["gate"]}
+{"idea": "n-190", "field": "status", "value": "in-venture"}
+{"idea": "n-191", "field": "importance", "value": "medium"}
+{"idea": "n-191", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["noun"]}
+{"idea": "n-191", "field": "status", "value": "in-venture"}
+{"idea": "n-192", "field": "importance", "value": "medium"}
+{"idea": "n-192", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["term"]}
+{"idea": "n-192", "field": "status", "value": "in-venture"}
+{"idea": "n-193", "field": "importance", "value": "medium"}
+{"idea": "n-193", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["glossary"]}
+{"idea": "n-193", "field": "status", "value": "in-venture"}
+{"idea": "n-194", "field": "importance", "value": "high"}
+{"idea": "n-194", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["venture development framework"]}
+{"idea": "n-194", "field": "status", "value": "in-venture"}
+{"idea": "n-195", "field": "importance", "value": "high"}
+{"idea": "n-195", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["mission"]}
+{"idea": "n-195", "field": "status", "value": "in-venture"}
+{"idea": "n-196", "field": "importance", "value": "medium"}
+{"idea": "n-196", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["mission"]}
+{"idea": "n-196", "field": "status", "value": "in-venture"}
+{"idea": "n-197", "field": "importance", "value": "medium"}
+{"idea": "n-197", "field": "scope", "value": {"scope": "naive@strategy", "via": "appends-to"}, "terms": ["ethos"]}
+{"idea": "n-197", "field": "status", "value": "in-venture"}
+{"idea": "n-198", "field": "importance", "value": "medium"}
+{"idea": "n-198", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["template"]}
+{"idea": "n-198", "field": "status", "value": "in-venture"}
+{"idea": "n-199", "field": "importance", "value": "medium"}
+{"idea": "n-199", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["README"]}
+{"idea": "n-199", "field": "status", "value": "in-venture"}
+{"idea": "n-200", "field": "importance", "value": "high"}
+{"idea": "n-200", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["decision"]}
+{"idea": "n-200", "field": "status", "value": "in-venture"}
+{"idea": "n-201", "field": "importance", "value": "medium"}
+{"idea": "n-201", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["docket"]}
+{"idea": "n-201", "field": "status", "value": "in-venture"}
+{"idea": "n-202", "field": "importance", "value": "medium"}
+{"idea": "n-202", "field": "relation", "value": [{"relation": "supports", "to": "n-201"}]}
+{"idea": "n-202", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["evidence"]}
+{"idea": "n-202", "field": "status", "value": "in-venture"}
+{"idea": "n-203", "field": "importance", "value": "medium"}
+{"idea": "n-203", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["frame"]}
+{"idea": "n-203", "field": "status", "value": "in-venture"}
+{"idea": "n-204", "field": "importance", "value": "medium"}
+{"idea": "n-204", "field": "relation", "value": [{"relation": "related", "to": "n-161"}]}
+{"idea": "n-204", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["strategic foundation"]}
+{"idea": "n-204", "field": "status", "value": "in-venture"}
+{"idea": "n-205", "field": "importance", "value": "high"}
+{"idea": "n-205", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["customer@marketing-and-sales"]}
+{"idea": "n-205", "field": "status", "value": "in-venture"}
+{"idea": "n-206", "field": "importance", "value": "medium"}
+{"idea": "n-206", "field": "scope", "value": {"scope": "naive@marketing-and-sales", "via": "appends-to"}, "terms": ["market"]}
+{"idea": "n-206", "field": "status", "value": "in-venture"}
+{"idea": "n-207", "field": "importance", "value": "medium"}
+{"idea": "n-207", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["validation"]}
+{"idea": "n-207", "field": "status", "value": "in-venture"}
+{"idea": "n-208", "field": "importance", "value": "high"}
+{"idea": "n-208", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["draft"]}
+{"idea": "n-208", "field": "status", "value": "in-venture"}
+{"idea": "n-209", "field": "importance", "value": "medium"}
+{"idea": "n-209", "field": "scope", "value": {"scope": "naive@products", "via": "appends-to"}, "terms": ["product"]}
+{"idea": "n-209", "field": "status", "value": "in-venture"}
+{"idea": "n-210", "field": "importance", "value": "medium"}
+{"idea": "n-210", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["raw source"]}
+{"idea": "n-210", "field": "status", "value": "in-venture"}
+{"idea": "n-211", "field": "importance", "value": "medium"}
+{"idea": "n-211", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["workspace"]}
+{"idea": "n-211", "field": "status", "value": "in-venture"}
+{"idea": "n-212", "field": "importance", "value": "medium"}
+{"idea": "n-212", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["harness"]}
+{"idea": "n-212", "field": "status", "value": "in-venture"}
+{"idea": "n-213", "field": "importance", "value": "medium"}
+{"idea": "n-213", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["source of truth"]}
+{"idea": "n-213", "field": "status", "value": "in-venture"}
+{"idea": "n-214", "field": "importance", "value": "medium"}
+{"idea": "n-214", "field": "scope", "value": {"scope": "shared", "via": "amends"}, "terms": ["founder"]}
+{"idea": "n-214", "field": "status", "value": "in-venture"}
+{"idea": "n-215", "field": "importance", "value": "medium"}
+{"idea": "n-215", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["console"]}
+{"idea": "n-215", "field": "status", "value": "in-venture"}
+{"idea": "n-216", "field": "importance", "value": "medium"}
+{"idea": "n-216", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["decision"]}
+{"idea": "n-216", "field": "status", "value": "in-venture"}
+{"idea": "n-217", "field": "importance", "value": "medium"}
+{"idea": "n-217", "field": "scope", "value": {"scope": "shared", "via": "appends-to"}, "terms": ["method"]}
+{"idea": "n-217", "field": "status", "value": "in-venture"}
+{"idea": "n-218", "field": "importance", "value": "medium"}
+{"idea": "n-218", "field": "scope", "value": {"scope": "naive@products", "via": "appends-to"}, "terms": ["Product Anatomy"]}
+{"idea": "n-218", "field": "status", "value": "in-venture"}

@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.applied-ai",
+  "kind": "product",
+  "parent": "anthropic",
+  "name": "Applied AI",
+  "job": {
+    "value": "Design and deploy custom solutions inside a customer's own systems.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Select Defined Terms; Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Large enterprises",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Select Defined Terms; Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "Forward-deployed engineering",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Select Defined Terms; Prospectus Summary, Enterprise Adoption of Claude"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

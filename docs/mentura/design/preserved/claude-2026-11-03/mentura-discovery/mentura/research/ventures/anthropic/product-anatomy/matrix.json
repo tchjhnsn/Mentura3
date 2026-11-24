@@ -1,0 +1,599 @@
+{
+  "venture": "Anthropic",
+  "phase": "scale",
+  "scorer": "reasoning model (Claude), not Jev: no TYPESAFE_API_KEY in the session that wrote this. Desk research from public filings and press, 2026-11-01. Draft for Torian to correct; replace by running `score --send`. 2026-11-01T07:40Z: duet and console added from cached references; same caveat.",
+  "substrate": "models",
+  "phases": [
+    {
+      "id": "validation",
+      "name": "Validation",
+      "projection": false,
+      "flagship": "platform",
+      "tied": [
+        "code",
+        "models"
+      ],
+      "successor": null,
+      "roles": {
+        "models": {
+          "roles": [
+            "substrate",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "platform": {
+          "roles": [
+            "flagship",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "harnesses": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "code": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "cowork": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "chat": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "tag": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "security": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "applied": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "hardware": {
+          "roles": [
+            "option"
+          ],
+          "allowed_from": "platform"
+        },
+        "duet": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "console": {
+          "roles": [
+            "wedge"
+          ]
+        }
+      },
+      "role_text": {
+        "models": "substrate + revenue engine (tied)",
+        "platform": "flagship + revenue engine (tied)",
+        "harnesses": "end product",
+        "code": "revenue engine (tied)",
+        "cowork": "end product",
+        "chat": "revenue engine (tied)",
+        "tag": "end product",
+        "security": "end product",
+        "applied": "end product",
+        "hardware": "option (allowed from platform)",
+        "duet": "end product",
+        "console": "wedge"
+      },
+      "scores": {
+        "platform": {
+          "score": 0.84,
+          "flagship_fails": []
+        },
+        "code": {
+          "score": 0.82,
+          "flagship_fails": []
+        },
+        "models": {
+          "score": 0.8,
+          "flagship_fails": []
+        },
+        "applied": {
+          "score": 0.72,
+          "flagship_fails": []
+        },
+        "chat": {
+          "score": 0.71,
+          "flagship_fails": []
+        },
+        "tag": {
+          "score": 0.71,
+          "flagship_fails": []
+        },
+        "cowork": {
+          "score": 0.69,
+          "flagship_fails": []
+        },
+        "security": {
+          "score": 0.69,
+          "flagship_fails": []
+        },
+        "duet": {
+          "score": 0.64,
+          "flagship_fails": []
+        },
+        "harnesses": {
+          "score": 0.63,
+          "flagship_fails": []
+        },
+        "console": {
+          "score": 0.6,
+          "flagship_fails": [
+            "does not deliver the promise directly"
+          ]
+        },
+        "hardware": {
+          "score": 0.38,
+          "flagship_fails": [
+            "not allowed until platform",
+            "does not deliver the promise directly"
+          ]
+        }
+      }
+    },
+    {
+      "id": "beachhead",
+      "name": "Beachhead",
+      "projection": false,
+      "flagship": "platform",
+      "tied": [
+        "code",
+        "models"
+      ],
+      "successor": null,
+      "roles": {
+        "models": {
+          "roles": [
+            "substrate",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "platform": {
+          "roles": [
+            "flagship",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "harnesses": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "code": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "cowork": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "chat": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "tag": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "security": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "applied": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "hardware": {
+          "roles": [
+            "option"
+          ],
+          "allowed_from": "platform"
+        },
+        "duet": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "console": {
+          "roles": [
+            "wedge"
+          ]
+        }
+      },
+      "role_text": {
+        "models": "substrate + revenue engine (tied)",
+        "platform": "flagship + revenue engine (tied)",
+        "harnesses": "end product",
+        "code": "revenue engine (tied)",
+        "cowork": "end product",
+        "chat": "revenue engine (tied)",
+        "tag": "end product",
+        "security": "end product",
+        "applied": "end product",
+        "hardware": "option (allowed from platform)",
+        "duet": "end product",
+        "console": "wedge"
+      },
+      "scores": {
+        "platform": {
+          "score": 0.85,
+          "flagship_fails": []
+        },
+        "code": {
+          "score": 0.79,
+          "flagship_fails": []
+        },
+        "models": {
+          "score": 0.77,
+          "flagship_fails": []
+        },
+        "chat": {
+          "score": 0.67,
+          "flagship_fails": []
+        },
+        "applied": {
+          "score": 0.67,
+          "flagship_fails": []
+        },
+        "cowork": {
+          "score": 0.65,
+          "flagship_fails": []
+        },
+        "security": {
+          "score": 0.65,
+          "flagship_fails": []
+        },
+        "tag": {
+          "score": 0.65,
+          "flagship_fails": []
+        },
+        "harnesses": {
+          "score": 0.6,
+          "flagship_fails": []
+        },
+        "duet": {
+          "score": 0.58,
+          "flagship_fails": []
+        },
+        "console": {
+          "score": 0.52,
+          "flagship_fails": [
+            "does not deliver the promise directly"
+          ]
+        },
+        "hardware": {
+          "score": 0.33,
+          "flagship_fails": [
+            "not allowed until platform",
+            "does not deliver the promise directly"
+          ]
+        }
+      }
+    },
+    {
+      "id": "scale",
+      "name": "Scale",
+      "projection": false,
+      "flagship": "platform",
+      "tied": [
+        "models",
+        "code"
+      ],
+      "successor": null,
+      "roles": {
+        "models": {
+          "roles": [
+            "substrate",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "platform": {
+          "roles": [
+            "flagship",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "harnesses": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "code": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "cowork": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "chat": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "tag": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "security": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "applied": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "hardware": {
+          "roles": [
+            "option"
+          ],
+          "allowed_from": "platform"
+        },
+        "duet": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "console": {
+          "roles": [
+            "wedge"
+          ]
+        }
+      },
+      "role_text": {
+        "models": "substrate + revenue engine (tied)",
+        "platform": "flagship + revenue engine (tied)",
+        "harnesses": "end product",
+        "code": "revenue engine (tied)",
+        "cowork": "end product",
+        "chat": "revenue engine (tied)",
+        "tag": "end product",
+        "security": "end product",
+        "applied": "end product",
+        "hardware": "option (allowed from platform)",
+        "duet": "end product",
+        "console": "wedge"
+      },
+      "scores": {
+        "platform": {
+          "score": 0.85,
+          "flagship_fails": []
+        },
+        "models": {
+          "score": 0.77,
+          "flagship_fails": []
+        },
+        "code": {
+          "score": 0.77,
+          "flagship_fails": []
+        },
+        "security": {
+          "score": 0.63,
+          "flagship_fails": []
+        },
+        "chat": {
+          "score": 0.62,
+          "flagship_fails": []
+        },
+        "cowork": {
+          "score": 0.6,
+          "flagship_fails": []
+        },
+        "harnesses": {
+          "score": 0.57,
+          "flagship_fails": []
+        },
+        "applied": {
+          "score": 0.57,
+          "flagship_fails": []
+        },
+        "tag": {
+          "score": 0.56,
+          "flagship_fails": []
+        },
+        "duet": {
+          "score": 0.54,
+          "flagship_fails": []
+        },
+        "console": {
+          "score": 0.4,
+          "flagship_fails": [
+            "does not deliver the promise directly"
+          ]
+        },
+        "hardware": {
+          "score": 0.29,
+          "flagship_fails": [
+            "not allowed until platform",
+            "does not deliver the promise directly"
+          ]
+        }
+      }
+    },
+    {
+      "id": "platform",
+      "name": "Platform",
+      "projection": true,
+      "flagship": "platform",
+      "tied": [],
+      "successor": null,
+      "roles": {
+        "models": {
+          "roles": [
+            "substrate",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "platform": {
+          "roles": [
+            "flagship",
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "harnesses": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "code": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "cowork": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "chat": {
+          "roles": [
+            "revenue-engine"
+          ],
+          "revenue_engine_tied": true
+        },
+        "tag": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "security": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "applied": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "hardware": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "duet": {
+          "roles": [
+            "end-product"
+          ]
+        },
+        "console": {
+          "roles": [
+            "wedge"
+          ]
+        }
+      },
+      "role_text": {
+        "models": "substrate + revenue engine (tied)",
+        "platform": "flagship + revenue engine (tied)",
+        "harnesses": "end product",
+        "code": "revenue engine (tied)",
+        "cowork": "end product",
+        "chat": "revenue engine (tied)",
+        "tag": "end product",
+        "security": "end product",
+        "applied": "end product",
+        "hardware": "end product",
+        "duet": "end product",
+        "console": "wedge"
+      },
+      "scores": {
+        "platform": {
+          "score": 0.81,
+          "flagship_fails": []
+        },
+        "models": {
+          "score": 0.69,
+          "flagship_fails": []
+        },
+        "code": {
+          "score": 0.69,
+          "flagship_fails": []
+        },
+        "tag": {
+          "score": 0.63,
+          "flagship_fails": []
+        },
+        "cowork": {
+          "score": 0.6,
+          "flagship_fails": []
+        },
+        "chat": {
+          "score": 0.6,
+          "flagship_fails": []
+        },
+        "harnesses": {
+          "score": 0.57,
+          "flagship_fails": []
+        },
+        "security": {
+          "score": 0.56,
+          "flagship_fails": []
+        },
+        "duet": {
+          "score": 0.56,
+          "flagship_fails": []
+        },
+        "applied": {
+          "score": 0.55,
+          "flagship_fails": []
+        },
+        "console": {
+          "score": 0.46,
+          "flagship_fails": [
+            "does not deliver the promise directly"
+          ]
+        },
+        "hardware": {
+          "score": 0.35,
+          "flagship_fails": [
+            "does not deliver the promise directly"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,683 @@
+{"idea":"n-001","field":"importance","state":"Labeled","proposal":{"idea":"n-001","field":"importance","value":"medium"},"taken":"c831a5ae08b4877f"}
+{"idea":"n-001","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope shared","missing":[{"term":"glossary","owning":"shared"}],"proposal":{"idea":"n-001","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["glossary"]},"taken":"bd7feda5f44c3be3"}
+{"idea":"n-001","field":"status","state":"Labeled","proposal":{"idea":"n-001","field":"status","value":"open"},"taken":"c66b8d149d5260fe"}
+{"idea":"n-002","field":"importance","state":"Labeled","proposal":{"idea":"n-002","field":"importance","value":"low"},"taken":"fa9d7963e6e3668a"}
+{"idea":"n-002","field":"relation","state":"Labeled","proposal":{"idea":"n-002","field":"relation","value":[{"relation":"related","to":"n-001"}]},"taken":"e6028ddfa47b8436"}
+{"idea":"n-002","field":"scope","state":"Labeled","proposal":{"idea":"n-002","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"e1917bddd10c5ca4"}
+{"idea":"n-002","field":"status","state":"Labeled","proposal":{"idea":"n-002","field":"status","value":"open"},"taken":"36799a6f61e6d84a"}
+{"idea":"n-003","field":"importance","state":"Labeled","proposal":{"idea":"n-003","field":"importance","value":"low"},"taken":"8c3998a741f332d5"}
+{"idea":"n-003","field":"scope","state":"Labeled","proposal":{"idea":"n-003","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"c50eace7dbf30313"}
+{"idea":"n-003","field":"status","state":"Labeled","proposal":{"idea":"n-003","field":"status","value":"open"},"taken":"ea6510b47ca64b6c"}
+{"idea":"n-004","field":"importance","state":"Labeled","proposal":{"idea":"n-004","field":"importance","value":"high"},"taken":"d8ce2be872be2c05"}
+{"idea":"n-004","field":"scope","state":"Labeled","proposal":{"idea":"n-004","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture development framework"]},"taken":"0f00e17cc6f6aa7b"}
+{"idea":"n-004","field":"status","state":"Labeled","proposal":{"idea":"n-004","field":"status","value":"open"},"taken":"8166ce850b9b6581"}
+{"idea":"n-005","field":"importance","state":"Labeled","proposal":{"idea":"n-005","field":"importance","value":"high"},"taken":"c7fab6f6cde5ae0a"}
+{"idea":"n-005","field":"scope","state":"RoutedToScope","reason":"term goal is missing; owning scope naive@strategy","missing":[{"term":"goal","owning":"naive@strategy"}],"proposal":{"idea":"n-005","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["goal"]},"taken":"191505dfe2c5a1c4"}
+{"idea":"n-005","field":"status","state":"Labeled","proposal":{"idea":"n-005","field":"status","value":"open"},"taken":"d0ab14655057765e"}
+{"idea":"n-006","field":"importance","state":"Labeled","proposal":{"idea":"n-006","field":"importance","value":"high"},"taken":"0c171669fbba4e0f"}
+{"idea":"n-006","field":"scope","state":"RoutedToScope","reason":"term positioning is missing; owning scope naive@strategy","missing":[{"term":"positioning","owning":"naive@strategy"}],"proposal":{"idea":"n-006","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["positioning"]},"taken":"a1bcd5b7a742bcf6"}
+{"idea":"n-006","field":"status","state":"Labeled","proposal":{"idea":"n-006","field":"status","value":"open"},"taken":"61c036b8b812e4da"}
+{"idea":"n-007","field":"importance","state":"Labeled","proposal":{"idea":"n-007","field":"importance","value":"medium"},"taken":"b872686051342dfd"}
+{"idea":"n-007","field":"scope","state":"RoutedToScope","reason":"term README is missing; owning scope shared","missing":[{"term":"README","owning":"shared"}],"proposal":{"idea":"n-007","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["README"]},"taken":"8b18294320ef25df"}
+{"idea":"n-007","field":"status","state":"Labeled","proposal":{"idea":"n-007","field":"status","value":"open"},"taken":"1a0f6dd011e76edc"}
+{"idea":"n-008","field":"importance","state":"Labeled","proposal":{"idea":"n-008","field":"importance","value":"high"},"taken":"e5829ddabdfc7a80"}
+{"idea":"n-008","field":"scope","state":"Labeled","proposal":{"idea":"n-008","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["function"]},"taken":"56fd51bf9af2632d"}
+{"idea":"n-008","field":"status","state":"Labeled","proposal":{"idea":"n-008","field":"status","value":"open"},"taken":"0f0529fe5675dfb2"}
+{"idea":"n-009","field":"importance","state":"Labeled","proposal":{"idea":"n-009","field":"importance","value":"high"},"taken":"33f41f7401a702f6"}
+{"idea":"n-009","field":"scope","state":"Labeled","proposal":{"idea":"n-009","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["venture"]},"taken":"d17582b3f61d556a"}
+{"idea":"n-009","field":"status","state":"Labeled","proposal":{"idea":"n-009","field":"status","value":"open"},"taken":"c4c4ab40bb5833ee"}
+{"idea":"n-010","field":"importance","state":"Labeled","proposal":{"idea":"n-010","field":"importance","value":"high"},"taken":"a23690da507687b7"}
+{"idea":"n-010","field":"relation","state":"Labeled","proposal":{"idea":"n-010","field":"relation","value":[{"relation":"builds-on","to":"n-105"}]},"taken":"11dbbdaa25cddf41"}
+{"idea":"n-010","field":"scope","state":"RoutedToScope","reason":"term meta-schema is missing; owning scope shared","missing":[{"term":"meta-schema","owning":"shared"}],"proposal":{"idea":"n-010","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["meta-schema"]},"taken":"38340c2dbbef4a82"}
+{"idea":"n-010","field":"status","state":"Labeled","proposal":{"idea":"n-010","field":"status","value":"open"},"taken":"866d2aafb10376d4"}
+{"idea":"n-011","field":"importance","state":"Labeled","proposal":{"idea":"n-011","field":"importance","value":"medium"},"taken":"206afef5ddda2d68"}
+{"idea":"n-011","field":"scope","state":"RoutedToScope","reason":"term module is missing; owning scope shared","missing":[{"term":"module","owning":"shared"}],"proposal":{"idea":"n-011","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["module"]},"taken":"4e2ad247c0f2f74d"}
+{"idea":"n-011","field":"status","state":"Labeled","proposal":{"idea":"n-011","field":"status","value":"open"},"taken":"c8421d775d77ff93"}
+{"idea":"n-012","field":"importance","state":"Labeled","proposal":{"idea":"n-012","field":"importance","value":"medium"},"taken":"aa176719e9ac37d0"}
+{"idea":"n-012","field":"scope","state":"Labeled","proposal":{"idea":"n-012","field":"scope","value":{"scope":"naive@risk-and-compliance","via":"appends-to"},"terms":["gate"]},"taken":"e94c87a6daacf0a2"}
+{"idea":"n-012","field":"status","state":"Labeled","proposal":{"idea":"n-012","field":"status","value":"open"},"taken":"8565fdb33a56df10"}
+{"idea":"n-013","field":"importance","state":"Labeled","proposal":{"idea":"n-013","field":"importance","value":"low"},"taken":"788994732c209c87"}
+{"idea":"n-013","field":"relation","state":"Labeled","proposal":{"idea":"n-013","field":"relation","value":[{"relation":"builds-on","to":"n-164"}]},"taken":"20bef21111c3509d"}
+{"idea":"n-013","field":"scope","state":"Labeled","proposal":{"idea":"n-013","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"c0c8abc04ff4af23"}
+{"idea":"n-013","field":"status","state":"Labeled","proposal":{"idea":"n-013","field":"status","value":"open"},"taken":"4f43c27081fa93c7"}
+{"idea":"n-014","field":"importance","state":"Labeled","proposal":{"idea":"n-014","field":"importance","value":"low"},"taken":"528b014234b734c6"}
+{"idea":"n-014","field":"scope","state":"Labeled","proposal":{"idea":"n-014","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"dcf361170ee62bd0"}
+{"idea":"n-014","field":"status","state":"Labeled","proposal":{"idea":"n-014","field":"status","value":"open"},"taken":"47f5e50e6c51389a"}
+{"idea":"n-015","field":"importance","state":"Labeled","proposal":{"idea":"n-015","field":"importance","value":"medium"},"taken":"73a0143fb0a559a5"}
+{"idea":"n-015","field":"scope","state":"RoutedToScope","reason":"term pipeline is missing; owning scope shared","missing":[{"term":"pipeline","owning":"shared"}],"proposal":{"idea":"n-015","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["pipeline"]},"taken":"188187a56cb8c364"}
+{"idea":"n-015","field":"status","state":"Labeled","proposal":{"idea":"n-015","field":"status","value":"open"},"taken":"0538f826e76650e4"}
+{"idea":"n-016","field":"importance","state":"Labeled","proposal":{"idea":"n-016","field":"importance","value":"medium"},"taken":"d0e5e3cb681b0305"}
+{"idea":"n-016","field":"scope","state":"RoutedToScope","reason":"term clock is missing; owning scope shared","missing":[{"term":"clock","owning":"shared"}],"proposal":{"idea":"n-016","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["clock"]},"taken":"3cf72d3c0e69723a"}
+{"idea":"n-016","field":"status","state":"Labeled","proposal":{"idea":"n-016","field":"status","value":"open"},"taken":"83db65e0652f4df8"}
+{"idea":"n-017","field":"importance","state":"Labeled","proposal":{"idea":"n-017","field":"importance","value":"medium"},"taken":"777dd71037fd931a"}
+{"idea":"n-017","field":"scope","state":"RoutedToScope","reason":"term idea is missing; owning scope shared","missing":[{"term":"idea","owning":"shared"}],"proposal":{"idea":"n-017","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["idea"]},"taken":"b1ee2c2cef176a21"}
+{"idea":"n-017","field":"status","state":"Labeled","proposal":{"idea":"n-017","field":"status","value":"open"},"taken":"5b806bac35f7da0c"}
+{"idea":"n-018","field":"importance","state":"Labeled","proposal":{"idea":"n-018","field":"importance","value":"medium"},"taken":"4ff02849a74b9d1d"}
+{"idea":"n-018","field":"scope","state":"RoutedToScope","reason":"term term is missing; owning scope shared","missing":[{"term":"term","owning":"shared"}],"proposal":{"idea":"n-018","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["term","provenance"]},"taken":"2d06681c592c76a3"}
+{"idea":"n-018","field":"status","state":"Labeled","proposal":{"idea":"n-018","field":"status","value":"open"},"taken":"9722065c308a440b"}
+{"idea":"n-019","field":"importance","state":"Labeled","proposal":{"idea":"n-019","field":"importance","value":"medium"},"taken":"2024a4d67e02d6ec"}
+{"idea":"n-019","field":"scope","state":"Labeled","proposal":{"idea":"n-019","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["evidence"]},"taken":"b8bcf19a8c326026"}
+{"idea":"n-019","field":"status","state":"Labeled","proposal":{"idea":"n-019","field":"status","value":"open"},"taken":"20ca9d4064958ef3"}
+{"idea":"n-020","field":"importance","state":"Labeled","proposal":{"idea":"n-020","field":"importance","value":"medium"},"taken":"9f1a732166778ed6"}
+{"idea":"n-020","field":"relation","state":"Labeled","proposal":{"idea":"n-020","field":"relation","value":[{"relation":"builds-on","to":"n-019"}]},"taken":"97e11e8eeea9b780"}
+{"idea":"n-020","field":"scope","state":"RoutedToScope","reason":"term pipeline is missing; owning scope shared","missing":[{"term":"pipeline","owning":"shared"}],"proposal":{"idea":"n-020","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["pipeline"]},"taken":"5d87ef3a890d0020"}
+{"idea":"n-020","field":"status","state":"Labeled","proposal":{"idea":"n-020","field":"status","value":"open"},"taken":"84e6b99b86331765"}
+{"idea":"n-021","field":"importance","state":"Labeled","proposal":{"idea":"n-021","field":"importance","value":"medium"},"taken":"58d36fcc9784c5cf"}
+{"idea":"n-021","field":"scope","state":"RoutedToScope","reason":"term problem is missing; owning scope shared","missing":[{"term":"problem","owning":"shared"}],"proposal":{"idea":"n-021","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["problem"]},"taken":"3bb94debd0bb37e2"}
+{"idea":"n-021","field":"status","state":"Labeled","proposal":{"idea":"n-021","field":"status","value":"open"},"taken":"d0bad5ca60d2dfd2"}
+{"idea":"n-022","field":"importance","state":"Labeled","proposal":{"idea":"n-022","field":"importance","value":"medium"},"taken":"e456ddf024eb157e"}
+{"idea":"n-022","field":"scope","state":"RoutedToScope","reason":"term conversation is missing; owning scope shared","missing":[{"term":"conversation","owning":"shared"}],"proposal":{"idea":"n-022","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["conversation"]},"taken":"9d1cfe0823634d34"}
+{"idea":"n-022","field":"status","state":"Labeled","proposal":{"idea":"n-022","field":"status","value":"open"},"taken":"0babeda90c3e0e26"}
+{"idea":"n-023","field":"importance","state":"Labeled","proposal":{"idea":"n-023","field":"importance","value":"medium"},"taken":"3572633142e59494"}
+{"idea":"n-023","field":"scope","state":"RoutedToScope","reason":"term conversation is missing; owning scope shared","missing":[{"term":"conversation","owning":"shared"}],"proposal":{"idea":"n-023","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["conversation"]},"taken":"acb15d0ad21df24e"}
+{"idea":"n-023","field":"status","state":"Labeled","proposal":{"idea":"n-023","field":"status","value":"open"},"taken":"c53db8cb9fec578f"}
+{"idea":"n-024","field":"importance","state":"Labeled","proposal":{"idea":"n-024","field":"importance","value":"medium"},"taken":"8ed39613345ad90e"}
+{"idea":"n-024","field":"scope","state":"Labeled","proposal":{"idea":"n-024","field":"scope","value":{"scope":"naive@human-capital","via":"appends-to"},"terms":["role"]},"taken":"2f235b63c9dc5b6b"}
+{"idea":"n-024","field":"status","state":"Labeled","proposal":{"idea":"n-024","field":"status","value":"open"},"taken":"f88241e7a8718587"}
+{"idea":"n-025","field":"importance","state":"Labeled","proposal":{"idea":"n-025","field":"importance","value":"medium"},"taken":"ec241cb281774cc1"}
+{"idea":"n-025","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope naive@human-capital","missing":[{"term":"glossary","owning":"naive@human-capital"}],"proposal":{"idea":"n-025","field":"scope","value":{"scope":"naive@human-capital","via":"appends-to"},"terms":["glossary"]},"taken":"0a14bddf629e084c"}
+{"idea":"n-025","field":"status","state":"Labeled","proposal":{"idea":"n-025","field":"status","value":"open"},"taken":"e3a293c01530df73"}
+{"idea":"n-026","field":"importance","state":"Labeled","proposal":{"idea":"n-026","field":"importance","value":"medium"},"taken":"7a67342713ba759b"}
+{"idea":"n-026","field":"scope","state":"RoutedToScope","reason":"term prompt is missing; owning scope shared","missing":[{"term":"prompt","owning":"shared"}],"proposal":{"idea":"n-026","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["prompt"]},"taken":"fab1b9fbc4c92a81"}
+{"idea":"n-026","field":"status","state":"Labeled","proposal":{"idea":"n-026","field":"status","value":"open"},"taken":"6d9979030692fe10"}
+{"idea":"n-027","field":"importance","state":"Labeled","proposal":{"idea":"n-027","field":"importance","value":"medium"},"taken":"629ac284665dd5fd"}
+{"idea":"n-027","field":"scope","state":"RoutedToScope","reason":"term module is missing; owning scope shared","missing":[{"term":"module","owning":"shared"}],"proposal":{"idea":"n-027","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["module"]},"taken":"9f790c48b9f736ca"}
+{"idea":"n-027","field":"status","state":"Labeled","proposal":{"idea":"n-027","field":"status","value":"open"},"taken":"506fa81ddd189baa"}
+{"idea":"n-028","field":"importance","state":"Labeled","proposal":{"idea":"n-028","field":"importance","value":"medium"},"taken":"e05ef25d8ee6c74e"}
+{"idea":"n-028","field":"scope","state":"RoutedToScope","reason":"term waitlist is missing; owning scope naive@marketing-and-sales","missing":[{"term":"waitlist","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-028","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["waitlist"]},"taken":"256dc18659226fa8"}
+{"idea":"n-028","field":"status","state":"Labeled","proposal":{"idea":"n-028","field":"status","value":"open"},"taken":"e31192518db2021c"}
+{"idea":"n-029","field":"importance","state":"Labeled","proposal":{"idea":"n-029","field":"importance","value":"medium"},"taken":"e957f7edda37e36e"}
+{"idea":"n-029","field":"scope","state":"RoutedToScope","reason":"term record is missing; owning scope shared","missing":[{"term":"record","owning":"shared"}],"proposal":{"idea":"n-029","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["record"]},"taken":"d6e4d9fea61e60e2"}
+{"idea":"n-029","field":"status","state":"Labeled","proposal":{"idea":"n-029","field":"status","value":"open"},"taken":"940319a756cd44fd"}
+{"idea":"n-030","field":"importance","state":"Labeled","proposal":{"idea":"n-030","field":"importance","value":"medium"},"taken":"57e19abc99040917"}
+{"idea":"n-030","field":"scope","state":"RoutedToScope","reason":"term docs is missing; owning scope shared","missing":[{"term":"docs","owning":"shared"}],"proposal":{"idea":"n-030","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["docs"]},"taken":"94a2f842cbf86155"}
+{"idea":"n-030","field":"status","state":"Labeled","proposal":{"idea":"n-030","field":"status","value":"open"},"taken":"4ea4431ec1c77720"}
+{"idea":"n-031","field":"importance","state":"Labeled","proposal":{"idea":"n-031","field":"importance","value":"medium"},"taken":"ff2d9c926b10cbec"}
+{"idea":"n-031","field":"scope","state":"Labeled","proposal":{"idea":"n-031","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["industry"]},"taken":"c0ab1a74c19c40af"}
+{"idea":"n-031","field":"status","state":"Labeled","proposal":{"idea":"n-031","field":"status","value":"open"},"taken":"9c63c0a679e26296"}
+{"idea":"n-032","field":"importance","state":"Labeled","proposal":{"idea":"n-032","field":"importance","value":"medium"},"taken":"7028aa4ed467cf39"}
+{"idea":"n-032","field":"scope","state":"Labeled","proposal":{"idea":"n-032","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["kit"]},"taken":"f6d2015cffbb155e"}
+{"idea":"n-032","field":"status","state":"Labeled","proposal":{"idea":"n-032","field":"status","value":"open"},"taken":"e89d01f83439fe61"}
+{"idea":"n-033","field":"importance","state":"Labeled","proposal":{"idea":"n-033","field":"importance","value":"medium"},"taken":"cffa4279decbdff6"}
+{"idea":"n-033","field":"scope","state":"Labeled","proposal":{"idea":"n-033","field":"scope","value":{"scope":"naive@capital","via":"creates"},"terms":["function"]},"taken":"233aae792fcd4c50"}
+{"idea":"n-033","field":"status","state":"Labeled","proposal":{"idea":"n-033","field":"status","value":"open"},"taken":"59c82327081473f2"}
+{"idea":"n-034","field":"importance","state":"Labeled","proposal":{"idea":"n-034","field":"importance","value":"low"},"taken":"2aafa19212713322"}
+{"idea":"n-034","field":"scope","state":"RoutedToScope","reason":"term website is missing; owning scope naive@marketing-and-sales","missing":[{"term":"website","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-034","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["website"]},"taken":"da42051e4b6f2a70"}
+{"idea":"n-034","field":"status","state":"Labeled","proposal":{"idea":"n-034","field":"status","value":"open"},"taken":"45bf9882b89a5474"}
+{"idea":"n-035","field":"importance","state":"Labeled","proposal":{"idea":"n-035","field":"importance","value":"medium"},"taken":"0cebcf9461dc4455"}
+{"idea":"n-035","field":"scope","state":"Labeled","proposal":{"idea":"n-035","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["function"]},"taken":"cf25d6c36819e3e4"}
+{"idea":"n-035","field":"status","state":"Labeled","proposal":{"idea":"n-035","field":"status","value":"open"},"taken":"4a7b1e9655bbc61b"}
+{"idea":"n-036","field":"importance","state":"Labeled","proposal":{"idea":"n-036","field":"importance","value":"medium"},"taken":"5a643b96cb75c7ef"}
+{"idea":"n-036","field":"scope","state":"Labeled","proposal":{"idea":"n-036","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["gate"]},"taken":"c2856ec7ec3489f7"}
+{"idea":"n-036","field":"status","state":"Labeled","proposal":{"idea":"n-036","field":"status","value":"open"},"taken":"a648df0b1f2eda82"}
+{"idea":"n-037","field":"importance","state":"Labeled","proposal":{"idea":"n-037","field":"importance","value":"low"},"taken":"463d52baa16096d1"}
+{"idea":"n-037","field":"scope","state":"Labeled","proposal":{"idea":"n-037","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"47969748593af813"}
+{"idea":"n-037","field":"status","state":"Labeled","proposal":{"idea":"n-037","field":"status","value":"open"},"taken":"dec14480b3bf6fa9"}
+{"idea":"n-038","field":"importance","state":"Labeled","proposal":{"idea":"n-038","field":"importance","value":"low"},"taken":"5136e9cba68cc897"}
+{"idea":"n-038","field":"scope","state":"Labeled","proposal":{"idea":"n-038","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"d164933623344b7c"}
+{"idea":"n-038","field":"status","state":"Labeled","proposal":{"idea":"n-038","field":"status","value":"open"},"taken":"a14d91120cf3fb7b"}
+{"idea":"n-039","field":"importance","state":"Labeled","proposal":{"idea":"n-039","field":"importance","value":"low"},"taken":"00e26d39778f667d"}
+{"idea":"n-039","field":"scope","state":"Labeled","proposal":{"idea":"n-039","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"c58ff0f3549b14c7"}
+{"idea":"n-039","field":"status","state":"Labeled","proposal":{"idea":"n-039","field":"status","value":"dropped"},"taken":"01508cbd66de22cf"}
+{"idea":"n-040","field":"importance","state":"Labeled","proposal":{"idea":"n-040","field":"importance","value":"low"},"taken":"e5c267e12f469021"}
+{"idea":"n-040","field":"scope","state":"Labeled","proposal":{"idea":"n-040","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"32b53c3b044e5dc6"}
+{"idea":"n-040","field":"status","state":"Labeled","proposal":{"idea":"n-040","field":"status","value":"dropped"},"taken":"b940040b68ff2d03"}
+{"idea":"n-041","field":"importance","state":"Labeled","proposal":{"idea":"n-041","field":"importance","value":"low"},"taken":"e9c987dc3215ac89"}
+{"idea":"n-041","field":"scope","state":"Labeled","proposal":{"idea":"n-041","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"62c529dade3b6120"}
+{"idea":"n-041","field":"status","state":"Labeled","proposal":{"idea":"n-041","field":"status","value":"dropped"},"taken":"97642ed4f65e4e18"}
+{"idea":"n-042","field":"importance","state":"Labeled","proposal":{"idea":"n-042","field":"importance","value":"low"},"taken":"4641eafe4aa6b26d"}
+{"idea":"n-042","field":"scope","state":"Labeled","proposal":{"idea":"n-042","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"2fc17cd264f091b9"}
+{"idea":"n-042","field":"status","state":"Labeled","proposal":{"idea":"n-042","field":"status","value":"dropped"},"taken":"cfe90741c3ddad35"}
+{"idea":"n-043","field":"importance","state":"Labeled","proposal":{"idea":"n-043","field":"importance","value":"low"},"taken":"e54834d47978ab1c"}
+{"idea":"n-043","field":"scope","state":"Labeled","proposal":{"idea":"n-043","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"9d8aa34565b6231b"}
+{"idea":"n-043","field":"status","state":"Labeled","proposal":{"idea":"n-043","field":"status","value":"dropped"},"taken":"fbc762b35b3144d1"}
+{"idea":"n-044","field":"importance","state":"Labeled","proposal":{"idea":"n-044","field":"importance","value":"medium"},"taken":"0e432dcdf9a7406a"}
+{"idea":"n-044","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope shared","missing":[{"term":"glossary","owning":"shared"}],"proposal":{"idea":"n-044","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["glossary"]},"taken":"5610800668e70cd2"}
+{"idea":"n-044","field":"status","state":"Labeled","proposal":{"idea":"n-044","field":"status","value":"open"},"taken":"8f677ac607a43d41"}
+{"idea":"n-045","field":"importance","state":"Labeled","proposal":{"idea":"n-045","field":"importance","value":"medium"},"taken":"3f40bacfe0020660"}
+{"idea":"n-045","field":"relation","state":"Labeled","proposal":{"idea":"n-045","field":"relation","value":[{"relation":"builds-on","to":"n-150"}]},"taken":"8f19f1349201b14d"}
+{"idea":"n-045","field":"scope","state":"RoutedToScope","reason":"term record is missing; owning scope shared","missing":[{"term":"record","owning":"shared"}],"proposal":{"idea":"n-045","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["record"]},"taken":"5221b7c957cc1390"}
+{"idea":"n-045","field":"status","state":"Labeled","proposal":{"idea":"n-045","field":"status","value":"open"},"taken":"d8d04de5e45f145d"}
+{"idea":"n-046","field":"importance","state":"Labeled","proposal":{"idea":"n-046","field":"importance","value":"medium"},"taken":"2f41f4e857dba31f"}
+{"idea":"n-046","field":"scope","state":"RoutedToScope","reason":"term architecture view is missing; owning scope shared","missing":[{"term":"architecture view","owning":"shared"}],"proposal":{"idea":"n-046","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["architecture view"]},"taken":"ba51085af93ada60"}
+{"idea":"n-046","field":"status","state":"Labeled","proposal":{"idea":"n-046","field":"status","value":"open"},"taken":"c16b0efa0318fa07"}
+{"idea":"n-047","field":"importance","state":"Labeled","proposal":{"idea":"n-047","field":"importance","value":"high"},"taken":"1b64bddf7ab7b202"}
+{"idea":"n-047","field":"scope","state":"RoutedToScope","reason":"term ontology is missing; owning scope shared","missing":[{"term":"ontology","owning":"shared"}],"proposal":{"idea":"n-047","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["ontology"]},"taken":"762469629d301d0c"}
+{"idea":"n-047","field":"status","state":"Labeled","proposal":{"idea":"n-047","field":"status","value":"open"},"taken":"9f7c1cdda5f54cc8"}
+{"idea":"n-048","field":"importance","state":"Labeled","proposal":{"idea":"n-048","field":"importance","value":"high"},"taken":"f73e47145f87e9e9"}
+{"idea":"n-048","field":"relation","state":"Labeled","proposal":{"idea":"n-048","field":"relation","value":[{"relation":"part-of","to":"n-047"}]},"taken":"b6526713f93a6773"}
+{"idea":"n-048","field":"scope","state":"RoutedToScope","reason":"term metamodel is missing; owning scope shared","missing":[{"term":"metamodel","owning":"shared"}],"proposal":{"idea":"n-048","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["metamodel"]},"taken":"cd2d20d3b9b7bee1"}
+{"idea":"n-048","field":"status","state":"Labeled","proposal":{"idea":"n-048","field":"status","value":"open"},"taken":"bb264228d0b724da"}
+{"idea":"n-049","field":"importance","state":"Labeled","proposal":{"idea":"n-049","field":"importance","value":"high"},"taken":"0545eccf55ac7a65"}
+{"idea":"n-049","field":"relation","state":"Labeled","proposal":{"idea":"n-049","field":"relation","value":[{"relation":"part-of","to":"n-047"}]},"taken":"15a0e00f94d527e5"}
+{"idea":"n-049","field":"scope","state":"Labeled","proposal":{"idea":"n-049","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["top-category"]},"taken":"bbe99ba46b5d4ac2"}
+{"idea":"n-049","field":"status","state":"Labeled","proposal":{"idea":"n-049","field":"status","value":"open"},"taken":"313673486dc7d889"}
+{"idea":"n-050","field":"importance","state":"Labeled","proposal":{"idea":"n-050","field":"importance","value":"high"},"taken":"27813ee8ed3cc440"}
+{"idea":"n-050","field":"relation","state":"Labeled","proposal":{"idea":"n-050","field":"relation","value":[{"relation":"part-of","to":"n-047"}]},"taken":"9bc31a900196b2b5"}
+{"idea":"n-050","field":"scope","state":"RoutedToScope","reason":"term catalog is missing; owning scope shared","missing":[{"term":"catalog","owning":"shared"}],"proposal":{"idea":"n-050","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["catalog"]},"taken":"19152e236799a35d"}
+{"idea":"n-050","field":"status","state":"Labeled","proposal":{"idea":"n-050","field":"status","value":"open"},"taken":"b8fa1eb016e3c12d"}
+{"idea":"n-051","field":"importance","state":"Labeled","proposal":{"idea":"n-051","field":"importance","value":"medium"},"taken":"d09387a8ed22dd8a"}
+{"idea":"n-051","field":"scope","state":"RoutedToScope","reason":"term term is missing; owning scope shared","missing":[{"term":"term","owning":"shared"}],"proposal":{"idea":"n-051","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["term"]},"taken":"52b89d476dd45fde"}
+{"idea":"n-051","field":"status","state":"Labeled","proposal":{"idea":"n-051","field":"status","value":"open"},"taken":"adf78bd8e74a4f10"}
+{"idea":"n-052","field":"importance","state":"Labeled","proposal":{"idea":"n-052","field":"importance","value":"medium"},"taken":"f86de27a71590844"}
+{"idea":"n-052","field":"relation","state":"Labeled","proposal":{"idea":"n-052","field":"relation","value":[{"relation":"builds-on","to":"n-051"}]},"taken":"bfd35ed9071a3bb7"}
+{"idea":"n-052","field":"scope","state":"RoutedToScope","reason":"term designation is missing; owning scope shared","missing":[{"term":"designation","owning":"shared"}],"proposal":{"idea":"n-052","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["designation"]},"taken":"27c1291d4077a0fa"}
+{"idea":"n-052","field":"status","state":"Labeled","proposal":{"idea":"n-052","field":"status","value":"open"},"taken":"0e8ce5310fc139a5"}
+{"idea":"n-053","field":"importance","state":"Labeled","proposal":{"idea":"n-053","field":"importance","value":"medium"},"taken":"2b9b7e8e7382b857"}
+{"idea":"n-053","field":"relation","state":"Labeled","proposal":{"idea":"n-053","field":"relation","value":[{"relation":"builds-on","to":"n-052"}]},"taken":"eb2d34401c561f8d"}
+{"idea":"n-053","field":"scope","state":"RoutedToScope","reason":"term appellation is missing; owning scope shared","missing":[{"term":"appellation","owning":"shared"}],"proposal":{"idea":"n-053","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["appellation"]},"taken":"aaecf21a48811799"}
+{"idea":"n-053","field":"status","state":"Labeled","proposal":{"idea":"n-053","field":"status","value":"open"},"taken":"cb9fa895428ae086"}
+{"idea":"n-054","field":"importance","state":"Labeled","proposal":{"idea":"n-054","field":"importance","value":"medium"},"taken":"bf00eaeb31aef4c3"}
+{"idea":"n-054","field":"relation","state":"Labeled","proposal":{"idea":"n-054","field":"relation","value":[{"relation":"broader","to":"n-051"}]},"taken":"a223d369f9a254cd"}
+{"idea":"n-054","field":"scope","state":"RoutedToScope","reason":"term term is missing; owning scope shared","missing":[{"term":"term","owning":"shared"}],"proposal":{"idea":"n-054","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["term"]},"taken":"a99541b0e073bc32"}
+{"idea":"n-054","field":"status","state":"Labeled","proposal":{"idea":"n-054","field":"status","value":"open"},"taken":"493cd0e8b23c2117"}
+{"idea":"n-055","field":"importance","state":"Labeled","proposal":{"idea":"n-055","field":"importance","value":"medium"},"taken":"61e37c9401acca41"}
+{"idea":"n-055","field":"relation","state":"Labeled","proposal":{"idea":"n-055","field":"relation","value":[{"relation":"builds-on","to":"n-051"}]},"taken":"4d3e01fabd9d44e6"}
+{"idea":"n-055","field":"scope","state":"RoutedToScope","reason":"term term is missing; owning scope shared","missing":[{"term":"term","owning":"shared"}],"proposal":{"idea":"n-055","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["term"]},"taken":"83806fed291a11c8"}
+{"idea":"n-055","field":"status","state":"Labeled","proposal":{"idea":"n-055","field":"status","value":"open"},"taken":"49982b5bf2314309"}
+{"idea":"n-056","field":"importance","state":"Labeled","proposal":{"idea":"n-056","field":"importance","value":"medium"},"taken":"66ea1990e69aa3e6"}
+{"idea":"n-056","field":"scope","state":"Labeled","proposal":{"idea":"n-056","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["reference"]},"taken":"d7379822bdefa3d2"}
+{"idea":"n-056","field":"status","state":"Labeled","proposal":{"idea":"n-056","field":"status","value":"open"},"taken":"0f14d0720837369c"}
+{"idea":"n-057","field":"importance","state":"Labeled","proposal":{"idea":"n-057","field":"importance","value":"medium"},"taken":"0f3c426efd7c191b"}
+{"idea":"n-057","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope shared","missing":[{"term":"glossary","owning":"shared"}],"proposal":{"idea":"n-057","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["glossary"]},"taken":"d2b6b74c5a9f6245"}
+{"idea":"n-057","field":"status","state":"Labeled","proposal":{"idea":"n-057","field":"status","value":"open"},"taken":"509f4b46b73287ce"}
+{"idea":"n-058","field":"importance","state":"Labeled","proposal":{"idea":"n-058","field":"importance","value":"medium"},"taken":"ff9f2d767cd96f3a"}
+{"idea":"n-058","field":"scope","state":"RoutedToScope","reason":"term ontology is missing; owning scope shared","missing":[{"term":"ontology","owning":"shared"}],"proposal":{"idea":"n-058","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["ontology"]},"taken":"7441cd77297dbeae"}
+{"idea":"n-058","field":"status","state":"Labeled","proposal":{"idea":"n-058","field":"status","value":"open"},"taken":"33dcdeb38fd7d93f"}
+{"idea":"n-059","field":"importance","state":"Labeled","proposal":{"idea":"n-059","field":"importance","value":"low"},"taken":"5b2908716872d5cb"}
+{"idea":"n-059","field":"scope","state":"RoutedToScope","reason":"term agent is missing; owning scope shared","missing":[{"term":"agent","owning":"shared"}],"proposal":{"idea":"n-059","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["agent"]},"taken":"e37310f4ab5e4024"}
+{"idea":"n-059","field":"status","state":"Labeled","proposal":{"idea":"n-059","field":"status","value":"open"},"taken":"0485463f890a9ea9"}
+{"idea":"n-060","field":"importance","state":"Labeled","proposal":{"idea":"n-060","field":"importance","value":"medium"},"taken":"c1d799ff8f3a7719"}
+{"idea":"n-060","field":"scope","state":"RoutedToScope","reason":"term hook is missing; owning scope shared","missing":[{"term":"hook","owning":"shared"}],"proposal":{"idea":"n-060","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["hook"]},"taken":"aaa7c68d712c50a2"}
+{"idea":"n-060","field":"status","state":"Labeled","proposal":{"idea":"n-060","field":"status","value":"open"},"taken":"358aba3b124d956d"}
+{"idea":"n-061","field":"importance","state":"Labeled","proposal":{"idea":"n-061","field":"importance","value":"medium"},"taken":"96751cfdc6e69843"}
+{"idea":"n-061","field":"scope","state":"Labeled","proposal":{"idea":"n-061","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["route"]},"taken":"a57ca6593bc5521c"}
+{"idea":"n-061","field":"status","state":"Labeled","proposal":{"idea":"n-061","field":"status","value":"open"},"taken":"55e05d74a3e9b3bd"}
+{"idea":"n-062","field":"importance","state":"Labeled","proposal":{"idea":"n-062","field":"importance","value":"medium"},"taken":"c97ff1dca890e0fb"}
+{"idea":"n-062","field":"scope","state":"Labeled","proposal":{"idea":"n-062","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["account"]},"taken":"5aea8250c4a0a140"}
+{"idea":"n-062","field":"status","state":"Labeled","proposal":{"idea":"n-062","field":"status","value":"open"},"taken":"b1fecf32f9fa407b"}
+{"idea":"n-063","field":"importance","state":"Labeled","proposal":{"idea":"n-063","field":"importance","value":"low"},"taken":"9a48ae30e27ba83d"}
+{"idea":"n-063","field":"scope","state":"Labeled","proposal":{"idea":"n-063","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"5c31a1e55c94cb41"}
+{"idea":"n-063","field":"status","state":"Labeled","proposal":{"idea":"n-063","field":"status","value":"shelved"},"taken":"987a5bd360a6dc23"}
+{"idea":"n-064","field":"importance","state":"Labeled","proposal":{"idea":"n-064","field":"importance","value":"medium"},"taken":"9c8982cf7cb383dc"}
+{"idea":"n-064","field":"scope","state":"RoutedToScope","reason":"term agent is missing; owning scope shared","missing":[{"term":"agent","owning":"shared"}],"proposal":{"idea":"n-064","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["agent"]},"taken":"6fe8d54d0718daee"}
+{"idea":"n-064","field":"status","state":"Labeled","proposal":{"idea":"n-064","field":"status","value":"open"},"taken":"0f97ff388b297046"}
+{"idea":"n-065","field":"importance","state":"Labeled","proposal":{"idea":"n-065","field":"importance","value":"medium"},"taken":"d176dc3e8be9bf62"}
+{"idea":"n-065","field":"scope","state":"RoutedToScope","reason":"term question is missing; owning scope shared","missing":[{"term":"question","owning":"shared"}],"proposal":{"idea":"n-065","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["question"]},"taken":"9b5d6c1c50e96391"}
+{"idea":"n-065","field":"status","state":"Labeled","proposal":{"idea":"n-065","field":"status","value":"open"},"taken":"7bd28f772019c944"}
+{"idea":"n-066","field":"importance","state":"Labeled","proposal":{"idea":"n-066","field":"importance","value":"low"},"taken":"0d9e329c7931f177"}
+{"idea":"n-066","field":"scope","state":"Labeled","proposal":{"idea":"n-066","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"9743c6723bed71e1"}
+{"idea":"n-066","field":"status","state":"Labeled","proposal":{"idea":"n-066","field":"status","value":"open"},"taken":"5681762cfbd39680"}
+{"idea":"n-067","field":"importance","state":"Labeled","proposal":{"idea":"n-067","field":"importance","value":"low"},"taken":"201a828210e4c548"}
+{"idea":"n-067","field":"scope","state":"Labeled","proposal":{"idea":"n-067","field":"scope","value":{"scope":"naive@strategy","via":"derives-from"}},"taken":"e90f2089d6655a7f"}
+{"idea":"n-067","field":"status","state":"Labeled","proposal":{"idea":"n-067","field":"status","value":"open"},"taken":"706a5b39c836b64e"}
+{"idea":"n-068","field":"importance","state":"Labeled","proposal":{"idea":"n-068","field":"importance","value":"low"},"taken":"a03cfb79662d1f4b"}
+{"idea":"n-068","field":"scope","state":"Labeled","proposal":{"idea":"n-068","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"6313eb6a6b894413"}
+{"idea":"n-068","field":"status","state":"Labeled","proposal":{"idea":"n-068","field":"status","value":"open"},"taken":"20574e25ffb1bf90"}
+{"idea":"n-069","field":"importance","state":"Labeled","proposal":{"idea":"n-069","field":"importance","value":"low"},"taken":"cf74855b4bbef750"}
+{"idea":"n-069","field":"scope","state":"Labeled","proposal":{"idea":"n-069","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"f1fc308fee22d305"}
+{"idea":"n-069","field":"status","state":"Labeled","proposal":{"idea":"n-069","field":"status","value":"open"},"taken":"fde6db896f93d53e"}
+{"idea":"n-070","field":"importance","state":"Labeled","proposal":{"idea":"n-070","field":"importance","value":"low"},"taken":"e042202ca22e574f"}
+{"idea":"n-070","field":"scope","state":"Labeled","proposal":{"idea":"n-070","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"37ed31733d7d3ca3"}
+{"idea":"n-070","field":"status","state":"Labeled","proposal":{"idea":"n-070","field":"status","value":"open"},"taken":"e7a05f20f3191a2e"}
+{"idea":"n-071","field":"importance","state":"Labeled","proposal":{"idea":"n-071","field":"importance","value":"low"},"taken":"bc75e86514bf1307"}
+{"idea":"n-071","field":"scope","state":"Labeled","proposal":{"idea":"n-071","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"14b076614113e20f"}
+{"idea":"n-071","field":"status","state":"Labeled","proposal":{"idea":"n-071","field":"status","value":"open"},"taken":"bda428e35c246586"}
+{"idea":"n-072","field":"importance","state":"Labeled","proposal":{"idea":"n-072","field":"importance","value":"low"},"taken":"55d71f1ddd834f8b"}
+{"idea":"n-072","field":"scope","state":"Labeled","proposal":{"idea":"n-072","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"0a02f8539a6867b4"}
+{"idea":"n-072","field":"status","state":"Labeled","proposal":{"idea":"n-072","field":"status","value":"open"},"taken":"95621dab9f494fcb"}
+{"idea":"n-073","field":"importance","state":"Labeled","proposal":{"idea":"n-073","field":"importance","value":"low"},"taken":"b561c2b1de1553e9"}
+{"idea":"n-073","field":"scope","state":"Labeled","proposal":{"idea":"n-073","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"94e5a7e23587fe98"}
+{"idea":"n-073","field":"status","state":"Labeled","proposal":{"idea":"n-073","field":"status","value":"open"},"taken":"a291b4d5fdfe21b6"}
+{"idea":"n-074","field":"importance","state":"Labeled","proposal":{"idea":"n-074","field":"importance","value":"low"},"taken":"8eae5efe69519f6d"}
+{"idea":"n-074","field":"scope","state":"Labeled","proposal":{"idea":"n-074","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"460f8581bf28b8a4"}
+{"idea":"n-074","field":"status","state":"Labeled","proposal":{"idea":"n-074","field":"status","value":"open"},"taken":"645ff2d609258b80"}
+{"idea":"n-075","field":"importance","state":"Labeled","proposal":{"idea":"n-075","field":"importance","value":"low"},"taken":"16275d534d832b7c"}
+{"idea":"n-075","field":"scope","state":"Labeled","proposal":{"idea":"n-075","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"bd30c3cbd4dc17a7"}
+{"idea":"n-075","field":"status","state":"Labeled","proposal":{"idea":"n-075","field":"status","value":"open"},"taken":"22baae89d0c825f4"}
+{"idea":"n-076","field":"importance","state":"Labeled","proposal":{"idea":"n-076","field":"importance","value":"low"},"taken":"106df1e5e3d17e41"}
+{"idea":"n-076","field":"scope","state":"Labeled","proposal":{"idea":"n-076","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"6eb2311fc6ae2e04"}
+{"idea":"n-076","field":"status","state":"Labeled","proposal":{"idea":"n-076","field":"status","value":"open"},"taken":"f188e5c8ec88b471"}
+{"idea":"n-077","field":"importance","state":"Labeled","proposal":{"idea":"n-077","field":"importance","value":"low"},"taken":"f423b03bc1226b37"}
+{"idea":"n-077","field":"relation","state":"Labeled","proposal":{"idea":"n-077","field":"relation","value":[{"relation":"related","to":"n-075"}]},"taken":"24a33a10c70f0b5b"}
+{"idea":"n-077","field":"scope","state":"Labeled","proposal":{"idea":"n-077","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"fe2e3303b3608805"}
+{"idea":"n-077","field":"status","state":"Labeled","proposal":{"idea":"n-077","field":"status","value":"open"},"taken":"b760e7534cb9b42c"}
+{"idea":"n-078","field":"importance","state":"Labeled","proposal":{"idea":"n-078","field":"importance","value":"low"},"taken":"d28a5a9c7e6dfc4f"}
+{"idea":"n-078","field":"relation","state":"Labeled","proposal":{"idea":"n-078","field":"relation","value":[{"relation":"related","to":"n-075"}]},"taken":"c1cca6f73a97ea95"}
+{"idea":"n-078","field":"scope","state":"Labeled","proposal":{"idea":"n-078","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"cdadc8def82dc12c"}
+{"idea":"n-078","field":"status","state":"Labeled","proposal":{"idea":"n-078","field":"status","value":"open"},"taken":"68a1d4534d49b928"}
+{"idea":"n-079","field":"importance","state":"Labeled","proposal":{"idea":"n-079","field":"importance","value":"low"},"taken":"541e6e8b9d963f79"}
+{"idea":"n-079","field":"relation","state":"Labeled","proposal":{"idea":"n-079","field":"relation","value":[{"relation":"related","to":"n-068"}]},"taken":"eb2e11e54eeb5d1f"}
+{"idea":"n-079","field":"scope","state":"Labeled","proposal":{"idea":"n-079","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"edd1414958a5a2f8"}
+{"idea":"n-079","field":"status","state":"Labeled","proposal":{"idea":"n-079","field":"status","value":"open"},"taken":"89e09ac64f7fb0ce"}
+{"idea":"n-080","field":"importance","state":"Labeled","proposal":{"idea":"n-080","field":"importance","value":"low"},"taken":"83bdd4782235eb36"}
+{"idea":"n-080","field":"scope","state":"Labeled","proposal":{"idea":"n-080","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"278e92703ab34b63"}
+{"idea":"n-080","field":"status","state":"Labeled","proposal":{"idea":"n-080","field":"status","value":"open"},"taken":"381eb2f86e01e08b"}
+{"idea":"n-081","field":"importance","state":"Labeled","proposal":{"idea":"n-081","field":"importance","value":"low"},"taken":"1a0b7be209790f89"}
+{"idea":"n-081","field":"scope","state":"Labeled","proposal":{"idea":"n-081","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"1a99903ef5aac0aa"}
+{"idea":"n-081","field":"status","state":"Labeled","proposal":{"idea":"n-081","field":"status","value":"open"},"taken":"20d2feb4722792e3"}
+{"idea":"n-082","field":"importance","state":"Labeled","proposal":{"idea":"n-082","field":"importance","value":"low"},"taken":"92bd0f32ab3c6d8e"}
+{"idea":"n-082","field":"scope","state":"Labeled","proposal":{"idea":"n-082","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"derives-from"}},"taken":"467affcdb81ec430"}
+{"idea":"n-082","field":"status","state":"Labeled","proposal":{"idea":"n-082","field":"status","value":"open"},"taken":"40d444132e1b77ea"}
+{"idea":"n-083","field":"importance","state":"Labeled","proposal":{"idea":"n-083","field":"importance","value":"low"},"taken":"445287efa1bfe632"}
+{"idea":"n-083","field":"scope","state":"Labeled","proposal":{"idea":"n-083","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"fee66ec744bd33fe"}
+{"idea":"n-083","field":"status","state":"Labeled","proposal":{"idea":"n-083","field":"status","value":"open"},"taken":"157bf3f113bcf833"}
+{"idea":"n-084","field":"importance","state":"Labeled","proposal":{"idea":"n-084","field":"importance","value":"low"},"taken":"82924c4cfed3dde8"}
+{"idea":"n-084","field":"relation","state":"Labeled","proposal":{"idea":"n-084","field":"relation","value":[{"relation":"related","to":"n-074"}]},"taken":"02418176c89069fe"}
+{"idea":"n-084","field":"scope","state":"Labeled","proposal":{"idea":"n-084","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"fa948d63e147fc78"}
+{"idea":"n-084","field":"status","state":"Labeled","proposal":{"idea":"n-084","field":"status","value":"open"},"taken":"381af7581e9acdea"}
+{"idea":"n-085","field":"importance","state":"Labeled","proposal":{"idea":"n-085","field":"importance","value":"low"},"taken":"53ee23d87974408c"}
+{"idea":"n-085","field":"scope","state":"Labeled","proposal":{"idea":"n-085","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"63c12264b2803835"}
+{"idea":"n-085","field":"status","state":"Labeled","proposal":{"idea":"n-085","field":"status","value":"open"},"taken":"daefeae4f20ed9b8"}
+{"idea":"n-086","field":"importance","state":"Labeled","proposal":{"idea":"n-086","field":"importance","value":"low"},"taken":"2bcfc08e1288e669"}
+{"idea":"n-086","field":"scope","state":"Labeled","proposal":{"idea":"n-086","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"2f36468531cf5583"}
+{"idea":"n-086","field":"status","state":"Labeled","proposal":{"idea":"n-086","field":"status","value":"open"},"taken":"41e3256cfebc8ef6"}
+{"idea":"n-087","field":"importance","state":"Labeled","proposal":{"idea":"n-087","field":"importance","value":"high"},"taken":"2706aa03e82404e6"}
+{"idea":"n-087","field":"scope","state":"Labeled","proposal":{"idea":"n-087","field":"scope","value":{"scope":"naive@products","via":"amends"},"terms":["product decision"]},"taken":"63f4e6c26ed1fb34"}
+{"idea":"n-087","field":"status","state":"Labeled","proposal":{"idea":"n-087","field":"status","value":"open"},"taken":"3378ceb7e295973e"}
+{"idea":"n-088","field":"importance","state":"Labeled","proposal":{"idea":"n-088","field":"importance","value":"medium"},"taken":"bd0270c46a9341d1"}
+{"idea":"n-088","field":"scope","state":"Labeled","proposal":{"idea":"n-088","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["market"]},"taken":"457e8fb0b6953673"}
+{"idea":"n-088","field":"status","state":"Labeled","proposal":{"idea":"n-088","field":"status","value":"open"},"taken":"bd2675aee6a91344"}
+{"idea":"n-089","field":"importance","state":"Labeled","proposal":{"idea":"n-089","field":"importance","value":"medium"},"taken":"4ac6ccdd698127e3"}
+{"idea":"n-089","field":"scope","state":"Labeled","proposal":{"idea":"n-089","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["draft"]},"taken":"cbc669c141904933"}
+{"idea":"n-089","field":"status","state":"Labeled","proposal":{"idea":"n-089","field":"status","value":"open"},"taken":"3a082e392d4164b0"}
+{"idea":"n-090","field":"importance","state":"Labeled","proposal":{"idea":"n-090","field":"importance","value":"medium"},"taken":"ac3b9db51802d6f7"}
+{"idea":"n-090","field":"scope","state":"RoutedToScope","reason":"term writing framework is missing; owning scope naive@marketing-and-sales","missing":[{"term":"writing framework","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-090","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["writing framework"]},"taken":"7a0b11ab1b27c2ae"}
+{"idea":"n-090","field":"status","state":"Labeled","proposal":{"idea":"n-090","field":"status","value":"open"},"taken":"51fea2548055cdf9"}
+{"idea":"n-091","field":"importance","state":"Labeled","proposal":{"idea":"n-091","field":"importance","value":"high"},"taken":"32715fe4609807a6"}
+{"idea":"n-091","field":"scope","state":"RoutedToScope","reason":"term MVP is missing; owning scope naive@products","missing":[{"term":"MVP","owning":"naive@products"}],"proposal":{"idea":"n-091","field":"scope","value":{"scope":"naive@products","via":"appends-to"},"terms":["MVP"]},"taken":"c6df92402560a22e"}
+{"idea":"n-091","field":"status","state":"Labeled","proposal":{"idea":"n-091","field":"status","value":"open"},"taken":"f9a4070223f123ff"}
+{"idea":"n-092","field":"importance","state":"Labeled","proposal":{"idea":"n-092","field":"importance","value":"medium"},"taken":"b9280fbdfdd9d478"}
+{"idea":"n-092","field":"scope","state":"RoutedToScope","reason":"term docket is missing; owning scope shared","missing":[{"term":"docket","owning":"shared"}],"proposal":{"idea":"n-092","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["docket"]},"taken":"9aa9021900fc9368"}
+{"idea":"n-092","field":"status","state":"Labeled","proposal":{"idea":"n-092","field":"status","value":"open"},"taken":"f4d0c674612b123e"}
+{"idea":"n-093","field":"importance","state":"Labeled","proposal":{"idea":"n-093","field":"importance","value":"medium"},"taken":"f45f6a4d7b7f14a8"}
+{"idea":"n-093","field":"scope","state":"RoutedToScope","reason":"term record is missing; owning scope shared","missing":[{"term":"record","owning":"shared"}],"proposal":{"idea":"n-093","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["record"]},"taken":"c2433721432185a6"}
+{"idea":"n-093","field":"status","state":"Labeled","proposal":{"idea":"n-093","field":"status","value":"open"},"taken":"2395697991dc8fd2"}
+{"idea":"n-094","field":"importance","state":"Labeled","proposal":{"idea":"n-094","field":"importance","value":"medium"},"taken":"704b9c138be324c4"}
+{"idea":"n-094","field":"relation","state":"Labeled","proposal":{"idea":"n-094","field":"relation","value":[{"relation":"builds-on","to":"n-170"}]},"taken":"155b9be03b6e316c"}
+{"idea":"n-094","field":"scope","state":"Labeled","proposal":{"idea":"n-094","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["kit"]},"taken":"04aefb9f08a32b87"}
+{"idea":"n-094","field":"status","state":"Labeled","proposal":{"idea":"n-094","field":"status","value":"open"},"taken":"436bb0b74f88727c"}
+{"idea":"n-095","field":"importance","state":"Labeled","proposal":{"idea":"n-095","field":"importance","value":"high"},"taken":"cb693c77631cc096"}
+{"idea":"n-095","field":"relation","state":"Labeled","proposal":{"idea":"n-095","field":"relation","value":[{"relation":"contradicts","to":"n-096"}]},"taken":"251a05b8ef6095d8"}
+{"idea":"n-095","field":"scope","state":"Labeled","proposal":{"idea":"n-095","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["layer"]},"taken":"8bf92dfd45def48a"}
+{"idea":"n-095","field":"status","state":"Labeled","proposal":{"idea":"n-095","field":"status","value":"open"},"taken":"9a5ca518642266d3"}
+{"idea":"n-096","field":"importance","state":"Labeled","proposal":{"idea":"n-096","field":"importance","value":"high"},"taken":"e72b9af3eefb0e25"}
+{"idea":"n-096","field":"relation","state":"Labeled","proposal":{"idea":"n-096","field":"relation","value":[{"relation":"contradicts","to":"n-095"}]},"taken":"09dfc4456996e8aa"}
+{"idea":"n-096","field":"scope","state":"Labeled","proposal":{"idea":"n-096","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["layer","area"]},"taken":"977aae8599ac2aa2"}
+{"idea":"n-096","field":"status","state":"Labeled","proposal":{"idea":"n-096","field":"status","value":"open"},"taken":"e6585bdf5ccf3c2b"}
+{"idea":"n-097","field":"importance","state":"Labeled","proposal":{"idea":"n-097","field":"importance","value":"medium"},"taken":"18527ca623ffe388"}
+{"idea":"n-097","field":"scope","state":"RoutedToScope","reason":"term trigger rule is missing; owning scope shared","missing":[{"term":"trigger rule","owning":"shared"}],"proposal":{"idea":"n-097","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["trigger rule"]},"taken":"7e45b972a3ae0e84"}
+{"idea":"n-097","field":"status","state":"Labeled","proposal":{"idea":"n-097","field":"status","value":"open"},"taken":"1f74afc0cfc3be39"}
+{"idea":"n-098","field":"importance","state":"Labeled","proposal":{"idea":"n-098","field":"importance","value":"high"},"taken":"246b9d2d9b71e03a"}
+{"idea":"n-098","field":"scope","state":"Labeled","proposal":{"idea":"n-098","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["mentor","coach"]},"taken":"2133a6b438a780f4"}
+{"idea":"n-098","field":"status","state":"Labeled","proposal":{"idea":"n-098","field":"status","value":"open"},"taken":"9d0d056b1096dc91"}
+{"idea":"n-099","field":"importance","state":"Labeled","proposal":{"idea":"n-099","field":"importance","value":"medium"},"taken":"8ecd1f85ee58bd33"}
+{"idea":"n-099","field":"scope","state":"Labeled","proposal":{"idea":"n-099","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["decision"]},"taken":"d54eeb0801456fd3"}
+{"idea":"n-099","field":"status","state":"Labeled","proposal":{"idea":"n-099","field":"status","value":"open"},"taken":"cd687eb44e9121b6"}
+{"idea":"n-100","field":"importance","state":"Labeled","proposal":{"idea":"n-100","field":"importance","value":"high"},"taken":"ccc0377dc8707a2c"}
+{"idea":"n-100","field":"scope","state":"Labeled","proposal":{"idea":"n-100","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["view"]},"taken":"9f5764b8f89b8a99"}
+{"idea":"n-100","field":"status","state":"Labeled","proposal":{"idea":"n-100","field":"status","value":"open"},"taken":"6ec313746123457a"}
+{"idea":"n-101","field":"importance","state":"Labeled","proposal":{"idea":"n-101","field":"importance","value":"medium"},"taken":"e23e7790a43b2775"}
+{"idea":"n-101","field":"scope","state":"Labeled","proposal":{"idea":"n-101","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["exit criterion"]},"taken":"400636779d2b4264"}
+{"idea":"n-101","field":"status","state":"Labeled","proposal":{"idea":"n-101","field":"status","value":"open"},"taken":"a1fb98364b59c434"}
+{"idea":"n-102","field":"importance","state":"Labeled","proposal":{"idea":"n-102","field":"importance","value":"medium"},"taken":"ff40321547c4926e"}
+{"idea":"n-102","field":"scope","state":"Labeled","proposal":{"idea":"n-102","field":"scope","value":{"scope":"naive@service-delivery","via":"appends-to"},"terms":["offering"]},"taken":"a342285dc8195a53"}
+{"idea":"n-102","field":"status","state":"Labeled","proposal":{"idea":"n-102","field":"status","value":"open"},"taken":"b52dc5aa60fc62e4"}
+{"idea":"n-103","field":"importance","state":"Labeled","proposal":{"idea":"n-103","field":"importance","value":"high"},"taken":"6776b4f3239bcedb"}
+{"idea":"n-103","field":"scope","state":"Labeled","proposal":{"idea":"n-103","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["business model"]},"taken":"1772e8cf11495cd8"}
+{"idea":"n-103","field":"status","state":"Labeled","proposal":{"idea":"n-103","field":"status","value":"open"},"taken":"591e703323aa26a8"}
+{"idea":"n-104","field":"importance","state":"Labeled","proposal":{"idea":"n-104","field":"importance","value":"medium"},"taken":"0a024ae27912ebc4"}
+{"idea":"n-104","field":"scope","state":"RoutedToScope","reason":"term verb is missing; owning scope shared","missing":[{"term":"verb","owning":"shared"}],"proposal":{"idea":"n-104","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["verb"]},"taken":"e37c165bdd722213"}
+{"idea":"n-104","field":"status","state":"Labeled","proposal":{"idea":"n-104","field":"status","value":"open"},"taken":"6255c6e7a0718d2f"}
+{"idea":"n-105","field":"importance","state":"Labeled","proposal":{"idea":"n-105","field":"importance","value":"medium"},"taken":"7fc7fc6c67048319"}
+{"idea":"n-105","field":"scope","state":"RoutedToScope","reason":"term venture type is missing; owning scope shared","missing":[{"term":"venture type","owning":"shared"}],"proposal":{"idea":"n-105","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture type"]},"taken":"dd298a4666431f3d"}
+{"idea":"n-105","field":"status","state":"Labeled","proposal":{"idea":"n-105","field":"status","value":"open"},"taken":"c1da192cc6e4ca3c"}
+{"idea":"n-106","field":"importance","state":"Labeled","proposal":{"idea":"n-106","field":"importance","value":"medium"},"taken":"5aca43ddbb71d15c"}
+{"idea":"n-106","field":"scope","state":"RoutedToScope","reason":"term port is missing; owning scope shared; term migrate is missing; owning scope shared; term upgrade is missing; owning scope shared","missing":[{"term":"port","owning":"shared"},{"term":"migrate","owning":"shared"},{"term":"upgrade","owning":"shared"}],"proposal":{"idea":"n-106","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["port","migrate","upgrade"]},"taken":"8286bc2d77876907"}
+{"idea":"n-106","field":"status","state":"Labeled","proposal":{"idea":"n-106","field":"status","value":"open"},"taken":"bccc73ba31de5478"}
+{"idea":"n-107","field":"importance","state":"Labeled","proposal":{"idea":"n-107","field":"importance","value":"medium"},"taken":"baf38e5e64234c7e"}
+{"idea":"n-107","field":"scope","state":"Labeled","proposal":{"idea":"n-107","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["mentor"]},"taken":"7e82918d397fe948"}
+{"idea":"n-107","field":"status","state":"Labeled","proposal":{"idea":"n-107","field":"status","value":"open"},"taken":"d277b836b16fb3e0"}
+{"idea":"n-108","field":"importance","state":"Labeled","proposal":{"idea":"n-108","field":"importance","value":"medium"},"taken":"3ec833ec23d44d5d"}
+{"idea":"n-108","field":"scope","state":"RoutedToScope","reason":"term research engine is missing; owning scope shared","missing":[{"term":"research engine","owning":"shared"}],"proposal":{"idea":"n-108","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["research engine"]},"taken":"6cb9b43e36bc3924"}
+{"idea":"n-108","field":"status","state":"Labeled","proposal":{"idea":"n-108","field":"status","value":"open"},"taken":"9fc681ea328e1bf8"}
+{"idea":"n-109","field":"importance","state":"Labeled","proposal":{"idea":"n-109","field":"importance","value":"low"},"taken":"7f30aaa4ddfe0af9"}
+{"idea":"n-109","field":"scope","state":"Labeled","proposal":{"idea":"n-109","field":"scope","value":{"scope":"shared","via":"derives-from"}},"taken":"8daecb8abd7520bf"}
+{"idea":"n-109","field":"status","state":"Labeled","proposal":{"idea":"n-109","field":"status","value":"dropped"},"taken":"a0b642ac8fcf510e"}
+{"idea":"n-110","field":"importance","state":"Labeled","proposal":{"idea":"n-110","field":"importance","value":"high"},"taken":"00425c3cdb4dca09"}
+{"idea":"n-110","field":"scope","state":"Labeled","proposal":{"idea":"n-110","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["provenance log"]},"taken":"04cc6bd6423748f1"}
+{"idea":"n-110","field":"status","state":"Labeled","proposal":{"idea":"n-110","field":"status","value":"open"},"taken":"28a98c36a1791b31"}
+{"idea":"n-111","field":"importance","state":"Labeled","proposal":{"idea":"n-111","field":"importance","value":"high"},"taken":"7feff48ac5848edb"}
+{"idea":"n-111","field":"scope","state":"RoutedToScope","reason":"term agent is missing; owning scope shared","missing":[{"term":"agent","owning":"shared"}],"proposal":{"idea":"n-111","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["agent"]},"taken":"aacfbd3d412d89cd"}
+{"idea":"n-111","field":"status","state":"Labeled","proposal":{"idea":"n-111","field":"status","value":"open"},"taken":"6c028f161c0d3c8d"}
+{"idea":"n-112","field":"importance","state":"Labeled","proposal":{"idea":"n-112","field":"importance","value":"medium"},"taken":"9ff53220607e4d74"}
+{"idea":"n-112","field":"relation","state":"Labeled","proposal":{"idea":"n-112","field":"relation","value":[{"relation":"derived-from","to":"n-070"}]},"taken":"fc3110d340bb3e0d"}
+{"idea":"n-112","field":"scope","state":"RoutedToScope","reason":"term anticipation is missing; owning scope shared","missing":[{"term":"anticipation","owning":"shared"}],"proposal":{"idea":"n-112","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["anticipation"]},"taken":"d6f0ca6e5c2c7434"}
+{"idea":"n-112","field":"status","state":"Labeled","proposal":{"idea":"n-112","field":"status","value":"open"},"taken":"7661d0a17aaf3e18"}
+{"idea":"n-113","field":"importance","state":"Labeled","proposal":{"idea":"n-113","field":"importance","value":"medium"},"taken":"10badcd8a74410ce"}
+{"idea":"n-113","field":"scope","state":"RoutedToScope","reason":"term vocabulary is missing; owning scope shared","missing":[{"term":"vocabulary","owning":"shared"}],"proposal":{"idea":"n-113","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["vocabulary"]},"taken":"26f0dc24b884f9cf"}
+{"idea":"n-113","field":"status","state":"Labeled","proposal":{"idea":"n-113","field":"status","value":"open"},"taken":"f262f5d44038830e"}
+{"idea":"n-114","field":"importance","state":"Labeled","proposal":{"idea":"n-114","field":"importance","value":"high"},"taken":"8b04821103a54b52"}
+{"idea":"n-114","field":"scope","state":"RoutedToScope","reason":"term vocabulary object is missing; owning scope shared","missing":[{"term":"vocabulary object","owning":"shared"}],"proposal":{"idea":"n-114","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["vocabulary object"]},"taken":"dc5a82c6fc785580"}
+{"idea":"n-114","field":"status","state":"Labeled","proposal":{"idea":"n-114","field":"status","value":"open"},"taken":"36cce98654b92911"}
+{"idea":"n-115","field":"importance","state":"Labeled","proposal":{"idea":"n-115","field":"importance","value":"medium"},"taken":"f5d58e1f209dec39"}
+{"idea":"n-115","field":"scope","state":"Labeled","proposal":{"idea":"n-115","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["record type"]},"taken":"068164095832b5f6"}
+{"idea":"n-115","field":"status","state":"Labeled","proposal":{"idea":"n-115","field":"status","value":"open"},"taken":"e456195e2b268ff2"}
+{"idea":"n-116","field":"importance","state":"Labeled","proposal":{"idea":"n-116","field":"importance","value":"medium"},"taken":"b5d7f13d94ca7967"}
+{"idea":"n-116","field":"scope","state":"RoutedToScope","reason":"term business is missing; owning scope shared; term company is missing; owning scope shared","missing":[{"term":"business","owning":"shared"},{"term":"company","owning":"shared"}],"proposal":{"idea":"n-116","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["business","company"]},"taken":"85abdf26ee88514b"}
+{"idea":"n-116","field":"status","state":"Labeled","proposal":{"idea":"n-116","field":"status","value":"open"},"taken":"04b00e6a1a58cb67"}
+{"idea":"n-117","field":"importance","state":"Labeled","proposal":{"idea":"n-117","field":"importance","value":"high"},"taken":"23361f5c1263ee95"}
+{"idea":"n-117","field":"scope","state":"RoutedToScope","reason":"term statement is missing; owning scope shared","missing":[{"term":"statement","owning":"shared"}],"proposal":{"idea":"n-117","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["statement"]},"taken":"bbfb0ae027cafc8e"}
+{"idea":"n-117","field":"status","state":"Labeled","proposal":{"idea":"n-117","field":"status","value":"open"},"taken":"e4291f5bf0fba255"}
+{"idea":"n-118","field":"importance","state":"Labeled","proposal":{"idea":"n-118","field":"importance","value":"medium"},"taken":"09b8c4e38d7e732f"}
+{"idea":"n-118","field":"relation","state":"Labeled","proposal":{"idea":"n-118","field":"relation","value":[{"relation":"builds-on","to":"n-117"}]},"taken":"757ae108f75e7353"}
+{"idea":"n-118","field":"scope","state":"RoutedToScope","reason":"term judgment is missing; owning scope shared","missing":[{"term":"judgment","owning":"shared"}],"proposal":{"idea":"n-118","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["judgment"]},"taken":"06de489c4102a925"}
+{"idea":"n-118","field":"status","state":"Labeled","proposal":{"idea":"n-118","field":"status","value":"open"},"taken":"e40d325dfaf48559"}
+{"idea":"n-119","field":"importance","state":"Labeled","proposal":{"idea":"n-119","field":"importance","value":"medium"},"taken":"f5fff00fd76ad758"}
+{"idea":"n-119","field":"scope","state":"Labeled","proposal":{"idea":"n-119","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["tier"]},"taken":"d98d75c98ff79d8c"}
+{"idea":"n-119","field":"status","state":"Labeled","proposal":{"idea":"n-119","field":"status","value":"open"},"taken":"0b177ce47e9998ff"}
+{"idea":"n-120","field":"importance","state":"Labeled","proposal":{"idea":"n-120","field":"importance","value":"medium"},"taken":"7c4bf09e0aa51e0f"}
+{"idea":"n-120","field":"scope","state":"RoutedToScope","reason":"term policy is missing; owning scope shared","missing":[{"term":"policy","owning":"shared"}],"proposal":{"idea":"n-120","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["policy"]},"taken":"8ad79b4d913de77d"}
+{"idea":"n-120","field":"status","state":"Labeled","proposal":{"idea":"n-120","field":"status","value":"open"},"taken":"f54b5ee38e3550f3"}
+{"idea":"n-121","field":"importance","state":"Labeled","proposal":{"idea":"n-121","field":"importance","value":"medium"},"taken":"6986c1035d5cb503"}
+{"idea":"n-121","field":"scope","state":"Labeled","proposal":{"idea":"n-121","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["draft"]},"taken":"508ac529e4893a3f"}
+{"idea":"n-121","field":"status","state":"Labeled","proposal":{"idea":"n-121","field":"status","value":"open"},"taken":"fa03e4bb7ddc455d"}
+{"idea":"n-122","field":"importance","state":"Labeled","proposal":{"idea":"n-122","field":"importance","value":"medium"},"taken":"3af7eb884d05ebb9"}
+{"idea":"n-122","field":"scope","state":"RoutedToScope","reason":"term knowledge graph is missing; owning scope shared","missing":[{"term":"knowledge graph","owning":"shared"}],"proposal":{"idea":"n-122","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["knowledge graph"]},"taken":"1616b0c3bc6de380"}
+{"idea":"n-122","field":"status","state":"Labeled","proposal":{"idea":"n-122","field":"status","value":"open"},"taken":"5f730fb06be8590f"}
+{"idea":"n-123","field":"importance","state":"Labeled","proposal":{"idea":"n-123","field":"importance","value":"medium"},"taken":"36d3a40acbc3f902"}
+{"idea":"n-123","field":"scope","state":"RoutedToScope","reason":"term interface is missing; owning scope shared","missing":[{"term":"interface","owning":"shared"}],"proposal":{"idea":"n-123","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["interface"]},"taken":"ed02048f3beb4c58"}
+{"idea":"n-123","field":"status","state":"Labeled","proposal":{"idea":"n-123","field":"status","value":"open"},"taken":"dce34940298509a9"}
+{"idea":"n-124","field":"importance","state":"Labeled","proposal":{"idea":"n-124","field":"importance","value":"medium"},"taken":"9c721f835e6c5d50"}
+{"idea":"n-124","field":"scope","state":"Labeled","proposal":{"idea":"n-124","field":"scope","value":{"scope":"naive@human-capital","via":"appends-to"},"terms":["role"]},"taken":"4abcc077aa0405bf"}
+{"idea":"n-124","field":"status","state":"Labeled","proposal":{"idea":"n-124","field":"status","value":"open"},"taken":"441b1aa12ff90f6f"}
+{"idea":"n-125","field":"importance","state":"Labeled","proposal":{"idea":"n-125","field":"importance","value":"high"},"taken":"feade39e11acce21"}
+{"idea":"n-125","field":"scope","state":"RoutedToScope","reason":"term agent is missing; owning scope shared","missing":[{"term":"agent","owning":"shared"}],"proposal":{"idea":"n-125","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["agent"]},"taken":"18ef136604b52415"}
+{"idea":"n-125","field":"status","state":"Labeled","proposal":{"idea":"n-125","field":"status","value":"open"},"taken":"8ca843117f1ab16d"}
+{"idea":"n-126","field":"importance","state":"Labeled","proposal":{"idea":"n-126","field":"importance","value":"high"},"taken":"69a86492a55f62d0"}
+{"idea":"n-126","field":"scope","state":"RoutedToScope","reason":"term system of record is missing; owning scope shared","missing":[{"term":"system of record","owning":"shared"}],"proposal":{"idea":"n-126","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["system of record"]},"taken":"a9f7b6abc949b122"}
+{"idea":"n-126","field":"status","state":"Labeled","proposal":{"idea":"n-126","field":"status","value":"open"},"taken":"403ecdf84019c50a"}
+{"idea":"n-127","field":"importance","state":"Labeled","proposal":{"idea":"n-127","field":"importance","value":"medium"},"taken":"fd06adf2b266c23d"}
+{"idea":"n-127","field":"scope","state":"Labeled","proposal":{"idea":"n-127","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["typed-link"]},"taken":"acc1057d405e1ba3"}
+{"idea":"n-127","field":"status","state":"Labeled","proposal":{"idea":"n-127","field":"status","value":"open"},"taken":"882eac78178e7cd3"}
+{"idea":"n-128","field":"importance","state":"Labeled","proposal":{"idea":"n-128","field":"importance","value":"high"},"taken":"0674e06239dc9072"}
+{"idea":"n-128","field":"scope","state":"RoutedToScope","reason":"term language model is missing; owning scope shared","missing":[{"term":"language model","owning":"shared"}],"proposal":{"idea":"n-128","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["language model"]},"taken":"e67eb8ed91375abc"}
+{"idea":"n-128","field":"status","state":"Labeled","proposal":{"idea":"n-128","field":"status","value":"open"},"taken":"778507d93ed5b580"}
+{"idea":"n-129","field":"importance","state":"Labeled","proposal":{"idea":"n-129","field":"importance","value":"medium"},"taken":"0dba15cd6b67ffae"}
+{"idea":"n-129","field":"scope","state":"Labeled","proposal":{"idea":"n-129","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["provenance"]},"taken":"288060a1806deab1"}
+{"idea":"n-129","field":"status","state":"Labeled","proposal":{"idea":"n-129","field":"status","value":"open"},"taken":"58978a42945ceef7"}
+{"idea":"n-130","field":"importance","state":"Labeled","proposal":{"idea":"n-130","field":"importance","value":"medium"},"taken":"f703840dbcaf704b"}
+{"idea":"n-130","field":"scope","state":"RoutedToScope","reason":"term question is missing; owning scope shared","missing":[{"term":"question","owning":"shared"}],"proposal":{"idea":"n-130","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["question"]},"taken":"dbefc641d4ec5f39"}
+{"idea":"n-130","field":"status","state":"Labeled","proposal":{"idea":"n-130","field":"status","value":"open"},"taken":"229f6913f60b1d58"}
+{"idea":"n-131","field":"importance","state":"Labeled","proposal":{"idea":"n-131","field":"importance","value":"medium"},"taken":"cc568cec932816bf"}
+{"idea":"n-131","field":"scope","state":"RoutedToScope","reason":"term security label is missing; owning scope naive@risk-and-compliance","missing":[{"term":"security label","owning":"naive@risk-and-compliance"}],"proposal":{"idea":"n-131","field":"scope","value":{"scope":"naive@risk-and-compliance","via":"appends-to"},"terms":["security label"]},"taken":"a6c49df9093d1d6e"}
+{"idea":"n-131","field":"status","state":"Labeled","proposal":{"idea":"n-131","field":"status","value":"open"},"taken":"339e2675b5347f3e"}
+{"idea":"n-132","field":"importance","state":"Labeled","proposal":{"idea":"n-132","field":"importance","value":"medium"},"taken":"bd0909007836221e"}
+{"idea":"n-132","field":"relation","state":"Labeled","proposal":{"idea":"n-132","field":"relation","value":[{"relation":"builds-on","to":"n-199"}]},"taken":"18248403105ad9a8"}
+{"idea":"n-132","field":"scope","state":"RoutedToScope","reason":"term README is missing; owning scope shared","missing":[{"term":"README","owning":"shared"}],"proposal":{"idea":"n-132","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["README"]},"taken":"dd29b17b64f82b9e"}
+{"idea":"n-132","field":"status","state":"Labeled","proposal":{"idea":"n-132","field":"status","value":"open"},"taken":"3d1915c3c29a6b81"}
+{"idea":"n-133","field":"importance","state":"Labeled","proposal":{"idea":"n-133","field":"importance","value":"medium"},"taken":"1b2172fc4d58c85f"}
+{"idea":"n-133","field":"scope","state":"RoutedToScope","reason":"term pipeline is missing; owning scope shared","missing":[{"term":"pipeline","owning":"shared"}],"proposal":{"idea":"n-133","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["pipeline"]},"taken":"fa3354f329396df9"}
+{"idea":"n-133","field":"status","state":"Labeled","proposal":{"idea":"n-133","field":"status","value":"open"},"taken":"195a568db2e1c1c3"}
+{"idea":"n-134","field":"importance","state":"Labeled","proposal":{"idea":"n-134","field":"importance","value":"medium"},"taken":"a10df924afbf0ad2"}
+{"idea":"n-134","field":"scope","state":"RoutedToScope","reason":"term viability ladder is missing; owning scope shared","missing":[{"term":"viability ladder","owning":"shared"}],"proposal":{"idea":"n-134","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["viability ladder"]},"taken":"45d9ace0f1779574"}
+{"idea":"n-134","field":"status","state":"Labeled","proposal":{"idea":"n-134","field":"status","value":"open"},"taken":"6507166bcf8d7397"}
+{"idea":"n-135","field":"importance","state":"Labeled","proposal":{"idea":"n-135","field":"importance","value":"medium"},"taken":"e1cfb9973ef0e8d2"}
+{"idea":"n-135","field":"scope","state":"RoutedToScope","reason":"term outreach is missing; owning scope naive@marketing-and-sales","missing":[{"term":"outreach","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-135","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["outreach"]},"taken":"2495f897017b9ad3"}
+{"idea":"n-135","field":"status","state":"Labeled","proposal":{"idea":"n-135","field":"status","value":"open"},"taken":"062f0e25c94ef912"}
+{"idea":"n-136","field":"importance","state":"Labeled","proposal":{"idea":"n-136","field":"importance","value":"medium"},"taken":"6de37e99575b84c8"}
+{"idea":"n-136","field":"scope","state":"RoutedToScope","reason":"term seed case is missing; owning scope shared","missing":[{"term":"seed case","owning":"shared"}],"proposal":{"idea":"n-136","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["seed case"]},"taken":"41a7423dc4bef1d7"}
+{"idea":"n-136","field":"status","state":"Labeled","proposal":{"idea":"n-136","field":"status","value":"open"},"taken":"f326f9271f12af16"}
+{"idea":"n-137","field":"importance","state":"Labeled","proposal":{"idea":"n-137","field":"importance","value":"medium"},"taken":"4177f87b46024084"}
+{"idea":"n-137","field":"scope","state":"RoutedToScope","reason":"term lead is missing; owning scope naive@marketing-and-sales","missing":[{"term":"lead","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-137","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["lead"]},"taken":"8dfe3deb4d32fe07"}
+{"idea":"n-137","field":"status","state":"Labeled","proposal":{"idea":"n-137","field":"status","value":"open"},"taken":"d3e192f7d16bdc44"}
+{"idea":"n-138","field":"importance","state":"Labeled","proposal":{"idea":"n-138","field":"importance","value":"medium"},"taken":"ff2caa48bb967135"}
+{"idea":"n-138","field":"scope","state":"RoutedToScope","reason":"term pull request is missing; owning scope shared","missing":[{"term":"pull request","owning":"shared"}],"proposal":{"idea":"n-138","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["pull request"]},"taken":"cc46a123b09847ba"}
+{"idea":"n-138","field":"status","state":"Labeled","proposal":{"idea":"n-138","field":"status","value":"open"},"taken":"63bf70a3c1eb6824"}
+{"idea":"n-139","field":"importance","state":"Labeled","proposal":{"idea":"n-139","field":"importance","value":"low"},"taken":"d22d67b4b9cf6fac"}
+{"idea":"n-139","field":"scope","state":"Labeled","proposal":{"idea":"n-139","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["tooling"]},"taken":"a0231336907afadd"}
+{"idea":"n-139","field":"status","state":"Labeled","proposal":{"idea":"n-139","field":"status","value":"open"},"taken":"36903f6bb767680c"}
+{"idea":"n-140","field":"importance","state":"Labeled","proposal":{"idea":"n-140","field":"importance","value":"medium"},"taken":"1ffb42dbe8e680c2"}
+{"idea":"n-140","field":"scope","state":"RoutedToScope","reason":"term marketing site is missing; owning scope naive@marketing-and-sales","missing":[{"term":"marketing site","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-140","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["marketing site"]},"taken":"d12f954912032ad7"}
+{"idea":"n-140","field":"status","state":"Labeled","proposal":{"idea":"n-140","field":"status","value":"open"},"taken":"d774dd653d968fe2"}
+{"idea":"n-141","field":"importance","state":"Labeled","proposal":{"idea":"n-141","field":"importance","value":"medium"},"taken":"26d9c0fd38c4fc79"}
+{"idea":"n-141","field":"scope","state":"RoutedToScope","reason":"term router is missing; owning scope shared","missing":[{"term":"router","owning":"shared"}],"proposal":{"idea":"n-141","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["router"]},"taken":"57fb3e45614e8b50"}
+{"idea":"n-141","field":"status","state":"Labeled","proposal":{"idea":"n-141","field":"status","value":"open"},"taken":"e706f2e6a10f7248"}
+{"idea":"n-142","field":"importance","state":"Labeled","proposal":{"idea":"n-142","field":"importance","value":"high"},"taken":"73cc8d8136107a22"}
+{"idea":"n-142","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope shared","missing":[{"term":"glossary","owning":"shared"}],"proposal":{"idea":"n-142","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["glossary"]},"taken":"3a7ac1ac28fc0b55"}
+{"idea":"n-142","field":"status","state":"Labeled","proposal":{"idea":"n-142","field":"status","value":"in-venture"},"taken":"5f42511f4e5d0692"}
+{"idea":"n-143","field":"importance","state":"Labeled","proposal":{"idea":"n-143","field":"importance","value":"medium"},"taken":"26e06ad0cecf2c4e"}
+{"idea":"n-143","field":"scope","state":"RoutedToScope","reason":"term endpoint is missing; owning scope shared","missing":[{"term":"endpoint","owning":"shared"}],"proposal":{"idea":"n-143","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["endpoint"]},"taken":"24dd2184a471c633"}
+{"idea":"n-143","field":"status","state":"Labeled","proposal":{"idea":"n-143","field":"status","value":"in-venture"},"taken":"237383c0574d5254"}
+{"idea":"n-144","field":"importance","state":"Labeled","proposal":{"idea":"n-144","field":"importance","value":"medium"},"taken":"cd32009eab9e09fb"}
+{"idea":"n-144","field":"scope","state":"Labeled","proposal":{"idea":"n-144","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["relationship"]},"taken":"094876989823f7df"}
+{"idea":"n-144","field":"status","state":"Labeled","proposal":{"idea":"n-144","field":"status","value":"in-venture"},"taken":"12b37716c275c4a7"}
+{"idea":"n-145","field":"importance","state":"Labeled","proposal":{"idea":"n-145","field":"importance","value":"medium"},"taken":"f53bc2dd24572adf"}
+{"idea":"n-145","field":"scope","state":"RoutedToScope","reason":"term vocabulary is missing; owning scope shared","missing":[{"term":"vocabulary","owning":"shared"}],"proposal":{"idea":"n-145","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["vocabulary"]},"taken":"bfa03a04d36cb5cc"}
+{"idea":"n-145","field":"status","state":"Labeled","proposal":{"idea":"n-145","field":"status","value":"in-venture"},"taken":"df5a9846cbfe5cca"}
+{"idea":"n-146","field":"importance","state":"Labeled","proposal":{"idea":"n-146","field":"importance","value":"medium"},"taken":"cfa23c679599b419"}
+{"idea":"n-146","field":"scope","state":"Labeled","proposal":{"idea":"n-146","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["decision"]},"taken":"62a91a62d4471093"}
+{"idea":"n-146","field":"status","state":"Labeled","proposal":{"idea":"n-146","field":"status","value":"in-venture"},"taken":"74608f8dc251977e"}
+{"idea":"n-147","field":"importance","state":"Labeled","proposal":{"idea":"n-147","field":"importance","value":"medium"},"taken":"e0936cf6349eb84a"}
+{"idea":"n-147","field":"scope","state":"RoutedToScope","reason":"term blackboard is missing; owning scope shared","missing":[{"term":"blackboard","owning":"shared"}],"proposal":{"idea":"n-147","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["blackboard"]},"taken":"de7279290e266872"}
+{"idea":"n-147","field":"status","state":"Labeled","proposal":{"idea":"n-147","field":"status","value":"in-venture"},"taken":"21a93ef94475b512"}
+{"idea":"n-148","field":"importance","state":"Labeled","proposal":{"idea":"n-148","field":"importance","value":"medium"},"taken":"c9e69457e3fb53d5"}
+{"idea":"n-148","field":"scope","state":"Labeled","proposal":{"idea":"n-148","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["product"]},"taken":"e840cb28ce15a9f9"}
+{"idea":"n-148","field":"status","state":"Labeled","proposal":{"idea":"n-148","field":"status","value":"in-venture"},"taken":"7409406f5dd600c0"}
+{"idea":"n-149","field":"importance","state":"Labeled","proposal":{"idea":"n-149","field":"importance","value":"medium"},"taken":"dba5d19a864d671e"}
+{"idea":"n-149","field":"scope","state":"RoutedToScope","reason":"term ontology is missing; owning scope shared","missing":[{"term":"ontology","owning":"shared"}],"proposal":{"idea":"n-149","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["ontology"]},"taken":"876b390061c152ec"}
+{"idea":"n-149","field":"status","state":"Labeled","proposal":{"idea":"n-149","field":"status","value":"in-venture"},"taken":"bd65dde0e76e11ea"}
+{"idea":"n-150","field":"importance","state":"Labeled","proposal":{"idea":"n-150","field":"importance","value":"medium"},"taken":"c430ffd93772087c"}
+{"idea":"n-150","field":"scope","state":"RoutedToScope","reason":"term destination stage is missing; owning scope shared","missing":[{"term":"destination stage","owning":"shared"}],"proposal":{"idea":"n-150","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["destination stage"]},"taken":"66f9fb7be345b864"}
+{"idea":"n-150","field":"status","state":"Labeled","proposal":{"idea":"n-150","field":"status","value":"in-venture"},"taken":"dc9fe9632bcf9994"}
+{"idea":"n-151","field":"importance","state":"Labeled","proposal":{"idea":"n-151","field":"importance","value":"high"},"taken":"bceb5190df11f76f"}
+{"idea":"n-151","field":"scope","state":"Labeled","proposal":{"idea":"n-151","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture development framework"]},"taken":"6ec113aeecb349b2"}
+{"idea":"n-151","field":"status","state":"Labeled","proposal":{"idea":"n-151","field":"status","value":"in-venture"},"taken":"cd6f62d69b5a14c7"}
+{"idea":"n-152","field":"importance","state":"Labeled","proposal":{"idea":"n-152","field":"importance","value":"medium"},"taken":"50396b5150e65517"}
+{"idea":"n-152","field":"scope","state":"Labeled","proposal":{"idea":"n-152","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture development framework"]},"taken":"85e11cb04be10cdb"}
+{"idea":"n-152","field":"status","state":"Labeled","proposal":{"idea":"n-152","field":"status","value":"in-venture"},"taken":"aec25170d60e304d"}
+{"idea":"n-153","field":"importance","state":"Labeled","proposal":{"idea":"n-153","field":"importance","value":"high"},"taken":"4f60c83ddd970ad9"}
+{"idea":"n-153","field":"scope","state":"Labeled","proposal":{"idea":"n-153","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture development framework"]},"taken":"1c7530f0005f3de8"}
+{"idea":"n-153","field":"status","state":"Labeled","proposal":{"idea":"n-153","field":"status","value":"in-venture"},"taken":"603bbb4b4823683f"}
+{"idea":"n-154","field":"importance","state":"Labeled","proposal":{"idea":"n-154","field":"importance","value":"high"},"taken":"099162ce57d2a69a"}
+{"idea":"n-154","field":"scope","state":"Labeled","proposal":{"idea":"n-154","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["central data management structure"]},"taken":"8ad70aa3dbbe134c"}
+{"idea":"n-154","field":"status","state":"Labeled","proposal":{"idea":"n-154","field":"status","value":"in-venture"},"taken":"fd5577be1cc628b2"}
+{"idea":"n-155","field":"importance","state":"Labeled","proposal":{"idea":"n-155","field":"importance","value":"low"},"taken":"e695f3b63495373c"}
+{"idea":"n-155","field":"scope","state":"RoutedToScope","reason":"term tagline is missing; owning scope naive@marketing-and-sales","missing":[{"term":"tagline","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-155","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["tagline"]},"taken":"8a4704d276fd7499"}
+{"idea":"n-155","field":"status","state":"Labeled","proposal":{"idea":"n-155","field":"status","value":"in-venture"},"taken":"f8c6bdd9203639e8"}
+{"idea":"n-156","field":"importance","state":"Labeled","proposal":{"idea":"n-156","field":"importance","value":"high"},"taken":"7b78b160a2114ec5"}
+{"idea":"n-156","field":"scope","state":"Labeled","proposal":{"idea":"n-156","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["phase"]},"taken":"f617d6453bf64868"}
+{"idea":"n-156","field":"status","state":"Labeled","proposal":{"idea":"n-156","field":"status","value":"in-venture"},"taken":"8c94abcf8d33379c"}
+{"idea":"n-157","field":"importance","state":"Labeled","proposal":{"idea":"n-157","field":"importance","value":"high"},"taken":"f896e2e4132c6991"}
+{"idea":"n-157","field":"relation","state":"Labeled","proposal":{"idea":"n-157","field":"relation","value":[{"relation":"builds-on","to":"n-156"}]},"taken":"15ab2ca06189237a"}
+{"idea":"n-157","field":"scope","state":"Labeled","proposal":{"idea":"n-157","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["function","phase"]},"taken":"dde5fef9637595f8"}
+{"idea":"n-157","field":"status","state":"Labeled","proposal":{"idea":"n-157","field":"status","value":"in-venture"},"taken":"1f21625d2a628c04"}
+{"idea":"n-158","field":"importance","state":"Labeled","proposal":{"idea":"n-158","field":"importance","value":"high"},"taken":"09f073fa333718a3"}
+{"idea":"n-158","field":"relation","state":"Labeled","proposal":{"idea":"n-158","field":"relation","value":[{"relation":"contradicts","to":"n-159"}]},"taken":"d33cb3e4d6c13132"}
+{"idea":"n-158","field":"scope","state":"Labeled","proposal":{"idea":"n-158","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["function"]},"taken":"d9c3c593275b8b8a"}
+{"idea":"n-158","field":"status","state":"Labeled","proposal":{"idea":"n-158","field":"status","value":"in-venture"},"taken":"bf380dd164bf648f"}
+{"idea":"n-159","field":"importance","state":"Labeled","proposal":{"idea":"n-159","field":"importance","value":"high"},"taken":"f1ef97f530f4507d"}
+{"idea":"n-159","field":"relation","state":"Labeled","proposal":{"idea":"n-159","field":"relation","value":[{"relation":"contradicts","to":"n-158"}]},"taken":"95a8945a1c824f11"}
+{"idea":"n-159","field":"scope","state":"Labeled","proposal":{"idea":"n-159","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["function"]},"taken":"66f95597e0e56f0e"}
+{"idea":"n-159","field":"status","state":"Labeled","proposal":{"idea":"n-159","field":"status","value":"in-venture"},"taken":"5ac23d2f8d7a7dbf"}
+{"idea":"n-160","field":"importance","state":"Labeled","proposal":{"idea":"n-160","field":"importance","value":"medium"},"taken":"3e7e0b42a8d3e1fc"}
+{"idea":"n-160","field":"scope","state":"RoutedToScope","reason":"term function module is missing; owning scope shared","missing":[{"term":"function module","owning":"shared"}],"proposal":{"idea":"n-160","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["function module"]},"taken":"cc3b5f840b289897"}
+{"idea":"n-160","field":"status","state":"Labeled","proposal":{"idea":"n-160","field":"status","value":"in-venture"},"taken":"91372e180dc4964c"}
+{"idea":"n-161","field":"importance","state":"Labeled","proposal":{"idea":"n-161","field":"importance","value":"medium"},"taken":"ae6d32fce372e8f6"}
+{"idea":"n-161","field":"scope","state":"RoutedToScope","reason":"term foundation is missing; owning scope shared","missing":[{"term":"foundation","owning":"shared"}],"proposal":{"idea":"n-161","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["foundation"]},"taken":"f31c6d11332d3ea4"}
+{"idea":"n-161","field":"status","state":"Labeled","proposal":{"idea":"n-161","field":"status","value":"in-venture"},"taken":"80eeb0156e24e2a9"}
+{"idea":"n-162","field":"importance","state":"Labeled","proposal":{"idea":"n-162","field":"importance","value":"medium"},"taken":"7ef6ce983ec67d19"}
+{"idea":"n-162","field":"scope","state":"RoutedToScope","reason":"term requirement is missing; owning scope shared","missing":[{"term":"requirement","owning":"shared"}],"proposal":{"idea":"n-162","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["requirement"]},"taken":"0d0fa6118f9607bd"}
+{"idea":"n-162","field":"status","state":"Labeled","proposal":{"idea":"n-162","field":"status","value":"in-venture"},"taken":"7bccb1c8af808c57"}
+{"idea":"n-163","field":"importance","state":"Labeled","proposal":{"idea":"n-163","field":"importance","value":"medium"},"taken":"4a0241e5d7ba50c1"}
+{"idea":"n-163","field":"relation","state":"Labeled","proposal":{"idea":"n-163","field":"relation","value":[{"relation":"broader","to":"n-179"}]},"taken":"e4602a848b941479"}
+{"idea":"n-163","field":"scope","state":"Labeled","proposal":{"idea":"n-163","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["publication"]},"taken":"bd71c0137d1621d0"}
+{"idea":"n-163","field":"status","state":"Labeled","proposal":{"idea":"n-163","field":"status","value":"in-venture"},"taken":"2d23ffe58441e89d"}
+{"idea":"n-164","field":"importance","state":"Labeled","proposal":{"idea":"n-164","field":"importance","value":"high"},"taken":"b03c4b781644eca1"}
+{"idea":"n-164","field":"scope","state":"RoutedToScope","reason":"term MVP is missing; owning scope naive@products","missing":[{"term":"MVP","owning":"naive@products"}],"proposal":{"idea":"n-164","field":"scope","value":{"scope":"naive@products","via":"appends-to"},"terms":["MVP"]},"taken":"e2b7580913938bcc"}
+{"idea":"n-164","field":"status","state":"Labeled","proposal":{"idea":"n-164","field":"status","value":"in-venture"},"taken":"2dc2864479a55a43"}
+{"idea":"n-165","field":"importance","state":"Labeled","proposal":{"idea":"n-165","field":"importance","value":"high"},"taken":"f02373c41a5a1ce2"}
+{"idea":"n-165","field":"scope","state":"Labeled","proposal":{"idea":"n-165","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["venture","draft"]},"taken":"f509dd28c5fd7012"}
+{"idea":"n-165","field":"status","state":"Labeled","proposal":{"idea":"n-165","field":"status","value":"in-venture"},"taken":"d74dc50e20ed9b64"}
+{"idea":"n-166","field":"importance","state":"Labeled","proposal":{"idea":"n-166","field":"importance","value":"medium"},"taken":"fedb81205daf90dc"}
+{"idea":"n-166","field":"scope","state":"Labeled","proposal":{"idea":"n-166","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["decision"]},"taken":"8f00a0ad8cb3745b"}
+{"idea":"n-166","field":"status","state":"Labeled","proposal":{"idea":"n-166","field":"status","value":"in-venture"},"taken":"640d3bf450e7d10a"}
+{"idea":"n-167","field":"importance","state":"Labeled","proposal":{"idea":"n-167","field":"importance","value":"medium"},"taken":"8aeb51149e817c0e"}
+{"idea":"n-167","field":"scope","state":"Labeled","proposal":{"idea":"n-167","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["phase"]},"taken":"d67e582da693c481"}
+{"idea":"n-167","field":"status","state":"Labeled","proposal":{"idea":"n-167","field":"status","value":"in-venture"},"taken":"2880e18e164a0366"}
+{"idea":"n-168","field":"importance","state":"Labeled","proposal":{"idea":"n-168","field":"importance","value":"medium"},"taken":"99acfc8892585804"}
+{"idea":"n-168","field":"scope","state":"RoutedToScope","reason":"term alignment is missing; owning scope shared","missing":[{"term":"alignment","owning":"shared"}],"proposal":{"idea":"n-168","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["alignment"]},"taken":"b5ceb884791821b5"}
+{"idea":"n-168","field":"status","state":"Labeled","proposal":{"idea":"n-168","field":"status","value":"in-venture"},"taken":"0a7bf77a2d0acb9e"}
+{"idea":"n-169","field":"importance","state":"Labeled","proposal":{"idea":"n-169","field":"importance","value":"medium"},"taken":"e58354587c97615b"}
+{"idea":"n-169","field":"scope","state":"RoutedToScope","reason":"term review is missing; owning scope naive@strategy","missing":[{"term":"review","owning":"naive@strategy"}],"proposal":{"idea":"n-169","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["review"]},"taken":"746a803133aee867"}
+{"idea":"n-169","field":"status","state":"Labeled","proposal":{"idea":"n-169","field":"status","value":"open"},"taken":"df7df36f83440490"}
+{"idea":"n-170","field":"importance","state":"Labeled","proposal":{"idea":"n-170","field":"importance","value":"high"},"taken":"5a25bd91ebac6f4f"}
+{"idea":"n-170","field":"scope","state":"RoutedToScope","reason":"term package is missing; owning scope shared","missing":[{"term":"package","owning":"shared"}],"proposal":{"idea":"n-170","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["package","kit"]},"taken":"9bf1729bec5449f9"}
+{"idea":"n-170","field":"status","state":"Labeled","proposal":{"idea":"n-170","field":"status","value":"in-venture"},"taken":"800ad748e94f0235"}
+{"idea":"n-171","field":"importance","state":"Labeled","proposal":{"idea":"n-171","field":"importance","value":"medium"},"taken":"223165838c031498"}
+{"idea":"n-171","field":"scope","state":"RoutedToScope","reason":"term package is missing; owning scope shared","missing":[{"term":"package","owning":"shared"}],"proposal":{"idea":"n-171","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["package"]},"taken":"6182c2e14e6fb04d"}
+{"idea":"n-171","field":"status","state":"Labeled","proposal":{"idea":"n-171","field":"status","value":"in-venture"},"taken":"ecc86acb1a300c9f"}
+{"idea":"n-172","field":"importance","state":"Labeled","proposal":{"idea":"n-172","field":"importance","value":"medium"},"taken":"e60cccee54b26a04"}
+{"idea":"n-172","field":"scope","state":"RoutedToScope","reason":"term pipeline is missing; owning scope shared","missing":[{"term":"pipeline","owning":"shared"}],"proposal":{"idea":"n-172","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["pipeline"]},"taken":"a8d4d26afcca9bec"}
+{"idea":"n-172","field":"status","state":"Labeled","proposal":{"idea":"n-172","field":"status","value":"in-venture"},"taken":"d14967dfef39e059"}
+{"idea":"n-173","field":"importance","state":"Labeled","proposal":{"idea":"n-173","field":"importance","value":"medium"},"taken":"95e8b93c84dfb486"}
+{"idea":"n-173","field":"scope","state":"Labeled","proposal":{"idea":"n-173","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["venture"]},"taken":"cee2c749471f1bca"}
+{"idea":"n-173","field":"status","state":"Labeled","proposal":{"idea":"n-173","field":"status","value":"in-venture"},"taken":"d3d92e7657356ff3"}
+{"idea":"n-174","field":"importance","state":"Labeled","proposal":{"idea":"n-174","field":"importance","value":"medium"},"taken":"c01dffbc05d036c3"}
+{"idea":"n-174","field":"scope","state":"Labeled","proposal":{"idea":"n-174","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["layout"]},"taken":"2a54282f2e313222"}
+{"idea":"n-174","field":"status","state":"Labeled","proposal":{"idea":"n-174","field":"status","value":"in-venture"},"taken":"2c6028bf9128ca83"}
+{"idea":"n-175","field":"importance","state":"Labeled","proposal":{"idea":"n-175","field":"importance","value":"medium"},"taken":"d54cd058b7e8eb90"}
+{"idea":"n-175","field":"relation","state":"Labeled","proposal":{"idea":"n-175","field":"relation","value":[{"relation":"builds-on","to":"n-174"}]},"taken":"a9a57261c3020773"}
+{"idea":"n-175","field":"scope","state":"Labeled","proposal":{"idea":"n-175","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["route"]},"taken":"93b45067d4c11057"}
+{"idea":"n-175","field":"status","state":"Labeled","proposal":{"idea":"n-175","field":"status","value":"in-venture"},"taken":"805552dfebcf4dbc"}
+{"idea":"n-176","field":"importance","state":"Labeled","proposal":{"idea":"n-176","field":"importance","value":"medium"},"taken":"66f5fdbdadbfd580"}
+{"idea":"n-176","field":"scope","state":"Labeled","proposal":{"idea":"n-176","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["venture","role"]},"taken":"782ba28936d57bea"}
+{"idea":"n-176","field":"status","state":"Labeled","proposal":{"idea":"n-176","field":"status","value":"in-venture"},"taken":"c17214f9e644d670"}
+{"idea":"n-177","field":"importance","state":"Labeled","proposal":{"idea":"n-177","field":"importance","value":"medium"},"taken":"6162d9b726c8bdda"}
+{"idea":"n-177","field":"scope","state":"RoutedToScope","reason":"term fact is missing; owning scope shared","missing":[{"term":"fact","owning":"shared"}],"proposal":{"idea":"n-177","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["fact"]},"taken":"34e1ea17876ba04e"}
+{"idea":"n-177","field":"status","state":"Labeled","proposal":{"idea":"n-177","field":"status","value":"in-venture"},"taken":"81203a2ca0510808"}
+{"idea":"n-178","field":"importance","state":"Labeled","proposal":{"idea":"n-178","field":"importance","value":"medium"},"taken":"6baf22ee0a05357e"}
+{"idea":"n-178","field":"scope","state":"Labeled","proposal":{"idea":"n-178","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["harness","workbench"]},"taken":"92fba9a3355a593e"}
+{"idea":"n-178","field":"status","state":"Labeled","proposal":{"idea":"n-178","field":"status","value":"in-venture"},"taken":"ab25caf830e7f63f"}
+{"idea":"n-179","field":"importance","state":"Labeled","proposal":{"idea":"n-179","field":"importance","value":"medium"},"taken":"7e8a4da333eaba2b"}
+{"idea":"n-179","field":"scope","state":"Labeled","proposal":{"idea":"n-179","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["publication policy"]},"taken":"6729e46f36907536"}
+{"idea":"n-179","field":"status","state":"Labeled","proposal":{"idea":"n-179","field":"status","value":"in-venture"},"taken":"31747e280bb05ed1"}
+{"idea":"n-180","field":"importance","state":"Labeled","proposal":{"idea":"n-180","field":"importance","value":"low"},"taken":"0ed43b8ac8ddbb50"}
+{"idea":"n-180","field":"scope","state":"Labeled","proposal":{"idea":"n-180","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["tooling"]},"taken":"c6e6d254f04573ea"}
+{"idea":"n-180","field":"status","state":"Labeled","proposal":{"idea":"n-180","field":"status","value":"in-venture"},"taken":"b86e930c41cf9704"}
+{"idea":"n-181","field":"importance","state":"Labeled","proposal":{"idea":"n-181","field":"importance","value":"medium"},"taken":"01a3eaabb88083fa"}
+{"idea":"n-181","field":"scope","state":"RoutedToScope","reason":"term idea is missing; owning scope shared","missing":[{"term":"idea","owning":"shared"}],"proposal":{"idea":"n-181","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["idea"]},"taken":"fa5e9c4fa963777b"}
+{"idea":"n-181","field":"status","state":"Labeled","proposal":{"idea":"n-181","field":"status","value":"in-venture"},"taken":"abbdb09141917191"}
+{"idea":"n-182","field":"importance","state":"Labeled","proposal":{"idea":"n-182","field":"importance","value":"medium"},"taken":"729785e04b8d4423"}
+{"idea":"n-182","field":"scope","state":"Labeled","proposal":{"idea":"n-182","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["technology"]},"taken":"59d327562012450f"}
+{"idea":"n-182","field":"status","state":"Labeled","proposal":{"idea":"n-182","field":"status","value":"in-venture"},"taken":"88b2ee8a31f538a2"}
+{"idea":"n-183","field":"importance","state":"Labeled","proposal":{"idea":"n-183","field":"importance","value":"medium"},"taken":"bd92dbcdbc017d1d"}
+{"idea":"n-183","field":"scope","state":"Labeled","proposal":{"idea":"n-183","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["repository (repo)"]},"taken":"ffbefbb072d9b3f7"}
+{"idea":"n-183","field":"status","state":"Labeled","proposal":{"idea":"n-183","field":"status","value":"in-venture"},"taken":"3a051477edb89b13"}
+{"idea":"n-184","field":"importance","state":"Labeled","proposal":{"idea":"n-184","field":"importance","value":"medium"},"taken":"70edeff90cc53bf4"}
+{"idea":"n-184","field":"scope","state":"RoutedToScope","reason":"term confidentiality is missing; owning scope naive@risk-and-compliance","missing":[{"term":"confidentiality","owning":"naive@risk-and-compliance"}],"proposal":{"idea":"n-184","field":"scope","value":{"scope":"naive@risk-and-compliance","via":"appends-to"},"terms":["confidentiality"]},"taken":"116b10a7c43f717f"}
+{"idea":"n-184","field":"status","state":"Labeled","proposal":{"idea":"n-184","field":"status","value":"in-venture"},"taken":"c4b86e00d4dc607c"}
+{"idea":"n-185","field":"importance","state":"Labeled","proposal":{"idea":"n-185","field":"importance","value":"medium"},"taken":"883b2d42b4325411"}
+{"idea":"n-185","field":"scope","state":"Labeled","proposal":{"idea":"n-185","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["function"]},"taken":"1cfa7dfb39ce6792"}
+{"idea":"n-185","field":"status","state":"Labeled","proposal":{"idea":"n-185","field":"status","value":"in-venture"},"taken":"abfcf0cff957617e"}
+{"idea":"n-186","field":"importance","state":"Labeled","proposal":{"idea":"n-186","field":"importance","value":"low"},"taken":"41f263c45dc0fe0f"}
+{"idea":"n-186","field":"scope","state":"Labeled","proposal":{"idea":"n-186","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["integration"]},"taken":"edc9083fba81783e"}
+{"idea":"n-186","field":"status","state":"Labeled","proposal":{"idea":"n-186","field":"status","value":"in-venture"},"taken":"57061802c81b1949"}
+{"idea":"n-187","field":"importance","state":"Labeled","proposal":{"idea":"n-187","field":"importance","value":"medium"},"taken":"5048e6786e40cc44"}
+{"idea":"n-187","field":"scope","state":"RoutedToScope","reason":"term generator is missing; owning scope shared","missing":[{"term":"generator","owning":"shared"}],"proposal":{"idea":"n-187","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["generator"]},"taken":"7f34e4c69f9bdac5"}
+{"idea":"n-187","field":"status","state":"Labeled","proposal":{"idea":"n-187","field":"status","value":"in-venture"},"taken":"f917f06b7a74509f"}
+{"idea":"n-188","field":"importance","state":"Labeled","proposal":{"idea":"n-188","field":"importance","value":"high"},"taken":"13cd7879167345f1"}
+{"idea":"n-188","field":"scope","state":"Labeled","proposal":{"idea":"n-188","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["layer"]},"taken":"67bc902aeef123be"}
+{"idea":"n-188","field":"status","state":"Labeled","proposal":{"idea":"n-188","field":"status","value":"in-venture"},"taken":"f6148e16e77e2e3e"}
+{"idea":"n-189","field":"importance","state":"Labeled","proposal":{"idea":"n-189","field":"importance","value":"medium"},"taken":"f6e23684e0ce93f5"}
+{"idea":"n-189","field":"scope","state":"RoutedToScope","reason":"term plugin is missing; owning scope shared","missing":[{"term":"plugin","owning":"shared"}],"proposal":{"idea":"n-189","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["plugin"]},"taken":"f2c0fb8a25463d56"}
+{"idea":"n-189","field":"status","state":"Labeled","proposal":{"idea":"n-189","field":"status","value":"in-venture"},"taken":"233f25afce7533d2"}
+{"idea":"n-190","field":"importance","state":"Labeled","proposal":{"idea":"n-190","field":"importance","value":"medium"},"taken":"a68ef3bf732649cc"}
+{"idea":"n-190","field":"scope","state":"Labeled","proposal":{"idea":"n-190","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["gate"]},"taken":"d912dcf7124bb126"}
+{"idea":"n-190","field":"status","state":"Labeled","proposal":{"idea":"n-190","field":"status","value":"in-venture"},"taken":"9362fc275804de35"}
+{"idea":"n-191","field":"importance","state":"Labeled","proposal":{"idea":"n-191","field":"importance","value":"medium"},"taken":"908e71720bb96b41"}
+{"idea":"n-191","field":"scope","state":"RoutedToScope","reason":"term noun is missing; owning scope shared","missing":[{"term":"noun","owning":"shared"}],"proposal":{"idea":"n-191","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["noun"]},"taken":"71d57e6ddf5f9ae9"}
+{"idea":"n-191","field":"status","state":"Labeled","proposal":{"idea":"n-191","field":"status","value":"in-venture"},"taken":"451131df2842a270"}
+{"idea":"n-192","field":"importance","state":"Labeled","proposal":{"idea":"n-192","field":"importance","value":"medium"},"taken":"99b86a78aa718294"}
+{"idea":"n-192","field":"scope","state":"RoutedToScope","reason":"term term is missing; owning scope shared","missing":[{"term":"term","owning":"shared"}],"proposal":{"idea":"n-192","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["term"]},"taken":"7bece0e1198e1798"}
+{"idea":"n-192","field":"status","state":"Labeled","proposal":{"idea":"n-192","field":"status","value":"in-venture"},"taken":"0f74587b168c8448"}
+{"idea":"n-193","field":"importance","state":"Labeled","proposal":{"idea":"n-193","field":"importance","value":"medium"},"taken":"8e134b00b58dbc64"}
+{"idea":"n-193","field":"scope","state":"RoutedToScope","reason":"term glossary is missing; owning scope shared","missing":[{"term":"glossary","owning":"shared"}],"proposal":{"idea":"n-193","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["glossary"]},"taken":"94a7604442d45130"}
+{"idea":"n-193","field":"status","state":"Labeled","proposal":{"idea":"n-193","field":"status","value":"in-venture"},"taken":"e51511d3b6e9e70d"}
+{"idea":"n-194","field":"importance","state":"Labeled","proposal":{"idea":"n-194","field":"importance","value":"high"},"taken":"6e3ce96d961139ae"}
+{"idea":"n-194","field":"scope","state":"Labeled","proposal":{"idea":"n-194","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["venture development framework"]},"taken":"d80cac7d7e1701bb"}
+{"idea":"n-194","field":"status","state":"Labeled","proposal":{"idea":"n-194","field":"status","value":"in-venture"},"taken":"e44d5ec8852b0821"}
+{"idea":"n-195","field":"importance","state":"Labeled","proposal":{"idea":"n-195","field":"importance","value":"high"},"taken":"bbb927375514870b"}
+{"idea":"n-195","field":"scope","state":"RoutedToScope","reason":"term mission is missing; owning scope naive@strategy","missing":[{"term":"mission","owning":"naive@strategy"}],"proposal":{"idea":"n-195","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["mission"]},"taken":"3668c9447ec7b7c1"}
+{"idea":"n-195","field":"status","state":"Labeled","proposal":{"idea":"n-195","field":"status","value":"in-venture"},"taken":"1a863e50ed98a4b7"}
+{"idea":"n-196","field":"importance","state":"Labeled","proposal":{"idea":"n-196","field":"importance","value":"medium"},"taken":"8c61008a6aadf0bc"}
+{"idea":"n-196","field":"scope","state":"RoutedToScope","reason":"term mission is missing; owning scope naive@marketing-and-sales","missing":[{"term":"mission","owning":"naive@marketing-and-sales"}],"proposal":{"idea":"n-196","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["mission"]},"taken":"714b2cadfa5d0b26"}
+{"idea":"n-196","field":"status","state":"Labeled","proposal":{"idea":"n-196","field":"status","value":"in-venture"},"taken":"94b16f8c7fa7f159"}
+{"idea":"n-197","field":"importance","state":"Labeled","proposal":{"idea":"n-197","field":"importance","value":"medium"},"taken":"fa5aaeffdebf5f7b"}
+{"idea":"n-197","field":"scope","state":"RoutedToScope","reason":"term ethos is missing; owning scope naive@strategy","missing":[{"term":"ethos","owning":"naive@strategy"}],"proposal":{"idea":"n-197","field":"scope","value":{"scope":"naive@strategy","via":"appends-to"},"terms":["ethos"]},"taken":"8d35f0691c7a801d"}
+{"idea":"n-197","field":"status","state":"Labeled","proposal":{"idea":"n-197","field":"status","value":"in-venture"},"taken":"b3ed2484ca25d35b"}
+{"idea":"n-198","field":"importance","state":"Labeled","proposal":{"idea":"n-198","field":"importance","value":"medium"},"taken":"f61bd1bc71d91e9b"}
+{"idea":"n-198","field":"scope","state":"Labeled","proposal":{"idea":"n-198","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["template"]},"taken":"6c39d59ce786097a"}
+{"idea":"n-198","field":"status","state":"Labeled","proposal":{"idea":"n-198","field":"status","value":"in-venture"},"taken":"984f152c2372318e"}
+{"idea":"n-199","field":"importance","state":"Labeled","proposal":{"idea":"n-199","field":"importance","value":"medium"},"taken":"24e2ea58a4650de4"}
+{"idea":"n-199","field":"scope","state":"RoutedToScope","reason":"term README is missing; owning scope shared","missing":[{"term":"README","owning":"shared"}],"proposal":{"idea":"n-199","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["README"]},"taken":"71ed6a4da3ebe611"}
+{"idea":"n-199","field":"status","state":"Labeled","proposal":{"idea":"n-199","field":"status","value":"in-venture"},"taken":"d15a1acdcae3e946"}
+{"idea":"n-200","field":"importance","state":"Labeled","proposal":{"idea":"n-200","field":"importance","value":"high"},"taken":"f39045556791d70a"}
+{"idea":"n-200","field":"scope","state":"Labeled","proposal":{"idea":"n-200","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["decision"]},"taken":"5b6fda6c0c241d24"}
+{"idea":"n-200","field":"status","state":"Labeled","proposal":{"idea":"n-200","field":"status","value":"in-venture"},"taken":"4acc51afd2333269"}
+{"idea":"n-201","field":"importance","state":"Labeled","proposal":{"idea":"n-201","field":"importance","value":"medium"},"taken":"5e81ff1a12a28638"}
+{"idea":"n-201","field":"scope","state":"RoutedToScope","reason":"term docket is missing; owning scope shared","missing":[{"term":"docket","owning":"shared"}],"proposal":{"idea":"n-201","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["docket"]},"taken":"7a2d31e8d0b3125e"}
+{"idea":"n-201","field":"status","state":"Labeled","proposal":{"idea":"n-201","field":"status","value":"in-venture"},"taken":"6f0e1af9d6fb2856"}
+{"idea":"n-202","field":"importance","state":"Labeled","proposal":{"idea":"n-202","field":"importance","value":"medium"},"taken":"51f04950fc224b06"}
+{"idea":"n-202","field":"relation","state":"Labeled","proposal":{"idea":"n-202","field":"relation","value":[{"relation":"supports","to":"n-201"}]},"taken":"014d8bdd44b4b578"}
+{"idea":"n-202","field":"scope","state":"Labeled","proposal":{"idea":"n-202","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["evidence"]},"taken":"54fa9a3711107906"}
+{"idea":"n-202","field":"status","state":"Labeled","proposal":{"idea":"n-202","field":"status","value":"in-venture"},"taken":"2e74b806742cebb2"}
+{"idea":"n-203","field":"importance","state":"Labeled","proposal":{"idea":"n-203","field":"importance","value":"medium"},"taken":"f826862630b4e16f"}
+{"idea":"n-203","field":"scope","state":"RoutedToScope","reason":"term frame is missing; owning scope shared","missing":[{"term":"frame","owning":"shared"}],"proposal":{"idea":"n-203","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["frame"]},"taken":"f13ab468874a3d2b"}
+{"idea":"n-203","field":"status","state":"Labeled","proposal":{"idea":"n-203","field":"status","value":"in-venture"},"taken":"66e8f91cf1c42eb0"}
+{"idea":"n-204","field":"importance","state":"Labeled","proposal":{"idea":"n-204","field":"importance","value":"medium"},"taken":"29ed422bef683007"}
+{"idea":"n-204","field":"relation","state":"Labeled","proposal":{"idea":"n-204","field":"relation","value":[{"relation":"related","to":"n-161"}]},"taken":"00c88ba0654fd70f"}
+{"idea":"n-204","field":"scope","state":"Labeled","proposal":{"idea":"n-204","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["strategic foundation"]},"taken":"ec916e9fb39d1b86"}
+{"idea":"n-204","field":"status","state":"Labeled","proposal":{"idea":"n-204","field":"status","value":"in-venture"},"taken":"607fb45a3009806a"}
+{"idea":"n-205","field":"importance","state":"Labeled","proposal":{"idea":"n-205","field":"importance","value":"high"},"taken":"8468b76138d29496"}
+{"idea":"n-205","field":"scope","state":"Labeled","proposal":{"idea":"n-205","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["customer@marketing-and-sales"]},"taken":"3890553201d14235"}
+{"idea":"n-205","field":"status","state":"Labeled","proposal":{"idea":"n-205","field":"status","value":"in-venture"},"taken":"0ac2715aa38b8547"}
+{"idea":"n-206","field":"importance","state":"Labeled","proposal":{"idea":"n-206","field":"importance","value":"medium"},"taken":"a0f7db20d9f52903"}
+{"idea":"n-206","field":"scope","state":"Labeled","proposal":{"idea":"n-206","field":"scope","value":{"scope":"naive@marketing-and-sales","via":"appends-to"},"terms":["market"]},"taken":"542fdc4d1de5fa67"}
+{"idea":"n-206","field":"status","state":"Labeled","proposal":{"idea":"n-206","field":"status","value":"in-venture"},"taken":"6a0a2ee3951a8f36"}
+{"idea":"n-207","field":"importance","state":"Labeled","proposal":{"idea":"n-207","field":"importance","value":"medium"},"taken":"1fceb296a4566487"}
+{"idea":"n-207","field":"scope","state":"RoutedToScope","reason":"term validation is missing; owning scope shared","missing":[{"term":"validation","owning":"shared"}],"proposal":{"idea":"n-207","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["validation"]},"taken":"d56e623698fb9d52"}
+{"idea":"n-207","field":"status","state":"Labeled","proposal":{"idea":"n-207","field":"status","value":"in-venture"},"taken":"f2b901faa40ffc92"}
+{"idea":"n-208","field":"importance","state":"Labeled","proposal":{"idea":"n-208","field":"importance","value":"high"},"taken":"0721f97a94c3b75d"}
+{"idea":"n-208","field":"scope","state":"Labeled","proposal":{"idea":"n-208","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["draft"]},"taken":"719c235202c14de2"}
+{"idea":"n-208","field":"status","state":"Labeled","proposal":{"idea":"n-208","field":"status","value":"in-venture"},"taken":"feffb9edd9730c6d"}
+{"idea":"n-209","field":"importance","state":"Labeled","proposal":{"idea":"n-209","field":"importance","value":"medium"},"taken":"2bfa7b1da54efbee"}
+{"idea":"n-209","field":"scope","state":"Labeled","proposal":{"idea":"n-209","field":"scope","value":{"scope":"naive@products","via":"appends-to"},"terms":["product"]},"taken":"120ce9168942d80b"}
+{"idea":"n-209","field":"status","state":"Labeled","proposal":{"idea":"n-209","field":"status","value":"in-venture"},"taken":"e1d8cb291b335378"}
+{"idea":"n-210","field":"importance","state":"Labeled","proposal":{"idea":"n-210","field":"importance","value":"medium"},"taken":"58ea307161f37706"}
+{"idea":"n-210","field":"scope","state":"RoutedToScope","reason":"term raw source is missing; owning scope shared","missing":[{"term":"raw source","owning":"shared"}],"proposal":{"idea":"n-210","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["raw source"]},"taken":"ca8162c7f517b489"}
+{"idea":"n-210","field":"status","state":"Labeled","proposal":{"idea":"n-210","field":"status","value":"in-venture"},"taken":"e2ea0f68e250cb0f"}
+{"idea":"n-211","field":"importance","state":"Labeled","proposal":{"idea":"n-211","field":"importance","value":"medium"},"taken":"ade33bfc53a9306e"}
+{"idea":"n-211","field":"scope","state":"Labeled","proposal":{"idea":"n-211","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["workspace"]},"taken":"4242c7155121aaca"}
+{"idea":"n-211","field":"status","state":"Labeled","proposal":{"idea":"n-211","field":"status","value":"in-venture"},"taken":"779f5b20cc697608"}
+{"idea":"n-212","field":"importance","state":"Labeled","proposal":{"idea":"n-212","field":"importance","value":"medium"},"taken":"82402fff74149ac2"}
+{"idea":"n-212","field":"scope","state":"Labeled","proposal":{"idea":"n-212","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["harness"]},"taken":"5e75fe0dbcbbea57"}
+{"idea":"n-212","field":"status","state":"Labeled","proposal":{"idea":"n-212","field":"status","value":"in-venture"},"taken":"f89f132f8c7830e2"}
+{"idea":"n-213","field":"importance","state":"Labeled","proposal":{"idea":"n-213","field":"importance","value":"medium"},"taken":"d6260afca9fd80af"}
+{"idea":"n-213","field":"scope","state":"RoutedToScope","reason":"term source of truth is missing; owning scope shared","missing":[{"term":"source of truth","owning":"shared"}],"proposal":{"idea":"n-213","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["source of truth"]},"taken":"8aa797e235fcdc7b"}
+{"idea":"n-213","field":"status","state":"Labeled","proposal":{"idea":"n-213","field":"status","value":"in-venture"},"taken":"f2cc407c8f148722"}
+{"idea":"n-214","field":"importance","state":"Labeled","proposal":{"idea":"n-214","field":"importance","value":"medium"},"taken":"741dc87c5bcd74a1"}
+{"idea":"n-214","field":"scope","state":"Labeled","proposal":{"idea":"n-214","field":"scope","value":{"scope":"shared","via":"amends"},"terms":["founder"]},"taken":"8ecd0ef8e8a4e359"}
+{"idea":"n-214","field":"status","state":"Labeled","proposal":{"idea":"n-214","field":"status","value":"in-venture"},"taken":"60ebb54ab2c2fd51"}
+{"idea":"n-215","field":"importance","state":"Labeled","proposal":{"idea":"n-215","field":"importance","value":"medium"},"taken":"80bfd23104db0e44"}
+{"idea":"n-215","field":"scope","state":"Labeled","proposal":{"idea":"n-215","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["console"]},"taken":"0de8361877a29fb4"}
+{"idea":"n-215","field":"status","state":"Labeled","proposal":{"idea":"n-215","field":"status","value":"in-venture"},"taken":"a5236e62ba7ad543"}
+{"idea":"n-216","field":"importance","state":"Labeled","proposal":{"idea":"n-216","field":"importance","value":"medium"},"taken":"6161dcb7ce4a5909"}
+{"idea":"n-216","field":"scope","state":"Labeled","proposal":{"idea":"n-216","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["decision"]},"taken":"99e166f4ad2c4a90"}
+{"idea":"n-216","field":"status","state":"Labeled","proposal":{"idea":"n-216","field":"status","value":"in-venture"},"taken":"7b038b88a7fdd9c0"}
+{"idea":"n-217","field":"importance","state":"Labeled","proposal":{"idea":"n-217","field":"importance","value":"medium"},"taken":"19e49aad122cb202"}
+{"idea":"n-217","field":"scope","state":"Labeled","proposal":{"idea":"n-217","field":"scope","value":{"scope":"shared","via":"appends-to"},"terms":["method"]},"taken":"451e6126e258da25"}
+{"idea":"n-217","field":"status","state":"Labeled","proposal":{"idea":"n-217","field":"status","value":"in-venture"},"taken":"0232695132914468"}
+{"idea":"n-218","field":"importance","state":"Labeled","proposal":{"idea":"n-218","field":"importance","value":"medium"},"taken":"b8a2c9622a17a565"}
+{"idea":"n-218","field":"scope","state":"Labeled","proposal":{"idea":"n-218","field":"scope","value":{"scope":"naive@products","via":"appends-to"},"terms":["Product Anatomy"]},"taken":"9cf69839c3c92857"}
+{"idea":"n-218","field":"status","state":"Labeled","proposal":{"idea":"n-218","field":"status","value":"in-venture"},"taken":"a3bb754e4c7049fb"}

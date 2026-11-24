@@ -1,0 +1,36 @@
+{
+ "venture": "anthropic",
+ "record_type": "capability-set",
+ "meaning": "a product offers the capability; 'how' says whether by its own model or a supplier's",
+ "capabilities": [
+  {
+   "record_type": "has-capability",
+   "product": "anthropic.cowork",
+   "capability": "speech-audio",
+   "what": "Voice mode in the Claude mobile apps: speak and hear replies",
+   "since": {
+    "value": "2025-05-27 (beta, English)",
+    "ref": {
+     "id": "techcrunch-2025-05-27-claude-voice"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   },
+   "how": {
+    "value": "supplied: ElevenLabs listed as text-to-speech subcontractor",
+    "ref": {
+     "id": "decoder-2025-05-31-claude-elevenlabs"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01",
+    "note": "Anthropic lists the subcontractor; that it has no own speech model is the article's inference."
+   },
+   "speech_recognition": {
+    "unknown": true,
+    "reason": "which model transcribes speech is not stated",
+    "as_of": "2026-11-01"
+   },
+   "note": "Voice mode ships in the Claude apps, which the S-1 groups with Cowork (merging with Claude.ai)."
+  }
+ ]
+}

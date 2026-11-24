@@ -1,0 +1,16 @@
+{
+  "name": "@reflect/ontology-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The ontology program's scripts, from tchjhnsn/mentura: ledger import, reconcile runner, agreement and closure reports, preservation coverage. Naive is a dependency (tchjhnsn/naive).",
+  "type": "module",
+  "engines": { "node": ">=22.19" },
+  "scripts": { "test": "node test.ts" },
+  "dependencies": {
+    "naive-framework": "git+https://github.com/tchjhnsn/naive.git#3fd21c3a189fce6b7e7e7eeb9ece030102ee432e"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3"
+  }
+}

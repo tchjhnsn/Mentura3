@@ -1,0 +1,12 @@
+{
+ "id": "claude-docs-managed-agents",
+ "kind": "reference",
+ "title": "Claude Platform docs: Managed Agents",
+ "locator": "https://platform.claude.com/docs/en/managed-agents/",
+ "tier": "primary",
+ "read": false,
+ "accessed": "2026-11-01",
+ "quotes": [
+  "(search summary) The Console walks you through the fields of an agent definition and displays the matching API request; prerequisites are a Console account and an API key"
+ ]
+}

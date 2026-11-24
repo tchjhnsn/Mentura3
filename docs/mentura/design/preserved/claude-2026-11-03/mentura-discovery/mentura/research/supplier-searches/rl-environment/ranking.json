@@ -1,0 +1,38 @@
+{
+ "need": "need.rl-environment",
+ "ranking": [
+  {
+   "id": "prime-intellect-verifiers",
+   "passes_constraints": true,
+   "score": 31,
+   "max": 34
+  },
+  {
+   "id": "gymnasium",
+   "passes_constraints": true,
+   "score": 20,
+   "max": 34
+  },
+  {
+   "id": "build-own",
+   "passes_constraints": true,
+   "score": 18,
+   "max": 34
+  },
+  {
+   "id": "mechanize",
+   "passes_constraints": false,
+   "score": 13,
+   "max": 34
+  }
+ ],
+ "not_assessed": [
+  "bespoke-labs",
+  "idler",
+  "mercor",
+  "surge",
+  "handshake",
+  "turing"
+ ],
+ "why_not": "sell to frontier labs; contact pricing; same K1 and K3 problem as Mechanize, not checked one by one"
+}

@@ -1,0 +1,39 @@
+{
+  "id": "openai.codex",
+  "kind": "product",
+  "parent": "openai",
+  "name": "Codex (cloud agent and CLI)",
+  "job": {
+    "value": "Write, test and change code on a developer's behalf.",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01",
+    "note": "Our wording."
+  },
+  "served": {
+    "value": "Software developers",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-11-01"
+  },
+  "offering": {
+    "value": "Included in ChatGPT plans and via API",
+    "ref": {
+      "id": "wikipedia-openai-2026-11-01",
+      "locator": "Products"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "OpenAI does not publish revenue by product.",
+    "as_of": "2026-11-01"
+  }
+}

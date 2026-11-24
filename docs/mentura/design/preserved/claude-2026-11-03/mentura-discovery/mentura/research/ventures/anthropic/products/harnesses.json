@@ -1,0 +1,39 @@
+{
+  "id": "anthropic.harnesses",
+  "kind": "product",
+  "parent": "anthropic.platform",
+  "name": "Harnesses (Agent SDK, Claude Managed Agents)",
+  "job": {
+    "value": "Run agents in production with environment, credentials, memory and orchestration.",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Business"
+    },
+    "evidence": "inferred",
+    "as_of": "2026-10-26",
+    "note": "Our wording of the S-1's description."
+  },
+  "served": {
+    "value": "Developers building agents",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Business"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "offering": {
+    "value": "SDK and managed service",
+    "ref": {
+      "id": "anthropic-s-1-2026",
+      "locator": "Business"
+    },
+    "evidence": "demonstrated",
+    "as_of": "2026-10-26"
+  },
+  "revenue_share": {
+    "unknown": true,
+    "reason": "The S-1 reports revenue as consumption and subscription, not by product.",
+    "as_of": "2026-10-26"
+  }
+}

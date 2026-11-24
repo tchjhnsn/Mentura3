@@ -1,0 +1,15 @@
+{
+  "number": 155,
+  "title": "Decision EE-101: language models write, Jev judges and routes, code checks",
+  "body": "Adds decision EE-101 to `docs/decisions/decisions.json`: language models write, Jev judges and routes, and code checks anything checkable. One decision per PR.\n\nBuilt by cloud agent bc-9b29062d (its PR tool failed with `[unavailable] Error`, so this was opened by Grok Bot at Torian's direction). Tests pass on the branch.",
+  "headRefOid": "e6a26f02e5df7444e267302e8b28314a8df12fc1",
+  "baseRefName": "framework",
+  "baseRefOid": "cb502f9b8a68b8d90c72440e5e52a732c1bcef6e",
+  "files": [
+    {
+      "path": "docs/decisions/decisions.json",
+      "additions": 12,
+      "deletions": 0
+    }
+  ]
+}

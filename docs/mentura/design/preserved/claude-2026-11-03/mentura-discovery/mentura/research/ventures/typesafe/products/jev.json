@@ -1,0 +1,108 @@
+{
+ "id": "typesafe.jev",
+ "kind": "product",
+ "parent": "typesafe",
+ "name": "Jev (System One model)",
+ "offering": {
+  "value": "Decision model with predefined typed outputs (cardinality up to 255); no string generation; early access",
+  "ref": {
+   "id": "typesafe-2026-09-15-jev-launch",
+   "locator": "body"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ },
+ "training": {
+  "method": {
+   "value": "Reinforcement Learning for Calibrated Decisions (RLCD), with a new architecture and a parallel sampler",
+   "ref": {
+    "id": "typesafe-2026-09-15-jev-launch",
+    "locator": "table"
+   },
+   "evidence": "demonstrated",
+   "as_of": "2026-11-01"
+  },
+  "objective": {
+   "value": "Calibrated decisions: answers with epistemically honest probabilities on System One tasks",
+   "ref": {
+    "id": "typesafe-2026-09-15-jev-launch",
+    "locator": "table"
+   },
+   "evidence": "demonstrated",
+   "as_of": "2026-11-01"
+  },
+  "reward_or_loss": {
+   "unknown": true,
+   "reason": "not stated; FAQ entry 'Why was a new training algorithm needed?' has no answer",
+   "as_of": "2026-11-01"
+  },
+  "data": {
+   "unknown": true,
+   "reason": "not stated",
+   "as_of": "2026-11-01"
+  },
+  "base_model": {
+   "unknown": true,
+   "reason": "not stated; 'Is Jev just a smaller LLM?' unanswered",
+   "as_of": "2026-11-01"
+  },
+  "calibration_metric": {
+   "unknown": true,
+   "reason": "not stated",
+   "as_of": "2026-11-01"
+  }
+ },
+ "pricing": {
+  "value": "Input $0.042 per million tokens; output free",
+  "ref": {
+   "id": "typesafe-2026-09-15-jev-launch",
+   "locator": "pricing"
+  },
+  "evidence": "demonstrated",
+  "as_of": "2026-11-01"
+ },
+ "claims": [
+  {
+   "value": "70 to 500 ms end-to-end, run from laptops on the US West Coast",
+   "ref": {
+    "id": "typesafe-2026-09-15-jev-launch",
+    "locator": "body"
+   },
+   "evidence": "demonstrated",
+   "as_of": "2026-11-01",
+   "note": "vendor-reported"
+  },
+  {
+   "value": "Reference answer = average of GPT-6 Astra and Fable 5.1, which TypeSafe says biases toward OpenAI and Anthropic",
+   "ref": {
+    "id": "typesafe-2026-09-15-jev-launch",
+    "locator": "body"
+   },
+   "evidence": "demonstrated",
+   "as_of": "2026-11-01"
+  },
+  {
+   "value": "Public benchmark results not provided",
+   "ref": {
+    "id": "typesafe-2026-09-15-jev-launch",
+    "locator": "FAQ"
+   },
+   "evidence": "demonstrated",
+   "as_of": "2026-11-01"
+  }
+ ],
+ "date": {
+  "contested": true,
+  "values": [
+   {
+    "value": "2026-09-15",
+    "note": "article body"
+   },
+   {
+    "value": "2026-10-28",
+    "note": "page metadata"
+   }
+  ],
+  "as_of": "2026-11-01"
+ }
+}

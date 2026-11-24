@@ -1,0 +1,4 @@
+time	step	choice	why	evidence
+2026-11-04T18:55:00Z	ruling	close stage 1 with what Claude can reach; drop S1-PR7	Torian 18:52Z: "Forget whatever was on the Mac or in the Grokbot memory. Whatever you have access to is what we will continue with."	thread message, Nov 4 18:52Z
+2026-11-04T18:55:00Z	gates	tick G8, G9, G12, G13, G15 with the rulings already taken	the plan's checkboxes lagged the rulings	PRs #202, #183 to #186, #187, #173
+2026-11-04T18:55:00Z	coverage	leave the out-of-reach rows on the coverage list	marking them covered would claim a copy that does not exist	node scripts/preservation-coverage.ts prints 36

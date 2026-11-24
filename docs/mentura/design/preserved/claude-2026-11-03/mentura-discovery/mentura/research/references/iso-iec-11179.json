@@ -1,0 +1,14 @@
+{
+ "id": "iso-iec-11179",
+ "title": "ISO/IEC 11179 Metadata registries",
+ "authors": "ISO/IEC JTC 1/SC 32",
+ "venue": "parts 1-35; 11179-31:2023",
+ "url": "https://en.wikipedia.org/wiki/ISO/IEC_11179",
+ "retrieved": "2026-11-01",
+ "tier": "secondary (Wikipedia, Aristotle MDR guidance)",
+ "quotes": [
+  "a data element concept pairs an object class with a property",
+  "every DEC must have exactly one association with a conceptual domain (Aristotle MDR guidance)"
+ ],
+ "read": "a data element represents a data element concept; whether every data element must link to one not confirmed"
+}

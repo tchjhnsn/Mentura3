@@ -1,0 +1,11 @@
+{
+ "id": "json-schema-2020-12",
+ "title": "JSON Schema: A Media Type for Describing JSON Documents (draft 2020-12)",
+ "authors": "Wright, Andrews, Hutton, Dennis",
+ "venue": "json-schema.org, 2020-12",
+ "url": "https://json-schema.org/draft/2020-12/json-schema-core",
+ "retrieved": "2026-11-01",
+ "tier": "not opened this session; Naive's schemas use it",
+ "quotes": [],
+ "read": "data schema sense"
+}

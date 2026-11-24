@@ -1,0 +1,100 @@
+{
+  "number": 130,
+  "title": "Discovery interview workflow: leads and prospects, private contacts, dossiers, meetings, packet",
+  "body": "Records and tooling for Mentura's discovery interviews with founders, following the discovery interview playbook of 2026-10-31.\n\n## What it adds\n- **Records** in the validation package:\n  - **`discovery-lead`**: everyone imported is a lead (status `new`). A lead becomes a prospect only when a person qualifies it (`qualified_by`), as in common CRM usage. Each lead carries an opaque person id, ICP, role (founder, builder, partner, connector, investor), how they were found, money stage, an outreach log, and a `fit` rank that agents may draft but never confirm.\n  - **`discovery-contact`**: lives in `_private/people/` with `private: true` and holds the real name.\n  - **`discovery-dossier`**: facts, each sourced, kept as drafts until a person confirms them.\n  - **`discovery-meeting`**: the script tagged to H1/H2/price-anchor, the prediction, the recording, the link to the interview.\n- **`schema/discovery.ts`** commands:\n  - `import` reads LinkedIn's Connections.csv export or a connections list the founder compiled (name, headline, profile_url, connected_on).\n  - `plan`\n  - `packet [--names]`: a view that keeps checked facts apart from drafts and gives every fact a source.\n  - `funnel`\n  - `check`\n- **`check` fails on:**\n  - a lead past `new` with no person who qualified it;\n  - a fit rank or qualification made by the agent that ranked it;\n  - dossier facts an agent sourced from linkedin.com, or facts confirmed by the agent that compiled them;\n  - names outside `_private/`;\n  - pitch or hypothetical-price questions;\n  - a held meeting with no prediction;\n  - a dropped lead with no reason.\n- **Router:** records stored only under `_private/` are never routed, so MCP and the API cannot reach them.\n- **Other updates:** need-now priors, regenerated record types and ROUTES.md, READMEs, and the problem-validation skill.\n\nNo lead data is in this branch. Real leads stay in a working venture outside the repositories.\n\n## Tests\n- `node schema/discovery-test.ts`: all pass, including cases that must fail and a check that the contact has no route.\n- `node test.mjs`: everything passes except the Claude Code plugin icon check, which already fails on main.\n\nNeeds pstack review before merge. Torian merges.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nhttps://claude.ai/code/session_01LJHEfuUZRSimz7zJAZ7ru7",
+  "headRefOid": "faaa1bdf336eee6b976abe36eee06fdc49b0a130",
+  "baseRefName": "main",
+  "baseRefOid": "752c483e94b0e840e904ac48a3eb6325ce117c8f",
+  "files": [
+    {
+      "path": "docs/ontology.json",
+      "additions": 21,
+      "deletions": 0
+    },
+    {
+      "path": "docs/ontology.md",
+      "additions": 3,
+      "deletions": 0
+    },
+    {
+      "path": "docs/reference/ROUTES.md",
+      "additions": 8,
+      "deletions": 2
+    },
+    {
+      "path": "interface/router.mjs",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "packages/validation/package.json",
+      "additions": 33,
+      "deletions": 5
+    },
+    {
+      "path": "purpose/kits/validation/README.md",
+      "additions": 24,
+      "deletions": 0
+    },
+    {
+      "path": "purpose/kits/validation/skills/problem-validation/SKILL.md",
+      "additions": 9,
+      "deletions": 0
+    },
+    {
+      "path": "schema/README.md",
+      "additions": 1,
+      "deletions": 0
+    },
+    {
+      "path": "schema/data-model.json",
+      "additions": 81,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery-contact.schema.json",
+      "additions": 28,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery-dossier.schema.json",
+      "additions": 57,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery-lead.schema.json",
+      "additions": 190,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery-meeting.schema.json",
+      "additions": 47,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery-test.ts",
+      "additions": 170,
+      "deletions": 0
+    },
+    {
+      "path": "schema/discovery.ts",
+      "additions": 334,
+      "deletions": 0
+    },
+    {
+      "path": "schema/need-now.json",
+      "additions": 40,
+      "deletions": 0
+    },
+    {
+      "path": "schema/types/records.d.ts",
+      "additions": 143,
+      "deletions": 0
+    },
+    {
+      "path": "test.mjs",
+      "additions": 2,
+      "deletions": 0
+    }
+  ]
+}

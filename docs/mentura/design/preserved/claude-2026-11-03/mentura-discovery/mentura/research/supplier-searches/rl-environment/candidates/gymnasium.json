@@ -1,0 +1,33 @@
+{
+ "name": "Farama Gymnasium",
+ "venture": "farama-foundation",
+ "kind": "open-source API standard",
+ "K": {
+  "K1": "pass: runs locally",
+  "K2": "pass: MIT",
+  "K3": "pass: free"
+ },
+ "R": {
+  "R1": 2,
+  "R2": 0,
+  "R3": 1,
+  "R4": 1,
+  "R5": 2
+ },
+ "evidence": {
+  "R1": "any reward in step()",
+  "R2": "reset/step over action and observation spaces; environment families are control, Atari, MuJoCo, toy text; no LLM support stated",
+  "R3": "standard API, but LLM trainers expect other interfaces",
+  "R4": "simple API, but we'd write the text adapter",
+  "R5": "maintained by the Farama Foundation"
+ },
+ "refs": [
+  "https://github.com/Farama-Foundation/Gymnasium"
+ ],
+ "id": "gymnasium",
+ "passes_constraints": true,
+ "score": 20,
+ "max": 34,
+ "as_of": "2026-11-01T05:55:00Z",
+ "note": "scores 0-2 per requirement from the evidence listed; proposed"
+}

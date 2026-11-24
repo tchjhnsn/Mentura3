@@ -1,0 +1,39 @@
+{
+ "venture": "nvidia",
+ "record_type": "researches-set",
+ "meaning": "the venture builds models or methods in the area (not: a product merely offers it)",
+ "links": [
+  {
+   "record_type": "researches",
+   "venture": "nvidia",
+   "area": "world-models",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "Cosmos",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  },
+  {
+   "record_type": "researches",
+   "venture": "nvidia",
+   "area": "computing-hardware",
+   "share": {
+    "unknown": true,
+    "reason": "no basis yet",
+    "as_of": "2026-11-01"
+   },
+   "basis": {
+    "value": "GPUs",
+    "ref": null,
+    "evidence": "demonstrated",
+    "as_of": "2026-11-01"
+   }
+  }
+ ]
+}
