@@ -5,7 +5,6 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { report } from "./agreement-report.ts";
 import { GOLDEN, IDEAS, PROPOSALS, STATE, readProposals } from "./reconcile-ideas.ts";
-import { naiveTs } from "./naive.ts";
 
 const repo = new URL("..", import.meta.url).pathname;
 const script = join(repo, "scripts/agreement-report.ts");
@@ -14,7 +13,7 @@ const at = (p: string): string => join(root, p);
 const write = (p: string, text: string): void => { mkdirSync(dirname(at(p)), { recursive: true }); writeFileSync(at(p), text); };
 const ids = ["n-001", "n-002", "n-003", "n-004", "n-005"];
 const run = (...args: string[]): { status: number | null; out: string } => {
-  const r = spawnSync(process.execPath, [...naiveTs, script, "--root", root, "--records", root, ...args], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [script, "--root", root, "--records", root, ...args], { encoding: "utf8" });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 };
 const reportText = (): string => { const f = readdirSync(at(GOLDEN)).find((n) => n.startsWith("AGREEMENT_"))!; return readFileSync(at(join(GOLDEN, f)), "utf8"); };
@@ -107,7 +106,7 @@ try {
   // The committed report against the company's records, which live in the store since EE-118 step 9c: it runs when
   // MENTURA_RECORDS names an export (platform/connectors/store-export.ts), and says so when it does not.
   if (process.env.MENTURA_RECORDS) {
-    const real = spawnSync(process.execPath, [...naiveTs, script, "--check"], { cwd: repo, encoding: "utf8" });
+    const real = spawnSync(process.execPath, [script, "--check"], { cwd: repo, encoding: "utf8" });
     assert.equal(real.status, 0, `the committed report matches a fresh run: ${real.stdout}${real.stderr}`);
   } else console.log("not checked: the committed report against the company's records (set MENTURA_RECORDS to an export)");
   console.log("agreement report: zero rulings give no percentage, 3 of 4 gives 75 percent, an edited ruling and each stale state fail --check, the committed report is fresh");

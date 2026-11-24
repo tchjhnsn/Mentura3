@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { QUEUE, STATE, TRANSITIONS } from "./reconcile-ideas.ts";
 import { recordsIn, schemaFile } from "naive-framework/src/records/index.mjs";
-import { naivePath, naiveTs } from "./naive.ts";
+import { naivePath } from "./naive.ts";
 
 const repo = new URL("..", import.meta.url).pathname;
 const runner = join(repo, "scripts/reconcile-ideas.ts");
@@ -24,7 +24,7 @@ const idea = (id: string, text: string, extra: object = {}): void => write(`${id
 
 const covered = new Set<string>();
 const reconcile = (): { status: number | null; out: string; steps: string[] } => {
-  const r = spawnSync(process.execPath, [...naiveTs, runner, "--root", root, "--records", root, "--proposals", proposals, "--naive", root], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [runner, "--root", root, "--records", root, "--proposals", proposals, "--naive", root], { encoding: "utf8" });
   const out = `${r.stdout}${r.stderr}`;
   const steps = [...out.matchAll(/^(\S+): (.+?) -> (.+?) \((.+)\)$/gm)].map((m) => {
     const row = TRANSITIONS.find((t) => t.when === m[4]);
@@ -168,11 +168,11 @@ try {
   // The committed state against the company's records, which live in the store since EE-118 step 9c: it runs when
   // MENTURA_RECORDS names an export (platform/connectors/store-export.ts), and says so when it does not.
   if (process.env.MENTURA_RECORDS) {
-    const real = spawnSync(process.execPath, [...naiveTs, runner], { cwd: repo, encoding: "utf8" });
+    const real = spawnSync(process.execPath, [runner], { cwd: repo, encoding: "utf8" });
     assert.equal(real.status, 0, real.stderr);
     assert.match(real.stdout, /^\d+ ideas, \d+ proposals, \d+ labels( \([^)]*\))?, 0 transitions; no change$/m, "the committed state and queue are fresh for the committed proposals");
   } else console.log("not checked: the committed state against the company's records (set MENTURA_RECORDS to an export)");
-  const missing = spawnSync(process.execPath, [...naiveTs, runner, "--root", root], { encoding: "utf8", env: { ...process.env, MENTURA_RECORDS: "" } });
+  const missing = spawnSync(process.execPath, [runner, "--root", root], { encoding: "utf8", env: { ...process.env, MENTURA_RECORDS: "" } });
   assert.equal(missing.status, 2, "without a records folder the runner stops");
   assert.match(missing.stderr, /store-export\.ts/, "and says how to export one");
   console.log("reconcile runner: all pass");

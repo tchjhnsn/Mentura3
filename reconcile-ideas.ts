@@ -2,7 +2,7 @@
 // and the Lean agreement check, and moves each label through the idea record statechart, Appendix E of
 // docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. It makes no model or network call: proposals are input.
 //
-//   node --import ./scripts/naive-ts.ts scripts/reconcile-ideas.ts --records <dir> [--root <dir>] [--proposals <file>] [--naive <dir>]
+//   node scripts/reconcile-ideas.ts --records <dir> [--root <dir>] [--proposals <file>] [--naive <dir>]
 //
 // --records is a folder exported from the company tenant's store, holding the idea records (MENTURA_RECORDS works
 // too; see scripts/records-folder.ts). --root is the repository with the rulings and state (this one). --naive is the Naive checkout whose
@@ -22,10 +22,10 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import { run } from "naive-framework/src/terms/engine.ts";
-import { disagreements, readLean } from "naive-framework/src/terms/lean-agreement.ts";
-import type { LinkGraph } from "naive-framework/src/terms/levels.ts";
-import { typedLink } from "naive-framework/src/terms/terms.ts";
+import { run } from "naive-framework/src/terms/engine.mjs";
+import { disagreements, readLean } from "naive-framework/src/terms/lean-agreement.mjs";
+import type { LinkGraph } from "naive-framework/src/terms/levels.mjs";
+import { typedLink } from "naive-framework/src/terms/terms.mjs";
 import { recordsIn } from "naive-framework/src/records/index.mjs";
 import { naiveRoot } from "./naive.ts";
 import { IDEAS, ideasIn, recordsFolder } from "./records-folder.ts";

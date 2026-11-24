@@ -1,7 +1,7 @@
 // The agreement report (S3-PR4): how often a gated label matches Torian's golden ruling, per field, with and
 // without the symbolic checks, the spread across scopes and what limits the number.
 //
-//   node --import ./scripts/naive-ts.ts scripts/agreement-report.ts --records <dir> [--root <dir>] [--check]
+//   node scripts/agreement-report.ts --records <dir> [--root <dir>] [--check]
 //
 // --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see scripts/records-folder.ts).
 // (the --import flag lets Node load Naive's TypeScript from node_modules, through the reconcile runner; temporary)
