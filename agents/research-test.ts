@@ -6,7 +6,7 @@
 // the run's spans and provenance lines share the caller's trace and check-traces passes; the CLI takes a venture's
 // folder and refuses an unstaffed researcher with the team-plan entry to add.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/research-test.ts
+//   node platform/agents/research-test.ts
 
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -18,10 +18,10 @@ import { AIMessage } from "@langchain/core/messages";
 import { fakeModel } from "@langchain/core/testing";
 import { span } from "naive-framework/src/core/instrumentation.mjs";
 import { entries, record } from "naive-framework/src/core/provenance.mjs";
-import { signalId } from "naive-framework/src/core/signal-id.ts";
-import { planRecipe } from "naive-framework/src/engine/recipes/eval-set.ts";
+import { signalId } from "naive-framework/src/core/signal-id.mjs";
+import { planRecipe } from "naive-framework/src/engine/recipes/eval-set.mjs";
 import { call } from "naive-framework/src/router/router.mjs";
-import { naivePath, naiveTs } from "../../scripts/naive.ts";
+import { naivePath } from "../../scripts/naive.ts";
 import type { ModelSource } from "./function-agent.ts";
 import { runIdOf } from "./function-agent.ts";
 import { functionIds, functionResearcher, programPatterns, programSection, researcherTeamPlanEntry } from "./function-spec.ts";
@@ -165,7 +165,7 @@ try {
   const draftLine = (entries(dir) as { activity: string, agent?: Record<string, string>, span?: { trace_id: string } }[]).find((e) => e.activity === "draft");
   ok("the keep's provenance line names the run's session, role, model and harness, in the caller's trace", draftLine?.span?.trace_id === TRACE && draftLine.agent?.session === SESSION && draftLine.agent?.id === "strategy-researcher" && draftLine.agent?.model === "fake:scripted" && draftLine.agent?.harness === "claude-code", draftLine);
   span(dir, { name: "invoke_agent harness", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
-  const check = spawnSync("node", [...naiveTs, naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
+  const check = spawnSync("node", [naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
   ok("check-traces passes with no warnings", check.status === 0 && !/warning:/.test(check.stdout + check.stderr), check.stdout + check.stderr);
 
   // ---- 7. The CLI: a venture's folder, an unstaffed researcher, a bad limit ----

@@ -10,8 +10,8 @@
 
 import { AsyncLocalStorageProviderSingleton } from "@langchain/core/singletons";
 import type { BackendProtocolV2, EditResult, FileInfo, GlobResult, GrepResult, LsResult, ReadRawResult, ReadResult, WriteResult } from "deepagents";
-import * as files from "naive-framework/src/router/agent-files.ts";
-import type { Context } from "naive-framework/src/router/agent-files.ts";
+import * as files from "naive-framework/src/router/agent-files.mjs";
+import type { Context } from "naive-framework/src/router/agent-files.mjs";
 import type { NaiveTracer } from "./naive-tracer.ts";
 
 const info = (f: { path: string, is_dir: boolean }): FileInfo => ({ path: f.path, is_dir: f.is_dir });

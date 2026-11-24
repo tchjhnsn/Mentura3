@@ -30,9 +30,9 @@ import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents
 import { span, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
 import { may, roleOf } from "naive-framework/src/engine/access.mjs";
-import { loadPlan } from "naive-framework/src/engine/recipes/eval-set.ts";
+import { loadPlan } from "naive-framework/src/engine/recipes/eval-set.mjs";
 import { call, ventureDir } from "naive-framework/src/router/router.mjs";
-import type { Context } from "naive-framework/src/router/agent-files.ts";
+import type { Context } from "naive-framework/src/router/agent-files.mjs";
 import type { EvalPlan, Experiment } from "naive-framework/src/records/types/records.d.ts";
 import type { HeldDraft, ModelSource, RunId, RunRef, TeamPlanEntryRead, TraceJoin } from "./function-agent.ts";
 import { lockVenture, messageOf, MODEL_FIX, outcomeOf, ownProcess, phaseOf, withRunEnv } from "./function-agent.ts";

@@ -8,7 +8,7 @@
 // dead holder's lock is reclaimed, a function the venture has not staffed is refused with the team-plan entry to add,
 // and the MCP shim lists only staffed functions and carries a call through a real child process.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/function-agent-test.ts
+//   node platform/agents/function-agent-test.ts
 
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -23,7 +23,7 @@ import { span, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
 import { routeGlob } from "naive-framework/src/engine/access.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
-import { naivePath, naiveTs } from "../../scripts/naive.ts";
+import { naivePath } from "../../scripts/naive.ts";
 import type { ModelSource, RunResult } from "./function-agent.ts";
 import { runFunctionAgent, runIdOf } from "./function-agent.ts";
 import { functionAgent, functionIds, teamPlanEntry } from "./function-spec.ts";
@@ -109,7 +109,7 @@ ok("provenance names the same session, role, model and harness", lines.length > 
 ok("the process environment is restored after the run", RUN_KEYS.every((k) => process.env[k] === undefined) && process.env.MENTURA_WORKSPACE === ws);
 // The harness writes its own span when its turn ends; then the venture's traces are whole.
 span(dir, { name: "invoke_agent harness", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
-const check = spawnSync("node", [...naiveTs, naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
+const check = spawnSync("node", [naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
 ok("check-traces passes with no warnings", check.status === 0 && !/warning:/.test(check.stdout + check.stderr), check.stdout + check.stderr);
 
 // ---- 3. Idempotent: the same run id reports what the run did, without a model ----

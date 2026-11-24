@@ -2,7 +2,7 @@
 // stand-in for LangSmith's OTel endpoint: spans become OTLP spans with parents kept and a run type; only pending
 // spans are sent and each once; offline leaves them pending; a refused batch is not marked sent; no key exits 3.
 //
-//   node --import ./scripts/naive-ts.ts platform/integrations/langsmith-otel-test.ts
+//   node platform/integrations/langsmith-otel-test.ts
 
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
@@ -11,7 +11,6 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { span, withSpan } from "naive-framework/src/core/instrumentation.mjs";
-import { naiveTs } from "../../scripts/naive.ts";
 import { pending, sync, toOtlp } from "./langsmith-otel.ts";
 
 let failed = 0;
@@ -78,9 +77,9 @@ ok("offline, the spans stay pending and nothing fails", r3[0].offline === true &
 ok("the sync state lives in the venture's .naive folder", Object.keys(JSON.parse(readFileSync(join(dir, ".naive/langsmith-sync.json"), "utf8")) as object).includes("run-1"));
 
 // The command line: no key exits 3 and names what stays pending.
-const cli = spawnSync("node", [...naiveTs, "platform/integrations/langsmith-otel.ts", dir], { encoding: "utf8", env: { ...process.env, LANGSMITH_API_KEY: "" } });
+const cli = spawnSync("node", ["platform/integrations/langsmith-otel.ts", dir], { encoding: "utf8", env: { ...process.env, LANGSMITH_API_KEY: "" } });
 ok("with no key the command exits 3 and the spans stay pending", cli.status === 3 && /1 spans stay pending/.test(cli.stderr), cli.stderr);
-const dry = spawnSync("node", [...naiveTs, "platform/integrations/langsmith-otel.ts", dir, "--dry-run"], { encoding: "utf8" });
+const dry = spawnSync("node", ["platform/integrations/langsmith-otel.ts", dir, "--dry-run"], { encoding: "utf8" });
 ok("--dry-run lists what is pending", dry.status === 0 && /run-1 {2}1 pending/.test(dry.stdout), dry.stdout + dry.stderr);
 
 if (failed) { console.error(`${failed} failed`); process.exit(1); }

@@ -5,7 +5,7 @@
 // only what the venture allowed when they were written (inputs and outputs only with traces.content), and this adds
 // nothing. Only this side names the vendor and the key.
 //
-//   LANGSMITH_API_KEY=... node --import ./scripts/naive-ts.ts platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]
+//   LANGSMITH_API_KEY=... node platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]
 //
 // Exits 3 when LANGSMITH_API_KEY is not set (the spans stay pending), 0 when it sent or when it could not reach
 // LangSmith (offline: the spans stay pending), 1 when LangSmith refused a batch.
@@ -80,7 +80,7 @@ export async function sync(dir: string, opts: { endpoint?: string, key: string, 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2);
   const d = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--project");
-  if (!d) { console.error("usage: node --import ./scripts/naive-ts.ts platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]"); process.exit(2); }
+  if (!d) { console.error("usage: node platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]"); process.exit(2); }
   const dir = resolve(d);
   const i = args.indexOf("--project");
   const project = i >= 0 ? args[i + 1] : process.env.LANGSMITH_PROJECT;

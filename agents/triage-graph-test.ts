@@ -2,10 +2,10 @@
 // an idea and a triage record and routes; an unsure one holds, survives as a checkpoint, and resumes on the founder's
 // answers, recording each as a correction; no Jev holds everything; the graph never writes raw.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/triage-graph-test.ts
+//   node platform/agents/triage-graph-test.ts
 
 import { MemorySaver } from "@langchain/langgraph";
-import { request, type Context, type Entry } from "naive-framework/src/engine/triage.ts";
+import { request, type Context, type Entry } from "naive-framework/src/engine/triage.mjs";
 import { validateValue } from "naive-framework/src/records/validate.mjs";
 import { askJev, jevRunnable, keyVariable, type JevReply, type JevRequest } from "./jev.ts";
 import { Command, triageGraph, type Deps, type Loaded, type RawRef } from "./triage-graph.ts";

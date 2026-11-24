@@ -2,7 +2,7 @@
 // as a false alarm (or a hit), a filed label a founder changes resolves as a miss, and the router ledger appends real,
 // chained lines to a Naive venture's triage-accept ledger in a temporary workspace.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/triage-ledger-test.ts
+//   node platform/agents/triage-ledger-test.ts
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { MemorySaver } from "@langchain/langgraph";
 import { ledgerPath, verify } from "naive-framework/src/router/detection-ledger.mjs";
-import type { Context, Entry } from "naive-framework/src/engine/triage.ts";
+import type { Context, Entry } from "naive-framework/src/engine/triage.mjs";
 import { correctFiled, routerLedger, trialId, type Ledger, type Resolution, type Trial, type TriageRecord } from "./triage-ledger.ts";
 import { Command, triageGraph, type Deps } from "./triage-graph.ts";
 import type { JevReply, JevRequest } from "./jev.ts";

@@ -22,7 +22,7 @@ import type { EditResult, WriteResult } from "deepagents";
 import { spans } from "naive-framework/src/core/instrumentation.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
 import { roleOf, routeGlob } from "naive-framework/src/engine/access.mjs";
-import type { Context } from "naive-framework/src/router/agent-files.ts";
+import type { Context } from "naive-framework/src/router/agent-files.mjs";
 import { ventureDir } from "naive-framework/src/router/router.mjs";
 import type { HeldDraft, ModelSource, RunId, TraceJoin, TeamPlanEntryRead, Written } from "./function-agent.ts";
 import { answerOf, lockVenture, messageOf, MODEL_FIX, outcomeOf, ownProcess, phaseOf, withRunEnv } from "./function-agent.ts";

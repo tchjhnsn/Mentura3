@@ -5,7 +5,6 @@
 // directory. The CLI is imported dynamically on purpose: a static import would resolve Naive's .ts modules before the
 // loader is registered. Remove the first import when Naive ships compiled JavaScript.
 
-import "../../scripts/naive-ts.ts";
 
 const { main } = await import("./cli.ts");
 const code = await main(process.argv.slice(2), process.env, process.stdin);

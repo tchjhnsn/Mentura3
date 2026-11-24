@@ -18,7 +18,7 @@ A template is framework, the way `create-next-app --example` is. The gallery tha
 
 ## The boundary
 
-The platform builds on the framework, and never the other way round. The platform imports Naive by package name (`naive-framework/src/store/connectors/contract.mjs`), never by relative path. Naive's own boundary check, run in its repository, fails when Naive names a platform or console module, or registers a connector that reaches the network or names credentials.
+The platform builds on the framework, and never the other way round. The platform imports Naive by package name (`naive-framework/src/store/connectors/contract.mjs`), never by relative path, and by the module's `.mjs` name, which runs Naive's compiled `dist/` file and is typed from its `.ts` source, so no loader is needed. Naive's own boundary check, run in its repository, fails when Naive names a platform or console module, or registers a connector that reaches the network or names credentials.
 
 The platform hands its parts to Naive through Naive's hooks. That is inversion of control, like a Next.js deployment adapter: the framework defines the contract, and the platform implements it for a vendor.
 

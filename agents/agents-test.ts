@@ -5,7 +5,7 @@
 // line of the write names the tool's file operation span; inputs stay out unless traces.content is on; check-traces
 // passes.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/agents-test.ts
+//   node platform/agents/agents-test.ts
 
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -16,7 +16,7 @@ import { fakeModel } from "@langchain/core/testing";
 import { createDeepAgent } from "deepagents";
 import { sessions, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
-import { naivePath, naiveTs } from "../../scripts/naive.ts";
+import { naivePath } from "../../scripts/naive.ts";
 import { NaiveBackend } from "./naive-backend.ts";
 import { NaiveTracer } from "./naive-tracer.ts";
 
@@ -77,7 +77,7 @@ const write = entries(dir).filter((e: { entity?: string }) => e.entity === "deci
 ok("the provenance line of the edit names a span of this run", !!write?.span && byId.has(write.span.span_id));
 ok("inputs and outputs are left out (traces.content is off)", !readFileSync(join(dir, "traces/harness-run-1.jsonl"), "utf8").includes("Tighten the pricing decision"));
 ok("token and model attributes are kept", all.filter((s) => s.kind === "model").every((s) => typeof s.attributes?.["gen_ai.request.model"] === "string"));
-const check = spawnSync("node", [...naiveTs, naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
+const check = spawnSync("node", [naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
 ok("check-traces passes the venture", check.status === 0, check.stderr || check.stdout);
 
 if (process.env.DEBUG_SPANS) for (const s of all) console.log(s.kind.padEnd(6), s.name.padEnd(40), s.span_id.slice(0, 8), (s.parent_span_id ?? "-").slice(0, 8), byId.get(s.parent_span_id ?? "")?.name ?? "");

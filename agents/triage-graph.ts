@@ -12,8 +12,8 @@
 // With no Jev (no key), or Jev failing, every label is held for the founder; nothing falls back to another model.
 
 import { Annotation, Command, END, interrupt, START, StateGraph, type BaseCheckpointSaver } from "@langchain/langgraph";
-import { decide, request, type Answers, type Context, type Decision, type Entry } from "naive-framework/src/engine/triage.ts";
-import { routeTask, type Context as RouteContext, type Routed } from "naive-framework/src/engine/route-task.ts";
+import { decide, request, type Answers, type Context, type Decision, type Entry } from "naive-framework/src/engine/triage.mjs";
+import { routeTask, type Context as RouteContext, type Routed } from "naive-framework/src/engine/route-task.mjs";
 import type { JevReply, JevRequest } from "./jev.ts";
 import { jevSide, outcome, trialsFor, type Ledger } from "./triage-ledger.ts";
 

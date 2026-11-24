@@ -6,7 +6,7 @@
 // functions across portfolios with no measure to a person. The CLI refuses an unstaffed lead with its team-plan entry,
 // and the MCP shim lists lead_<id> and route_task and carries both through a real child process.
 //
-//   node --import ./scripts/naive-ts.ts platform/agents/lead-agent-test.ts
+//   node platform/agents/lead-agent-test.ts
 
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";

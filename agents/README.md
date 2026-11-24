@@ -27,7 +27,7 @@ const agent = createDeepAgent({ model, name: "strategy", backend: new NaiveBacke
 await agent.invoke(input, { callbacks: [tracer] });
 ```
 
-Run the tests with `node --import ./scripts/naive-ts.ts platform/agents/agents-test.ts`, `node --import ./scripts/naive-ts.ts platform/agents/function-agent-test.ts`, `node --import ./scripts/naive-ts.ts platform/agents/lead-agent-test.ts` and `node --import ./scripts/naive-ts.ts platform/agents/research-test.ts` (the loader strips types from Naive's `.ts` files under node_modules). Outside a function agent run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
+Run the tests with `node platform/agents/agents-test.ts`, `node --import ./scripts/naive-ts.ts platform/agents/function-agent-test.ts`, `node --import ./scripts/naive-ts.ts platform/agents/lead-agent-test.ts` and `node --import ./scripts/naive-ts.ts platform/agents/research-test.ts` (the loader strips types from Naive's `.ts` files under node_modules). Outside a function agent run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
 
 ## Function agents (EE-123)
 
@@ -124,6 +124,6 @@ Not built yet: scheduling runs, spend limits in tokens or money (the limits are 
 
 ### Triage
 
-`triage-graph.ts` is what a raw intake worker (`../intake/raw-intake.ts`) hands each claimed entry to. `node --import ./scripts/naive-ts.ts platform/agents/triage-graph-test.ts` runs it offline with a scripted Jev.
+`triage-graph.ts` is what a raw intake worker (`../intake/raw-intake.ts`) hands each claimed entry to. `node platform/agents/triage-graph-test.ts` runs it offline with a scripted Jev.
 
 Not built yet: the command that starts a worker with this graph, LangGraph's Postgres checkpointer on the tenant's database (it is not a dependency here; any `BaseCheckpointSaver` can be passed), and a writer that writes through Naive's router as `triage-agent` with that role in the team plan.
