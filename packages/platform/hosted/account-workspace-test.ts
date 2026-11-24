@@ -10,6 +10,7 @@ import { mkdtempSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSy
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn, spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { signAssertion, type Identity } from "../bridge/assertion.ts";
 import { issueClaim } from "../bridge/claims.ts";
@@ -152,7 +153,7 @@ expect("create commits a venture", typeof created.id === "string" && created.id.
 await closeWorkspacePools();
 
 const child = await new Promise<{ code: number; out: string }>((resolve) => {
-  const proc = spawn(process.execPath, ["platform/hosted/account-workspace-read.ts", bridge, userId, key], { stdio: ["ignore", "pipe", "inherit"] });
+  const proc = spawn(process.execPath, [fileURLToPath(new URL("./account-workspace-read.ts", import.meta.url)), bridge, userId, key], { stdio: ["ignore", "pipe", "inherit"] });
   let out = "";
   proc.stdout.on("data", (chunk) => { out += chunk; });
   proc.on("exit", (code) => resolve({ code: code ?? 1, out }));
