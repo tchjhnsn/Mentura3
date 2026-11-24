@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
+import { STUDIO_NAV, slugOf, ventureNav, type NavGroup } from "@/components/studio/nav";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -84,7 +85,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 
       <SidebarContent>
         {side === "mentura" ? (
-          <MenturaNav item={item} to={to} done={done} />
+          <MenturaNav item={item} to={to} done={done} path={path} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -295,7 +296,8 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 /** Mentura's navigation (Torian, 2026-11-21: "use the 5-step algorithm on it, then use Contra for reference"): one flat
  * list like Contra's sidebar, not a rail of tabs with a panel each. The rail held ten links behind two levels; a flat
  * list shows all of them at once. Create first, then the pages you use daily, then the ventures in their own group. */
-function MenturaNav({ item, to, done }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void }) {
+function MenturaNav({ item, to, done, path }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void; path: string }) {
+  const slug = slugOf(path);
   return (
     <>
       <Group>
@@ -314,6 +316,7 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
           {item("/studio", "Venture Studio", <LayoutDashboardIcon />)}
         </SidebarMenu>
       </Group>
+      {path === "/studio" || path.startsWith("/studio/") ? <StudioNav groups={slug ? ventureNav(slug) : STUDIO_NAV} path={path} done={done} /> : null}
       <Group>
         <SidebarGroupLabel>Discover</SidebarGroupLabel>
         <SidebarMenu>
@@ -321,6 +324,29 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
         </SidebarMenu>
       </Group>
     </>
+  );
+}
+
+/** The Venture Studio's pages, under Mentura's own in the one sidebar: the studio's, or one venture's. */
+function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
+  return (
+    <Group>
+      {groups.map((g, i) => (
+        <SidebarMenu key={i} className={i ? "mt-3" : undefined}>
+          {g.label ? <SidebarGroupLabel>{g.label}</SidebarGroupLabel> : null}
+          {g.items.map((it) => {
+            const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`) || (it.n === "V5" && path.includes("/decks/"));
+            return (
+              <SidebarMenuItem key={it.href}>
+                <SidebarMenuButton asChild isActive={active} tooltip={it.label}>
+                  <Link href={it.href} onClick={done}><it.icon /><span>{it.label}</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      ))}
+    </Group>
   );
 }
 
