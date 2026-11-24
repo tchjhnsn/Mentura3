@@ -7,7 +7,6 @@
 
 import { spawn } from "node:child_process";
 import { availableParallelism } from "node:os";
-import { naiveTs } from "./naive.ts";
 
 const root = new URL(".", import.meta.url).pathname;
 
@@ -28,13 +27,13 @@ const steps: [string, string[]][] = [
   ["hosted workspace: naive_records, a second process, isolation, a refused write, a conflict (skips without a database URL)", ["hosted/account-workspace-test.ts"]],
   ["Mentura as Naive's platform adapter", ["adapter-test.mjs"]],
   ["LangSmith exporter", ["integrations/langsmith-test.mjs"]],
-  ["LangChain over Naive: a deep agent edits records through the router", [...naiveTs, "agents/agents-test.ts"]],
-  ["function agents", [...naiveTs, "agents/function-agent-test.ts"]],
-  ["lead agents", [...naiveTs, "agents/lead-agent-test.ts"]],
-  ["triage graph", [...naiveTs, "agents/triage-graph-test.ts"]],
-  ["triage corrections", [...naiveTs, "agents/triage-ledger-test.ts"]],
-  ["function researchers", [...naiveTs, "agents/research-test.ts"]],
-  ["LangSmith replication", [...naiveTs, "integrations/langsmith-otel-test.ts"]],
+  ["LangChain over Naive: a deep agent edits records through the router", ["agents/agents-test.ts"]],
+  ["function agents", ["agents/function-agent-test.ts"]],
+  ["lead agents", ["agents/lead-agent-test.ts"]],
+  ["triage graph", ["agents/triage-graph-test.ts"]],
+  ["triage corrections", ["agents/triage-ledger-test.ts"]],
+  ["function researchers", ["agents/research-test.ts"]],
+  ["LangSmith replication", ["integrations/langsmith-otel-test.ts"]],
   ["remote image fetcher", ["integrations/remote-image-test.mjs"]],
   ["site reader (offline)", ["integrations/site-test.mjs"]],
   ["Rho money source (offline)", ["integrations/rho-test.mjs"]],
