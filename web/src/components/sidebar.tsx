@@ -15,7 +15,9 @@ import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
-import { STUDIO_NAV, slugOf, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { VENTURES, ventureHref } from "@/components/studio/data";
+import { STUDIO_NAV, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { ModeSwitcher, modeOf } from "@/components/studio/switcher";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -80,12 +82,19 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   return (
     <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
-        <ProductHead side={side} to={to} />
+        {side === "mentura" ? <ModeSwitcher path={path} done={done} /> : <ProductHead side={side} to={to} />}
       </SidebarHeader>
 
       <SidebarContent>
         {side === "mentura" ? (
-          <MenturaNav item={item} to={to} done={done} path={path} />
+          (() => {
+            // Personal shows Mentura's social side; the Studio and a venture show the console in its place (spec
+            // "Venture console spec", 2026-11-24: crossing modes swaps the sidebar, it never stacks).
+            const mode = modeOf(path);
+            return mode.kind === "personal"
+              ? <MenturaNav item={item} to={to} done={done} />
+              : <StudioNav groups={mode.kind === "venture" ? ventureNav(mode.slug) : STUDIO_NAV} path={path} done={done} />;
+          })()
         ) : side === "polis" ? (
           <>
             <Group>
@@ -279,8 +288,7 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 /** Mentura's navigation (Torian, 2026-11-21: "use the 5-step algorithm on it, then use Contra for reference"): one flat
  * list like Contra's sidebar, not a rail of tabs with a panel each. The rail held ten links behind two levels; a flat
  * list shows all of them at once. Create first, then the pages you use daily, then the ventures in their own group. */
-function MenturaNav({ item, to, done, path }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void; path: string }) {
-  const slug = slugOf(path);
+function MenturaNav({ item, to, done }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void }) {
   return (
     <>
       <Group>
@@ -295,11 +303,11 @@ function MenturaNav({ item, to, done, path }: { item: (href: string, label: stri
       <Group>
         <SidebarGroupLabel>Ventures</SidebarGroupLabel>
         <SidebarMenu>
-          {item("/life/ventures", "Your ventures", <RocketIcon />)}
-          {item("/studio", "Venture Studio", <LayoutDashboardIcon />)}
+          {/* One door per venture, into its console (Whop's "Your businesses"). */}
+          {VENTURES.map((v) => item(ventureHref(v.slug), v.name, <span aria-hidden className="size-4 shrink-0 rounded" style={{ background: `oklch(0.65 0.14 ${v.hue})` }} />))}
+          {item("/studio", "All ventures", <LayoutDashboardIcon />)}
         </SidebarMenu>
       </Group>
-      {path === "/studio" || path.startsWith("/studio/") ? <StudioNav groups={slug ? ventureNav(slug) : STUDIO_NAV} path={path} done={done} /> : null}
       <Group>
         <SidebarGroupLabel>Discover</SidebarGroupLabel>
         <SidebarMenu>
@@ -310,7 +318,7 @@ function MenturaNav({ item, to, done, path }: { item: (href: string, label: stri
   );
 }
 
-/** The Venture Studio's pages, under Mentura's own in the one sidebar: the studio's, or one venture's. */
+/** The console: the Venture Studio's pages, or one venture's, in place of Mentura's own. */
 function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
   return (
     <Group>
@@ -337,7 +345,7 @@ function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; d
 function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
   const MADE = [
     { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
-    { href: "/life/ventures", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
+    { href: "/studio/new", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
   ];
   return (
     <SidebarMenuItem>

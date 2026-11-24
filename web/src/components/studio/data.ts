@@ -118,7 +118,7 @@ export const SCREENS: Screen[] = [
 
 export const COMPONENTS: { id: string; name: string; where: string }[] = [
   { id: "C1", name: "Top bar", where: "Every screen" },
-  { id: "C2", name: "Venture switcher", where: "Top bar" },
+  { id: "C2", name: "Switcher: Personal, Venture Studio or a venture", where: "Top of the sidebar" },
   { id: "C3", name: "Studio nav", where: "S screens, left" },
   { id: "C4", name: "Venture nav", where: "V screens, left" },
   { id: "C5", name: "Conversation", where: "V6: talking to one agent" },
