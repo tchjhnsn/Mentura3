@@ -14,7 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
-import { hrefOn, spaceOfPath, type Side, type Space } from "@/lib/sides";
+import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -42,6 +42,8 @@ export function SidebarProvider({ groups, polisTiles, places, chats, me, initial
   const save = (o: boolean, w: number) => { document.cookie = `${SIDE_COOKIE}=${o ? 1 : 0}.${w}; path=/; max-age=31536000; samesite=lax${places.cookieDomain ? `; domain=${places.cookieDomain}` : ""}`; };
   const onOpen = (o: boolean) => { setOpen(o); save(o, live.current.width); };
   const resize = (w: number) => { setWidth(w); save(live.current.open, w); };
+  // A full-screen app brings its own frame, so the sidebar steps aside, checked on every navigation.
+  if (isFullScreen(usePathname() ?? "")) return <>{children}</>;
   return (
     <Provider open={open} onOpenChange={onOpen} style={{ "--sidebar-width": `${width}px` } as CSSProperties}>
       <Nav groups={groups} polisTiles={polisTiles} places={places} chats={chats} me={me} width={width} onWidth={setWidth} onResized={resize} />
