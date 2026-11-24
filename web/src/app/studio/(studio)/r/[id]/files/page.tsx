@@ -84,11 +84,11 @@ export default function VentureFiles({ params }: { params: Promise<{ id: string 
 
   return (
     <div className="mx-auto max-w-4xl px-4 pt-6 pb-16 md:px-8" onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}>
-      <Link href={`/studio/r/${encodeURIComponent(id)}`} className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"><ArrowLeftIcon className="size-3.5" />{name ?? "Venture"}</Link>
+      <Link href={`/studio/r/${encodeURIComponent(id)}`} className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs"><ArrowLeftIcon className="size-3.5" />{name ?? "Business"}</Link>
       <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Files</h1>
-          <p className="text-muted-foreground mt-1 text-sm">This venture&apos;s own storage. Only you can open it, and every change is logged.</p>
+          <p className="text-muted-foreground mt-1 text-sm">This business&apos;s own storage. Only you can open it, and every change is logged.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => { setText(""); setAsk({ kind: "folder" }); }} disabled={!!busy || !tree}><FolderPlusIcon />New folder</Button>
@@ -112,12 +112,12 @@ export default function VentureFiles({ params }: { params: Promise<{ id: string 
 
       <div className={cn("mt-3 overflow-hidden rounded-xl border", over && "border-foreground bg-accent/40")}>
         {tree === null && !error ? (
-          <p className="text-muted-foreground p-6 text-sm">Reading the venture&apos;s files</p>
+          <p className="text-muted-foreground p-6 text-sm">Reading the business&apos;s files</p>
         ) : !items || items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 p-10 text-center">
             <UploadIcon className="text-muted-foreground size-6" />
             <p className="text-sm font-medium">{folder ? "This folder is empty" : "No files yet"}</p>
-            <p className="text-muted-foreground max-w-sm text-sm">Drop files here, or upload decks, contracts, receipts and anything else the venture keeps. Up to 20 MB each.</p>
+            <p className="text-muted-foreground max-w-sm text-sm">Drop files here, or upload decks, contracts, receipts and anything else the business keeps. Up to 20 MB each.</p>
             <Button size="sm" onClick={() => picker.current?.click()} disabled={!!busy || !tree}><UploadIcon />Upload a file</Button>
           </div>
         ) : (
@@ -151,7 +151,7 @@ export default function VentureFiles({ params }: { params: Promise<{ id: string 
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{ask?.kind === "folder" ? "New folder" : ask?.kind === "rename" ? `Rename ${ask.file.name}` : ask?.kind === "delete" ? `Delete ${ask.file.name}?` : ""}</DialogTitle>
-            <DialogDescription>{ask?.kind === "delete" ? (ask.file.kind === "folder" ? "The folder and everything in it leave the venture. The log keeps a record of each file." : "The file leaves the venture. The log keeps a record of it.") : "A name without a slash or a leading dot."}</DialogDescription>
+            <DialogDescription>{ask?.kind === "delete" ? (ask.file.kind === "folder" ? "The folder and everything in it leave the business. The log keeps a record of each file." : "The file leaves the business. The log keeps a record of it.") : "A name without a slash or a leading dot."}</DialogDescription>
           </DialogHeader>
           {ask?.kind !== "delete" ? <Input autoFocus value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && text.trim()) confirm(); }} aria-label="Name" /> : null}
           <DialogFooter>

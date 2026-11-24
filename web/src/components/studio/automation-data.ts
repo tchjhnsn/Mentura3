@@ -4,7 +4,7 @@ import type { Agent, FunctionId, Run } from "./data";
 /** Community agents, found in the Library (/studio/library). */
 export type CommunityAgent = { id: string; name: string; fn: FunctionId; job: string; author: string; installs: number };
 export const COMMUNITY_AGENTS: CommunityAgent[] = [
-  { id: "grant-finder", name: "Grant finder", fn: "finance", job: "Finds grants that fit the venture's stage and drafts the first answers.", author: "Lena Fischer", installs: 1840 },
+  { id: "grant-finder", name: "Grant finder", fn: "finance", job: "Finds grants that fit the business's stage and drafts the first answers.", author: "Lena Fischer", installs: 1840 },
   { id: "pilot-contract", name: "Pilot contract drafter", fn: "risk-and-compliance", job: "Drafts a one page pilot agreement from a call summary.", author: "Omar Haddad", installs: 960 },
   { id: "school-buyer-map", name: "School buyer map", fn: "marketing-and-sales", job: "Maps who signs purchases at a school district and how long it takes.", author: "Priya Nair", installs: 412 },
 ];
@@ -12,7 +12,7 @@ export const COMMUNITY_AGENTS: CommunityAgent[] = [
 /** A prebuilt agent you can hire for a function that has none yet. */
 export const hireable = (fn: FunctionId, label: string): Agent => ({
   id: `${fn}-agent`, name: `${label} agent`, fn, kind: "prebuilt", status: "idle",
-  job: `Runs the routine work of ${label.toLowerCase()} and asks you before anything leaves the venture.`,
+  job: `Runs the routine work of ${label.toLowerCase()} and asks you before anything leaves the business.`,
   tools: [], model: "Balanced", runsToday: 0,
 });
 
@@ -38,13 +38,13 @@ export const KIND_LABEL: Record<NodeKind, string> = {
   connector: "Connector call", write: "Write record", if: "If/else", loop: "Loop", approval: "Wait for approval", transform: "Transform", state: "Set state",
 };
 export const BUILDER_TOOLS = ["Product cards", "Interview notes", "Gmail", "Calendar", "Contacts", "Web research", "GitHub", "Linear", "Decks", "Stripe"];
-export const NEEDS_YES = ["Sending anything outside the venture", "Spending money", "A public commitment", "Signing or agreeing to terms", "Changing a gate or commitment"];
+export const NEEDS_YES = ["Sending anything outside the business", "Spending money", "A public commitment", "Signing or agreeing to terms", "Changing a gate or commitment"];
 export const OUTPUTS = ["Plain text", "Record (JSON)", "Markdown file", "Email draft"];
 
 let seq = 0;
 export const makeNode = (kind: NodeKind, fn: FunctionId, name?: string, instructions = "", extra: Partial<FlowNode> = {}): FlowNode => ({
   id: `n${++seq}`, kind, name: name ?? KIND_LABEL[kind], instructions, model: "Balanced", tools: [], fn,
-  needsYes: kind === "approval" ? ["Sending anything outside the venture"] : [], output: kind === "write" ? "Record (JSON)" : "Plain text", ...extra,
+  needsYes: kind === "approval" ? ["Sending anything outside the business"] : [], output: kind === "write" ? "Record (JSON)" : "Plain text", ...extra,
 });
 
 /** The flow a builder opens with, by agent. "blank" is Start then End. */
@@ -56,7 +56,7 @@ export function seedFlow(agentId: string, fn: FunctionId): FlowNode[] {
     s("file-search", "Read product cards", "Read the approved product cards and the coach interview notes."),
     s("agent", "Agent: draft outreach", "Write a short email to each coach on the list. Name the play they asked for in the interview.", { model: "Balanced", tools: ["Product cards", "Contacts"] }),
     s("approval", "Wait for approval", "Hold every send for Torian's yes."),
-    s("connector", "Gmail: send", "Send the approved emails from the venture's Gmail.", { tools: ["Gmail"] }),
+    s("connector", "Gmail: send", "Send the approved emails from the business's Gmail.", { tools: ["Gmail"] }),
     s("end"),
   ];
   if (agentId === "interview-scheduler") return [

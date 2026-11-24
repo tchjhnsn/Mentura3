@@ -80,7 +80,7 @@ function Feed() {
         <section className="px-1">
           <h2 className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide">Trending <TrendingUpIcon className="size-3.5" /></h2>
           <ul className="mt-3 space-y-3">
-            {[["sportstech", "Demo day on Dec 13 has eight founders."], ["cofounder", "Who is looking, and for what."], ["naive", "Ventures that moved a phase this week."]].map(([t, d]) => (
+            {[["sportstech", "Demo day on Dec 13 has eight founders."], ["cofounder", "Who is looking, and for what."], ["naive", "Businesses that moved a phase this week."]].map(([t, d]) => (
               <li key={t}><Link href={`/mentura?topic=${t}`} className="block"><span className="text-sm font-medium">#{t}</span><span className="text-muted-foreground block text-xs">{d}</span></Link></li>
             ))}
           </ul>

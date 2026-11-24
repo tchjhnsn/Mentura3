@@ -62,7 +62,7 @@ export default function ScreenMap() {
           <div className="relative mt-6 rounded-lg border p-4">
             <Num n="M0.3" className="absolute -top-2 left-3" />
             <h2 className="text-sm font-semibold">One profile, two faces</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Your profile and account are shared across Reflect and Mentura. Reflect shows the private profile, for you alone. Mentura shows a public one for your founding work: what you make, what you do and the ventures you build.</p>
+            <p className="text-muted-foreground mt-1 text-sm">Your profile and account are shared across Reflect and Mentura. Reflect shows the private profile, for you alone. Mentura shows a public one for your founding work: what you make, what you do and the businesses you build.</p>
           </div>
         </section>
       </div>

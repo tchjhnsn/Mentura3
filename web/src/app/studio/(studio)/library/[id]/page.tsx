@@ -67,7 +67,7 @@ export default function TemplatePage() {
   const [target, setTarget] = useState<string>("new");
   const [done, setDone] = useState(false);
   const tree = treeOf(t);
-  const targetName = target === "new" ? `New venture from ${t.title}` : VENTURES.find((v) => v.slug === target)?.name ?? "";
+  const targetName = target === "new" ? `New business from ${t.title}` : VENTURES.find((v) => v.slug === target)?.name ?? "";
   const rating = (REVIEWS.reduce((a, r) => a + r.stars, 0) / REVIEWS.length).toFixed(1);
 
   return (
@@ -89,7 +89,7 @@ export default function TemplatePage() {
               <span className="text-muted-foreground">{t.category}</span>
             </div>
             <div className="mt-4">
-              <div className="text-muted-foreground mb-1 text-xs">Starts the venture at</div>
+              <div className="text-muted-foreground mb-1 text-xs">Starts the business at</div>
               <div className="overflow-hidden"><CommitmentStepper at={t.commitment} /></div>
             </div>
           </section>
@@ -180,17 +180,17 @@ export default function TemplatePage() {
               </DialogHeader>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>Stay here</Button>
-                <Button variant="outline" asChild><Link href={ventureHref(target === "new" ? "haptic-plays" : target)}>Open the venture<ArrowRightIcon /></Link></Button>
+                <Button variant="outline" asChild><Link href={ventureHref(target === "new" ? "haptic-plays" : target)}>Open the business<ArrowRightIcon /></Link></Button>
               </DialogFooter>
             </>
           ) : (
             <>
               <DialogHeader>
                 <DialogTitle>Use {t.title}</DialogTitle>
-                <DialogDescription>Pick where it goes. Nothing in an existing venture is overwritten; new files sit beside yours.</DialogDescription>
+                <DialogDescription>Pick where it goes. Nothing in an existing business is overwritten; new files sit beside yours.</DialogDescription>
               </DialogHeader>
-              <ul className="space-y-1.5" role="radiogroup" aria-label="Venture">
-                {[{ slug: "new", name: "A new venture", oneLine: `Starts at ${t.commitment} with this template`, hue: -1 }, ...VENTURES].map((v) => (
+              <ul className="space-y-1.5" role="radiogroup" aria-label="Business">
+                {[{ slug: "new", name: "A new business", oneLine: `Starts at ${t.commitment} with this template`, hue: -1 }, ...VENTURES].map((v) => (
                   <li key={v.slug}>
                     <button type="button" role="radio" aria-checked={target === v.slug} onClick={() => setTarget(v.slug)}
                       className={cn("flex w-full items-center gap-2 rounded-lg border p-2.5 text-left", target === v.slug ? "border-foreground ring-foreground ring-1" : "hover:border-foreground/30")}>
@@ -203,7 +203,7 @@ export default function TemplatePage() {
               </ul>
               <DialogFooter>
                 <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button variant="outline" onClick={() => setDone(true)}>Add to {target === "new" ? "a new venture" : targetName}</Button>
+                <Button variant="outline" onClick={() => setDone(true)}>Add to {target === "new" ? "a new business" : targetName}</Button>
               </DialogFooter>
             </>
           )}

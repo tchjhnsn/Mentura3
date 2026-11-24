@@ -72,7 +72,7 @@ export function detailOf(run: Run): RunDetail {
   if (d) return d;
   const file = run.changed[0];
   const steps: Step[] = [
-    { kind: "thought", at: "0:00", text: `Starting on "${run.title}". First I read what the venture already has on this.` },
+    { kind: "thought", at: "0:00", text: `Starting on "${run.title}". First I read what the business already has on this.` },
     { kind: "read", at: "0:03", path: "venture.json" },
     { kind: "tool", at: "0:09", name: "records.search", input: `{ "query": "${run.title}" }`, output: run.status === "failed" ? '{ "error": "Linear connector not signed in" }' : '{ "matches": 4 }' },
   ];
@@ -102,7 +102,7 @@ export const CONTACTS: Contact[] = [
   { id: "c5", name: "Sam Whitaker", org: "Cedar Valley District", role: "Athletic director", segment: "athletic directors", stage: "contacted", last: "LinkedIn note Tuesday" },
   { id: "c6", name: "Priya Nair", org: "Westview High", role: "Athletic director", segment: "athletic directors", stage: "replied", last: "Replied yesterday" },
   { id: "c7", name: "Owen Castillo", org: "Harbor Unified", role: "Athletics coordinator", segment: "athletic directors", stage: "not now", last: "Budget closed until spring" },
-  { id: "c8", name: "Ruth Ellison", org: "Sideline Ventures", role: "Partner", segment: "funders", stage: "to reach", last: "Not yet" },
+  { id: "c8", name: "Ruth Ellison", org: "Sideline Businesses", role: "Partner", segment: "funders", stage: "to reach", last: "Not yet" },
   { id: "c9", name: "Jonah Weiss", org: "Field Fund", role: "Principal", segment: "funders", stage: "contacted", last: "Intro sent by Maya" },
 ];
 

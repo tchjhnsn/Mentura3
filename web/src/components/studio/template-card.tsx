@@ -8,7 +8,7 @@ import { Face, Num } from "./bits";
 import type { Template } from "./data";
 
 const KIND = {
-  venture: { label: "Venture", icon: RocketIcon },
+  venture: { label: "Business", icon: RocketIcon },
   agent: { label: "Agent", icon: BotIcon },
   automation: { label: "Automation", icon: WorkflowIcon },
   deck: { label: "Deck", icon: PresentationIcon },

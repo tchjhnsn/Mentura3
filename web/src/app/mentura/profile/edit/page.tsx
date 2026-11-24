@@ -18,7 +18,7 @@ import { Face } from "@/components/mentura/parts";
 const SHOWS = [
   { key: "line", label: "Your line", hint: "The sentence under your name." },
   { key: "city", label: "City", hint: "Where you are based." },
-  { key: "ventures", label: "Ventures", hint: "The ventures you are on the team of." },
+  { key: "ventures", label: "Businesses", hint: "The businesses you are on the team of." },
   { key: "open", label: "Open to", hint: "What you are open to, in green on your profile." },
   { key: "socials", label: "Socials", hint: "Links to your other profiles." },
   { key: "posts", label: "Posts", hint: "What you made and are doing, on your profile." },

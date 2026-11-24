@@ -15,7 +15,7 @@ export const answerCatalog = defineCatalog(schema, {
       props: z.object({ slug: z.string(), path: z.string(), title: z.string(), lines: z.array(z.string()) }),
       description: "A record shown as a document: its title and the lines that answer the question, with its JSON one tap away",
     },
-    NextPhase: { props: z.object({ slug: z.string() }), description: "What must be true for this venture to reach its next phase, each criterion met or open" },
+    NextPhase: { props: z.object({ slug: z.string() }), description: "What must be true for this business to reach its next phase, each criterion met or open" },
     Held: { props: z.object({ who: z.string(), what: z.string(), detail: z.string() }), description: "A draft an agent made that waits for the person's yes" },
     Plan: {
       props: z.object({ title: z.string(), steps: z.array(z.object({ title: z.string(), who: z.string(), status: z.enum(["Done", "Running", "Next", "Waiting for you"]) })) }),

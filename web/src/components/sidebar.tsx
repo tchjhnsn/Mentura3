@@ -152,7 +152,7 @@ function ProductHead({ side, to }: { side: Space; to: (p: string) => string }) {
   const PRODUCTS = {
     home: { name: "Reflect", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
     polis: { name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
-    mentura: { name: "Mentura", about: "Ventures, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
+    mentura: { name: "Mentura", about: "Businesses, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
   };
   const now = PRODUCTS[side];
   return (
@@ -301,11 +301,11 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
         </SidebarMenu>
       </Group>
       <Group>
-        <SidebarGroupLabel>Ventures</SidebarGroupLabel>
+        <SidebarGroupLabel>Businesses</SidebarGroupLabel>
         <SidebarMenu>
           {/* One door per venture, into its console (Whop's "Your businesses"). */}
           {VENTURES.map((v) => item(ventureHref(v.slug), v.name, <span aria-hidden className="size-4 shrink-0 rounded" style={{ background: `oklch(0.65 0.14 ${v.hue})` }} />))}
-          {item("/studio", "All ventures", <LayoutDashboardIcon />)}
+          {item("/studio", "All businesses", <LayoutDashboardIcon />)}
         </SidebarMenu>
       </Group>
       <Group>
@@ -345,7 +345,7 @@ function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; d
 function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
   const MADE = [
     { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
-    { href: "/studio/new", label: "Venture", what: "Start one in the Venture Studio", icon: <RocketIcon /> },
+    { href: "/studio/new", label: "Business", what: "Start one in the Business Studio", icon: <RocketIcon /> },
   ];
   return (
     <SidebarMenuItem>

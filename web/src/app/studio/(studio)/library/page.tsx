@@ -15,7 +15,7 @@ import { SCREENS, TEMPLATES, type TemplateCategory, type TemplateKind, type Temp
 
 const S3 = SCREENS.find((s) => s.id === "S3")!;
 const TABS: { id: TemplateKind; label: string }[] = [
-  { id: "venture", label: "Ventures" }, { id: "agent", label: "Agents" }, { id: "automation", label: "Automations" }, { id: "deck", label: "Decks and docs" },
+  { id: "venture", label: "Businesses" }, { id: "agent", label: "Agents" }, { id: "automation", label: "Automations" }, { id: "deck", label: "Decks and docs" },
 ];
 const SOURCES: { id: TemplateSource | "all"; label: string }[] = [
   { id: "all", label: "All" }, { id: "official", label: "Official" }, { id: "community", label: "Community" }, { id: "yours", label: "Yours" },

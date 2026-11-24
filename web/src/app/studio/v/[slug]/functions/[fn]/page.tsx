@@ -147,7 +147,7 @@ export default function FunctionPage({ params }: { params: Promise<{ slug: strin
             <>
               <SheetHeader>
                 <SheetTitle>{tool}</SheetTitle>
-                <SheetDescription>{TOOL_ABOUT[tool] ?? `A ${f.short.toLowerCase()} tool. ${agentName} can set it up from the venture's records.`}</SheetDescription>
+                <SheetDescription>{TOOL_ABOUT[tool] ?? `A ${f.short.toLowerCase()} tool. ${agentName} can set it up from the business's records.`}</SheetDescription>
               </SheetHeader>
               <div className="space-y-2 px-4 text-sm">
                 <p>It is not set up for {v.name} yet.</p>

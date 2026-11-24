@@ -20,7 +20,7 @@ export async function listVentures(): Promise<Result<VentureSummary[]>> {
 /** Creates a venture from a sentence: the first words name it, the whole sentence is kept as the founder's idea. */
 export async function createVenture(idea: string): Promise<Result<{ id: string }>> {
   const text = idea.trim();
-  if (!text) return { ok: false, error: "Say the venture in a sentence first." };
+  if (!text) return { ok: false, error: "Say the business in a sentence first." };
   const name = (text.split(/[.,;:!?]/)[0] ?? text).split(/\s+/).slice(0, 6).join(" ");
   return attempt(async () => ({ id: (await naive<{ id: string }>("create", { name, description: text })).id }));
 }

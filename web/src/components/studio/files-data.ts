@@ -264,7 +264,7 @@ const otherDeck = (name: string, problem: string[], solution: string[], traction
 
 export const deckFor = (slug: string, id: string): Deck => {
   if (slug === "pattern-language") return otherDeck("Pattern Language", ["Architects pick patterns from a 1977 book", "No way to see how others built a pattern"], ["Search patterns by site and climate", "See real buildings that used each one"], ["5 architect interviews planned", "0 paying users yet"], ["$80k to build search", "Ten studios testing by summer"]);
-  if (slug === "founder-raise") return otherDeck("Founder Raise", ["Funders back ideas, founders have many", "Solo founders run out of time, not ideas"], ["Fund a founder's time for two years", "Share in every venture they start"], ["3 funders on the short list", "1 asked for the deck"], ["$400k from three to five funders", "Two years of runway"]);
+  if (slug === "founder-raise") return otherDeck("Founder Raise", ["Funders back ideas, founders have many", "Solo founders run out of time, not ideas"], ["Fund a founder's time for two years", "Share in every business they start"], ["3 funders on the short list", "1 asked for the deck"], ["$400k from three to five funders", "Two years of runway"]);
   return HAPTIC_DECKS.find((d) => d.id === id) ?? HAPTIC_DECKS[0]!;
 };
 

@@ -17,7 +17,7 @@ export const SKILLS: Skill[] = [
   { id: "grade-evidence", name: "Grade evidence", job: "Grades each assumption from the evidence cited behind it, high to very low.", source: "Naive", fn: "strategy",
     reads: ["purpose/validation/", "products/interview-notes/"], writes: ["purpose/validation/grades.json"], steps: ["Read every validation record", "Grade each from its cited evidence", "Propose, never mark, an exit criterion met"], agents: ["strategy-lead", "strategy-agent", "chief-of-staff"], on: true },
   { id: "plan-week", name: "Plan the week", job: "Turns the phase's open exit criteria into handoffs for the leads.", source: "Naive", fn: "capabilities",
-    reads: ["foundation/exit-criteria/", "operations/handoffs/"], writes: ["operations/handoffs/", "operations/week-47.md"], steps: ["Read what stands between the venture and the next phase", "Write one handoff per criterion", "Send each to the lead that owns it"], agents: ["chief-of-staff"], on: true },
+    reads: ["foundation/exit-criteria/", "operations/handoffs/"], writes: ["operations/handoffs/", "operations/week-47.md"], steps: ["Read what stands between the business and the next phase", "Write one handoff per criterion", "Send each to the lead that owns it"], agents: ["chief-of-staff"], on: true },
   { id: "write-deck", name: "Write a deck", job: "Drafts a deck from the one-pager and the latest evidence.", source: "Naive", fn: "marketing-and-sales",
     reads: ["strategy/one-pager.md", "purpose/validation/"], writes: ["marketing/decks/"], steps: ["Read the one-pager", "Draft six slides", "Hold sharing for your yes"], agents: ["growth-lead", "marketing-agent"], on: true, held: "Sharing a deck" },
   { id: "draft-outreach", name: "Draft outreach", job: "Writes short first emails to the people on a list and holds each send.", source: "Naive", fn: "marketing-and-sales",
@@ -35,7 +35,7 @@ export const SKILLS: Skill[] = [
 ];
 
 export const PLUGINS: Plugin[] = [
-  { id: "gmail", name: "Gmail", job: "Read and draft email from the venture's inbox.", kind: "Connector", connected: true, account: "torian@hapticplays.co",
+  { id: "gmail", name: "Gmail", job: "Read and draft email from the business's inbox.", kind: "Connector", connected: true, account: "torian@hapticplays.co",
     tools: [{ name: "search_email", does: "Find messages", ask: false }, { name: "draft_email", does: "Write a draft", ask: false }, { name: "send_email", does: "Send a message", ask: true }], agents: ["growth-lead", "marketing-agent", "interview-scheduler"], on: true },
   { id: "calendar", name: "Google Calendar", job: "See free time and book calls.", kind: "Connector", connected: true, account: "torian@hapticplays.co",
     tools: [{ name: "list_events", does: "See the calendar", ask: false }, { name: "create_event", does: "Book a call", ask: true }], agents: ["chief-of-staff", "interview-scheduler"], on: true },

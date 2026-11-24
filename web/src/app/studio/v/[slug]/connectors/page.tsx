@@ -183,7 +183,7 @@ export default function ConnectorsPage({ params }: { params: Promise<{ slug: str
           <div className="space-y-3">
             <label className="block space-y-1 text-sm"><span>MCP server URL</span><Input value={mcpUrl} onChange={(e) => setMcpUrl(e.target.value)} placeholder="https://mcp.example.com/sse" /></label>
             <label className="block space-y-1 text-sm"><span>Name <span className="text-muted-foreground">(optional)</span></span><Input value={mcpName} onChange={(e) => setMcpName(e.target.value)} placeholder="Team wiki" /></label>
-            <p className="text-muted-foreground text-xs">Private records never leave the venture. The server only sees what an agent sends in a tool call.</p>
+            <p className="text-muted-foreground text-xs">Private records never leave the business. The server only sees what an agent sends in a tool call.</p>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setMcpOpen(false)}>Cancel</Button>

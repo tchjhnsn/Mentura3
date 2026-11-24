@@ -70,9 +70,9 @@ const CANVAS: Record<string, Canvas> = {
   },
   "founder-raise": {
     ws: [
-      { key: "who", label: "Who", text: "Funders who back solo founders, and founders who start many ventures.", whose: "maya", confirmed: true },
-      { key: "what", label: "What", text: "Two years of a founder's time, with a share in every venture.", whose: "torian", confirmed: true },
-      { key: "why", label: "Why", text: "Agents let one founder run several ventures, each needing less money.", whose: "torian", confirmed: true },
+      { key: "who", label: "Who", text: "Funders who back solo founders, and founders who start many businesses.", whose: "maya", confirmed: true },
+      { key: "what", label: "What", text: "Two years of a founder's time, with a share in every business.", whose: "torian", confirmed: true },
+      { key: "why", label: "Why", text: "Agents let one founder run several businesses, each needing less money.", whose: "torian", confirmed: true },
       { key: "where", label: "Where", text: "US angels and small funds.", whose: "maya", confirmed: true },
       { key: "when", label: "When", text: "Close by March.", whose: "torian", confirmed: false },
       { key: "how", label: "How", text: "Three to five funders at $80k to $150k each.", whose: "funder-scout", confirmed: false },
@@ -81,7 +81,7 @@ const CANVAS: Record<string, Canvas> = {
       { key: "exists", label: "The problem exists", claim: "Funders want exposure to prolific solo founders.", grade: "demonstrated", evidence: [{ text: "Harbor Angels asked for the deck", href: "files/marketing/outreach/funder-short-list.md" }], next: "None needed." },
       { key: "segment", label: "The segment is right", claim: "Angels and small funds, not large funds.", grade: "demonstrated", evidence: [{ text: "Funder short list", href: "files/marketing/outreach/funder-short-list.md" }], next: "None needed." },
       { key: "hurts", label: "It hurts enough", claim: "Funders will commit money on this structure.", grade: "supported", evidence: [{ text: "Two funders asked for terms" }], next: "Send the deck to three funders and ask for a yes or no." },
-      { key: "why-now", label: "Why now", claim: "Agent tools make one founder many times faster.", grade: "supported", evidence: [{ text: "Investor deck, slide 2", href: "decks/investor" }], next: "Show this year's ventures and time spent." },
+      { key: "why-now", label: "Why now", claim: "Agent tools make one founder many times faster.", grade: "supported", evidence: [{ text: "Investor deck, slide 2", href: "decks/investor" }], next: "Show this year's businesses and time spent." },
     ],
     competitors: [{ name: "Income share agreements", what: "Funders take a share of salary.", gap: "Built for employees, not founders." }, { name: "Studio models", what: "A studio owns the ideas.", gap: "The founder gives up control." }],
   },

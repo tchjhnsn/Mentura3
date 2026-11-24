@@ -28,7 +28,7 @@ const SEED: Record<string, Decision[]> = {
     { id: "d1", title: "Run the pilot with Lincoln High or Westlake", why: "One-way door", whyLine: "A school only says yes once. Picking one closes the other for this season.", agent: "strategy-agent",
       rec: "Lincoln High. Coach Reyes already uses hand signals and plays in loud stadiums, so the test is harder and more honest.", recOption: "Lincoln High",
       evidence: [{ label: "Interview notes, Coach Reyes", path: "product/interviews/reyes.md" }, { label: "Assumptions", path: "strategy/assumptions.json" }], options: ["Lincoln High", "Westlake", "Wait a week"], due: "Due Friday" },
-    { id: "d2", title: "Order ten vests at $38 each", why: "Spends money", whyLine: "$380 is more than any agent may spend alone in this venture.", agent: "finance-agent",
+    { id: "d2", title: "Order ten vests at $38 each", why: "Spends money", whyLine: "$380 is more than any agent may spend alone in this business.", agent: "finance-agent",
       rec: "Order ten. It fits the budget and a full team needs at least eight.", recOption: "Order ten",
       evidence: [{ label: "Vendor quote", path: "supply-chain/quotes/vest-v2.pdf" }, { label: "November spend", path: "finance/spend/2026-11.json" }], options: ["Order ten", "Order four", "Not yet"], due: "Due next week" },
     { id: "d0", title: "Name the product Haptic Plays", why: "Public", whyLine: "The name goes on the landing page and the outreach.", agent: "marketing-agent",

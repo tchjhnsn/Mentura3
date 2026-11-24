@@ -16,7 +16,7 @@ export const DISCOVERED = 62;
 /** C8 Complete profile: the share of your Mentura profile that is filled, with the next steps. */
 function CompleteProfile() {
   const [open, setOpen] = useState(false);
-  const steps = [{ t: "Add what you are looking for", done: true, href: "/mentura/profile/edit" }, { t: "Pin your best work", done: true, href: "/mentura/profile" }, { t: "Link a venture", done: true, href: "/mentura/profile" }, { t: "Add a photo", done: false, href: "/mentura/profile/edit" }, { t: "Confirm one social link", done: false, href: "/mentura/profile/edit" }];
+  const steps = [{ t: "Add what you are looking for", done: true, href: "/mentura/profile/edit" }, { t: "Pin your best work", done: true, href: "/mentura/profile" }, { t: "Link a business", done: true, href: "/mentura/profile" }, { t: "Add a photo", done: false, href: "/mentura/profile/edit" }, { t: "Confirm one social link", done: false, href: "/mentura/profile/edit" }];
   const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
   return (
     <div className="bg-background fixed right-4 bottom-4 z-30 w-72 rounded-2xl border shadow-lg max-md:hidden">

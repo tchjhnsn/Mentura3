@@ -13,7 +13,7 @@ import { Num } from "@/components/studio/bits";
 import { ME, PEOPLE, SCREENS, VENTURES, isA, messageHref, roleLine, type Person } from "@/components/mentura/data";
 import { Face, FollowButton, Head, VentureCard } from "@/components/mentura/parts";
 
-const TABS = ["People", "Investors", "Builders", "Ventures"] as const;
+const TABS = ["People", "Investors", "Builders", "Businesses"] as const;
 type Tab = (typeof TABS)[number];
 const job = SCREENS.find((s) => s.id === "M9")?.job;
 
@@ -26,7 +26,7 @@ export default function Discover() {
   const others = PEOPLE.filter((p) => p.handle !== ME);
   const cities = ["All cities", ...Array.from(new Set(others.map((p) => p.city)))];
   const pool: Person[] = tab === "Investors" ? others.filter((p) => isA(p, "Investor")) : tab === "Builders" ? others.filter((p) => isA(p, "Builder") || isA(p, "Operator")) : others;
-  const allTags = Array.from(new Set((tab === "Ventures" ? [] : pool).flatMap((p) => p.tags)));
+  const allTags = Array.from(new Set((tab === "Businesses" ? [] : pool).flatMap((p) => p.tags)));
   const needle = q.trim().toLowerCase();
 
   const people = pool.filter((p) => {
@@ -60,9 +60,9 @@ export default function Discover() {
           <label className="relative min-w-0 flex-1">
             <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <span className="sr-only">Search</span>
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tab === "Ventures" ? "Search ventures by name or what they make" : "Search by name, what they do or a tag"} className="pl-9" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder={tab === "Businesses" ? "Search businesses by name or what they make" : "Search by name, what they do or a tag"} className="pl-9" />
           </label>
-          {tab !== "Ventures" ? (
+          {tab !== "Businesses" ? (
             <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="City"
               className="border-input bg-background dark:bg-input/30 h-9 rounded-md border px-3 text-sm shadow-xs">
               {cities.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -84,7 +84,7 @@ export default function Discover() {
 
       <section className="relative mt-5">
         <Num n="M9.3" className="absolute -top-2 right-0" />
-        {tab === "Ventures" ? (
+        {tab === "Businesses" ? (
           <div className="grid gap-3 md:grid-cols-2">
             {ventures.length ? ventures.map((v, i) => <VentureCard key={v.slug} v={v} first={i === 0} />) : <Empty />}
           </div>

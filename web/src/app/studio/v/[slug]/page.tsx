@@ -33,7 +33,7 @@ const ASSUMPTIONS: Record<string, { key: string; claim: string; grade: Grade }[]
   "founder-raise": [
     { key: "Exists", claim: "Good founders stall between ideas for lack of money.", grade: "demonstrated" },
     { key: "Segment", claim: "Second time founders with one exit or more.", grade: "demonstrated" },
-    { key: "Hurts", claim: "They take jobs and leave venture building.", grade: "supported" },
+    { key: "Hurts", claim: "They take jobs and leave business building.", grade: "supported" },
     { key: "Why now", claim: "Solo founders build more with agents than teams did.", grade: "contradicted" },
   ],
 };
