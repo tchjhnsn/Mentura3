@@ -25,6 +25,13 @@ export async function createVenture(idea: string): Promise<Result<{ id: string }
   return attempt(async () => ({ id: (await naive<{ id: string }>("create", { name, description: text })).id }));
 }
 
+/** One venture: its name, phase, founder and the functions it has turned on. */
+export async function ventureDetail(id: string): Promise<Result<VentureDetail>> {
+  const why = studioUnavailable();
+  if (why) return { ok: false, error: why };
+  return attempt(() => naive<VentureDetail>("venture", { venture: id }));
+}
+
 /** One venture and what it needs decided next. */
 export async function ventureWithDocket(id: string): Promise<Result<{ venture: VentureDetail; docket: Docket }>> {
   return attempt(async () => {

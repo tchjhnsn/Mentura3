@@ -49,7 +49,8 @@ export type Docket = {
   next: { function: string; decision: string; question: string; value: number; dominant: boolean; why: string[] } | null;
   functions: { id: string; function: string; attention: number; decisions: DocketDecision[] }[];
 };
-export type VentureDetail = { id: string; name: string; phase: string; founder: string | null };
+/** `departments`: the functions the venture has turned on, by id from Naive's departments.json. */
+export type VentureDetail = { id: string; name: string; phase: string; founder: string | null; departments: string[] };
 
 /** Why the Studio cannot reach Naive here, or null when it can. */
 export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string | null {

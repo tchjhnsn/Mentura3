@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FUNCTIONS, VENTURES } from "./data";
+import { realBusiness } from "./business-data";
 import { functionNav, ventureNav } from "./nav";
 import { TOOLS, functionGroups, levelOf, shown, statusOf, universalTools } from "./tools";
 
@@ -58,5 +59,16 @@ describe("the console's tools, from Naive's catalog", () => {
     const fns = ventureNav("haptic-plays").find((g) => g.label === "Functions")!;
     expect(fns.items.filter((i) => i.drills).length).toBeGreaterThan(0);
     expect(fns.items.at(-1)?.label).toBe("Add a function");
+  });
+
+  it("gives a real business only pages that read it, and the functions its venture.json turns on", () => {
+    const biz = realBusiness({ id: "corner-bakery", name: "Corner Bakery", departments: ["finance", "marketing-and-sales", "astrology"] });
+    expect(biz.functions).toEqual(["finance", "marketing-and-sales"]);
+    const groups = ventureNav("corner-bakery", biz);
+    const hrefs = groups.flatMap((g) => g.items.map((i) => i.href.replace("/studio/v/corner-bakery", "")));
+    for (const h of hrefs) expect(["", "/decisions", "/files"].includes(h) || /^\/(tools|functions)\//.test(h), h).toBe(true);
+    expect(hrefs).toContain("/functions/finance");
+    expect(hrefs.some((h) => h === "/functions")).toBe(false);
+    for (const g of groups) for (const i of g.items) expect(resolves(i.href), i.href).toBe(true);
   });
 });

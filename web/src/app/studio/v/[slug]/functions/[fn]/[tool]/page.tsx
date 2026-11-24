@@ -4,6 +4,7 @@
 // screen shows it; the rest show the tool's page from Naive's catalog.
 import { use, useMemo } from "react";
 import { notFound } from "next/navigation";
+import { isSample } from "@/components/studio/data";
 import { ToolPage } from "@/components/studio/tool-page";
 import { toolOf } from "@/components/studio/tools";
 import OutreachPage from "../../../outreach/page";
@@ -17,6 +18,8 @@ export default function FunctionToolPage({ params }: { params: Promise<{ slug: s
   const deck = useMemo(() => Promise.resolve({ slug, id: "investor" }), [slug]);
   const tool = toolOf(id);
   if (!tool || tool.function !== fn) notFound();
+  // Only the prototype's sample businesses have these screens; a real business shows the tool's catalog page.
+  if (!isSample(slug)) return <ToolPage tool={tool} />;
   if (id === "outreach") return <OutreachPage params={venture} />;
   if (id === "vision-and-goals") return <StrategyPage params={venture} />;
   if (id === "raise") return <DeckPage params={deck} />;

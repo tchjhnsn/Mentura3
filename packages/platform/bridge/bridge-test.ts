@@ -102,6 +102,7 @@ try {
   expect("reads a plain file", read("venture.json").ok);
   const shown = bridge({ op: "venture", venture: id });
   expect("a dangling link does not take the venture down", shown.ok, shown);
+  expect("a venture names the functions it has turned on", Array.isArray(shown.result.departments) && shown.result.departments.every((d: unknown) => typeof d === "string"), shown.result.departments);
 
   const decision = bridge({ op: "docket", venture: id }).result.next.decision as string;
   const broken = join(scratch, "broken");

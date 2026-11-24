@@ -23,7 +23,7 @@ const SUGGESTIONS = [
   "Bookkeeping for small design studios",
 ];
 
-const realHref = (id: string) => `/studio/r/${encodeURIComponent(id)}`;
+const realHref = (id: string) => `/studio/v/${encodeURIComponent(id)}`;
 
 export default function StudioHome() {
   const [idea, setIdea] = useState<string | null>(null);

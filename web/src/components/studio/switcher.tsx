@@ -7,7 +7,11 @@ import Link from "next/link";
 import { CheckIcon, ChevronsUpDownIcon, LayoutGridIcon, PlusIcon, RocketIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { VENTURES, ventureHref, ventureOf } from "./data";
+import { useState } from "react";
+import { listVentures } from "@/app/studio/actions";
+import { VENTURES, ventureHref } from "./data";
+import { useBusiness } from "./business";
+import { hueOf } from "./business-data";
 import { slugOf } from "./nav";
 
 export type Mode = { kind: "personal" } | { kind: "studio" } | { kind: "venture"; slug: string };
@@ -22,7 +26,10 @@ const Swatch = ({ hue }: { hue: number }) => <span aria-hidden className="size-4
 
 export function ModeSwitcher({ path, done }: { path: string; done: () => void }) {
   const mode = modeOf(path);
-  const v = mode.kind === "venture" ? ventureOf(mode.slug) : null;
+  const v = useBusiness(mode.kind === "venture" ? mode.slug : null);
+  // The signed-in person's real businesses, read from Naive once the menu is first opened.
+  const [real, setReal] = useState<{ id: string; name: string }[] | null>(null);
+  const load = (open: boolean) => { if (open && real === null) void listVentures().then((r) => setReal(r.ok ? r.value : [])); };
   const now = v
     ? { name: v.name, about: "Business console", icon: <Swatch hue={v.hue} /> }
     : mode.kind === "studio"
@@ -31,7 +38,7 @@ export function ModeSwitcher({ path, done }: { path: string; done: () => void })
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={load}>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" aria-label={`${now.name}, switch`}>
               <span className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">{now.icon}</span>
@@ -50,10 +57,17 @@ export function ModeSwitcher({ path, done }: { path: string; done: () => void })
               <Link href="/studio" onClick={done} className="flex items-center gap-2"><LayoutGridIcon className="size-4" /><span className="flex-1">Business Studio</span>{mode.kind === "studio" ? <CheckIcon className="size-4" /> : null}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Businesses</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Your businesses</DropdownMenuLabel>
+            {real === null ? <DropdownMenuItem disabled>Loading</DropdownMenuItem> : real.length === 0 ? <DropdownMenuItem disabled>None yet</DropdownMenuItem> : real.map((x) => (
+                <DropdownMenuItem key={x.id} asChild>
+                  <Link href={ventureHref(encodeURIComponent(x.id))} onClick={done} className="flex items-center gap-2"><Swatch hue={hueOf(x.id)} /><span className="flex-1 truncate">{x.name}</span>{v?.id === x.id ? <CheckIcon className="size-4" /> : null}</Link>
+                </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Samples</DropdownMenuLabel>
             {VENTURES.map((x) => (
               <DropdownMenuItem key={x.slug} asChild>
-                <Link href={ventureHref(x.slug)} onClick={done} className="flex items-center gap-2"><Swatch hue={x.hue} /><span className="flex-1 truncate">{x.name}</span>{v?.slug === x.slug ? <CheckIcon className="size-4" /> : null}</Link>
+                <Link href={ventureHref(x.slug)} onClick={done} className="flex items-center gap-2"><Swatch hue={x.hue} /><span className="flex-1 truncate">{x.name}</span>{v?.id === x.slug ? <CheckIcon className="size-4" /> : null}</Link>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />

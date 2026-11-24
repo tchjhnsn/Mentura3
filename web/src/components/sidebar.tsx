@@ -18,6 +18,7 @@ import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/
 import { FUNCTIONS, VENTURES, ventureHref, type FunctionId } from "@/components/studio/data";
 import { STUDIO_NAV, functionNav, ventureNav, type NavGroup } from "@/components/studio/nav";
 import { levelOf } from "@/components/studio/tools";
+import { useBusiness, type Business } from "@/components/studio/business";
 import { ModeSwitcher, modeOf } from "@/components/studio/switcher";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
@@ -69,6 +70,8 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   const to = (p: string) => hrefOn(p, places.hostSide, places);
   const here = (p: string) => (p === "/" ? path === "/" : path === p || path.startsWith(`${p}/`));
   const { isMobile, setOpenMobile } = useSidebar();
+  const at = levelOf(path);
+  const biz = useBusiness(at.kind === "studio" ? null : at.slug);
   // On a phone, choosing a page closes the sheet.
   const done = () => { if (isMobile) setOpenMobile(false); };
   const item = (href: string, label: string, icon: ReactNode) => (
@@ -94,7 +97,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
             const mode = modeOf(path);
             return mode.kind === "personal"
               ? <MenturaNav item={item} to={to} done={done} />
-              : <StudioNav groups={navFor(path)} path={path} done={done} />;
+              : <StudioNav groups={navFor(path, biz)} path={path} done={done} />;
           })()
         ) : side === "polis" ? (
           <>
@@ -321,10 +324,10 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
 
 /** Which of the console's three sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
  * after Vercel): the Studio's, one business's, or one function's. Each replaces the one before it; nothing folds. */
-function navFor(path: string): NavGroup[] {
+function navFor(path: string, biz: Business | null): NavGroup[] {
   const at = levelOf(path);
   if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.slug, at.fn as FunctionId);
-  return at.kind === "studio" ? STUDIO_NAV : ventureNav(at.slug);
+  return at.kind === "studio" ? STUDIO_NAV : ventureNav(at.slug, biz);
 }
 
 /** The console: the Business Studio's pages, one business's, or one function's, in place of Mentura's own. A row with a

@@ -43,9 +43,14 @@ const UNIVERSAL_PAGES: Record<string, string> = {
   home: "", decisions: "decisions", agents: "agents", files: "files", activity: "activity", connections: "connectors", settings: "settings",
 };
 
-/** Where a tool opens inside one business: its page, under its function so the sidebar stays at that function. */
-export const toolPath = (t: Tool): string =>
-  t.function === null ? UNIVERSAL_PAGES[t.id] ?? `tools/${t.id}` : `functions/${t.function}/${t.id}`;
+/** Universal tools whose page reads a real business from Naive. The other pages are still the prototype's samples. */
+const REAL_PAGES = new Set(["home", "decisions", "files"]);
+
+/** Where a tool opens inside one business: its page, under its function so the sidebar stays at that function. A real
+ * business opens only pages that read it; any other universal tool shows its catalog page. */
+export const toolPath = (t: Tool, real = false): string =>
+  t.function !== null ? `functions/${t.function}/${t.id}`
+    : real && !REAL_PAGES.has(t.id) ? `tools/${t.id}` : UNIVERSAL_PAGES[t.id] ?? `tools/${t.id}`;
 
 /** Where the sidebar is, read from the path: the Studio, one business, or one function of a business. */
 export type Level = { kind: "studio" } | { kind: "business"; slug: string } | { kind: "function"; slug: string; fn: string; tool: string | null };
