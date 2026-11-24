@@ -50,12 +50,18 @@ const run = ([name, args]: [string, string[]]): Promise<Result> => new Promise((
   child.on("close", (code) => done({ name, code: code ?? 1, out }));
 });
 
-const workers = Number(process.env.TEST_WORKERS) || availableParallelism();
+// The steps that use the database share it, so they run one at a time after the rest (two at once deadlocked in CI).
+const usesDatabase = (name: string): boolean => /database URL|MENTURA_EVAL_DATABASE_URL/.test(name);
 const results: Result[] = new Array(steps.length);
-let next = 0;
-await Promise.all(Array.from({ length: Math.min(workers, steps.length) }, async () => {
-  while (next < steps.length) { const i = next++; results[i] = await run(steps[i]); }
-}));
+const runAll = async (indexes: number[], workers: number): Promise<void> => {
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(workers, indexes.length) }, async () => {
+    while (next < indexes.length) { const i = indexes[next++]; results[i] = await run(steps[i]); }
+  }));
+};
+const all = steps.map((_, i) => i);
+await runAll(all.filter((i) => !usesDatabase(steps[i][0])), Number(process.env.TEST_WORKERS) || availableParallelism());
+await runAll(all.filter((i) => usesDatabase(steps[i][0])), 1);
 
 let failed = 0;
 for (const r of results) {
