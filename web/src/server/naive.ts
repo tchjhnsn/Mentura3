@@ -11,7 +11,8 @@ import "server-only";
 
 import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { fileURLToPath } from "node:url";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { promisify } from "node:util";
 import { headers } from "next/headers";
 import { signAssertion, type Identity } from "../../../packages/platform/bridge/assertion.ts";
@@ -21,7 +22,13 @@ import { OWNER_ID } from "./session";
 import { openMode } from "./open-mode";
 
 const run = promisify(execFile);
-const bridge = fileURLToPath(new URL("../../../packages/platform/bridge/bridge.mjs", import.meta.url));
+// Found from the working directory (web/ under next dev and next start, or the repo root), not import.meta.url,
+// because the bundler rewrites new URL(..., import.meta.url) into an asset reference.
+const bridgePath = () => {
+  const file = [join(/*turbopackIgnore: true*/ process.cwd(), "../packages/platform/bridge/bridge.mjs"), join(/*turbopackIgnore: true*/ process.cwd(), "packages/platform/bridge/bridge.mjs")].find((f) => existsSync(f));
+  if (!file) throw new Error("The Studio cannot find Naive's bridge in this checkout.");
+  return file;
+};
 
 export type VentureSummary = { id: string; name: string; phase: string; path: string };
 export type DocketDecision = { id: string; question: string; function: string; value: number; why: string[] };
@@ -61,6 +68,7 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   const why = studioUnavailable();
   if (why) throw new Error(why);
   const timeout = WRITES.has(op) ? WRITE_MS : READ_MS;
+  const bridge = bridgePath();
   const who = await identity();
   const key = process.env.NAIVE_BRIDGE_KEY ?? processKey;
   const assertion = signAssertion(who, { op, ...args }, key);
