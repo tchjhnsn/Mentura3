@@ -37,6 +37,8 @@ export const VENTURES: Venture[] = [
   { slug: "founder-raise", name: "Founder Raise", oneLine: "Fund a founder's time, not one idea.", commitment: "charge", hue: 260,
     needNow: "Send the deck to three funders on the short list.", updated: "Yesterday", agentsRunning: 2, openDecisions: 1, spendMonth: 63, budgetMonth: 100, team: ["torian", "maya"] },
 ];
+/** Whether `slug` names one of the prototype's sample businesses rather than a real one read from Naive. */
+export const isSample = (slug: string) => VENTURES.some((v) => v.slug === slug);
 export const ventureOf = (slug: string): Venture => VENTURES.find((v) => v.slug === slug) ?? VENTURES[0]!;
 
 export const FUNCTIONS: Fn[] = [

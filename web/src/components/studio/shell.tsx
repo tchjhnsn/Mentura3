@@ -10,7 +10,8 @@ import { HashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarButton } from "@/components/sidebar";
 import { Num, useNums } from "./bits";
-import { FUNCTIONS, ventureHref, ventureOf } from "./data";
+import { FUNCTIONS, ventureHref } from "./data";
+import { useBusiness } from "./business";
 import { levelOf, toolOf } from "./tools";
 import { slugOf } from "./nav";
 
@@ -51,9 +52,15 @@ function Crumbs({ path }: { path: string }) {
   if (at.kind === "studio") return <Link href="/studio" className={`${link} font-medium`}>Business Studio</Link>;
   const fn = at.kind === "function" ? FUNCTIONS.find((f) => f.id === at.fn) : undefined;
   const tool = at.kind === "function" && at.tool ? toolOf(at.tool) : undefined;
+  return <Path slug={at.slug} fn={fn} tool={tool} link={link} sep={sep} />;
+}
+
+function Path({ slug, fn, tool, link, sep }: { slug: string; fn?: { id: string; label: string }; tool?: { title: string }; link: string; sep: ReactNode }) {
+  const at = { slug };
+  const name = useBusiness(slug)?.name ?? slug;
   return (
     <nav aria-label="Where you are" className="flex min-w-0 items-center gap-0.5">
-      <Link href={ventureHref(at.slug)} className={`${link} font-medium`}>{ventureOf(at.slug).name}</Link>
+      <Link href={ventureHref(at.slug)} className={`${link} font-medium`}>{name}</Link>
       {fn ? <>{sep}<Link href={ventureHref(at.slug, `functions/${fn.id}`)} className={link}>{fn.label}</Link></> : null}
       {tool ? <>{sep}<span className="truncate px-2 py-1.5 text-sm">{tool.title}</span></> : null}
     </nav>

@@ -386,7 +386,8 @@ const ops = {
     const { founderName, signers } = await fw("packages/naive/src/engine/decisions.mjs");
     let founder = null;
     try { if (signers(dir).size) founder = founderName(dir); } catch { /* a delegation file that does not parse */ }
-    return { id: v.id, name: v.name, phase: v.phase, founder, tree: tree(dir) };
+    // departments: the functions this venture has turned on (venture.schema.json), which the console's sidebar lists.
+    return { id: v.id, name: v.name, phase: v.phase, founder, departments: Array.isArray(v.departments) ? v.departments : [], tree: tree(dir) };
   },
 
   async read({ venture, path }, { workspace }) {
