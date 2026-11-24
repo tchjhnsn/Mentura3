@@ -24,9 +24,9 @@ export function ModeSwitcher({ path, done }: { path: string; done: () => void })
   const mode = modeOf(path);
   const v = mode.kind === "venture" ? ventureOf(mode.slug) : null;
   const now = v
-    ? { name: v.name, about: "Venture console", icon: <Swatch hue={v.hue} /> }
+    ? { name: v.name, about: "Business console", icon: <Swatch hue={v.hue} /> }
     : mode.kind === "studio"
-      ? { name: "Venture Studio", about: "All your ventures", icon: <LayoutGridIcon className="size-4" /> }
+      ? { name: "Business Studio", about: "All your businesses", icon: <LayoutGridIcon className="size-4" /> }
       : { name: "Mentura", about: "Personal", icon: <RocketIcon className="size-4" /> };
   return (
     <SidebarMenu>
@@ -47,10 +47,10 @@ export function ModeSwitcher({ path, done }: { path: string; done: () => void })
               <Link href="/mentura" onClick={done} className="flex items-center gap-2"><RocketIcon className="size-4" /><span className="flex-1">Personal</span>{mode.kind === "personal" ? <CheckIcon className="size-4" /> : null}</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/studio" onClick={done} className="flex items-center gap-2"><LayoutGridIcon className="size-4" /><span className="flex-1">Venture Studio</span>{mode.kind === "studio" ? <CheckIcon className="size-4" /> : null}</Link>
+              <Link href="/studio" onClick={done} className="flex items-center gap-2"><LayoutGridIcon className="size-4" /><span className="flex-1">Business Studio</span>{mode.kind === "studio" ? <CheckIcon className="size-4" /> : null}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Ventures</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Businesses</DropdownMenuLabel>
             {VENTURES.map((x) => (
               <DropdownMenuItem key={x.slug} asChild>
                 <Link href={ventureHref(x.slug)} onClick={done} className="flex items-center gap-2"><Swatch hue={x.hue} /><span className="flex-1 truncate">{x.name}</span>{v?.slug === x.slug ? <CheckIcon className="size-4" /> : null}</Link>
@@ -58,7 +58,7 @@ export function ModeSwitcher({ path, done }: { path: string; done: () => void })
             ))}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/studio/new" onClick={done} className="flex items-center gap-2"><PlusIcon className="size-4" />New venture</Link>
+              <Link href="/studio/new" onClick={done} className="flex items-center gap-2"><PlusIcon className="size-4" />New business</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

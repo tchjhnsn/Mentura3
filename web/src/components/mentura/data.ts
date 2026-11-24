@@ -11,14 +11,14 @@ export type Person = {
 export const ME = "torian";
 
 export const PEOPLE: Person[] = [
-  { handle: "torian", name: "Torian Johnson", roles: ["Founder"], line: "Building ventures in public. Haptic Plays, Pattern Language and Mentura.", city: "Austin, TX", hue: 24, followers: 312, following: 188, tags: ["Wearables", "Sports tech", "Venture building"], venture: "haptic-plays", open: "Looking for a hardware co-founder" },
+  { handle: "torian", name: "Torian Johnson", roles: ["Founder"], line: "Building businesses in public. Haptic Plays, Pattern Language and Mentura.", city: "Austin, TX", hue: 24, followers: 312, following: 188, tags: ["Wearables", "Sports tech", "Business building"], venture: "haptic-plays", open: "Looking for a hardware co-founder" },
   { handle: "maya", name: "Maya Ortiz", roles: ["Investor"], line: "Partner at Lone Star Seed. First checks in founders, not decks.", city: "Austin, TX", hue: 200, followers: 4210, following: 610, tags: ["Pre-seed", "Hardware", "Sports"], fund: "Lone Star Seed", open: "Taking first meetings in December" },
   { handle: "dev", name: "Dev Patel", roles: ["Builder"], line: "Firmware and embedded engineer. I make small things buzz.", city: "Austin, TX", hue: 140, followers: 890, following: 240, tags: ["Embedded", "Haptics", "Rust"], open: "Open to a co-founder role" },
   { handle: "ana", name: "Ana Reyes", roles: ["Founder"], line: "Making architecture software for small firms. Ex-Gensler.", city: "Houston, TX", hue: 300, followers: 1530, following: 402, tags: ["Architecture", "SaaS", "Design"], venture: "pattern-language" },
   { handle: "james", name: "James Okafor", roles: ["Investor"], line: "Angel. Former coach. I back sports and education founders.", city: "Dallas, TX", hue: 60, followers: 2280, following: 330, tags: ["Angel", "Sports", "Education"], fund: "Angel" },
   { handle: "lena", name: "Lena Brooks", roles: ["Operator", "Investor"], line: "Two exits as COO. Now helping first-time founders hire well.", city: "Austin, TX", hue: 330, followers: 3120, following: 520, tags: ["Hiring", "Operations", "Advisor"] },
   { handle: "sam", name: "Sam Lee", roles: ["Founder"], line: "Building a payroll tool for youth sports leagues.", city: "San Antonio, TX", hue: 260, followers: 640, following: 290, tags: ["Fintech", "Sports"], venture: "league-pay" },
-  { handle: "priya", name: "Priya Shah", roles: ["Investor"], line: "Principal at Third Coast Ventures. Seed and Series A.", city: "Austin, TX", hue: 100, followers: 5400, following: 800, tags: ["Seed", "B2B", "Climate"], fund: "Third Coast Ventures" },
+  { handle: "priya", name: "Priya Shah", roles: ["Investor"], line: "Principal at Third Coast Businesses. Seed and Series A.", city: "Austin, TX", hue: 100, followers: 5400, following: 800, tags: ["Seed", "B2B", "Climate"], fund: "Third Coast Businesses" },
 ];
 /** How a person's roles read in a line: "Founder", "Operator and investor". */
 export const roleLine = (p: Person): string => p.roles.map((r, i) => (i ? r.toLowerCase() : r)).join(" and ") + (p.fund ? ` at ${p.fund}` : "");
@@ -118,18 +118,18 @@ export const REFS = {
 export const SCREENS: Screen[] = [
   { id: "M0", title: "Screen map", path: "/mentura/map", job: "Every Mentura screen and part number in one list.", ref: null },
   { id: "M1", title: "Home", path: "/mentura", job: "Post what you made or are doing; read what founders and investors you follow are making.", ref: REFS.home },
-  { id: "M2", title: "Dashboard", path: "/mentura/dashboard", job: "Your week in Mentura: what the AI says to do today, views, meetings and ventures.", ref: REFS.dashboard },
-  { id: "M3", title: "AI chat", path: "/mentura/ai", job: "Chat with the AI model about anything: your profile, people, ventures, events and meetings.", ref: REFS.ai },
+  { id: "M2", title: "Dashboard", path: "/mentura/dashboard", job: "Your week in Mentura: what the AI says to do today, views, meetings and businesses.", ref: REFS.dashboard },
+  { id: "M3", title: "AI chat", path: "/mentura/ai", job: "Chat with the AI model about anything: your profile, people, businesses, events and meetings.", ref: REFS.ai },
   { id: "M4", title: "Notifications", path: "/mentura/notifications", job: "Replies, follows, requests and invitations, split into social and work.", ref: REFS.notifications },
   { id: "M5", title: "Messages", path: "/mentura/messages", job: "Conversations and message requests with founders and investors.", ref: REFS.messages },
-  { id: "M6", title: "My profile", path: "/mentura/profile", job: "Your public founder profile: what you make, do, your ventures and posts.", ref: REFS.myProfile },
+  { id: "M6", title: "My profile", path: "/mentura/profile", job: "Your public founder profile: what you make, do, your businesses and posts.", ref: REFS.myProfile },
   { id: "M7", title: "Someone's profile", path: "/mentura/p/[handle]", job: "See what a person makes and does; follow or message them.", ref: REFS.profile },
   { id: "M8", title: "Get discovered", path: "/mentura/discovered", job: "How findable you are, and the next things that make you more so.", ref: REFS.discovered },
-  { id: "M9", title: "Discover", path: "/mentura/discover", job: "Find founders, investors, builders and ventures by what they make and need.", ref: REFS.discover },
+  { id: "M9", title: "Discover", path: "/mentura/discover", job: "Find founders, investors, builders and businesses by what they make and need.", ref: REFS.discover },
   { id: "M10", title: "Events", path: "/mentura/events", job: "Founder dinners, demo days and meetups near you, and the ones you host.", ref: REFS.events },
   { id: "M11", title: "Event", path: "/mentura/events/[id]", job: "What the event is, who is going, and your seat.", ref: REFS.event },
   { id: "M12", title: "Post", path: "/mentura/post/[id]", job: "One post with its replies.", ref: REFS.post },
-  { id: "M13", title: "Venture page", path: "/mentura/ventures/[slug]", job: "A venture's public page: what it is, its phase, team, raise and updates.", ref: REFS.company },
+  { id: "M13", title: "Business page", path: "/mentura/ventures/[slug]", job: "A business's public page: what it is, its phase, team, raise and updates.", ref: REFS.company },
   { id: "M14", title: "Meetings", path: "/mentura/meetings", job: "Meetings with the people you met here, with notes and the call.", ref: REFS.meeting },
   { id: "M15", title: "How you appear", path: "/mentura/profile/edit", job: "Choose what of your shared profile Mentura shows, and in which words.", ref: REFS.editProfile },
 ];
@@ -137,14 +137,14 @@ export const SCREENS: Screen[] = [
 export const PARTS: { id: string; name: string; where: string }[] = [
   { id: "C1", name: "Sidebar", where: "Every screen" },
   { id: "C2", name: "Space switcher", where: "Sidebar: Reflect console, Village and polis, Mentura" },
-  { id: "C3", name: "Create", where: "Sidebar: post, event, venture, meeting" },
+  { id: "C3", name: "Create", where: "Sidebar: post, event, business, meeting" },
   { id: "C4", name: "Post", where: "M1, M6, M7, M12, M13" },
   { id: "C5", name: "Composer", where: "M1, M12" },
   { id: "C6", name: "Face with name", where: "Everywhere a person shows" },
   { id: "C7", name: "Follow button", where: "M1, M7, M9" },
   { id: "C8", name: "Complete profile", where: "Bottom right of every screen" },
   { id: "C9", name: "Event row", where: "M1, M10" },
-  { id: "C10", name: "Venture card", where: "M6, M7, M9" },
+  { id: "C10", name: "Business card", where: "M6, M7, M9" },
   { id: "C11", name: "Number tag", where: "Every screen and part" },
   { id: "C12", name: "Topic tabs", where: "M1" },
   { id: "C13", name: "Right rail", where: "M1, M2" },

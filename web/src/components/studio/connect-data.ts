@@ -156,7 +156,7 @@ export const TOOL_ABOUT: Record<string, string> = {
   Roadmap: "What gets built next and why, tied to the product cards.",
   "Prototype preview": "A live preview of the prototype the agent is building.",
   "Bug list": "Bugs from testers and GitHub, ranked by how many people they stop.",
-  "Landing page": "A one page site for the venture, drafted from the strategy canvas.",
+  "Landing page": "A one page site for the business, drafted from the strategy canvas.",
   Pipeline: "Every coach, team and buyer, and where each one stands.",
 };
 

@@ -79,7 +79,7 @@ export function ConnectConsent({ c, connected, onDone, onDisconnect }: { c: Conn
               })}
             </div>
           </section>
-          <p className="text-muted-foreground text-xs">Private records never leave the venture. You can change this any time.</p>
+          <p className="text-muted-foreground text-xs">Private records never leave the business. You can change this any time.</p>
         </div>
       )}
       <DialogFooter className="gap-2 sm:justify-between">

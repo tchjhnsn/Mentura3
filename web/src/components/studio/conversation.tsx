@@ -62,9 +62,9 @@ function answer(slug: string, lead: Lead, ask: string): Omit<Msg, "id" | "who"> 
     fetched: ["strategy/one-pager.md", "operations/week-47.md"],
     pieces: [
       { type: "Plan", props: { title: ask.length > 60 ? `${ask.slice(0, 57)}...` : ask, steps: [
-        { title: "Read what the venture already knows", who: lead.name, status: "Done" },
+        { title: "Read what the business already knows", who: lead.name, status: "Done" },
         { title: "Draft it", who: lead.id === "chief-of-staff" ? "Strategy lead" : lead.name, status: "Running" },
-        { title: "Your yes before anything leaves the venture", who: "You", status: "Waiting for you" },
+        { title: "Your yes before anything leaves the business", who: "You", status: "Waiting for you" },
       ] } },
     ],
   };
@@ -121,7 +121,7 @@ export function Conversation({ slug, leadId }: { slug: string; leadId: string })
             <LeadMark lead={lead} size={28} />
             <div className="min-w-0 flex-1 space-y-2.5">
               <div className="text-muted-foreground text-xs font-medium">{lead.name}</div>
-              {m.pending ? <p className="text-muted-foreground animate-pulse text-sm">Reading the venture's records...</p> : (
+              {m.pending ? <p className="text-muted-foreground animate-pulse text-sm">Reading the business's records...</p> : (
                 <>
                   {m.fetched?.length ? <p className="text-muted-foreground flex flex-wrap items-center gap-x-1.5 text-xs"><DatabaseIcon className="size-3" />Read {m.fetched.join(", ")}</p> : null}
                   {m.text ? <p className="text-sm leading-relaxed">{m.text}</p> : null}

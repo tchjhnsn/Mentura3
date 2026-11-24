@@ -80,7 +80,7 @@ export default function StudioSettings() {
     <div className="pb-16">
       <ScreenHead n="S7" title="Studio settings" job="People, billing, connectors, keys and limits for the whole studio.">
         {saved ? <span className="text-muted-foreground text-sm">{saved}</span> : null}
-        <Button onClick={() => { setSaved(dirty ? "Saved. Every venture uses the new settings." : "Nothing changed. Settings are up to date."); setDirty(false); }}>Save</Button>
+        <Button onClick={() => { setSaved(dirty ? "Saved. Every business uses the new settings." : "Nothing changed. Settings are up to date."); setDirty(false); }}>Save</Button>
       </ScreenHead>
 
       <div className="flex flex-col gap-6 px-4 md:flex-row md:px-8">
@@ -138,8 +138,8 @@ export default function StudioSettings() {
           ) : null}
 
           {section === "Billing" ? (
-            <Group n="S7.4" title="Billing" line="The studio pays for agent runs across every venture.">
-              <Row label="Plan" hint="Founder plan: unlimited ventures, five people, Power models included.">
+            <Group n="S7.4" title="Billing" line="The studio pays for agent runs across every business.">
+              <Row label="Plan" hint="Founder plan: unlimited businesses, five people, Power models included.">
                 <Button variant="outline" size="sm" onClick={() => setBillingNote("Plan options sent to your email. Nothing changes until you pick one.")}>Change plan</Button>
               </Row>
               <Row label="Card on file" hint="Mock card for the prototype."><span className="font-mono text-sm">Visa ending 4242, expires 08/28</span></Row>
@@ -162,7 +162,7 @@ export default function StudioSettings() {
             <section className="relative">
               <Num n="S7.5" className="absolute -top-2 right-0" />
               <h2 className="text-base font-semibold">Shared connectors</h2>
-              <p className="text-muted-foreground mb-3 text-sm">Accounts set up once for the studio. Each venture still chooses which agents may use them, on its own Connectors screen.</p>
+              <p className="text-muted-foreground mb-3 text-sm">Accounts set up once for the studio. Each business still chooses which agents may use them, on its own Connectors screen.</p>
               <div className="divide-y rounded-lg border">
                 {CONNECTORS.filter((c) => SHARED_CONNECTORS.includes(c.id)).map((c) => <ConnectorRow key={c.id} c={c} />)}
               </div>
@@ -192,8 +192,8 @@ export default function StudioSettings() {
           ) : null}
 
           {section === "Limits" ? (
-            <Group n="S7.7" title="Limits" line="Caps that hold for every venture. Usage shows spend against them.">
-              <Row label="Studio budget a month" hint="Venture budgets sit inside it."><Input inputMode="numeric" value={String(limits.budget)} onChange={(e) => { setLimits((l) => ({ ...l, budget: Number(e.target.value.replace(/[^0-9]/g, "")) || 0 })); touch(); }} className="w-28" /></Row>
+            <Group n="S7.7" title="Limits" line="Caps that hold for every business. Usage shows spend against them.">
+              <Row label="Studio budget a month" hint="Business budgets sit inside it."><Input inputMode="numeric" value={String(limits.budget)} onChange={(e) => { setLimits((l) => ({ ...l, budget: Number(e.target.value.replace(/[^0-9]/g, "")) || 0 })); touch(); }} className="w-28" /></Row>
               <Row label="Most one run may cost" hint="A run that would cost more stops and asks you."><Input inputMode="decimal" value={limits.perRun} onChange={(e) => { setLimits((l) => ({ ...l, perRun: e.target.value.replace(/[^0-9.]/g, "") })); touch(); }} className="w-28" /></Row>
               <Row label="Pause agents at the budget" hint="Held drafts stay held; nothing new starts."><Switch checked={limits.pause} onCheckedChange={(v) => { setLimits((l) => ({ ...l, pause: v })); touch(); }} /></Row>
               <Row label="Power models need a yes" hint="Agents ask before a run on the Power tier."><Switch checked={limits.power} onCheckedChange={(v) => { setLimits((l) => ({ ...l, power: v })); touch(); }} /></Row>
@@ -202,9 +202,9 @@ export default function StudioSettings() {
           ) : null}
 
           {section === "Data controls" ? (
-            <Group n="S7.8" title="Data controls" line="What agents may read. Private records never leave the venture, whatever is on here.">
-              <Row label="Venture files" hint="Docs, decks and records in each venture's Files."><Switch checked={data.files} onCheckedChange={(v) => { setData((d) => ({ ...d, files: v })); touch(); }} /></Row>
-              <Row label="Email through connected accounts" hint="Only threads with people on a venture's lists."><Switch checked={data.email} onCheckedChange={(v) => { setData((d) => ({ ...d, email: v })); touch(); }} /></Row>
+            <Group n="S7.8" title="Data controls" line="What agents may read. Private records never leave the business, whatever is on here.">
+              <Row label="Business files" hint="Docs, decks and records in each business's Files."><Switch checked={data.files} onCheckedChange={(v) => { setData((d) => ({ ...d, files: v })); touch(); }} /></Row>
+              <Row label="Email through connected accounts" hint="Only threads with people on a business's lists."><Switch checked={data.email} onCheckedChange={(v) => { setData((d) => ({ ...d, email: v })); touch(); }} /></Row>
               <Row label="Calendar free and busy" hint="Event titles stay hidden from agents."><Switch checked={data.calendar} onCheckedChange={(v) => { setData((d) => ({ ...d, calendar: v })); touch(); }} /></Row>
               <Row label="Bank and payment details" hint="Totals only when off; line items when on."><Switch checked={data.finance} onCheckedChange={(v) => { setData((d) => ({ ...d, finance: v })); touch(); }} /></Row>
               <Row label="Let model providers train on studio data" hint="Off by default. Private records are never sent either way."><Switch checked={data.training} onCheckedChange={(v) => { setData((d) => ({ ...d, training: v })); touch(); }} /></Row>

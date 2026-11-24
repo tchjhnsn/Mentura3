@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   return (
     <div className="px-4 py-5 md:px-8">
-      <Head n="M2" title={`Welcome, ${first}`} job="Your week in Mentura: what the AI says to do today, views, meetings and ventures." />
+      <Head n="M2" title={`Welcome, ${first}`} job="Your week in Mentura: what the AI says to do today, views, meetings and businesses." />
 
       <div className="relative -mt-1 mb-6 flex flex-wrap gap-2">
         <Num n="M2.1" className="absolute -top-3 right-0" />
@@ -90,7 +90,7 @@ export default function Dashboard() {
 
           <section className="relative">
             <Num n="M2.4" className="absolute -top-2 right-0" />
-            <h2 className="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide">Your ventures</h2>
+            <h2 className="text-muted-foreground mb-2 text-xs font-medium uppercase tracking-wide">Your businesses</h2>
             <div className="grid gap-3 sm:grid-cols-2">{mine.map((v, i) => <VentureCard key={v.slug} v={v} first={i === 0} />)}</div>
           </section>
         </div>

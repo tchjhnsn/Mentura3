@@ -28,11 +28,11 @@ export default function VenturePage({ params }: { params: Promise<{ slug: string
         <Num n="M13.1" className="absolute top-2 right-2" />
         <div className="flex flex-wrap items-end justify-between gap-4 pt-4">
           <div className="min-w-0">
-            <p className="text-sm opacity-85">Venture</p>
+            <p className="text-sm opacity-85">Business</p>
             <h1 className="text-3xl font-semibold tracking-tight break-words md:text-4xl">{v.name}</h1>
             <p className="mt-2 max-w-xl text-[15px] opacity-95">{v.line}</p>
           </div>
-          <Button variant="outline" size="sm" aria-pressed={following} onClick={() => setFollowing(!following)} className="border-white/60 bg-white/10 text-white hover:bg-white/20 hover:text-white dark:bg-white/10">{following ? "Following venture" : "Follow venture"}</Button>
+          <Button variant="outline" size="sm" aria-pressed={following} onClick={() => setFollowing(!following)} className="border-white/60 bg-white/10 text-white hover:bg-white/20 hover:text-white dark:bg-white/10">{following ? "Following business" : "Follow business"}</Button>
         </div>
       </section>
 

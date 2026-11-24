@@ -45,7 +45,7 @@ export default function FunctionsPage({ params }: { params: Promise<{ slug: stri
             <span className="text-muted-foreground">At <span className="capitalize">{v.commitment}</span>, {v.name} needs {fnsAt(v.commitment).length}. More turn on as it grows.</span>
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <Switch checked={onlyUsed} onCheckedChange={setOnlyUsed} aria-label="Only functions this venture uses" />
+            <Switch checked={onlyUsed} onCheckedChange={setOnlyUsed} aria-label="Only functions this business uses" />
             Only what this venture uses
           </label>
         </div>

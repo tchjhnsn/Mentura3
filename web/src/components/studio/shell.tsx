@@ -30,7 +30,7 @@ export function StudioFrame({ children }: { children: ReactNode }) {
       <header className="relative flex h-12 shrink-0 items-center gap-1 border-b px-2 md:px-3">
         <Num n="C1" className="absolute top-0.5 left-0.5" />
         <SidebarButton className="-ml-1" />
-        <Link href={slug ? ventureHref(slug) : "/studio"} className="hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm font-medium">{slug ? ventureOf(slug).name : "Venture Studio"}</Link>
+        <Link href={slug ? ventureHref(slug) : "/studio"} className="hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm font-medium">{slug ? ventureOf(slug).name : "Business Studio"}</Link>
         <div className="flex-1" />
         <Button variant="ghost" size="sm" onClick={() => nums.set(!nums.on)} aria-pressed={nums.on} title="Show screen and component numbers">
           <HashIcon />

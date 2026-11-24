@@ -15,7 +15,7 @@ import { EVENTS, ME, PEOPLE, POSTS, VENTURES, isA, messageHref, personOf, roleLi
 import { EventRow, Face, Faces, FollowButton, PostCard, VentureCard } from "./parts";
 import { useAllPosts, useMentura } from "./store";
 
-const TABS = ["Work", "Posts", "Ventures", "Events", "About"] as const;
+const TABS = ["Work", "Posts", "Businesses", "Events", "About"] as const;
 type Tab = (typeof TABS)[number];
 
 /** Mock names of companies an investor has backed. */
@@ -53,7 +53,7 @@ function View({ handle, mine, n }: { handle: string; mine?: boolean; n: string }
       <div className="relative mt-5">
         {tab === "Work" ? <Work p={p} mine={mine} n={n} /> : null}
         {tab === "Posts" ? <Posts p={p} n={n} /> : null}
-        {tab === "Ventures" ? <Ventures p={p} n={n} /> : null}
+        {tab === "Businesses" ? <Ventures p={p} n={n} /> : null}
         {tab === "Events" ? <Events p={p} n={n} /> : null}
         {tab === "About" ? <About p={p} n={n} /> : null}
       </div>
@@ -170,7 +170,7 @@ function Ventures({ p, n }: { p: Person; n: string }) {
           </ul>
         </div>
       ) : null}
-      {!ventures.length && !isA(p, "Investor") ? <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-sm">No ventures yet.</p> : null}
+      {!ventures.length && !isA(p, "Investor") ? <p className="text-muted-foreground rounded-xl border border-dashed p-6 text-sm">No businesses yet.</p> : null}
     </section>
   );
 }

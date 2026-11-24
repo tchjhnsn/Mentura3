@@ -37,7 +37,7 @@ function Row({ label, sub, children }: { label: string; sub?: string; children: 
 const APPROVALS = [
   { id: "email", label: "Send email", sub: "Outreach, replies and follow ups." },
   { id: "spend", label: "Spend money", sub: "Any purchase or new subscription." },
-  { id: "publish", label: "Publish", sub: "The venture site, posts and public templates." },
+  { id: "publish", label: "Publish", sub: "The business site, posts and public templates." },
   { id: "sign", label: "Sign", sub: "Contracts, terms and agreements." },
 ] as const;
 
@@ -66,7 +66,7 @@ export default function VentureSettings({ params }: { params: Promise<{ slug: st
 
   return (
     <div className="pb-10">
-      <ScreenHead n="V16" title="Venture settings" job={`Team, budget, approvals and publishing for ${v.name}.`}>
+      <ScreenHead n="V16" title="Business settings" job={`Team, budget, approvals and publishing for ${v.name}.`}>
         <span className="relative">
           <Num n="V16.7" className="absolute -top-2 -left-2 z-10" />
           <Button onClick={() => setSaved(true)}>{saved ? <><CheckIcon />Saved</> : "Save changes"}</Button>
@@ -74,14 +74,14 @@ export default function VentureSettings({ params }: { params: Promise<{ slug: st
       </ScreenHead>
 
       <div className="divide-y px-4 md:px-8">
-        <Section n="V16.1" title="General" about="How the venture shows across the studio.">
+        <Section n="V16.1" title="General" about="How the business shows across the studio.">
           <div className="space-y-3">
             <label className="block"><span className="text-muted-foreground text-xs">Name</span><Input value={name} onChange={(e) => { setName(e.target.value); touch(); }} className="mt-1" /></label>
             <label className="block"><span className="text-muted-foreground text-xs">One line</span><Input value={oneLine} onChange={(e) => { setOneLine(e.target.value); touch(); }} className="mt-1" /></label>
           </div>
         </Section>
 
-        <Section n="V16.2" title="Team" about="People who can open this venture and what they may change.">
+        <Section n="V16.2" title="Team" about="People who can open this business and what they may change.">
           <div className="divide-y rounded-lg border">
             {team.map((m) => (
               <div key={m.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
@@ -147,23 +147,23 @@ export default function VentureSettings({ params }: { params: Promise<{ slug: st
 
         <Section n="V16.5" title="Publishing" about="What the world can see.">
           <div className="divide-y rounded-lg border">
-            <Row label="Venture site" sub={site ? `Live at ${v.slug}.mentura.site` : "Off. Nothing about this venture is public."}>
-              <Switch checked={site} onCheckedChange={(c) => { setSite(c); touch(); }} aria-label="Venture site" />
+            <Row label="Business site" sub={site ? `Live at ${v.slug}.mentura.site` : "Off. Nothing about this business is public."}>
+              <Switch checked={site} onCheckedChange={(c) => { setSite(c); touch(); }} aria-label="Business site" />
             </Row>
-            <Row label="Share as a public template" sub={template ? "Listed in the community library, without your records." : "Others cannot copy this venture's setup."}>
+            <Row label="Share as a public template" sub={template ? "Listed in the community library, without your records." : "Others cannot copy this business's setup."}>
               <Switch checked={template} onCheckedChange={(c) => { setTemplate(c); touch(); }} aria-label="Share as a public template" />
             </Row>
           </div>
         </Section>
 
-        <Section n="V16.6" title="Danger zone" danger about="Archiving stops every agent and hides the venture. Records are kept.">
+        <Section n="V16.6" title="Danger zone" danger about="Archiving stops every agent and hides the business. Records are kept.">
           {archived ? (
             <div className="flex flex-wrap items-center gap-3 text-sm">
               <span>{v.name} is archived. Agents are stopped.</span>
               <Button variant="ghost" size="sm" onClick={() => setArchived(false)}>Restore</Button>
             </div>
           ) : (
-            <Button variant="outline" size="sm" className="border-red-600/40 text-red-600 hover:text-red-600" onClick={() => setArchiveOpen(true)}>Archive venture</Button>
+            <Button variant="outline" size="sm" className="border-red-600/40 text-red-600 hover:text-red-600" onClick={() => setArchiveOpen(true)}>Archive business</Button>
           )}
         </Section>
       </div>

@@ -101,7 +101,7 @@ export default function NewVenture() {
                   <Button variant="ghost" size="sm" onClick={() => setIdea("")}>Change</Button>
                 </div>
               ) : (
-                <PromptBox placeholder="What is the venture, in a sentence?" suggestions={["Coaches call plays by touch on a wearable vest", "Fund a founder's time, not one idea"]}
+                <PromptBox placeholder="What is the business, in a sentence?" suggestions={["Coaches call plays by touch on a wearable vest", "Fund a founder's time, not one idea"]}
                   onSubmit={(t) => { setIdea(t); if (!name) setName(t.split(" ").slice(0, 3).join(" ")); }} />
               )}
               <div>
@@ -161,7 +161,7 @@ export default function NewVenture() {
                       </li>
                     ))}
                   </ul>
-                  <div className="text-muted-foreground border-t px-3 py-2 text-xs">{picked.length ? `${picked.length} picked. Files stay where they are; the venture points to them.` : "Nothing picked yet."}</div>
+                  <div className="text-muted-foreground border-t px-3 py-2 text-xs">{picked.length ? `${picked.length} picked. Files stay where they are; the business points to them.` : "Nothing picked yet."}</div>
                 </div>
               ) : <p className="text-muted-foreground mt-2 text-xs">Pick a source to connect it.</p>}
             </div>
@@ -207,7 +207,7 @@ export default function NewVenture() {
         </section>
 
         <div className="flex flex-wrap items-center gap-3 border-t pt-6">
-          <Button size="lg" onClick={() => setCreated(true)}>Create venture</Button>
+          <Button size="lg" onClick={() => setCreated(true)}>Create business</Button>
           <span className="text-muted-foreground text-xs">{ventureName}, {team.length} {team.length === 1 ? "person" : "people"}, ${budget} a month.</span>
         </div>
       </div>

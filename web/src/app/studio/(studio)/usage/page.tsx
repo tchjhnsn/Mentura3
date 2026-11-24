@@ -44,7 +44,7 @@ export default function UsagePage() {
 
   return (
     <div className="pb-16">
-      <ScreenHead n="S6" title="Usage" job="Spend and agent runs across every venture against the budget.">
+      <ScreenHead n="S6" title="Usage" job="Spend and agent runs across every business against the budget.">
         <Select value={range} onValueChange={(x) => setRange(x as Range)}>
           <SelectTrigger className="w-[11rem]" aria-label="Date range"><SelectValue /></SelectTrigger>
           <SelectContent>{(Object.keys(RANGES) as Range[]).map((k) => <SelectItem key={k} value={k}>{RANGES[k].label}</SelectItem>)}</SelectContent>
@@ -63,7 +63,7 @@ export default function UsagePage() {
               <span className="text-4xl font-semibold tracking-tight tabular-nums">${total.toFixed(2)}</span>
               <span className="text-muted-foreground text-sm">of ${budget} studio budget this month</span>
             </div>
-            <div className="mt-4"><SpendMeter spent={Math.round(MONTH_TOTAL)} budget={budget} label="This month across all ventures" /></div>
+            <div className="mt-4"><SpendMeter spent={Math.round(MONTH_TOTAL)} budget={budget} label="This month across all businesses" /></div>
             <div className="text-muted-foreground mt-2 text-xs">At this pace the month ends near ${Math.round((MONTH_TOTAL / 21) * 30)}. {Math.round((MONTH_TOTAL / 21) * 30) > budget ? "That is over budget." : "That is inside the budget."}</div>
           </section>
 
@@ -96,7 +96,7 @@ export default function UsagePage() {
         <div className="grid gap-4 lg:grid-cols-2">
           <section className="relative rounded-lg border p-4 md:p-5">
             <Num n="S6.4" className="absolute -top-2 left-2" />
-            <h2 className="mb-3 text-sm font-semibold">By venture</h2>
+            <h2 className="mb-3 text-sm font-semibold">By business</h2>
             <ul className="space-y-4">
               {VENTURES.map((v) => (
                 <li key={v.slug}>
@@ -158,7 +158,7 @@ export default function UsagePage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Set a budget</DialogTitle>
-            <DialogDescription>The most the whole studio may spend on agent runs each month. Venture budgets sit inside it.</DialogDescription>
+            <DialogDescription>The most the whole studio may spend on agent runs each month. Business budgets sit inside it.</DialogDescription>
           </DialogHeader>
           <label className="block space-y-1 text-sm">
             <span>Monthly studio budget in dollars</span>
@@ -176,7 +176,7 @@ export default function UsagePage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit limits</DialogTitle>
-            <DialogDescription>Limits apply to every agent in every venture.</DialogDescription>
+            <DialogDescription>Limits apply to every agent in every business.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <label className="block space-y-1 text-sm"><span>Most one run may cost, in dollars</span><Input inputMode="decimal" value={String(draftLimits.perRun)} onChange={(e) => setDraftLimits((l) => ({ ...l, perRun: Number(e.target.value.replace(/[^0-9.]/g, "")) || 0 }))} /></label>

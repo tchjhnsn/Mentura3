@@ -8,7 +8,7 @@ const hrefOf = (path: string) => path.replace(":v", VENTURES[0]!.slug).replace("
 export default function ScreenMap() {
   return (
     <div className="pb-16">
-      <ScreenHead n="S0" title="Screen map" job="Every screen and component in the Venture Studio, by number. Tap a screen to open it." />
+      <ScreenHead n="S0" title="Screen map" job="Every screen and component in the Business Studio, by number. Tap a screen to open it." />
       <div className="grid gap-8 px-4 md:px-8 lg:grid-cols-[2fr_1fr]">
         <section>
           <h2 className="mb-2 text-sm font-semibold">Screens</h2>

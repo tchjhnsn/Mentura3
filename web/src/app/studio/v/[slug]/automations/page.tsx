@@ -162,7 +162,7 @@ export default function AutomationsPage({ params }: { params: Promise<{ slug: st
                 <FlowStep label="Trigger" title={current.trigger} body={current.when} />
                 {current.steps.map((s, i) => <FlowStep key={s} label={`Step ${i + 1}`} title={s} />)}
                 <FlowStep last label="Approval" title={current.approver ? "A person says yes first" : "Runs on its own"}
-                  body={current.approver ? undefined : "Nothing in it leaves the venture or spends money."}>
+                  body={current.approver ? undefined : "Nothing in it leaves the business or spends money."}>
                   {current.approver ? <div className="mt-1.5"><Face id={current.approver} size={24} /></div> : null}
                 </FlowStep>
               </ol>

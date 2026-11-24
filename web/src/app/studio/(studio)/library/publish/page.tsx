@@ -25,7 +25,7 @@ const SOURCES: Source[] = [
   { id: "weekly-spend", kind: "automation", name: "Weekly spend check", line: "Every Monday, reconcile spend against budget.", hue: 100 },
   { id: "coach-follow-up", kind: "automation", name: "Coach follow up", line: "After each call, draft a thank you and hold it for your yes.", hue: 10 },
 ];
-const GROUPS: { kind: TemplateKind; label: string }[] = [{ kind: "venture", label: "Ventures" }, { kind: "agent", label: "Agents" }, { kind: "automation", label: "Automations" }];
+const GROUPS: { kind: TemplateKind; label: string }[] = [{ kind: "venture", label: "Businesses" }, { kind: "agent", label: "Agents" }, { kind: "automation", label: "Automations" }];
 
 const PARTS = [
   { id: "strategy", label: "Strategy canvas and assumptions", line: "The four assumptions, with grades but without the interviews behind them.", on: true, private: false },

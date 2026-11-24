@@ -146,7 +146,7 @@ export default function FilesPage({ params }: { params: Promise<{ slug: string }
 
   return (
     <div className="@container pb-16">
-      <ScreenHead n="V2" title="Files" job="Every file the venture has, by folder, with the open one beside it.">
+      <ScreenHead n="V2" title="Files" job="Every file the business has, by folder, with the open one beside it.">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="relative"><Num n="V2.3" className="absolute -top-2 -left-2" /><PlusIcon />New<ChevronDownIcon /></Button>
