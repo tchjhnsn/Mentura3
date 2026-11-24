@@ -1,50 +1,17 @@
 "use client";
 
-// The Venture Studio frame: C1 top bar with C2 venture switcher. The C3 studio nav and C4 venture nav are listed here
-// and drawn in the app's one sidebar, under Mentura's (src/components/sidebar.tsx).
+// The Venture Studio frame: C1 top bar. Ventures are switched at the top of the app's one sidebar (./switcher.tsx), and
+// the C3 studio nav and C4 venture nav (./nav.ts) are drawn there in place of Mentura's (src/components/sidebar.tsx).
 // Modeled on OpenAI Platform (project switcher, grouped nav), Replit and Base44.
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { CheckIcon, ChevronsUpDownIcon, HashIcon, LayoutGridIcon, LibraryIcon, PlusIcon } from "lucide-react";
+import { HashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarButton } from "@/components/sidebar";
 import { Num, useNums } from "./bits";
-import { VENTURES, ventureHref, ventureOf } from "./data";
+import { ventureHref, ventureOf } from "./data";
 import { slugOf } from "./nav";
-
-/** C2 Venture switcher (OpenAI Platform's project switcher). */
-function VentureSwitcher({ slug }: { slug: string | null }) {
-  const v = slug ? ventureOf(slug) : null;
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button type="button" className="hover:bg-accent relative flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm">
-          <Num n="C2" className="absolute -top-1.5 -right-1" />
-          {v ? <span className="size-4 shrink-0 rounded" style={{ background: `oklch(0.65 0.14 ${v.hue})` }} /> : <LibraryIcon className="size-4 shrink-0" />}
-          <span className="truncate font-medium">{v ? v.name : "All ventures"}</span>
-          <ChevronsUpDownIcon className="text-muted-foreground size-3.5 shrink-0" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Ventures</DropdownMenuLabel>
-        {VENTURES.map((x) => (
-          <DropdownMenuItem key={x.slug} asChild>
-            <Link href={ventureHref(x.slug)} className="flex items-center gap-2">
-              <span className="size-4 rounded" style={{ background: `oklch(0.65 0.14 ${x.hue})` }} />
-              <span className="flex-1 truncate">{x.name}</span>
-              {x.slug === slug ? <CheckIcon className="size-4" /> : null}
-            </Link>
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild><Link href="/studio/new"><PlusIcon className="size-4" />New venture</Link></DropdownMenuItem>
-        <DropdownMenuItem asChild><Link href="/studio"><LayoutGridIcon className="size-4" />All ventures</Link></DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
 
 /** "Ask the agent" from any venture screen opens the chief of staff in the Agents view (V6). */
 export function useChat() {
@@ -54,7 +21,7 @@ export function useChat() {
 }
 
 /** C1 Top bar for every Studio screen. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
- * src/components/sidebar.tsx: C3 studio pages, C4 a venture's pages), so the Studio and Mentura share one sidebar. */
+ * src/components/sidebar.tsx: C3 studio pages, C4 a venture's pages), in place of Mentura's, under the switcher. */
 export function StudioFrame({ children }: { children: ReactNode }) {
   const slug = slugOf(usePathname() ?? "/studio");
   const nums = useNums();
@@ -63,9 +30,7 @@ export function StudioFrame({ children }: { children: ReactNode }) {
       <header className="relative flex h-12 shrink-0 items-center gap-1 border-b px-2 md:px-3">
         <Num n="C1" className="absolute top-0.5 left-0.5" />
         <SidebarButton className="-ml-1" />
-        <Link href="/studio" className="hover:bg-accent hidden rounded-md px-2 py-1.5 text-sm md:block">Venture Studio</Link>
-        <span className="text-muted-foreground hidden md:inline">/</span>
-        <VentureSwitcher slug={slug} />
+        <Link href={slug ? ventureHref(slug) : "/studio"} className="hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm font-medium">{slug ? ventureOf(slug).name : "Venture Studio"}</Link>
         <div className="flex-1" />
         <Button variant="ghost" size="sm" onClick={() => nums.set(!nums.on)} aria-pressed={nums.on} title="Show screen and component numbers">
           <HashIcon />
