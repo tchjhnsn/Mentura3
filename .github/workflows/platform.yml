@@ -1,5 +1,5 @@
 # Type-checks and tests the platform library in packages/platform (see packages/platform/README.md).
-# naive-framework comes from tchjhnsn/naive, which is private: the repository secret NAIVE_READ_TOKEN is a read-only token for it.
+# naive-framework comes from tchjhnsn/naive. If it is private again, the repository secret NAIVE_READ_TOKEN is a read-only token for it.
 name: platform
 
 on:

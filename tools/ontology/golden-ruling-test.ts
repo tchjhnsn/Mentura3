@@ -7,7 +7,7 @@ import { readSchema } from "naive-framework/src/records/index.mjs";
 import { naivePath } from "./naive.ts";
 import { ideasIn } from "./records-folder.ts";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = new URL("../..", import.meta.url).pathname;
 const sample = JSON.parse(readFileSync(naivePath("packages/naive/src/records/examples/ontology-golden/n-001.scope.json"), "utf8"));
 const dir = mkdtempSync(join(tmpdir(), "golden-ruling-"));
 
@@ -55,7 +55,7 @@ try {
   const golden = readSchema("golden-ruling") as { $defs: Enums };
   for (const f of ["status", "importance"]) assert.deepEqual(golden.$defs[f].enum, idea.properties[f].enum, `${f} values match the idea record`);
 
-  const folder = join(root, "docs/reviews/ontology-golden");
+  const folder = join(root, "docs/mentura/reviews/ontology-golden");
   for (const name of readdirSync(folder).filter((f) => f.endsWith(".json"))) {
     const r = JSON.parse(readFileSync(join(folder, name), "utf8"));
     assert.equal(name, `${r.idea}.${r.field}.json`, `${name} is named for its idea and field`);

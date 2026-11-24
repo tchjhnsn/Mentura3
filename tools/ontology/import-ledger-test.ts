@@ -34,7 +34,7 @@ try {
     id: "n-001",
     text: "Records first, then models: a | pipe stays in its cell",
     captured: "2026-10-26",
-    source: `docs/reviews/2026-11-03-preservation/merged-ledger.md row N-001; Grok M1; date learned 2026-10-26, 10-28`,
+    source: `docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md row N-001; Grok M1; date learned 2026-10-26, 10-28`,
   });
   assert.ok(plain.includes(` ${one.text.replace("|", "\\|")} `), "the text is the ledger's idea cell byte for byte, unescaped");
   assert.equal("status" in one || "importance" in one, false, "status and importance are left for a proposal");

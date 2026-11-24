@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Preservation coverage. Reads docs/reviews/2026-11-03-preservation/merged-ledger.md and the files in
+// Preservation coverage. Reads docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md and the files in
 // the working tree, and prints every ledger row whose idea has no copy in the repo, grouped by where
 // its text lives.
 //
-//   node scripts/preservation-coverage.ts [--records <dir>]           print the uncovered rows, exit 0
-//   node scripts/preservation-coverage.ts [--records <dir>] --check   the same, exit 1 when any row is uncovered
+//   node tools/ontology/preservation-coverage.ts [--records <dir>]           print the uncovered rows, exit 0
+//   node tools/ontology/preservation-coverage.ts [--records <dir>] --check   the same, exit 1 when any row is uncovered
 //
 // --records adds a folder exported from the company tenant's store (store-export.ts): the founder's idea records
 // left this repository for the store in EE-118 step 9c, so a copy there counts as a copy. Its files are named
@@ -14,7 +14,7 @@
 //   1. its repo status is `in-main built`, `in-main decided not built` or `on main`;
 //   2. a preservation marker in the tree names its id (a Markdown file whose front matter says
 //      `status: preserved, not reconciled`; every N-NNN in it counts, and `N-001 to N-004` is a range);
-//   3. one of its quoted passages of 30 characters or more appears in a file in the tree outside docs/reviews/.
+//   3. one of its quoted passages of 30 characters or more appears in a file in the tree outside docs/mentura/reviews/.
 // A row whose pointer names several sources reads covered when any one of them is preserved, and a marker
 // counts every whole-word N-NNN it holds. Both are the plan's approximation of "has a copy on main".
 // Confidential rows are checked like any other row and print their flags.
@@ -24,7 +24,7 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-export const LEDGER = "docs/reviews/2026-11-03-preservation/merged-ledger.md";
+export const LEDGER = "docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md";
 const MIN_QUOTE = 30;
 const ON_MAIN = new Set(["in-main built", "in-main decided not built", "on main"]);
 const AT_RISK = ["Claude project only (not exported)", "partly exported", "Mac only", "agent memory only, no copy", "unknown"];
@@ -105,7 +105,7 @@ export function markedIds(files: Map<string, string>): Set<string> {
 
 export function coverage(rows: LedgerRow[], files: Map<string, string>): CoverageRow[] {
   const marked = markedIds(files);
-  const texts = [...files.entries()].filter(([path]) => path !== LEDGER && !path.startsWith("docs/reviews/")).map(([, text]) => text);
+  const texts = [...files.entries()].filter(([path]) => path !== LEDGER && !path.startsWith("docs/mentura/reviews/")).map(([, text]) => text);
   return rows.map((row) => {
     let coveredBy: Covered = null;
     if (ON_MAIN.has(row.status)) coveredBy = "status";
@@ -163,7 +163,7 @@ export function recordFiles(dir: string): Map<string, string> {
 }
 
 function main(argv: string[]): number {
-  const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
+  const root = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
   const at = argv.indexOf("--records");
   const files = new Map([...treeFiles(root), ...(at >= 0 ? recordFiles(argv[at + 1] ?? "") : [])]);
   const ledger = files.get(LEDGER);

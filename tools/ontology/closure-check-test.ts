@@ -20,13 +20,13 @@ const row = (id: string, pointer: string, where = "Grok audit", status = "open-P
 const record = (n: string, extra: object = {}) =>
   write(`people/p-54697df9/ideas/n-${n}.json`, JSON.stringify({ id: `n-${n}`, text: `idea N-${n}`, captured: "2026-11-01", source: `merged-ledger.md row N-${n}`, ...extra }));
 const preserve = (pr: number, ledger: string, base: string, baseOid: string, headOid: string) => {
-  write(`docs/design/preserved/framework/pr-${pr}/PRESERVED.md`, `---\nstatus: preserved, not reconciled\nledger: ${ledger}\n---\n`);
-  write(`docs/design/preserved/framework/pr-${pr}/pr-${pr}.json`, JSON.stringify({ number: pr, baseRefName: base, baseRefOid: baseOid, headRefOid: headOid }));
+  write(`docs/mentura/design/preserved/framework/pr-${pr}/PRESERVED.md`, `---\nstatus: preserved, not reconciled\nledger: ${ledger}\n---\n`);
+  write(`docs/mentura/design/preserved/framework/pr-${pr}/pr-${pr}.json`, JSON.stringify({ number: pr, baseRefName: base, baseRefOid: baseOid, headRefOid: headOid }));
 };
 const g7Open = "- [ ] G7. Whether `framework` is rebased onto `main` before closure. The default is no rebase, since stage 1 preserves its PRs from their own diffs. Blocks S4-PR2.\n";
 const stage1 = 'Stage 1 closed on Torian\'s ruling of Nov 4, 2026 at 18:52Z: "Whatever you have access to is what we will continue with."\n';
 const plan = (g7 = g7Open, ruling = stage1) =>
-  write("docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md", `PR ids in order are S1-PR0, S1-PR10, S4-PR1, S4-PR2.\n\n${g7}\n${ruling}\n- The open PRs this plan names are #901, #902, #903, #904 and #909.\n`);
+  write("docs/mentura/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md", `PR ids in order are S1-PR0, S1-PR10, S4-PR1, S4-PR2.\n\n${g7}\n${ruling}\n- The open PRs this plan names are #901, #902, #903, #904 and #909.\n`);
 const listed = "2026-11-05T12:00:00Z";
 const openPrs = [
   [901, "framework PR one"],
@@ -36,7 +36,7 @@ const openPrs = [
   [907, "a PR the ledger names"],
   [908, "a PR nobody touched"],
 ];
-write("docs/reviews/ontology-program/open-prs.tsv", `number\ttitle\tlisted\n${openPrs.map(([n, t]) => `${n}\t${t}\t${listed}`).join("\n")}\n`);
+write("docs/mentura/reviews/ontology-program/open-prs.tsv", `number\ttitle\tlisted\n${openPrs.map(([n, t]) => `${n}\t${t}\t${listed}`).join("\n")}\n`);
 const run = () => spawnSync(process.execPath, [script, "--root", root, "--records", root], { encoding: "utf8" });
 // Each verdict line keyed by its first word (`#901`, `framework`, ...), with the section heading above it.
 const verdicts = (stdout: string) => {
@@ -59,7 +59,7 @@ try {
   git("init", "-q");
   plan();
   write(
-    "docs/reviews/2026-11-03-preservation/merged-ledger.md",
+    "docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md",
     header +
       row("N-001", "PR #901") +
       row("N-002", "PR #902") +
@@ -75,7 +75,7 @@ try {
   preserve(902, "N-002", "branch-of-901", head901, "2".repeat(40));
   record("001");
   record("002", { status: "open" });
-  write("docs/reviews/ontology-program/reconcile/proposals.jsonl", '{"idea": "n-001", "field": "status", "value": "open"}\n');
+  write("docs/mentura/reviews/ontology-program/reconcile/proposals.jsonl", '{"idea": "n-001", "field": "status", "value": "open"}\n');
 
   const before = tree(root);
   const out = run();
@@ -114,7 +114,7 @@ try {
   assert.deepEqual(tree(root), before, "the check writes nothing");
 
   record("003");
-  write("docs/design/preserved/n-004.md", "---\nstatus: preserved, not reconciled\n---\nN-004\n");
+  write("docs/mentura/design/preserved/n-004.md", "---\nstatus: preserved, not reconciled\n---\nN-004\n");
   const all = verdicts(run().stdout);
   assert.match(all.get("#902")?.text ?? "", /^#902 not merged: safe to close\./, "adding the record clears the PR");
   assert.match(all.get("framework")?.text ?? "", /^framework: safe to close\./);
@@ -133,7 +133,7 @@ try {
   assert.match(run().stdout, /The plan records it as decided\. The default is no rebase, .* Decided Nov 6: no rebase\./, "a decided G7 reads as decided");
   plan();
 
-  const marker902 = join(root, "docs/design/preserved/framework/pr-902/PRESERVED.md");
+  const marker902 = join(root, "docs/mentura/design/preserved/framework/pr-902/PRESERVED.md");
   const kept902 = readFileSync(marker902, "utf8");
   rmSync(marker902);
   const gone = verdicts(run().stdout);
@@ -147,12 +147,12 @@ try {
   assert.match(empty.get("framework")?.text ?? "", /^framework: cannot be checked, no preservation marker lists the ideas of #905\./, "a stacked PR whose marker lists no ideas blocks framework");
   assert.match(empty.get("framework")?.text ?? "", /#905 \(no ideas listed\)/);
   assert.equal(empty.get("#905")?.section, "Nothing to close", "a preserved PR that is not open needs nothing");
-  rmSync(join(root, "docs/design/preserved/framework/pr-905"), { recursive: true });
+  rmSync(join(root, "docs/mentura/design/preserved/framework/pr-905"), { recursive: true });
 
   preserve(901, "N-001", "framework", "f".repeat(40), head901);
   assert.match(verdicts(run().stdout).get("framework")?.text ?? "", /^framework: tip fffffff is not on main\./, "a framework tip off main blocks closure");
 
-  write("docs/reviews/ontology-program/open-prs.tsv", `number\ttitle\tlisted\n901\tone\t${listed}\n902\ttwo\t2026-11-06T00:00:00Z\n`);
+  write("docs/mentura/reviews/ontology-program/open-prs.tsv", `number\ttitle\tlisted\n901\tone\t${listed}\n902\ttwo\t2026-11-06T00:00:00Z\n`);
   assert.notEqual(run().status, 0, "an open-PR list with two listing times is refused");
   console.log("closure check: ok");
 } finally {

@@ -1,13 +1,12 @@
 // The reconcile runner (S3-PR3): gates proposed labels for idea records through the schema, the EE-095 term engine
 // and the Lean agreement check, and moves each label through the idea record statechart, Appendix E of
-// docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. It makes no model or network call: proposals are input.
+// docs/mentura/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md. It makes no model or network call: proposals are input.
 //
-//   node scripts/reconcile-ideas.ts --records <dir> [--root <dir>] [--proposals <file>] [--naive <dir>]
+//   node tools/ontology/reconcile-ideas.ts --records <dir> [--root <dir>] [--proposals <file>] [--naive <dir>]
 //
 // --records is a folder exported from the company tenant's store, holding the idea records (MENTURA_RECORDS works
-// too; see scripts/records-folder.ts). --root is the repository with the rulings and state (this one). --naive is the Naive checkout whose
+// too; see tools/ontology/records-folder.ts). --root is the repository with the rulings and state (this one). --naive is the Naive checkout whose
 // schemas, ontology, catalog, admitted terms and Lean proofs the gates read (default: the installed naive-framework).
-// The --import flag lets Node load Naive's TypeScript from node_modules (scripts/naive-ts.ts, temporary).
 //
 // A proposal is one JSON line: {"idea": "n-001", "field": "status", "value": "open", "terms": ["pricing decision"]}.
 // field and value take the shape of a golden ruling (schema/golden-ruling.schema.json), so a gated label and Torian's
@@ -31,10 +30,10 @@ import { naiveRoot } from "./naive.ts";
 import { IDEAS, ideasIn, recordsFolder } from "./records-folder.ts";
 
 export { IDEAS };
-export const GOLDEN = "docs/reviews/ontology-golden";
-export const STATE = "docs/reviews/ontology-program/reconcile/state.jsonl";
-export const QUEUE = "docs/reviews/ontology-program/reconcile/queue.jsonl";
-export const PROPOSALS = "docs/reviews/ontology-program/reconcile/proposals.jsonl";
+export const GOLDEN = "docs/mentura/reviews/ontology-golden";
+export const STATE = "docs/mentura/reviews/ontology-program/reconcile/state.jsonl";
+export const QUEUE = "docs/mentura/reviews/ontology-program/reconcile/queue.jsonl";
+export const PROPOSALS = "docs/mentura/reviews/ontology-program/reconcile/proposals.jsonl";
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type JsonObject = { [key: string]: Json };
@@ -397,7 +396,7 @@ function put(path: string, text: string): boolean {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const arg = (name: string): string | undefined => { const i = process.argv.indexOf(name); return i > 0 ? process.argv[i + 1] : undefined; };
-  const root = resolve(arg("--root") ?? join(dirname(new URL(import.meta.url).pathname), ".."));
+  const root = resolve(arg("--root") ?? join(dirname(new URL(import.meta.url).pathname), "..", ".."));
   const proposalsFile = arg("--proposals") ? resolve(arg("--proposals")!) : join(root, PROPOSALS);
   let records: string;
   try { records = recordsFolder(); } catch (e) { console.error((e as Error).message); process.exit(2); }

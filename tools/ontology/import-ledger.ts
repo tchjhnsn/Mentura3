@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 // Imports the merged preservation ledger as idea records (S3-PR1 of the ontology program, EE-114).
-// Reads docs/reviews/2026-11-03-preservation/merged-ledger.md once and writes one founder-idea record per
+// Reads docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md once and writes one founder-idea record per
 // row to people/p-54697df9/ideas/n-NNN.json in the company's records, and FLAGS.tsv beside ideas/ with one row
 // per record that trips a flag.
 //
-//   node scripts/import-ledger.ts (--records <dir> | --person <folder>) [--ledger <file>] [--full <file>]
+//   node tools/ontology/import-ledger.ts (--records <dir> | --person <folder>) [--ledger <file>] [--full <file>]
 //
-// --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see scripts/records-folder.ts).
+// --records is a folder exported from the company tenant's store (or MENTURA_RECORDS; see tools/ontology/records-folder.ts).
 // Load what it writes back with platform/connectors/store-import.ts.
 //
 // The ledger names no person for its rows. Grok Bot and Claude remembered the ideas from work with
 // Torian, so every row goes to his person folder (id p-54697df9, handle tchjhnsn).
 //
 // The record's text is the row's idea cell, byte for byte apart from the table's escaped pipe. The
-// verbatim-text cell is not copied. It quotes the sources, and scripts/preservation-coverage.ts counts a
+// verbatim-text cell is not copied. It quotes the sources, and tools/ontology/preservation-coverage.ts counts a
 // quoted passage found in the tree as a preserved source, so copying it would mark out-of-reach sources
 // as preserved.
 //
@@ -34,8 +34,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { PERSON, recordsFolder } from "./records-folder.ts";
 
-const repo = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-export const LEDGER = "docs/reviews/2026-11-03-preservation/merged-ledger.md";
+const repo = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
+export const LEDGER = "docs/mentura/reviews/2026-11-03-preservation/merged-ledger.md";
 export { PERSON };
 const FULL_BRANCH = "preserve/sources-2026-11-03";
 const FULL_PATH = "grok-store/merged-ledger.full.md";
@@ -103,7 +103,8 @@ const RULES: Rule[] = [
     flag: "mentura-confidential",
     cleanup: "remove or redact before any public mirror; keep only in the private repo",
     detail: (text, confidential) => {
-      const low = text.toLowerCase();
+      // The folder these docs moved to (docs/mentura/) names the company, not a lane term.
+      const low = text.toLowerCase().replaceAll("docs/mentura/", "docs/");
       const hits = MENTURA_TERMS.filter((t) => count(low, t)).map((t): [string, number] => [t, count(low, t)]);
       if (hits.some(([t]) => t === "mentura") && low.includes("pipeline")) hits.push(["pipeline", count(low, "pipeline")]);
       if (!hits.length && !confidential) return null;

@@ -31,9 +31,9 @@ assert.deepEqual([...markedIds(new Map([["c.md", "---\nstatus: preserved, not re
 // A row with a copy in the tree reads covered; one without reads uncovered.
 const files = new Map<string, string>([
   [LEDGER, ledger],
-  ["docs/design/copy.md", `Preserved: ${quote}\n`],
-  ["docs/design/marker.md", marker],
-  ["docs/reviews/other.md", "This passage exists nowhere in the repository tree at all."],
+  ["docs/mentura/design/copy.md", `Preserved: ${quote}\n`],
+  ["docs/mentura/design/marker.md", marker],
+  ["docs/mentura/reviews/other.md", "This passage exists nowhere in the repository tree at all."],
 ]);
 const result = coverage(rows, files);
 const by = Object.fromEntries(result.map((row) => [row.id, row.coveredBy]));

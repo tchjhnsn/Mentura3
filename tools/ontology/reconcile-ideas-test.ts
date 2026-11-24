@@ -7,8 +7,8 @@ import { QUEUE, STATE, TRANSITIONS } from "./reconcile-ideas.ts";
 import { recordsIn, schemaFile } from "naive-framework/src/records/index.mjs";
 import { naivePath } from "./naive.ts";
 
-const repo = new URL("..", import.meta.url).pathname;
-const runner = join(repo, "scripts/reconcile-ideas.ts");
+const repo = new URL("../..", import.meta.url).pathname;
+const runner = join(repo, "tools/ontology/reconcile-ideas.ts");
 const root = mkdtempSync(join(tmpdir(), "reconcile-ideas-"));
 const ideas = "people/p-54697df9/ideas";
 const proposals = join(root, "proposals.jsonl");
@@ -19,7 +19,7 @@ const jsonl = (p: string): Record<string, unknown>[] => read(p).split("\n").filt
 const machine = (key: string): Record<string, unknown> | undefined => jsonl(STATE).find((m) => `${m.idea}.${m.field}` === key);
 const propose = (...lines: unknown[]): void => writeFileSync(proposals, lines.map((l) => JSON.stringify(l)).join("\n") + "\n");
 const rule = (idea: string, field: string, value: unknown, source: number | { card: object } = 1): void =>
-  write(`docs/reviews/ontology-golden/${idea}.${field}.json`, { idea, field, value, ...(typeof source === "number" ? { comment: `https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-${source}` } : source), ruled: "2026-11-05" });
+  write(`docs/mentura/reviews/ontology-golden/${idea}.${field}.json`, { idea, field, value, ...(typeof source === "number" ? { comment: `https://github.com/tchjhnsn/everything-ecosystem/issues/1#issuecomment-${source}` } : source), ruled: "2026-11-05" });
 const idea = (id: string, text: string, extra: object = {}): void => write(`${ideas}/${id}.json`, { id, text, captured: "2026-11-05", ...extra });
 
 const covered = new Set<string>();
@@ -36,7 +36,7 @@ const reconcile = (): { status: number | null; out: string; steps: string[] } =>
 };
 
 try {
-  const doc = readFileSync(join(repo, "docs/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md"), "utf8");
+  const doc = readFileSync(join(repo, "docs/mentura/design/CLAUDE_HANDOFF_ONTOLOGY_PROGRAM.md"), "utf8");
   const appendix = doc.slice(doc.indexOf("## Appendix E"));
   const rows = [...appendix.matchAll(/^\| (\S[^|]*?) \| (\S[^|]*?) \| (\S[^|]*?) \|$/gm)].slice(1).map((m) => `${m[1]} | ${m[2]} | ${m[3]}`);
   const table = TRANSITIONS.map((t) => `${t.from} | ${t.to} | ${t.when}`);

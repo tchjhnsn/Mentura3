@@ -6,8 +6,8 @@ import { dirname, join } from "node:path";
 import { report } from "./agreement-report.ts";
 import { GOLDEN, IDEAS, PROPOSALS, STATE, readProposals } from "./reconcile-ideas.ts";
 
-const repo = new URL("..", import.meta.url).pathname;
-const script = join(repo, "scripts/agreement-report.ts");
+const repo = new URL("../..", import.meta.url).pathname;
+const script = join(repo, "tools/ontology/agreement-report.ts");
 const root = mkdtempSync(join(tmpdir(), "agreement-report-"));
 const at = (p: string): string => join(root, p);
 const write = (p: string, text: string): void => { mkdirSync(dirname(at(p)), { recursive: true }); writeFileSync(at(p), text); };
