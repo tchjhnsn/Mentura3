@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, RocketIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
+import { CalendarDaysIcon, ChevronLeftIcon, RocketIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,8 +15,9 @@ import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
-import { VENTURES, ventureHref } from "@/components/studio/data";
-import { STUDIO_NAV, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { FUNCTIONS, VENTURES, ventureHref, type FunctionId } from "@/components/studio/data";
+import { STUDIO_NAV, functionNav, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { levelOf } from "@/components/studio/tools";
 import { ModeSwitcher, modeOf } from "@/components/studio/switcher";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
@@ -93,7 +94,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
             const mode = modeOf(path);
             return mode.kind === "personal"
               ? <MenturaNav item={item} to={to} done={done} />
-              : <StudioNav groups={mode.kind === "venture" ? ventureNav(mode.slug) : STUDIO_NAV} path={path} done={done} />;
+              : <StudioNav groups={navFor(path)} path={path} done={done} />;
           })()
         ) : side === "polis" ? (
           <>
@@ -318,19 +319,35 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
   );
 }
 
-/** The console: the Venture Studio's pages, or one venture's, in place of Mentura's own. */
+/** Which of the console's three sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
+ * after Vercel): the Studio's, one business's, or one function's. Each replaces the one before it; nothing folds. */
+function navFor(path: string): NavGroup[] {
+  const at = levelOf(path);
+  if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.slug, at.fn as FunctionId);
+  return at.kind === "studio" ? STUDIO_NAV : ventureNav(at.slug);
+}
+
+/** The console: the Business Studio's pages, one business's, or one function's, in place of Mentura's own. A row with a
+ * chevron replaces the sidebar; a replaced sidebar starts with a back row to the level above. */
 function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
   return (
     <Group>
       {groups.map((g, i) => (
         <SidebarMenu key={i} className={i ? "mt-3" : undefined}>
-          {g.label ? <SidebarGroupLabel>{g.label}</SidebarGroupLabel> : null}
+          {g.back ? (
+            <SidebarMenuItem className="border-sidebar-border mb-2 border-b pb-2">
+              <SidebarMenuButton asChild tooltip={`Back from ${g.back.label}`} className="font-medium">
+                <Link href={g.back.href} onClick={done} aria-label={`Back from ${g.back.label}`}><ChevronLeftIcon /><span>{g.back.label}</span></Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : null}
+          {g.label ? <SidebarGroupLabel title={g.label}><span className="truncate">{g.label}</span></SidebarGroupLabel> : null}
           {g.items.map((it) => {
-            const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`) || (it.n === "V5" && path.includes("/decks/"));
+            const active = it.exact ? path === it.href : path === it.href || path.startsWith(`${it.href}/`);
             return (
               <SidebarMenuItem key={it.href}>
-                <SidebarMenuButton asChild isActive={active} tooltip={it.label}>
-                  <Link href={it.href} onClick={done}><it.icon /><span>{it.label}</span></Link>
+                <SidebarMenuButton asChild isActive={active} tooltip={it.label} className={it.quiet ? "text-sidebar-foreground/70" : undefined}>
+                  <Link href={it.href} onClick={done}><it.icon /><span>{it.label}</span>{it.drills ? <ChevronRightIcon className="text-sidebar-foreground/50 ml-auto" /> : null}</Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );

@@ -78,6 +78,8 @@ export const MOBBIN = {
   openaiToolConfig: "https://mobbin.com/screens/e1040fc1-2e9d-4b1c-8a23-370364f25356",
   replitFiles: "https://mobbin.com/screens/e911e986-297a-46db-9f60-e7c60625e738",
   replitTools: "https://mobbin.com/screens/dca850da-23a2-47ea-a2aa-3e92393c5198",
+  vercelSectionSidebar: "https://mobbin.com/screens/073b50ed-c14b-4f88-895c-3b77164b7ec5",
+  vercelProjectSettings: "https://mobbin.com/screens/a54fee2e-b776-42c2-bd7c-93f7e223c87c",
   replitChat: "https://mobbin.com/screens/fc901296-5e3a-4d81-aec5-ed164e3fce20",
   replitModes: "https://mobbin.com/screens/e8b8267d-782c-4cdb-9da0-881faf6a7b6b",
   base44Testing: "https://mobbin.com/screens/9b6f8fa0-903a-4913-883f-a37c0fa86d5b",
@@ -113,6 +115,8 @@ export const SCREENS: Screen[] = [
   { id: "V13", title: "Outreach", path: "/studio/v/:v/outreach", job: "People to reach, sequences, and every send held for your yes.", refs: [] },
   { id: "V14", title: "Connectors", path: "/studio/v/:v/connectors", job: "Connect the business's accounts and see what each agent may touch.", refs: ["planeAi"] },
   { id: "V15", title: "Decisions", path: "/studio/v/:v/decisions", job: "Calls only you can make, ranked, each with the agent's evidence.", refs: [] },
+  { id: "V18", title: "Tool", path: "/studio/v/:v/functions/[fn]/[tool]", job: "One tool of a function, from Naive's tool catalog: what it does and the records it keeps.", refs: ["vercelSectionSidebar"] },
+  { id: "V19", title: "Universal tool", path: "/studio/v/:v/tools/[tool]", job: "A tool every business gets that has no screen of its own yet.", refs: [] },
   { id: "V16", title: "Business settings", path: "/studio/v/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
 ];
 
@@ -120,7 +124,7 @@ export const COMPONENTS: { id: string; name: string; where: string }[] = [
   { id: "C1", name: "Top bar", where: "Every screen" },
   { id: "C2", name: "Switcher: Personal, Business Studio or a business", where: "Top of the sidebar" },
   { id: "C3", name: "Studio nav", where: "S screens, left" },
-  { id: "C4", name: "Business nav", where: "V screens, left" },
+  { id: "C4", name: "Business nav: universal tools, then one row per function", where: "V screens, left" },
   { id: "C5", name: "Conversation", where: "V6: talking to one agent" },
   { id: "C6", name: "Prompt box", where: "S1, S2, C5" },
   { id: "C7", name: "Face with name", where: "Everywhere a person shows" },
@@ -141,6 +145,7 @@ export const COMPONENTS: { id: string; name: string; where: string }[] = [
   { id: "C22", name: "Runs in an answer", where: "C5" },
   { id: "C23", name: "Agent about panel", where: "V6: model, status, skills and plugins of the agent you are talking to" },
   { id: "C24", name: "Skill or plugin row", where: "V6, V17" },
+  { id: "C25", name: "Function nav: back row, then the function's tools by process group", where: "V12, V18, left" },
 ];
 
 export const ventureHref = (slug: string, rest = "") => `/studio/v/${slug}${rest ? `/${rest}` : ""}`;

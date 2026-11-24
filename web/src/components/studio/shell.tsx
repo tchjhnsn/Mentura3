@@ -10,7 +10,8 @@ import { HashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarButton } from "@/components/sidebar";
 import { Num, useNums } from "./bits";
-import { ventureHref, ventureOf } from "./data";
+import { FUNCTIONS, ventureHref, ventureOf } from "./data";
+import { levelOf, toolOf } from "./tools";
 import { slugOf } from "./nav";
 
 /** "Ask the agent" from any venture screen opens the chief of staff in the Agents view (V6). */
@@ -23,14 +24,14 @@ export function useChat() {
 /** C1 Top bar for every Studio screen. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
  * src/components/sidebar.tsx: C3 studio pages, C4 a venture's pages), in place of Mentura's, under the switcher. */
 export function StudioFrame({ children }: { children: ReactNode }) {
-  const slug = slugOf(usePathname() ?? "/studio");
+  const path = usePathname() ?? "/studio";
   const nums = useNums();
   return (
     <div className="bg-background flex h-dvh flex-col overflow-hidden md:h-[calc(100dvh-1rem)]">
       <header className="relative flex h-12 shrink-0 items-center gap-1 border-b px-2 md:px-3">
         <Num n="C1" className="absolute top-0.5 left-0.5" />
         <SidebarButton className="-ml-1" />
-        <Link href={slug ? ventureHref(slug) : "/studio"} className="hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm font-medium">{slug ? ventureOf(slug).name : "Business Studio"}</Link>
+        <Crumbs path={path} />
         <div className="flex-1" />
         <Button variant="ghost" size="sm" onClick={() => nums.set(!nums.on)} aria-pressed={nums.on} title="Show screen and component numbers">
           <HashIcon />
@@ -39,6 +40,23 @@ export function StudioFrame({ children }: { children: ReactNode }) {
       </header>
       <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
     </div>
+  );
+}
+
+/** The path in the top bar, after Vercel's: the business, then the function, then the tool, each a link up. */
+function Crumbs({ path }: { path: string }) {
+  const at = levelOf(path);
+  const link = "hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm";
+  const sep = <span aria-hidden className="text-muted-foreground/60 text-sm">/</span>;
+  if (at.kind === "studio") return <Link href="/studio" className={`${link} font-medium`}>Business Studio</Link>;
+  const fn = at.kind === "function" ? FUNCTIONS.find((f) => f.id === at.fn) : undefined;
+  const tool = at.kind === "function" && at.tool ? toolOf(at.tool) : undefined;
+  return (
+    <nav aria-label="Where you are" className="flex min-w-0 items-center gap-0.5">
+      <Link href={ventureHref(at.slug)} className={`${link} font-medium`}>{ventureOf(at.slug).name}</Link>
+      {fn ? <>{sep}<Link href={ventureHref(at.slug, `functions/${fn.id}`)} className={link}>{fn.label}</Link></> : null}
+      {tool ? <>{sep}<span className="truncate px-2 py-1.5 text-sm">{tool.title}</span></> : null}
+    </nav>
   );
 }
 
