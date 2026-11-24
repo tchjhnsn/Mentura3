@@ -40,11 +40,11 @@ export function functionGroups(fn: FunctionId): { group: ProcessGroup; tools: To
 
 /** Universal tools that already have a page of their own in a business, by the page's path under /studio/v/<slug>/. */
 const UNIVERSAL_PAGES: Record<string, string> = {
-  home: "", decisions: "decisions", agents: "agents", files: "files", activity: "activity", connections: "connectors", settings: "settings",
+  home: "", decisions: "decisions", agents: "agents", files: "files", activity: "activity", connections: "integrations", settings: "settings",
 };
 
 /** Universal tools whose page reads a real business from Naive. The other pages are still the prototype's samples. */
-const REAL_PAGES = new Set(["home", "decisions", "files"]);
+const REAL_PAGES = new Set(["home", "decisions", "files", "connections"]);
 
 /** Where a tool opens inside one business: its page, under its function so the sidebar stays at that function. A real
  * business opens only pages that read it; any other universal tool shows its catalog page. */
@@ -53,8 +53,11 @@ export const toolPath = (t: Tool, real = false): string =>
     : real && !REAL_PAGES.has(t.id) ? `tools/${t.id}` : UNIVERSAL_PAGES[t.id] ?? `tools/${t.id}`;
 
 /** Where the sidebar is, read from the path: the Studio, one business, or one function of a business. */
-export type Level = { kind: "studio" } | { kind: "business"; slug: string } | { kind: "function"; slug: string; fn: string; tool: string | null };
+export type Level = { kind: "studio" } | { kind: "business"; slug: string } | { kind: "function"; slug: string; fn: string; tool: string | null }
+  | { kind: "integrations"; slug: string };
 export function levelOf(path: string): Level {
+  const i = path.match(/^\/studio\/v\/([^/]+)\/integrations(?:\/|$)/);
+  if (i) return { kind: "integrations", slug: i[1]! };
   const f = path.match(/^\/studio\/v\/([^/]+)\/functions\/([^/]+)(?:\/([^/]+))?/);
   if (f) return { kind: "function", slug: f[1]!, fn: f[2]!, tool: f[3] ?? null };
   const b = path.match(/^\/studio\/v\/([^/]+)/);

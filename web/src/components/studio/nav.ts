@@ -1,17 +1,19 @@
 // The Business Studio's pages, as the app's one sidebar lists them in place of Mentura's (src/components/sidebar.tsx):
-// C3 the studio's pages, C4 one business's, C25 one function of a business. Each level replaces the whole sidebar.
+// C3 the studio's pages, C4 one business's, C25 one function of a business, C26 a business's integrations. Each level replaces the whole sidebar.
 import {
   ActivityIcon, BlocksIcon, BotIcon, BoxIcon, BuildingIcon, CalendarDaysIcon, FileTextIcon, FolderIcon, GaugeIcon, GlobeIcon, HandshakeIcon,
   HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MapIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
-  PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
+  PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TagIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
 } from "lucide-react";
 import { fnOf, ventureHref, ventureOf, type FunctionId } from "./data";
 import { fnsAt } from "./connect-data";
 import { functionGroups, toolPath, universalTools, type Tool, type ToolKind } from "./tools";
 import type { Business } from "./business-data";
+import { CATEGORIES } from "./integrations";
 
 /** `drills`: the row replaces the whole sidebar (a function), shown with a chevron. `quiet`: muted, like Add a function. */
-export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean; drills?: boolean; quiet?: boolean };
+/** `count`: a number at the row's end, as Typeform shows each category's count. */
+export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: string; exact?: boolean; drills?: boolean; quiet?: boolean; count?: number };
 /** `back`: the row at the top of a replaced sidebar that returns to the level above it. */
 export type NavGroup = { label?: string; more?: boolean; back?: { href: string; label: string }; items: NavItem[] };
 
@@ -35,12 +37,14 @@ export const STUDIO_NAV: NavGroup[] = [
 export const ventureNav = (slug: string, biz?: Business | null): NavGroup[] => {
   const h = (r: string) => ventureHref(slug, r);
   const real = biz?.real ?? false;
-  const tool = (t: Tool, exact = false): NavItem => ({ href: h(toolPath(t, real)), label: t.title, icon: TOOL_ICONS[t.id] ?? KIND_ICONS[t.kind], n: `T-${t.id}`, exact });
+  const tool = (t: Tool, exact = false): NavItem => t.id === "connections"
+    // Connections opens the Integrations level (C26), which replaces the sidebar as a function does.
+    ? { href: h("integrations"), label: "Integrations", icon: PlugIcon, n: "V20", drills: true }
+    : { href: h(toolPath(t, real)), label: t.title, icon: TOOL_ICONS[t.id] ?? KIND_ICONS[t.kind], n: `T-${t.id}`, exact };
   const universal = universalTools();
   const daily = universal.filter((t) => !FOOT.includes(t.id));
   const foot = universal.filter((t) => FOOT.includes(t.id));
-  // A real business lists the functions its venture.json turns on; a sample, those its commitment level needs.
-  const fns = real ? biz!.functions : fnsAt(ventureOf(slug).commitment);
+  const fns = businessFunctions(slug, biz);
   return [
     { items: daily.map((t) => tool(t, t.id === "home")) },
     { label: "Functions", items: [
@@ -72,6 +76,24 @@ export const functionNav = (slug: string, fn: FunctionId): NavGroup[] => {
     })),
   ];
 };
+
+/** C26 a business's integrations, after Vercel's Marketplace sidebar: a back row to the business, the ways to browse,
+ * the business's functions, then the categories that have something in the catalog, each with its count. */
+export const integrationsNav = (slug: string, biz?: Business | null): NavGroup[] => {
+  const h = (r: string) => ventureHref(slug, `integrations${r}`);
+  return [
+    { back: { href: ventureHref(slug, ""), label: "Integrations" }, items: [
+      { href: h(""), label: "All", icon: LayoutGridIcon, n: "V20", exact: true },
+      { href: h("/connected"), label: "Connected", icon: PlugIcon, n: "V25" },
+    ] },
+    { label: "Functions", items: businessFunctions(slug, biz).map((id): NavItem => ({ href: h(`/function/${id}`), label: fnOf(id).label, icon: FN_ICONS[id], n: "V22" })) },
+    { label: "Categories", items: CATEGORIES.filter((c) => c.members.length).map((c): NavItem => ({ href: h(`/category/${c.id}`), label: c.name, icon: TagIcon, n: "V21", count: c.members.length })) },
+  ].filter((g) => g.items.length > 0);
+};
+
+/** The functions a business has: a real one's that its venture.json turns on, a sample's that its commitment level needs. */
+export const businessFunctions = (slug: string, biz?: Business | null): FunctionId[] =>
+  biz?.real ? biz.functions : fnsAt(ventureOf(slug).commitment);
 
 /** Records, Connections and Settings sit at the foot of a business's sidebar: used less often than the rest. */
 const FOOT = ["records", "connections", "settings"];

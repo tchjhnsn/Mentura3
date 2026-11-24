@@ -1,6 +1,6 @@
 "use client";
 
-// V12 Function: one function's agent, tools, automations, records, connectors and key measure.
+// V12 Function: one function's agent, tools, automations, records, recommended integrations and key measure.
 import Link from "next/link";
 import { use, useState } from "react";
 import { ArrowLeftIcon, ArrowUpRightIcon, BotIcon, FileTextIcon, MessageSquareIcon, WrenchIcon } from "lucide-react";
@@ -9,9 +9,9 @@ import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetT
 import { Switch } from "@/components/ui/switch";
 import { Face, Num, StatusDot } from "@/components/studio/bits";
 import { ScreenHead, useChat } from "@/components/studio/shell";
-import { ConnectorRow } from "@/components/studio/connector-row";
+import { FunctionIntegrationsCard } from "@/components/studio/integrations-ui";
 import { AGENTS, FUNCTIONS, fnOf, personOf, ventureHref, ventureOf, type FunctionId } from "@/components/studio/data";
-import { CONNECTORS, FN_DETAIL, FN_FOLDER, TOOL_ABOUT, TOOL_ROUTES } from "@/components/studio/connect-data";
+import { FN_DETAIL, FN_FOLDER, TOOL_ABOUT, TOOL_ROUTES } from "@/components/studio/connect-data";
 
 export default function FunctionPage({ params }: { params: Promise<{ slug: string; fn: string }> }) {
   const { slug, fn: raw } = use(params);
@@ -25,7 +25,6 @@ export default function FunctionPage({ params }: { params: Promise<{ slug: strin
   const [tool, setTool] = useState<string | null>(null);
   const [asked, setAsked] = useState<string[]>([]);
   const [askedNote, setAskedNote] = useState<string | null>(null);
-  const connectors = CONNECTORS.filter((c) => c.fns.includes(id));
   const agentName = agent?.name ?? "Chief of staff";
 
   return (
@@ -102,13 +101,10 @@ export default function FunctionPage({ params }: { params: Promise<{ slug: strin
             <Link href={ventureHref(slug, "files")} className="text-muted-foreground hover:text-foreground mt-2 inline-block text-xs underline">Open Files</Link>
           </section>
 
-          <section className="relative">
+          <div className="relative">
             <Num n="V12.5" className="absolute -top-2 right-0" />
-            <h2 className="mb-2 text-sm font-semibold">Connectors it uses</h2>
-            {connectors.length ? (
-              <div className="divide-y rounded-lg border">{connectors.map((c) => <ConnectorRow key={c.id} c={c} />)}</div>
-            ) : <p className="text-muted-foreground rounded-lg border p-3 text-sm">This function uses no outside accounts yet.</p>}
-          </section>
+            <FunctionIntegrationsCard slug={slug} fn={id} />
+          </div>
         </div>
 
         <div className="space-y-6">

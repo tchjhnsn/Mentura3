@@ -145,7 +145,7 @@ export const FN_FOLDER: Record<FunctionId, string> = {
 /** Tools that open a real screen in the prototype, as the part after /studio/v/<slug>/. */
 export const TOOL_ROUTES: Record<string, string> = {
   Decks: "decks/investor", "Outreach sequences": "outreach", "Strategy canvas": "strategy", "Assumption map": "strategy",
-  Connectors: "connectors", Accounts: "connectors", Handoffs: "activity", Spend: "settings", Budget: "settings", Playbooks: "automations", Skills: "agents",
+  Connectors: "integrations", Accounts: "integrations", Handoffs: "activity", Spend: "settings", Budget: "settings", Playbooks: "automations", Skills: "agents",
 };
 
 /** What each tool does, for the sheet a tool opens when it has no screen yet. */

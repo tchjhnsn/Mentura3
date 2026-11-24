@@ -16,7 +16,7 @@ import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
 import { FUNCTIONS, VENTURES, ventureHref, type FunctionId } from "@/components/studio/data";
-import { STUDIO_NAV, functionNav, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { STUDIO_NAV, functionNav, integrationsNav, ventureNav, type NavGroup } from "@/components/studio/nav";
 import { levelOf } from "@/components/studio/tools";
 import { useBusiness, type Business } from "@/components/studio/business";
 import { ModeSwitcher, modeOf } from "@/components/studio/switcher";
@@ -322,15 +322,17 @@ function MenturaNav({ item, to, done }: { item: (href: string, label: string, ic
   );
 }
 
-/** Which of the console's three sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
- * after Vercel): the Studio's, one business's, or one function's. Each replaces the one before it; nothing folds. */
+/** Which of the console's sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
+ * after Vercel): the Studio's, one business's, one function's, or a business's integrations (doc "Business console
+ * integrations", 2026-11-24). Each replaces the one before it; nothing folds. */
 function navFor(path: string, biz: Business | null): NavGroup[] {
   const at = levelOf(path);
   if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.slug, at.fn as FunctionId);
+  if (at.kind === "integrations") return integrationsNav(at.slug, biz);
   return at.kind === "studio" ? STUDIO_NAV : ventureNav(at.slug, biz);
 }
 
-/** The console: the Business Studio's pages, one business's, or one function's, in place of Mentura's own. A row with a
+/** The console: the Business Studio's pages, one business's, one function's or its integrations, in place of Mentura's own. A row with a
  * chevron replaces the sidebar; a replaced sidebar starts with a back row to the level above. */
 function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; done: () => void }) {
   return (
@@ -350,7 +352,11 @@ function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; d
             return (
               <SidebarMenuItem key={it.href}>
                 <SidebarMenuButton asChild isActive={active} tooltip={it.label} className={it.quiet ? "text-sidebar-foreground/70" : undefined}>
-                  <Link href={it.href} onClick={done}><it.icon /><span>{it.label}</span>{it.drills ? <ChevronRightIcon className="text-sidebar-foreground/50 ml-auto" /> : null}</Link>
+                  <Link href={it.href} onClick={done}>
+                    <it.icon /><span>{it.label}</span>
+                    {it.drills ? <ChevronRightIcon className="text-sidebar-foreground/50 ml-auto" /> : null}
+                    {it.count !== undefined ? <span className="text-sidebar-foreground/50 ml-auto text-xs tabular-nums">{it.count}</span> : null}
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
