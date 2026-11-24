@@ -9,11 +9,10 @@ import "server-only";
 // - On the hosted site: the hosted venture store, when MENTURA_PUBLIC_ORIGIN is https and NAIVE_BRIDGE_KEY is set
 //   (packages/platform/hosted). Until then the Studio says it is not connected and writes nothing.
 
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { promisify } from "node:util";
 import { headers } from "next/headers";
 import { signAssertion, type Identity } from "../../../packages/platform/bridge/assertion.ts";
 import { hostedWorkspaceRequired } from "../../../packages/platform/hosted/required.ts";
@@ -21,7 +20,20 @@ import { auth } from "./auth";
 import { OWNER_ID } from "./session";
 import { openMode } from "./open-mode";
 
-const run = promisify(execFile);
+/** Runs the bridge with the signed request on stdin, not the command line: an upload is larger than one argument may be,
+ *  and the command line would show the founder's words to anyone listing processes. */
+function run(bridge: string, input: string, { timeout, env }: { timeout: number; env: NodeJS.ProcessEnv }): Promise<string> {
+  return new Promise((done, fail) => {
+    const child = spawn(process.execPath, [bridge], { env, stdio: ["pipe", "pipe", "ignore"] });
+    const out: Buffer[] = [];
+    let size = 0;
+    const timer = setTimeout(() => { child.kill(); fail(new Error("timeout")); }, timeout);
+    child.stdout.on("data", (b: Buffer) => { size += b.length; if (size > 48 * 1024 * 1024) child.kill(); else out.push(b); });
+    child.on("error", (e) => { clearTimeout(timer); fail(e); });
+    child.on("close", (code) => { clearTimeout(timer); if (code === 0) done(Buffer.concat(out).toString("utf8")); else fail(new Error(`exit ${code}`)); });
+    child.stdin.end(input);
+  });
+}
 // Found from the working directory (web/ under next dev and next start, or the repo root), not import.meta.url,
 // because the bundler rewrites new URL(..., import.meta.url) into an asset reference.
 const bridgePath = () => {
@@ -47,7 +59,7 @@ export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string 
   return null;
 }
 
-const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim"]);
+const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete"]);
 const READ_MS = 15_000;
 const WRITE_MS = 120_000;
 // A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store
@@ -77,8 +89,8 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
     return runHostedConsole<T>({ userId: who.userId, assertion, bridgePath: bridge, key, timeoutMs: timeout });
   }
   const { BETTER_AUTH_SECRET: _secret, ...env } = process.env;
-  // execFile's own error quotes the command line, which holds the founder's words and server paths.
-  const { stdout } = await run(process.execPath, [bridge, assertion], { maxBuffer: 32 * 1024 * 1024, timeout, env: { ...env, NAIVE_BRIDGE_KEY: key } })
+  // The child's own error would name server paths, so the founder sees one plain sentence instead.
+  const stdout = await run(bridge, assertion, { timeout, env: { ...env, NAIVE_BRIDGE_KEY: key } })
     .catch(() => { throw new Error(`Naive did not finish in ${timeout / 1000} seconds. Try again.`); });
   const r = JSON.parse(stdout) as { ok: boolean; result?: T; error?: string };
   if (!r.ok) throw new Error(r.error ?? "Naive refused this.");

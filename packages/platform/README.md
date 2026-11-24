@@ -14,7 +14,7 @@ The system has two sides, the way Next.js and Vercel do (EE-041): the framework 
 - **The framework**, Naive (EE-043), is the conventions. It works offline, with no account, and names no vendor. It covers record schemas and the data model, kits, the router and the CLI, MCP server and local API over it, routes, provenance, the checks, need-now priors, validation scoring, `init-venture`, the connector contract with the filesystem connector, and the docs. It has its own repository, tchjhnsn/naive, and this package depends on it as the `naive-framework` package, pinned to one commit (EE-118, EE-119).
 - **The platform** hosts, connects and integrates. It holds connectors that reach a vendor over the network with credentials, the connect flow, integrations that call outside services (analytics, Listen Labs, Jev routing, treg), a hosted catalog and search, the operator console, and a gallery of templates. That is this folder.
 
-This folder came from tchjhnsn/mentura's `platform/` with its history, when Reflect became the monorepo for Reflect and Mentura (2026-11-24). Mentura's outside host (`outside/`) and the console's bridge into Naive (`bridge/`, from `console/lib/`) came with it. The console itself and Mentura's identity package did not: Reflect's sign-in is the one account. The Venture Studio in `web/` reaches Naive through `bridge/` (not built yet).
+This folder came from tchjhnsn/mentura's `platform/` with its history, when Reflect became the monorepo for Reflect and Mentura (2026-11-24). Mentura's outside host (`outside/`) and the console's bridge into Naive (`bridge/`, from `console/lib/`) came with it. The console itself and Mentura's identity package did not: Reflect's sign-in is the one account. The Venture Studio in `web/` reaches Naive through `bridge/`.
 
 A template is framework, the way `create-next-app --example` is. The gallery that hosts templates is platform.
 
@@ -84,7 +84,9 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 | `bridge/phase.ts`, `bridge/record-forms.ts` | Plain wording for phase gates and the forms a person fills for statement records |
 | `bridge/hosted-call.ts` | The server's call into the hosted workspace (`hosted/console-child.ts`), with the signed assertion on stdin |
 | `bridge/naive-file.mjs` | The same path rule as `naive.ts`, kept apart so a web build can copy the bridge alone |
+| `bridge/files.ts` | Each venture's own storage (venture console spec, 2026-11-24): a private `files` folder where the venture's layout puts that logical path (`k-base/files` by default). The bridge's `files`, `fileRead`, `fileWrite`, `fileFolder`, `fileMove` and `fileDelete` operations list, read, upload (up to 20 MB, never overwriting unless asked), make folders, move and delete inside it, and log each change in the venture's provenance as the person's act, with an upload's bytes in the blob store. Paths with a leading dot, a slash out or a link are refused. Hosted storage is not built |
 | `bridge/bridge-test.ts` | Signed identity, path guard, claims, setup and judge errors |
+| `bridge/files-test.ts` | The files folder round trip and every way out of it |
 
 ## Tenant boundary
 

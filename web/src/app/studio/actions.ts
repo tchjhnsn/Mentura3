@@ -32,3 +32,26 @@ export async function ventureWithDocket(id: string): Promise<Result<{ venture: V
     return { venture, docket };
   });
 }
+
+// Each venture's own storage (venture console spec, phase 2): the files/ folder inside the venture, through the bridge.
+// Uploads and downloads go through the route at r/[id]/files/raw, since a server action's body is capped at 1 MB.
+export type StoredFile = { name: string; path: string; kind: "file" | "folder"; size: number; modified: string; children?: StoredFile[] };
+
+export async function ventureFiles(id: string): Promise<Result<{ venture: VentureDetail; files: StoredFile[] }>> {
+  return attempt(async () => {
+    const [venture, { files }] = await Promise.all([naive<VentureDetail>("venture", { venture: id }), naive<{ files: StoredFile[] }>("files", { venture: id })]);
+    return { venture, files };
+  });
+}
+
+export async function newFolder(id: string, path: string): Promise<Result<{ path: string }>> {
+  return attempt(() => naive<{ path: string }>("fileFolder", { venture: id, path }));
+}
+
+export async function moveFile(id: string, from: string, to: string): Promise<Result<{ from: string; to: string }>> {
+  return attempt(() => naive<{ from: string; to: string }>("fileMove", { venture: id, from, to }));
+}
+
+export async function deleteFile(id: string, path: string): Promise<Result<{ path: string }>> {
+  return attempt(async () => ({ path: (await naive<{ path: string }>("fileDelete", { venture: id, path })).path }));
+}
