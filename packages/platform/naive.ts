@@ -37,5 +37,3 @@ export const naivePhases = (): NaivePhase[] => {
     .map((d) => JSON.parse(readFileSync(join(dir, d.name, "phase.json"), "utf8")) as NaivePhase).sort((a, b) => a.step - b.step);
 };
 
-/** Node's flag that lets a script import Naive's TypeScript modules: see naive-ts.ts. */
-export const naiveTs: string[] = ["--import", join(dirname(fileURLToPath(import.meta.url)), "naive-ts.ts")];
