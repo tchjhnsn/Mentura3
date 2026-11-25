@@ -29,9 +29,9 @@ export type Category = {
 export const CATEGORIES: Category[] = [
   { id: "email", name: "Email", line: "Send and receive email from your own address.", groups: ["3.3", "3.5", "6.2", "7.8", "12.5"], cluster: "messaging-delivery", members: ["resend", "gmail"] },
   { id: "team-chat", name: "Team chat", line: "Talk with your team in channels and threads.", groups: ["6.2", "7.8", "13.4"], members: ["slack"] },
-  { id: "crm", name: "CRM", line: "Keep contacts, companies and deals in one place.", groups: ["3.1", "3.5", "6.2", "12.1"], cluster: "private-contact-records", members: [] },
+  { id: "crm", name: "CRM", line: "Keep contacts, companies and deals in one place.", groups: ["3.1", "3.5", "6.2", "12.1"], cluster: "private-contact-records", members: ["hubspot"] },
   { id: "help-desk", name: "Help desk", line: "Answer customers' questions and keep each conversation.", groups: ["6.2", "6.3", "6.5"], cluster: "private-contact-records", members: ["intercom"] },
-  { id: "scheduling", name: "Calendar and scheduling", line: "Find times and book calls.", groups: ["3.5", "6.2", "7.2"], members: [] },
+  { id: "scheduling", name: "Calendar and scheduling", line: "Find times and book calls.", groups: ["3.5", "6.2", "7.2"], members: ["calendly", "cal-com"] },
   { id: "files", name: "File storage and documents", line: "Store and write files and documents.", groups: ["8.4", "13.5"], members: ["google-drive", "google-docs"] },
   { id: "spreadsheets", name: "Spreadsheets", line: "Model numbers and keep lists in sheets.", groups: ["1.4", "9.1", "13.7"], members: ["google-sheets"] },
   { id: "knowledge", name: "Knowledge base", line: "Write down what the business knows so anyone can find it.", groups: ["2.2", "6.1", "13.5"], members: ["notion", "atlassian"] },
@@ -41,14 +41,14 @@ export const CATEGORIES: Category[] = [
   { id: "hosting", name: "Hosting and deployment", line: "Put sites and apps online and keep them running.", groups: ["2.3", "8.5", "8.6"], cluster: "runtime-and-data", members: ["vercel", "cloudflare"] },
   { id: "databases", name: "Databases", line: "Store an app's data and query it.", groups: ["8.4", "13.7"], cluster: "runtime-and-data", members: ["supabase", "neon"] },
   { id: "monitoring", name: "Error monitoring", line: "Find out when an app breaks and why.", groups: ["8.3", "8.7"], cluster: "runtime-and-data", members: ["sentry"] },
-  { id: "analytics", name: "Analytics", line: "Measure visitors, customers and what they do.", groups: ["3.1", "6.5", "13.6", "13.7"], members: [] },
+  { id: "analytics", name: "Analytics", line: "Measure visitors, customers and what they do.", groups: ["3.1", "6.5", "13.6", "13.7"], members: ["posthog", "amplitude"] },
   { id: "ai-models", name: "AI models", line: "Find and run models and datasets.", groups: ["2.3", "13.7"], members: ["huggingface"] },
   { id: "automation", name: "Automation", line: "Run steps across apps without writing code.", groups: ["13.1", "13.2"], members: ["zapier"] },
   { id: "payments", name: "Payments", line: "Take payments and see your balance.", groups: ["3.5", "9.2", "9.7"], cluster: "money-and-books", members: ["stripe"] },
   { id: "accounting", name: "Accounting", line: "Keep the books, pay bills and file taxes.", groups: ["9.1", "9.3", "9.6", "9.7", "9.9"], cluster: "money-and-books", members: [] },
-  { id: "payroll-hr", name: "Payroll and HR", line: "Pay people and keep their records.", groups: ["7.3", "7.5", "7.7", "9.5"], cluster: "money-and-books", members: [] },
-  { id: "e-signature", name: "E-signature", line: "Send agreements and get them signed.", groups: ["7.2", "11.2", "12.1", "12.4"], cluster: "signatures-and-privileged-records", members: [] },
-  { id: "identity", name: "Identity and access", line: "Manage who can sign in to what.", groups: ["7.7", "8.3", "8.6"], cluster: "identity-and-secrets", members: [] },
+  { id: "payroll-hr", name: "Payroll and HR", line: "Pay people and keep their records.", groups: ["7.3", "7.5", "7.7", "9.5"], cluster: "money-and-books", members: ["gusto", "deel"] },
+  { id: "e-signature", name: "E-signature", line: "Send agreements and get them signed.", groups: ["7.2", "11.2", "12.1", "12.4"], cluster: "signatures-and-privileged-records", members: ["docusign"] },
+  { id: "identity", name: "Identity and access", line: "Manage who can sign in to what.", groups: ["7.7", "8.3", "8.6"], cluster: "identity-and-secrets", members: ["workos"] },
 ];
 
 export const categoryOf = (id: string): Category | undefined => CATEGORIES.find((c) => c.id === id);

@@ -134,6 +134,42 @@ export const MARKET: readonly MarketConnector[] = [
     line: "Read payments and balance, and make payment links.", does: ["Read your balance and payments when you ask", "Make a payment link when you tap Send"], docs: "https://docs.stripe.com/mcp",
   },
   {
+    id: "hubspot", name: "HubSpot", by: "HubSpot", category: "work", url: "https://mcp.hubspot.com", auth: "oauth-app", clientEnv: ["HUBSPOT_MCP_CLIENT_ID", "HUBSPOT_MCP_CLIENT_SECRET"],
+    line: "Find contacts, companies and deals, and log what happened.", does: ["Read your contacts, companies and deals when you ask", "Add a contact or a note when you tap Send"], docs: "https://developers.hubspot.com/docs/build-with-ai/remote-mcp-server",
+  },
+  {
+    id: "calendly", name: "Calendly", by: "Calendly", category: "work", url: "https://mcp.calendly.com", auth: "oauth",
+    line: "See who booked, and share a link to book you.", does: ["Read your booked meetings and event types when you ask", "Make a booking link when you tap Send"], docs: "https://developer.calendly.com/calendly-mcp-server",
+  },
+  {
+    id: "cal-com", name: "Cal.com", by: "Cal.com", category: "work", url: "https://mcp.cal.com/mcp", auth: "oauth",
+    line: "See your bookings and availability, and book calls.", does: ["Read your bookings and availability when you ask", "Book or move a call when you tap Send"], docs: "https://cal.com/docs/mcp-server",
+  },
+  {
+    id: "posthog", name: "PostHog", by: "PostHog", category: "data", url: "https://mcp.posthog.com/mcp", auth: "oauth",
+    line: "Ask what people do in your product: events, funnels and flags.", does: ["Read your product's events, insights and feature flags when you ask"], docs: "https://posthog.com/docs/model-context-protocol",
+  },
+  {
+    id: "amplitude", name: "Amplitude", by: "Amplitude", category: "data", url: "https://mcp.amplitude.com/mcp", auth: "oauth",
+    line: "Read charts, funnels and retention for your product.", does: ["Read your charts, cohorts and experiments when you ask"], docs: "https://docs.amplitude.com/mcp",
+  },
+  {
+    id: "docusign", name: "Docusign", by: "Docusign", category: "work", url: "https://mcp.docusign.com/mcp", auth: "oauth-app", clientEnv: ["DOCUSIGN_MCP_CLIENT_ID", "DOCUSIGN_MCP_CLIENT_SECRET"],
+    line: "Send agreements for signature and see where each one stands.", does: ["Read your envelopes and who has signed when you ask", "Send an agreement for signature when you tap Send"], docs: "https://developers.docusign.com/tools/mcp-server/",
+  },
+  {
+    id: "gusto", name: "Gusto", by: "Gusto", category: "money", url: "https://mcp.api.gusto.com", auth: "oauth",
+    line: "Read payroll, people and time off.", does: ["Read your payrolls, employees and time off when you ask"], docs: "https://docs.gusto.com/app-integrations/docs/mcp",
+  },
+  {
+    id: "deel", name: "Deel", by: "Deel", category: "money", url: "https://api.letsdeel.com/mcp", auth: "oauth",
+    line: "Read contracts, payroll and people across countries.", does: ["Read your contracts, people and payments when you ask"], docs: "https://developer.deel.com/mcp",
+  },
+  {
+    id: "workos", name: "WorkOS", by: "WorkOS", category: "build", url: "https://mcp.workos.com/mcp", auth: "oauth",
+    line: "Manage sign-in, single sign-on and users for your app.", does: ["Read your app's users, organizations and sign-in settings when you ask"], docs: "https://workos.com/docs/mcp",
+  },
+  {
     id: "canva", name: "Canva", by: "Canva", category: "design", url: "https://mcp.canva.com/mcp", auth: "oauth",
     line: "Find, create and export designs.", does: ["Find and make designs when you ask"], docs: "https://www.canva.dev/docs/connect/canva-mcp-server-setup/",
   },
