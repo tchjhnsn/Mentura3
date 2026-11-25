@@ -202,3 +202,44 @@ export function reachable<S extends string, E extends string>(m: Machine<S, E>):
   }
   return seen;
 }
+
+/** Whether an event may happen in a state at all: some row leads out of it (its guard may still fail). */
+export function can<S extends string, E extends string>(m: Machine<S, E>, from: S, on: E): boolean {
+  return next(m, from, on).length > 0;
+}
+
+/** The one next action a screen shows for a failure state (P31), or null when the state is not a failure. */
+export function failureAction<S extends string, E extends string>(m: Machine<S, E>, state: S): string | null {
+  return m.failures[state] ?? null;
+}
+
+/** Next actions that only wait, so a screen shows them as words, never as a button that does nothing. */
+export const WAIT_ACTIONS: readonly string[] = ["Try later"];
+
+/** A stored connection's state in M1: no row is none. A status the machine does not know is refused. */
+export function connectionState(status: string | null | undefined): ConnectionState {
+  if (status === null || status === undefined) return "none";
+  if (!(CONNECTION_STATES as readonly string[]).includes(status) || status === "none") throw new Error(`Unknown connection status: ${status}`);
+  return status as ConnectionState;
+}
+
+/** The M1 event a stored change is, refused with the reason when M1 has no such row from that state. */
+export function connectionStep(status: string | null | undefined, on: ConnectionEvent): ConnectionState {
+  const from = connectionState(status);
+  const to = next(M1, from, on)[0];
+  if (to === undefined) throw new Error(`A connection that is ${from} cannot take "${on}".`);
+  return to;
+}
+
+/** Where a sign-in that came back without tokens ended in M2: the service's error code, if any, decides. */
+export function signInFailure(error: string | null | undefined, threw = false): SignInState {
+  if (threw) return "unreachable";
+  if (error === "access_denied") return "denied";
+  if (error === "insufficient_scope") return "needs more permission";
+  return "cancelled";
+}
+
+/** Reads a failure state named in a page's address, so a screen only ever draws a state M2 has as a failure. */
+export function signInFailureFrom(param: string | null | undefined): SignInState | null {
+  return param && Object.hasOwn(M2.failures, param) ? (param as SignInState) : null;
+}

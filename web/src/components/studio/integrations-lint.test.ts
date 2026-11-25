@@ -1,5 +1,6 @@
 // The Integrations lint (spec "Integrations: formal specification", Lint suites). It reads the screen inventory and the
-// machines as data and the code as text. Rules here: S-1 numbered, S-3 entry points, C-5 words, T-4 names agree, and
+// machines as data and the code as text. Rules here: S-1 numbered, S-3 entry points, C-5 words, T-4 names agree,
+// T-5 failure actions come from the machines, and
 // the catalog's K-1 membership, K-2 capabilities, K-4 logos and K-6 coverage.
 // The rest of the suites follow as the catalogs they read (components, capabilities) are written.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
@@ -9,7 +10,7 @@ import { MARKET } from "@reflect/core/marketplace";
 import { INITIAL_ONLY, logoSrc } from "@/app/marketplace/logos";
 import { FUNCTIONS } from "./data";
 import { CAPABILITIES, CATEGORIES, PRIMARY, SERVICE_CAPABILITIES, categoriesOf, categoryOf, servicesThat } from "./integrations";
-import { MACHINES } from "./integrations-machines";
+import { MACHINES, failureAction } from "./integrations-machines";
 import { alternativesFor } from "./recommend";
 import { SCREENS } from "./integrations-screens";
 
@@ -92,6 +93,29 @@ describe("T-4 names agree: every machine state a screen cites is a state of that
       for (const ref of s.machine) {
         const [id = "", state = ""] = ref.split(":");
         expect(states.get(id)?.has(state), `${s.id} cites ${ref}`).toBe(true);
+      }
+    });
+  }
+});
+
+describe("T-5 failure actions come from the machines: a built screen that cites a failure state takes its next action from the machine's data", () => {
+  const byId = new Map(MACHINES.map((m) => [m.id, m]));
+  // Built screens only: a partial one (V32) is drawn outside the console and joins when it is mirrored there.
+  for (const s of SCREENS.filter((x) => x.status === "built")) {
+    const failures = s.machine.filter((ref) => {
+      const [id = "", state = ""] = ref.split(":");
+      const m = byId.get(id);
+      return m ? failureAction(m, state as never) !== null : false;
+    });
+    if (!failures.length || !s.file) continue;
+    it(s.id, () => {
+      const code = read(s.file!);
+      for (const ref of failures) {
+        const [id = "", state = ""] = ref.split(":");
+        // M2's failures are drawn by SignInFailed, which reads failureAction(M2, state) itself.
+        const reaches = id === "M2" ? /<SignInFailed\b/.test(code) : new RegExp(`failureAction\\(${id}, "${state}"\\)`).test(code);
+        expect(reaches, `${s.id} cites ${ref} but does not take its next action from ${id}`).toBe(true);
+        expect(code, `${s.id} writes "${failureAction(byId.get(id)!, state as never)}" by hand`).not.toMatch(new RegExp(`>\\s*${failureAction(byId.get(id)!, state as never)}\\s*<`));
       }
     });
   }

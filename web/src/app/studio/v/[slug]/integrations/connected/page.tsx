@@ -6,6 +6,7 @@ import { Logo } from "@/app/marketplace/logos";
 import { ScreenHead } from "@/components/studio/shell";
 import { ventureHref } from "@/components/studio/data";
 import { categoriesOf } from "@/components/studio/integrations";
+import { M1, failureAction } from "@/components/studio/integrations-machines";
 import { connectIntegration } from "../actions";
 import { integrationsContext, usableBy } from "../context";
 
@@ -45,7 +46,7 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                   {c.status === "pending" && inCatalog ? (
                     <form action={connectIntegration.bind(null, slug, c.connector)}><input type="hidden" name="account" value={c.account ?? ""} /><Button size="sm" type="submit">Finish</Button></form>
                   ) : c.status === "expired" && inCatalog ? (
-                    <form action={connectIntegration.bind(null, slug, c.connector)}><input type="hidden" name="account" value={c.account ?? ""} /><Button size="sm" type="submit">Reconnect</Button></form>
+                    <form action={connectIntegration.bind(null, slug, c.connector)}><input type="hidden" name="account" value={c.account ?? ""} /><Button size="sm" type="submit">{failureAction(M1, "expired")}</Button></form>
                   ) : (
                     <Button variant="outline" size="sm" asChild><Link href={href}>Manage</Link></Button>
                   )}
