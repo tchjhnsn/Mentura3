@@ -1,98 +1,39 @@
-# Reflect
+# Mentura
 
-**Reflect is an open-source memory-graph-based self-reflection engine and backend.** It helps a user build a persistent, transparent representation of their beliefs, observations, reflections, and conversations, and supports AI-assisted insight generation on top of that graph.
+Mentura is hosted Naive. Naive is the venture development framework (tchjhnsn/naive), and Mentura runs it for you: you sign in, open a business, and work it from the business console at https://mentura.xyz.
 
-This repository is my continuation of work I originally began during the **Data Portability Hackathon** — sponsored by the AI Collective, AITX, the Data Transfer Initiative, and the University of Texas at Austin School of Law and Innovation — now consolidated under a unified name and released under an open-source license.
+## What Mentura does
 
-## Origin
+- **Business console.** `/` opens the console at `/studio`. Each business has its phase, its functions and their tools, its files and its decisions. The console says business, and code, routes and Naive say venture.
+- **Teams.** A team owns businesses. Its members are an Owner, Members and Viewers, and a person can be on teams they do not own. Every person starts with a personal team.
+- **Integrations.** Each person connects their own accounts to a business, and Naive reads records from them.
+- **Hosted business store.** Each team's records sit in Postgres (Neon) as Naive records, append-only and isolated by team.
+- **Offline sync.** You can work a business as files on your own machine and sync it with `naive sync pull` and `naive sync push`. The Naive command line signs in with a device code at `/device`.
+- **Meetings.** Meetings with agendas, notes, follow-ups and guest invites.
 
-Going into the hackathon, I was already pursuing ideas in this domain through prior lines of work I called **NTS** (Number Theory of the Soul) and **Journey**. I was grateful for the opportunity to build something with collaborators under the high-pressure, time-constrained format of a competition, and the event gave me a reason to materialize those ideas into a working system quickly.
+## Where things are
 
-What I built was largely based on my intuitions rather than on formal studies of machine learning. Instead of designing a neural network from first principles to achieve the project's goals, I set out to build a **harness around existing models** — manipulating the system so that, given specified inputs from the user, it would produce outputs shaped the way I wanted, and then relationally storing both the user's inputs and the harness's outputs in a persistent knowledge graph.
+| Path | Holds |
+|---|---|
+| `web/` | The web app (Next.js) that serves Mentura. See [web/README.md](web/README.md) |
+| `packages/platform/` | Mentura's platform library: the connectors, the hosted business store, integrations, the agents over Naive, the outside host, and `bridge/`, the one door from the web server into Naive. See [packages/platform/README.md](packages/platform/README.md) |
+| `tools/ontology/` | The ontology program's scripts. See [tools/ontology/README.md](tools/ontology/README.md) |
+| `docs/mentura/` | Mentura's company docs and the decision log (`EE-NNN`). See [docs/mentura/README.md](docs/mentura/README.md) |
 
-That is, honestly, what this repository is: a working prototype of the harness-and-graph approach. In my own words, a **bootleg version** of what I'm ultimately trying to accomplish. I'm now devoting my studies to machine learning and attention mechanisms so that future iterations can replace the harness with a purpose-designed architecture that achieves the same goals natively, with fewer compromises.
+## Other products kept here
 
-I'm releasing this work openly in the spirit of the hackathon that hosted it — data portability, transparency, and the right to inspect and modify the systems that mediate one's own thinking. If it's useful to you, take it.
+This repository also holds two separate products until each has a repository of its own. Neither is part of Mentura.
 
-## What my partner retained
+- **Reflect**, the person's own life and learning: the headless core (`packages/core/`), the `reflect` command (`packages/cli/`), its GitHub Action (`action/`), its copy of Virtu (`packages/virtu/`), its Lean proofs (`lean/`), its designs (`docs/design/`), the original Python engine (`thrivesight_core/`) and its Django backend (`api/`). Its pages are in `web/` under "Reflect".
+- **Village and polis**, the shared side at https://polis.mentura.xyz. Its pages are in `web/` under "Village and polis".
 
-I built this with a collaborator, [@clarkmyfancy](https://github.com/clarkmyfancy). After the hackathon, my partner kept the **ThriveSight** name and the front-end they built, and has continued independent development under that brand. Everything in this repository is my portion of the work:
+## Build and test
 
-- the **reasoning engine** (signal generation, clustering, coordinate system, context assembly, graph agent, insight engine, LLM prompts, persona configuration)
-- the **Django REST backend** that exposes it (authentication, workspace-scoped data, live conversation, graph persistence, analytics)
-- the **research corpus** (memory hypotheses, signal address architecture, federated graph architecture, reflect graph contract family)
-
-The **ThriveSight** name and the front-end belong to my partner and are not part of this repository.
-
-## Current repository structure
-
-```
-reflect/
-├── LICENSE                   Apache License 2.0
-├── README.md                 this file
-├── pyproject.toml            Python package definition
-├── thrivesight_core/         ← Python reasoning engine (internal name retained for import stability)
-│   ├── signal_engine.py
-│   ├── cluster_engine.py
-│   ├── coordinate_system.py
-│   ├── context_assembly.py
-│   ├── graph_agent.py
-│   ├── insight_engine.py
-│   ├── llm_prompts.py
-│   └── persona_config.py
-├── api/                      ← Django REST backend (squash-imported 2026-04-22 from tchjhnsn/reflect-api)
-│   ├── manage.py
-│   ├── requirements.txt
-│   ├── reflect_api/          (Django project configuration + root URL wiring)
-│   ├── events_api/           (HTTP transport, services, live-conversation, graph helpers, analytics)
-│   ├── datasets/
-│   ├── scripts/
-│   └── …
-└── _ideas/                   idea notes (will migrate to docs/ideas/)
-```
-
-The internal Python package is still named `thrivesight_core` for import stability. Renaming it to `reflect_core` is tracked as an issue. The `api/` subfolder was imported from the (now-archived) standalone `tchjhnsn/reflect-api` repo via a squash import — full per-commit history of the Django backend remains preserved at that archived repo.
-
-## Planned consolidation
-
-Reflect is being consolidated into a single repository from previously separate codebases.
-
-- ✅ **`api/`** — Django REST backend. Imported 2026-04-22 from the archived [tchjhnsn/reflect-api](https://github.com/tchjhnsn/reflect-api).
-- ⏳ **`docs/`** — architecture, research, and thesis documents (currently in my vault; see the migration tracking issue).
-- ⏳ **`packages/`** — TypeScript domain packages (values ontology, scoring, number-theory framework) from the archived [tchjhnsn/ai-lab](https://github.com/tchjhnsn/ai-lab).
-
-Track the remaining consolidation progress in the [issues](https://github.com/tchjhnsn/reflect/issues).
-
-## Install (Python engine)
-
-```bash
-pip install git+https://github.com/tchjhnsn/reflect.git
-```
-
-Or for local development:
-
-```bash
-git clone https://github.com/tchjhnsn/reflect.git
-cd reflect
-pip install -e .
-```
-
-The engine requires Python 3.11+ and declares its dependencies (`anthropic`, `neomodel`, `neo4j`, `jsonschema`) via `pyproject.toml`.
-
-## Status
-
-- **Python engine:** released. Reference implementation; not actively deployed.
-- **Django backend:** not yet merged; lives at [tchjhnsn/reflect-api](https://github.com/tchjhnsn/reflect-api) (archived).
-- **Docs corpus:** not yet migrated into this repo.
-
-I maintain this solo, at a best-effort cadence. Pull requests are welcome but may take time to review. Forks and derivative projects are explicitly encouraged — that's the point of releasing this.
-
-## Credits
-
-- **Hackathon context:** the **Data Portability Hackathon**, sponsored by the AI Collective, AITX, the Data Transfer Initiative, and the University of Texas at Austin School of Law and Innovation. Thanks to the organizers for a format that made fast, honest building possible.
-- **Collaborator:** [@clarkmyfancy](https://github.com/clarkmyfancy). Thank you for building alongside me. **ThriveSight** as a product and as a name is yours; the front-end you built continues its life under that brand, independent of this repository.
-- **Author:** Torian Johnson ([@tchjhnsn](https://github.com/tchjhnsn)).
+- `cd web && pnpm install && pnpm test` runs the web app's, Reflect's core's and the CLI's tests. `pnpm typecheck` type-checks them. See [web/README.md](web/README.md) for the environment and the other commands.
+- `cd packages/platform && npm install && npm test` runs the platform library's tests. Its install needs read access to tchjhnsn/naive (`NAIVE_READ_TOKEN`).
+- `cd tools/ontology && npm install && npm test` runs the ontology program's tests.
+- CI runs `.github/workflows/platform.yml`, `ontology.yml` and `lean.yml`.
 
 ## License
 
-[Apache License 2.0](./LICENSE). In short: you can use, modify, and distribute this code for any purpose, including commercial. You must preserve the license notice and state any significant modifications. There is no warranty.
+[Apache License 2.0](./LICENSE).

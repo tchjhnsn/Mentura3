@@ -1,6 +1,6 @@
 # Mentura docs
 
-Mentura's company docs, moved here from tchjhnsn/mentura's `docs/` with their history when Reflect became the monorepo for Reflect and Mentura (2026-11-24).
+Mentura's company docs, moved here from tchjhnsn/mentura's `docs/` with their history when this repository became Mentura's (2026-11-24).
 
 | Folder | Holds |
 |---|---|

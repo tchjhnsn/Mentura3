@@ -113,7 +113,7 @@ export function sourcesOf(map: SourceMap, connections: readonly SourceConnection
     const entry = (map.sources ?? []).find((s) => s.id === rule.system_of_record);
     const service = entry?.connector === "mcp" && typeof entry.api === "string" ? entry.api : null;
     const connection = service ? connections.find((c) => c.connector === service && sourceIdOf(service, c.id) === rule.system_of_record) ?? null : null;
-    // P15: a rule it cannot reach stays a rule and says so; it never falls back to Reflect on its own.
+    // P15: a rule it cannot reach stays a rule and says so; it never falls back to Mentura on its own.
     const reachable = connection !== null && live(connection, business) && service !== null && adapterFor(service, kind.type, adapters) !== null;
     return { kind, state: reachable ? "outside" : "unreachable", connection, service, candidates };
   });

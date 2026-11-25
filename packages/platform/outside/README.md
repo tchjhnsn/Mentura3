@@ -1,6 +1,6 @@
 # Outside host
 
-**Moved, 2026-11-24.** This package came to `packages/platform/outside/` in tchjhnsn/reflect from tchjhnsn/mentura. Mentura's console is retired, so where this page names `console/`, read it as the history of that console: the bridge it used is now `../bridge/`, and the Venture Studio in Reflect's `web/` takes the console's place (not built yet). The thirteen function ids now come from Naive's `departments.json`, not the EE-090 decision text.
+**Moved, 2026-11-24.** This package came to `packages/platform/outside/` from tchjhnsn/mentura. The old console is retired, so where this page names `console/`, read it as the history of that console: the bridge it used is now `../bridge/`, and the business console in `web/` (`/studio`) takes its place. The thirteen function ids now come from Naive's `departments.json`, not the EE-090 decision text.
 
 A venture's record store stays on Naive's connector registry. GitHub issues, projects, discussions, docs, reviews, actions, and repository files stay on `connectors/github.mjs`. This package is the host for a reading that store does not hold.
 

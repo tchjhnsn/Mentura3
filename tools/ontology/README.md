@@ -1,6 +1,6 @@
 # Ontology program tools
 
-The ontology program's scripts, moved here from tchjhnsn/mentura's `scripts/` with their history when Reflect became the monorepo for Reflect and Mentura (2026-11-24). They read the founder's idea records from a folder exported from the company tenant's store (`--records <dir>` or `MENTURA_RECORDS`, see `records-folder.ts`) and the program's rulings, ledgers and reports in [`docs/mentura/`](../../docs/mentura/README.md). Their default root is the repository root.
+The ontology program's scripts, moved here from tchjhnsn/mentura's `scripts/` with their history when this repository became Mentura's (2026-11-24). They read the founder's idea records from a folder exported from the company tenant's store (`--records <dir>` or `MENTURA_RECORDS`, see `records-folder.ts`) and the program's rulings, ledgers and reports in [`docs/mentura/`](../../docs/mentura/README.md). Their default root is the repository root.
 
 | File | Does |
 |---|---|
