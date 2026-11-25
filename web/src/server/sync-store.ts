@@ -22,6 +22,7 @@ import { bridgeKey, naiveAs, type Identity } from "./naive";
 import { SyncRefusal, type PushOutcome, type SyncBackend } from "./sync-api";
 import { changesSince, type RecordStore, type StoredPath } from "./sync-records";
 import type { TokenHolder } from "./sync-token";
+import { endRun, startRun, stepRun } from "./work-runs";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -133,19 +134,34 @@ export function hostedSyncBackend(): SyncBackend {
       return await changesSince(tenantRecords(storeOrRefuse(), who), who.business, since);
     },
     async push(who, input) {
-      // The point comes from before the push. A point read after the commit would sit above a write that landed
-      // in the store beside this push, and the client's next pull would skip it.
-      const point = await tenantRecords(storeOrRefuse(), who).head();
-      const out = await naiveAs<{ stale?: { path: string; current: string | null }[]; accepted?: { path: string; version: string }[] }>(
-        identityOf(who, await profileOf(who.person)), "syncPush",
-        { venture: who.business, changes: input.changes, provenance: input.provenance, working_copy: input.working_copy },
-      ).catch((error: unknown) => { throw pushRefusal(error); });
-      // A 409 always carries the paths that moved, so the client has something to pull against. A refusal with
-      // nothing stale is not a 409: pushRefusal has already made it a 422 or a 502.
-      if (out.stale?.length) return { stale: out.stale } satisfies PushOutcome;
-      const accepted = out.accepted ?? [];
-      if (accepted.length !== input.changes.length) throw new SyncRefusal(502, "the business store did not say what it wrote");
-      return { point, accepted } satisfies PushOutcome;
+      // The push reports to the feed of running work (./work-runs.ts), so the business's bottom bar shows it running,
+      // and a refused one with what failed. The working copy's person is the tenant, as identityOf says.
+      const n = input.changes.length;
+      const run = await startRun({ team: who.person, venture: who.business, kind: "sync-push", name: `Sync push of ${n} ${n === 1 ? "change" : "changes"}`,
+        startedBy: who.person, steps: 2, stepLabel: "Reading where the business store is" });
+      try {
+        // The point comes from before the push. A point read after the commit would sit above a write that landed
+        // in the store beside this push, and the client's next pull would skip it.
+        const point = await tenantRecords(storeOrRefuse(), who).head();
+        await stepRun(run, 2, `Checking and writing ${n} ${n === 1 ? "change" : "changes"} through Naive`);
+        const out = await naiveAs<{ stale?: { path: string; current: string | null }[]; accepted?: { path: string; version: string }[] }>(
+          identityOf(who, await profileOf(who.person)), "syncPush",
+          { venture: who.business, changes: input.changes, provenance: input.provenance, working_copy: input.working_copy },
+        ).catch((error: unknown) => { throw pushRefusal(error); });
+        // A 409 always carries the paths that moved, so the client has something to pull against. A refusal with
+        // nothing stale is not a 409: pushRefusal has already made it a 422 or a 502.
+        if (out.stale?.length) {
+          await endRun(run, "conflict", `${out.stale.length} ${out.stale.length === 1 ? "record" : "records"} changed in the store since the last pull. Pull, then push again.`);
+          return { stale: out.stale } satisfies PushOutcome;
+        }
+        const accepted = out.accepted ?? [];
+        if (accepted.length !== input.changes.length) throw new SyncRefusal(502, "the business store did not say what it wrote");
+        await endRun(run, "done", `Wrote ${accepted.length} ${accepted.length === 1 ? "change" : "changes"}`);
+        return { point, accepted } satisfies PushOutcome;
+      } catch (error) {
+        await endRun(run, "failed", `The push was refused: ${error instanceof Error && error.message ? error.message : "the business store did not answer"}`);
+        throw error;
+      }
     },
   };
 }
