@@ -29,8 +29,18 @@ export const POSTGRES = {
   options: ["tenant", "root", "url"],
 };
 
+// MCP: a source map entry { "connector": "mcp", "api": "<catalog service id>", "writes": "none" } reads records from
+// a service the person connected in Reflect, through Reflect's web server (mcp.ts). Read-only.
+export const MCP = {
+  name: "MCP",
+  module: fileURLToPath(new URL("./mcp.ts", import.meta.url)),
+  writes: ["none"],
+  options: ["api"],
+};
+
 /** Adds every platform connector to Naive's registry in this process. */
 export function registerPlatformConnectors() {
   registerConnector("github", GITHUB);
   registerConnector("postgres", POSTGRES);
+  registerConnector("mcp", MCP);
 }

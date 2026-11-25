@@ -3,7 +3,8 @@
 // the person connected and opened to it. The choice is a rule in the business's knowledge/sources.json (EE-042), so
 // the console writes Naive's model rather than its own. Pure: the page reads the map and the connections and passes
 // them in. A service can hold a record kind only through an adapter that turns its MCP tools into Naive records;
-// without one the kind shows "capability missing" and offers no choice.
+// without one the kind shows "capability missing" and offers no choice. The web server runs adapters for Naive's
+// mcp connector (web/src/server/naive-mcp.ts, packages/platform/connectors/mcp.ts).
 import { SERVICE_CAPABILITIES, type Capability } from "./integrations";
 import type { SourceState } from "./integrations-machines";
 
@@ -20,26 +21,61 @@ export const RECORD_KINDS: readonly RecordKind[] = [
   { type: "investor", name: "Investors", line: "Who has invested or might.", capabilities: ["keep-contacts", "store-records"] },
 ];
 
-/** An adapter: how one service's MCP tools become one record type, read-only until M7 sends writes (design step 4). */
-export type Adapter = { service: string; record: string; read: string };
+/** A Naive record an adapter makes: an id, a name and a short summary (data-master.schema.json). */
+export type AdaptedRecord = { id: string; name?: string; summary?: string };
 
-/** Adapters built so far. Empty until the first (Stripe, customer) lands with the platform's mcp connector. */
-export const ADAPTERS: readonly Adapter[] = [];
+/** An adapter: how one service's read tool becomes one record type, as files under `folder` (design step 2). Reads
+ * only: `read` must be a tool that changes nothing at the service, and writes wait for M7, a person's Send. */
+export type Adapter = { service: string; record: string; folder: string; read: string; args: Record<string, unknown>; toRecord: (raw: unknown) => AdaptedRecord | null };
+
+const str = (v: unknown): string | undefined => (typeof v === "string" && v.trim() ? v.trim() : undefined);
+const obj = (v: unknown): Record<string, unknown> | null => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
+
+/** Stripe's customer (its API's Customer object) as a Naive customer record. */
+export function stripeCustomer(raw: unknown): AdaptedRecord | null {
+  const c = obj(raw);
+  const id = str(c?.id);
+  if (!c || !id || !/^cus_[A-Za-z0-9]+$/.test(id)) return null;
+  const email = str(c.email);
+  const name = str(c.name) ?? email ?? id;
+  const created = typeof c.created === "number" ? new Date(c.created * 1000).toISOString().slice(0, 10) : undefined;
+  const summary = [email && email !== name ? email : undefined, created ? `customer since ${created}` : undefined, "from Stripe"].filter(Boolean).join(", ");
+  return { id, name, summary };
+}
+
+/** Adapters built so far. */
+export const ADAPTERS: readonly Adapter[] = [
+  { service: "stripe", record: "customer", folder: "customers", read: "list_customers", args: { limit: 100 }, toRecord: stripeCustomer },
+];
+
+/** The items a read tool answered with: an array, or one under data, items or results, as structured content or JSON text. */
+export function itemsOf(structured: unknown, text: string): unknown[] {
+  const pick = (v: unknown): unknown[] | null => {
+    if (Array.isArray(v)) return v;
+    const o = obj(v);
+    for (const k of ["data", "items", "results", "customers"]) if (o && Array.isArray(o[k])) return o[k] as unknown[];
+    return null;
+  };
+  const fromStructured = pick(structured);
+  if (fromStructured) return fromStructured;
+  try { return pick(JSON.parse(text)) ?? []; } catch { return []; }
+}
 
 export const adapterFor = (service: string, record: string, adapters: readonly Adapter[] = ADAPTERS): Adapter | null =>
   adapters.find((a) => a.service === service && a.record === record) ?? null;
 
 /** The part of knowledge/sources.json this reads (knowledge-sources.schema.json). */
 export type SourceMap = {
-  sources?: { id: string; connector: string }[];
+  sources?: { id: string; connector: string; api?: string }[];
   rules?: { record: string; attribute: string; phase: string; product: string; account: string; actor: string; system_of_record: string; owner?: string }[];
 };
 
 /** A connection as the screens see it (web/src/server/mcp-connections.ts). */
 export type SourceConnection = { id: string; connector: string; status: string; businesses: readonly string[] | null };
 
-/** The connector a connected service's source entry names. */
-export const connectorOf = (service: string) => `mcp:${service}`;
+/** A connected service's source entry: Naive's `mcp` connector (packages/platform/connectors/mcp.ts), the service in `api`, read-only. */
+export const sourceEntryOf = (service: string, connection: string) =>
+  ({ id: sourceIdOf(service, connection), connector: "mcp", api: service, writes: "none" }) as const;
 
 /** A source id for one connection: Naive's ids are lowercase words, a connection's id is not, so it is hashed (FNV-1a). */
 export function sourceIdOf(service: string, connection: string): string {
@@ -75,7 +111,7 @@ export function sourcesOf(map: SourceMap, connections: readonly SourceConnection
     const rule = ruleFor(map, kind.type);
     if (!rule || rule.system_of_record === "venture") return { kind, state: "reflect", connection: null, service: null, candidates };
     const entry = (map.sources ?? []).find((s) => s.id === rule.system_of_record);
-    const service = entry?.connector.startsWith("mcp:") ? entry.connector.slice(4) : null;
+    const service = entry?.connector === "mcp" && typeof entry.api === "string" ? entry.api : null;
     const connection = service ? connections.find((c) => c.connector === service && sourceIdOf(service, c.id) === rule.system_of_record) ?? null : null;
     // P15: a rule it cannot reach stays a rule and says so; it never falls back to Reflect on its own.
     const reachable = connection !== null && live(connection, business) && service !== null && adapterFor(service, kind.type, adapters) !== null;
