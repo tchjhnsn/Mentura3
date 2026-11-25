@@ -39,6 +39,14 @@ const TOKEN_SHAPE = /^[A-Za-z0-9_-]{32,128}$/;
 /** The sha256 hex of a secret, as it is stored. */
 export const hashSecret = (secret: string) => createHash("sha256").update(secret).digest("hex");
 
+/**
+ * Whether a string is a plain id, as a business id and an account id must be: it goes into a sync file's object key
+ * and into a lookup in Naive. One definition, read where a business is approved here and again where a token is
+ * checked (./sync-token.ts), so the two cannot disagree about which ids are legal. There is no slash in it and the
+ * first character is a letter or a digit, so an id is one key segment and cannot climb out of it.
+ */
+export const idShaped = (id: string) => BUSINESS.test(id);
+
 /** A user code as it is stored: letters and digits, upper case. "abcd-efgh" and "ABCDEFGH" are the same code. */
 export const normalizeUserCode = (raw: string) => raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
 /** A user code as the person reads and types it: ABCD-EFGH. */

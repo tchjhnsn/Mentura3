@@ -2,7 +2,14 @@
 // `verifySyncToken(req)` first and answers 401 `{ "error": "unauthorized" }` when it gives back null, which covers a
 // missing header, a token that was never issued, an expired one and a revoked one. The token itself is a command line
 // token from device sign-in (./device-auth.ts); nothing else issues one.
-import { verifyCliToken, type DeviceAuthStore, type TokenHolder } from "./device-auth";
+import { idShaped, verifyCliToken, type DeviceAuthStore, type TokenHolder } from "./device-auth";
+
+/**
+ * Whether an id is safe to pass on: the person and the business go into a sync file's object key and into a lookup in
+ * Naive, so the sync API never has to clean them. The shape is device sign-in's own (`idShaped`), so an id that could
+ * be approved there is one that passes here.
+ */
+export const isSyncId = idShaped;
 
 /** The token in an `Authorization: Bearer <token>` header, or null when the header is missing or is another scheme. */
 export function bearerToken(req: Request): string | null {
@@ -19,9 +26,14 @@ export type { TokenHolder };
 
 /**
  * The holder of the request's bearer token, or null when the call carries no live token. The sync API calls it with
- * the request alone; `opts` is how a test hands it a store over memory and a fixed time.
+ * the request alone; `opts` is how a test hands it a store over memory and a fixed time. A token whose person or
+ * business is not a plain id is refused here rather than passed on, so a row written before `idShaped` existed cannot
+ * reach an object key.
  */
 export async function verifySyncToken(req: Request, opts: { store?: DeviceAuthStore; now?: Date } = {}): Promise<TokenHolder | null> {
   const token = bearerToken(req);
-  return token === null ? null : verifyCliToken(token, opts);
+  if (token === null) return null;
+  const holder = await verifyCliToken(token, opts);
+  if (holder === null) return null;
+  return isSyncId(holder.person) && isSyncId(holder.business) ? holder : null;
 }
