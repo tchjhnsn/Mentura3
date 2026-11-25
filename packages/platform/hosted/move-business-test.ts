@@ -225,13 +225,14 @@ try {
   const forgedKey = { ...moveRequest(again.id, "team-a", "team-b"), to: signAssertion(ada("team-b"), transfer(again.id, "team-a", "team-b"), "a-different-key-0123456789abcdef") };
   expect("an assertion with another key moves nothing", !child(forgedKey, hostedEnv).ok && await count("team-a") === a1 && await count("team-b") === b1);
 
-  // Last, since it puts a file back in the folder the first business left.
-  const restarted = await store.write(logPath, "again\n", { base: null });
-  expect("a write after a tombstone starts the path again", typeof restarted.version === "string" && (await store.read(logPath))?.content === "again\n" && await unbroken("team-a"));
-
   const removed = child(removeRequest("team-b"), hostedEnv);
   expect("in the store, removing a team tombstones every path", removed.ok && (removed.result?.removed ?? 0) > 0 && await hostedIds(ada("team-b")) === "" && await unbroken("team-b"), removed);
   expect("a Member cannot remove a team in the store", !child(removeRequest("team-a", "member"), hostedEnv).ok && await hostedIds(ada("team-a")) === again.id);
+
+  // Last, on a path the removal tombstoned in team-b, so no business's folder comes back before the checks above.
+  const teamB = connect({ tenant: "team-b", client: adminClient, schema: false });
+  const restarted = await teamB.write(logPath, "again\n", { base: null });
+  expect("a write after a tombstone starts the path again", typeof restarted.version === "string" && (await teamB.read(logPath))?.content === "again\n" && await unbroken("team-b"));
 } finally {
   await closeWorkspacePools();
   await admin.end();
