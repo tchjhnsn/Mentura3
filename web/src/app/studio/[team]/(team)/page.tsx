@@ -5,14 +5,16 @@
 // team has businesses the prompt sits above their cards and the templates move behind "See the library". The prompt
 // creates a real Naive business in this team and the cards are the team's businesses, through src/server/naive.ts,
 // which checks the person belongs to the team in the URL before it reads or writes anything. A Viewer sees the cards
-// and no prompt.
+// and no prompt. Each card (C40) has a More menu for an Owner: Open, and Transfer (D5, src/components/studio/transfer.tsx).
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { ArrowRightIcon, Loader2Icon } from "lucide-react";
+import { ArrowRightIcon, Loader2Icon, MoreHorizontalIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PromptBox } from "@/components/studio/prompt-box";
 import { TemplateCard } from "@/components/studio/template-card";
+import { TransferDialog } from "@/components/studio/transfer";
 import { businessHref, teamHref, TEMPLATES } from "@/components/studio/data";
 import { useTeam, useTeamSlug } from "@/components/studio/team";
 import { createVenture, listVentures, type Result } from "@/app/studio/actions";
@@ -30,6 +32,8 @@ export default function TeamHome() {
   const known = useTeam();
   const team = known?.name ?? "";
   const viewer = known?.role === "viewer";
+  const owner = known?.role === "owner";
+  const [moving, setMoving] = useState<{ id: string; name: string } | null>(null);
   const realHref = (id: string) => businessHref(slug, encodeURIComponent(id));
   const [idea, setIdea] = useState<string | null>(null);
   const [made, setMade] = useState<Result<{ id: string }> | null>(null);
@@ -116,16 +120,28 @@ export default function TeamHome() {
           </div>
           <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Businesses in this team">
             {list!.map((v) => (
-              <li key={v.id}>
-                <Link href={realHref(v.id)} className="bg-card hover:border-foreground/30 group flex min-w-0 flex-col rounded-xl border p-4 transition-colors">
+              <li key={v.id} className="relative">
+                <Link href={realHref(v.id)} className={`bg-card hover:border-foreground/30 group flex min-w-0 flex-col rounded-xl border p-4 transition-colors${owner ? " pr-12" : ""}`}>
                   <span className="truncate text-[15px] font-semibold group-hover:underline">{v.name}</span>
                   <span className="text-muted-foreground mt-1 text-[13px] capitalize">{v.phase}</span>
                 </Link>
+                {owner ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="absolute top-2 right-2" aria-label={`More for ${v.name}`}><MoreHorizontalIcon /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild><Link href={realHref(v.id)}>Open</Link></DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => setMoving({ id: v.id, name: v.name })}>Transfer</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
               </li>
             ))}
           </ul>
         </section>
       )}
+      {known ? <TransferDialog team={known} business={moving} onClose={() => setMoving(null)} /> : null}
     </div>
   );
 }
