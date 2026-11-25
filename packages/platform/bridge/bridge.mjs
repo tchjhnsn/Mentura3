@@ -762,9 +762,9 @@ const ops = {
   //
   // The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto
   // the store's chain is its own piece of work (the design's Not built list). It belongs at the end of this
-  // operation, after every write has landed: only there is the push all or none, and only there does
-  // provenance.jsonl already hold the router's own lines, whose last line is the tip to re-chain onto. A tip
-  // read any earlier names a line the store has written past, and the chain breaks.
+  // operation, after every write has landed, because only there is the push all or none and only there is
+  // the store's chain settled: the router appends a line of its own per write. Naive's `rechain`
+  // (packages/naive/src/core/rechain.ts, EE-177) owns which tip to pass and when to read it.
   async syncPush({ venture, changes }, { identity, workspace }) {
     const dir = await dirOf(venture, workspace);
     if (!Array.isArray(changes) || !changes.length) throw new Error("This push carries no changes.");
