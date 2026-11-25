@@ -8,7 +8,7 @@ import { defaultStatements, ownerAc } from "better-auth/plugins/organization/acc
 import { nextCookies } from "better-auth/next-js";
 import { mcp } from "@better-auth/mcp";
 import { ADULT_REQUIRED, confirmsAdult } from "./adult";
-import { ensurePersonalTeam, PERSONAL_TEAM_KEPT, teamSlugProblem } from "./teams-core";
+import { ensurePersonalTeam, INVITE_DAYS, PERSONAL_TEAM_KEPT, roleOf, teamSlugProblem } from "./teams-core";
 
 // Teams (doc "Mentura console: screens, navigation and teams", 2026-11-25): a team is a Better Auth organization, and
 // Mentura says "team" on every screen. Three roles, cut down from Vercel's five: an Owner does everything, a Member
@@ -77,12 +77,16 @@ export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(data
         roles: TEAM_ACCESS_ROLES,
         creatorRole: "owner",
         allowUserToCreateOrganization: true,
+        // An invitation lasts 7 days (src/server/teams-core.ts, INVITE_DAYS), whichever door made it.
+        invitationExpiresIn: INVITE_DAYS * 24 * 60 * 60,
         organizationHooks: {
           beforeCreateOrganization: async ({ organization: o }) => { const why = o.slug ? teamSlugProblem(o.slug) : null; if (why) throw new APIError("BAD_REQUEST", { message: why }); },
           beforeUpdateOrganization: async ({ organization: o }) => { const why = o.slug ? teamSlugProblem(o.slug) : null; if (why) throw new APIError("BAD_REQUEST", { message: why }); },
           // A personal team cannot be deleted or left: its id is its person's.
           beforeDeleteOrganization: async ({ organization: o, user }) => { if (o.id === user.id) throw new APIError("BAD_REQUEST", { message: PERSONAL_TEAM_KEPT }); },
           beforeRemoveMember: async ({ member, organization: o }) => { if (member.userId === o.id) throw new APIError("BAD_REQUEST", { message: PERSONAL_TEAM_KEPT }); },
+          // ...and its person stays its Owner.
+          beforeUpdateMemberRole: async ({ member, newRole, organization: o }) => { if (member.userId === o.id && roleOf(newRole) !== "owner") throw new APIError("BAD_REQUEST", { message: PERSONAL_TEAM_KEPT }); },
         },
       }),
       nextCookies(),

@@ -13,6 +13,7 @@ export type TeamStore = {
   findMany<T>(q: { model: string; where?: Where[] }): Promise<T[]>;
   create<T extends Record<string, unknown>, R = T>(q: { model: string; data: Omit<T, "id">; forceAllowId?: boolean }): Promise<R>;
   update<T>(q: { model: string; where: Where[]; update: Record<string, unknown> }): Promise<T | null>;
+  delete(q: { model: string; where: Where[] }): Promise<void>;
 };
 
 export type TeamRole = "owner" | "member" | "viewer";
@@ -32,6 +33,10 @@ export const NOT_A_MEMBER = "You are not a member of this team.";
 export const PERSONAL_TEAM_KEPT = "Your personal team cannot be deleted or left.";
 export const VIEWER_REFUSED = "You can view this team's businesses, but a Viewer cannot change them.";
 export const OWNER_ONLY = "Only an Owner of this team can change its settings.";
+export const OWNER_ONLY_PEOPLE = "Only an Owner of this team can invite people, change their roles or remove them.";
+export const LAST_OWNER = "A team needs at least one Owner. Make someone else an Owner first.";
+export const LAST_OWNER_LEAVE = "You are the only Owner of this team. Make someone else an Owner on Members before you leave.";
+export const INVITATION_GONE = "This invitation does not exist. Ask the person who sent it for a new one.";
 
 /** Words the console uses right after /studio/, which no team may take as its URL. `v` and `r` are the old business
  * addresses, which redirect. */
@@ -166,4 +171,240 @@ export async function updateTeam(adapter: TeamStore, person: Person, slug: strin
   }
   await adapter.update({ model: "organization", where: [{ field: "id", value: team.id }], update: { name: change.name.trim(), slug: next } });
   return { ...team, name: change.name.trim(), slug: next };
+}
+
+// Members and invitations (round 3: T4 Members, A3 Invitation, D4 Leave team). Better Auth's own invitation statuses
+// are kept in the table (pending, accepted, rejected, canceled), so its organization plugin reads the same rows;
+// Mentura says declined and revoked, and an invitation still pending after its 7 days is expired.
+
+/** How long an invitation lasts. */
+export const INVITE_DAYS = 7;
+const INVITE_MS = INVITE_DAYS * 24 * 60 * 60 * 1000;
+
+export type InvitationState = "pending" | "expired" | "accepted" | "declined" | "revoked";
+/** One invitation as an Owner sees it on Members, Pending. Dates are ISO strings. */
+export type Invitation = { id: string; email: string; role: TeamRole; state: InvitationState; sentAt: string; expiresAt: string; inviter: string | null };
+/** One person on a team, as the Members list shows them. `kept`: the person whose personal team this is, who stays
+ * its Owner and cannot be removed. */
+export type TeamMember = { id: string; userId: string; name: string; email: string; role: TeamRole; you: boolean; kept: boolean };
+/** Members (T4): the team, its people, and, for an Owner, its open invitations (pending or expired). */
+export type TeamPeople = { team: Team; members: TeamMember[]; invitations: Invitation[] };
+/** A3: what an invitation link shows. `forYou` is null when nobody is signed in. `teamSlug` only once the person is
+ * on the team, so a link tells nobody a team's URL. */
+export type InvitationView = {
+  id: string; teamName: string; teamSlug: string | null; inviter: string; email: string; role: TeamRole; state: InvitationState;
+  forYou: boolean | null; member: boolean;
+};
+
+type InvitationRow = { id: string; organizationId: string; email: string; role?: string | null; status: string; expiresAt: Date | string; createdAt?: Date | string | null; inviterId: string };
+type UserRow = { id: string; name?: string | null; email: string };
+type Signed = Person & { email: string };
+
+const iso = (d: Date | string | null | undefined) => (d ? new Date(d).toISOString() : new Date(0).toISOString());
+
+/** An email address as invitations keep it: trimmed and lower case. */
+export const normalEmail = (email: string) => email.trim().toLowerCase();
+
+/** Why an address cannot be invited, or null when it can. */
+export function inviteEmailProblem(email: string): string | null {
+  const e = normalEmail(email);
+  if (!e) return "Give an email address.";
+  if (e.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) return `"${email.trim()}" is not an email address.`;
+  return null;
+}
+
+/** An invitation's state now: Better Auth's status, with a pending one past its time read as expired. */
+export function invitationState(row: Pick<InvitationRow, "status" | "expiresAt">, now: Date = new Date()): InvitationState {
+  if (row.status === "accepted") return "accepted";
+  if (row.status === "rejected") return "declined";
+  if (row.status === "canceled") return "revoked";
+  return new Date(row.expiresAt).getTime() <= now.getTime() ? "expired" : "pending";
+}
+
+const membersRows = (adapter: TeamStore, teamId: string) => adapter.findMany<MemberRow>({ model: "member", where: [{ field: "organizationId", value: teamId }] });
+const rowsOf = (rows: MemberRow[], userId: string) => rows.filter((m) => m.userId === userId);
+const ownerIds = (rows: MemberRow[]) => new Set(rows.filter((m) => roleOf(m.role) === "owner").map((m) => m.userId));
+const usersBy = async (adapter: TeamStore, ids: string[]) => ids.length ? adapter.findMany<UserRow>({ model: "user", where: [{ field: "id", value: ids, operator: "in" }] }) : [];
+
+async function ownerTeam(adapter: TeamStore, person: Person, slug: string): Promise<Team> {
+  const team = await teamFor(adapter, person, slug);
+  if (!team) throw new Error(NOT_A_MEMBER);
+  if (team.role !== "owner") throw new Error(OWNER_ONLY_PEOPLE);
+  return team;
+}
+
+async function asInvitation(adapter: TeamStore, row: InvitationRow, now: Date, names?: Map<string, string>): Promise<Invitation> {
+  let inviter = names?.get(row.inviterId) ?? null;
+  if (inviter === null && !names) {
+    const u = await adapter.findOne<UserRow>({ model: "user", where: [{ field: "id", value: row.inviterId }] });
+    inviter = u ? (u.name?.trim() || u.email) : null;
+  }
+  return { id: row.id, email: row.email, role: roleOf(row.role), state: invitationState(row, now), sentAt: iso(row.createdAt), expiresAt: iso(row.expiresAt), inviter };
+}
+
+/** T4 Members: everyone on the team, Owners first, then by name; an Owner also gets the open invitations. Anyone on
+ * the team may read the list. */
+export async function teamPeople(adapter: TeamStore, person: Person, slug: string, now: Date = new Date()): Promise<TeamPeople> {
+  const team = await teamFor(adapter, person, slug);
+  if (!team) throw new Error(NOT_A_MEMBER);
+  const rows = await membersRows(adapter, team.id);
+  const users = new Map((await usersBy(adapter, [...new Set(rows.map((m) => m.userId))])).map((u) => [u.id, u]));
+  const seen = new Set<string>();
+  const members: TeamMember[] = [];
+  // Two rows for one person (a race) show once, with the stronger role.
+  for (const m of [...rows].sort((a, b) => TEAM_ROLES.indexOf(roleOf(a.role)) - TEAM_ROLES.indexOf(roleOf(b.role)))) {
+    if (seen.has(m.userId)) continue;
+    seen.add(m.userId);
+    const u = users.get(m.userId);
+    members.push({ id: m.id, userId: m.userId, name: u?.name?.trim() || u?.email || "Someone", email: u?.email ?? "", role: roleOf(m.role), you: m.userId === person.id, kept: m.userId === team.id });
+  }
+  members.sort((a, b) => TEAM_ROLES.indexOf(a.role) - TEAM_ROLES.indexOf(b.role) || a.name.localeCompare(b.name));
+  let invitations: Invitation[] = [];
+  if (team.role === "owner") {
+    const open = (await adapter.findMany<InvitationRow>({ model: "invitation", where: [{ field: "organizationId", value: team.id }] }))
+      .filter((r) => r.status === "pending");
+    const names = new Map((await usersBy(adapter, [...new Set(open.map((r) => r.inviterId))])).map((u) => [u.id, u.name?.trim() || u.email]));
+    invitations = (await Promise.all(open.map((r) => asInvitation(adapter, r, now, names))))
+      .sort((a, b) => b.sentAt.localeCompare(a.sentAt));
+  }
+  return { team, members, invitations };
+}
+
+/** T4 and D3 Invite: an Owner offers a place on the team to an email address, with a role, for 7 days. An address
+ * that already has an open invitation gets that one again, with the new role and a fresh 7 days, so one person never
+ * holds two links. Someone already on the team is refused. */
+export async function inviteToTeam(adapter: TeamStore, person: Person, slug: string, ask: { email: string; role: TeamRole }, now: Date = new Date()): Promise<{ team: Team; invitation: Invitation; again: boolean }> {
+  const team = await ownerTeam(adapter, person, slug);
+  const why = inviteEmailProblem(ask.email);
+  if (why) throw new Error(why);
+  if (!TEAM_ROLES.includes(ask.role)) throw new Error("Choose Owner, Member or Viewer.");
+  const email = normalEmail(ask.email);
+  const user = await adapter.findOne<UserRow>({ model: "user", where: [{ field: "email", value: email }] });
+  if (user && (await adapter.findOne<MemberRow>({ model: "member", where: [{ field: "organizationId", value: team.id }, { field: "userId", value: user.id }] }))) {
+    throw new Error(`${email} is already on this team.`);
+  }
+  const expiresAt = new Date(now.getTime() + INVITE_MS);
+  const open = (await adapter.findMany<InvitationRow>({ model: "invitation", where: [{ field: "organizationId", value: team.id }, { field: "email", value: email }] }))
+    .find((r) => r.status === "pending");
+  if (open) {
+    const update = { role: ask.role, expiresAt, inviterId: person.id, createdAt: now };
+    await adapter.update({ model: "invitation", where: [{ field: "id", value: open.id }], update });
+    return { team, invitation: await asInvitation(adapter, { ...open, ...update, status: "pending" }, now), again: true };
+  }
+  const row = await adapter.create<Omit<InvitationRow, "id">, InvitationRow>({ model: "invitation", data: { organizationId: team.id, email, role: ask.role, status: "pending", expiresAt, createdAt: now, inviterId: person.id } });
+  return { team, invitation: await asInvitation(adapter, row, now), again: false };
+}
+
+async function teamInvitation(adapter: TeamStore, team: Team, id: string): Promise<InvitationRow> {
+  const row = await adapter.findOne<InvitationRow>({ model: "invitation", where: [{ field: "id", value: id }] });
+  if (!row || row.organizationId !== team.id) throw new Error(INVITATION_GONE);
+  return row;
+}
+
+/** Pending, Send again: an Owner gives a pending or expired invitation a fresh 7 days. */
+export async function resendInvitation(adapter: TeamStore, person: Person, slug: string, id: string, now: Date = new Date()): Promise<{ team: Team; invitation: Invitation }> {
+  const team = await ownerTeam(adapter, person, slug);
+  const row = await teamInvitation(adapter, team, id);
+  if (row.status !== "pending") throw new Error("That invitation is closed. Invite the address again.");
+  const update = { expiresAt: new Date(now.getTime() + INVITE_MS), createdAt: now, inviterId: person.id };
+  await adapter.update({ model: "invitation", where: [{ field: "id", value: id }], update });
+  return { team, invitation: await asInvitation(adapter, { ...row, ...update }, now) };
+}
+
+/** Pending, Revoke: an Owner withdraws an invitation, and its link stops working. */
+export async function revokeInvitation(adapter: TeamStore, person: Person, slug: string, id: string): Promise<void> {
+  const team = await ownerTeam(adapter, person, slug);
+  const row = await teamInvitation(adapter, team, id);
+  if (row.status !== "pending") throw new Error("That invitation is already closed.");
+  await adapter.update({ model: "invitation", where: [{ field: "id", value: id }], update: { status: "canceled" } });
+}
+
+async function memberOf(adapter: TeamStore, team: Team, memberId: string): Promise<MemberRow> {
+  const row = await adapter.findOne<MemberRow>({ model: "member", where: [{ field: "id", value: memberId }] });
+  if (!row || row.organizationId !== team.id) throw new Error("That person is not on this team.");
+  return row;
+}
+
+/** C44 Role menu: an Owner changes someone's role. The team keeps at least one Owner, and a personal team's own
+ * person stays its Owner. */
+export async function changeMemberRole(adapter: TeamStore, person: Person, slug: string, memberId: string, role: TeamRole): Promise<void> {
+  const team = await ownerTeam(adapter, person, slug);
+  if (!TEAM_ROLES.includes(role)) throw new Error("Choose Owner, Member or Viewer.");
+  const row = await memberOf(adapter, team, memberId);
+  if (roleOf(row.role) === role) return;
+  if (row.userId === team.id) throw new Error("The person whose personal team this is stays its Owner.");
+  const owners = ownerIds(await membersRows(adapter, team.id));
+  if (owners.has(row.userId) && owners.size === 1 && role !== "owner") throw new Error(LAST_OWNER);
+  for (const m of rowsOf(await membersRows(adapter, team.id), row.userId)) await adapter.update({ model: "member", where: [{ field: "id", value: m.id }], update: { role } });
+}
+
+/** Members, More, Remove: an Owner takes someone off the team. They lose access at once, until invited again. */
+export async function removeMember(adapter: TeamStore, person: Person, slug: string, memberId: string): Promise<void> {
+  const team = await ownerTeam(adapter, person, slug);
+  const row = await memberOf(adapter, team, memberId);
+  if (row.userId === team.id) throw new Error(PERSONAL_TEAM_KEPT);
+  const rows = await membersRows(adapter, team.id);
+  const owners = ownerIds(rows);
+  if (owners.has(row.userId) && owners.size === 1) throw new Error(LAST_OWNER);
+  for (const m of rowsOf(rows, row.userId)) await adapter.delete({ model: "member", where: [{ field: "id", value: m.id }] });
+}
+
+/** D4 Leave team. A personal team cannot be left, and an Owner cannot leave while they are its only Owner. */
+export async function leaveTeam(adapter: TeamStore, person: Person, slug: string): Promise<Team> {
+  const team = await teamFor(adapter, person, slug);
+  if (!team) throw new Error(NOT_A_MEMBER);
+  if (team.personal) throw new Error(PERSONAL_TEAM_KEPT);
+  const rows = await membersRows(adapter, team.id);
+  const owners = ownerIds(rows);
+  if (owners.has(person.id) && owners.size === 1) throw new Error(LAST_OWNER_LEAVE);
+  for (const m of rowsOf(rows, person.id)) await adapter.delete({ model: "member", where: [{ field: "id", value: m.id }] });
+  return team;
+}
+
+/** A3: what an invitation link shows to whoever opens it, signed in or not. */
+export async function invitationView(adapter: TeamStore, id: string, person: Signed | null, now: Date = new Date()): Promise<InvitationView | null> {
+  const row = await adapter.findOne<InvitationRow>({ model: "invitation", where: [{ field: "id", value: id }] });
+  if (!row) return null;
+  const org = await adapter.findOne<OrgRow>({ model: "organization", where: [{ field: "id", value: row.organizationId }] });
+  if (!org) return null;
+  const inviter = await adapter.findOne<UserRow>({ model: "user", where: [{ field: "id", value: row.inviterId }] });
+  const member = person ? !!(await adapter.findOne<MemberRow>({ model: "member", where: [{ field: "organizationId", value: org.id }, { field: "userId", value: person.id }] })) : false;
+  return {
+    id: row.id, teamName: org.name, teamSlug: member ? org.slug : null, inviter: inviter?.name?.trim() || inviter?.email || "Someone",
+    email: row.email, role: roleOf(row.role), state: invitationState(row, now), forYou: person ? normalEmail(person.email) === normalEmail(row.email) : null, member,
+  };
+}
+
+async function openInvitationFor(adapter: TeamStore, id: string, person: Signed, now: Date): Promise<InvitationRow> {
+  const row = await adapter.findOne<InvitationRow>({ model: "invitation", where: [{ field: "id", value: id }] });
+  if (!row) throw new Error(INVITATION_GONE);
+  const state = invitationState(row, now);
+  if (state === "expired") throw new Error("This invitation has expired. Ask an Owner of the team to send it again.");
+  if (state === "revoked") throw new Error("This invitation was withdrawn by an Owner of the team.");
+  if (state === "declined") throw new Error("This invitation was declined.");
+  if (normalEmail(person.email) !== normalEmail(row.email)) throw new Error(`This invitation is for ${row.email}. Sign in with that address to accept it.`);
+  return row;
+}
+
+/** A3 Accept: the invited person joins the team with the invitation's role. Accepting again, or accepting when already
+ * on the team, opens the team and adds nobody. */
+export async function acceptInvitation(adapter: TeamStore, person: Signed, id: string, now: Date = new Date()): Promise<Team> {
+  const row = await adapter.findOne<InvitationRow>({ model: "invitation", where: [{ field: "id", value: id }] });
+  const already = row ? await adapter.findOne<MemberRow>({ model: "member", where: [{ field: "organizationId", value: row.organizationId }, { field: "userId", value: person.id }] }) : null;
+  if (row && row.status === "accepted") {
+    if (!already) throw new Error("This invitation has already been used.");
+  } else {
+    const open = await openInvitationFor(adapter, id, person, now);
+    if (!already) await adapter.create({ model: "member", data: { organizationId: open.organizationId, userId: person.id, role: roleOf(open.role), createdAt: now } });
+    await adapter.update({ model: "invitation", where: [{ field: "id", value: id }], update: { status: "accepted" } });
+  }
+  const team = (await teamsOf(adapter, person)).find((t) => t.id === row!.organizationId);
+  if (!team) throw new Error(INVITATION_GONE);
+  return team;
+}
+
+/** A3 Decline: the invitation ends, and the person stays where they were. */
+export async function declineInvitation(adapter: TeamStore, person: Signed, id: string, now: Date = new Date()): Promise<void> {
+  await openInvitationFor(adapter, id, person, now);
+  await adapter.update({ model: "invitation", where: [{ field: "id", value: id }], update: { status: "rejected" } });
 }
