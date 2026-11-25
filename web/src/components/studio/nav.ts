@@ -4,6 +4,7 @@ import {
   ActivityIcon, BlocksIcon, BotIcon, BoxIcon, BuildingIcon, CalendarDaysIcon, FileTextIcon, FolderIcon, GaugeIcon, GlobeIcon, HandshakeIcon,
   HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MapIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
   PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TagIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
+  DatabaseIcon,
 } from "lucide-react";
 import { fnOf, ventureHref, ventureOf, type FunctionId } from "./data";
 import { fnsAt } from "./connect-data";
@@ -85,6 +86,7 @@ export const integrationsNav = (slug: string, biz?: Business | null): NavGroup[]
     { back: { href: ventureHref(slug, ""), label: "Integrations" }, items: [
       { href: h(""), label: "All", icon: LayoutGridIcon, n: "V20", exact: true },
       { href: h("/connected"), label: "Connected", icon: PlugIcon, n: "V25" },
+      { href: h("/sources"), label: "Sources of truth", icon: DatabaseIcon, n: "V27" },
     ] },
     { label: "Functions", items: businessFunctions(slug, biz).map((id): NavItem => ({ href: h(`/function/${id}`), label: fnOf(id).label, icon: FN_ICONS[id], n: "V22" })) },
     { label: "Categories", items: CATEGORIES.filter((c) => c.members.length).map((c): NavItem => ({ href: h(`/category/${c.id}`), label: c.name, icon: TagIcon, n: "V21", count: c.members.length })) },

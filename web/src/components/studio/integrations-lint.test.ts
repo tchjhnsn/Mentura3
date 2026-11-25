@@ -13,6 +13,7 @@ import { CAPABILITIES, CATEGORIES, PRIMARY, SERVICE_CAPABILITIES, categoriesOf, 
 import { MACHINES, failureAction } from "./integrations-machines";
 import { alternativesFor } from "./recommend";
 import { SCREENS } from "./integrations-screens";
+import catalog from "./naive-tools.json";
 
 const SRC = join(__dirname, "..", "..");
 const read = (file: string) => readFileSync(join(SRC, file), "utf8");
@@ -168,4 +169,13 @@ describe("catalog lint", () => {
       expect(alternativesFor(c.id, { functions: FUNCTIONS.map((f) => f.id) }).length, `${c.id} is empty with no alternative`).toBeGreaterThan(0);
     }
   });
+});
+
+describe("K-7 groups agree with Naive: every category names only APQC process groups the tool catalog copy has", () => {
+  const known = new Set<string>(catalog.process_groups.map((g: { id: string }) => g.id));
+  for (const c of CATEGORIES) {
+    it(c.id, () => {
+      for (const g of c.groups) expect(known.has(g), `${c.id} names process group ${g}, which naive-tools.json does not have`).toBe(true);
+    });
+  }
 });
