@@ -19,6 +19,10 @@ NEON_API_KEY=... NEON_PROJECT_ID=<project> NEON_BRANCH_ID=<production branch> pn
 
 ## What it checks
 
-`studio.spec.ts`: the Studio reads the account's businesses from the hosted store, a business made from a sentence is listed, and it opens with Naive's docket. Each run makes one business named "Production check" and the run's time, and those businesses stay in the check account.
+Every run first empties the check account's business store (its rows in `naive_records` in the `mentura_tenants` database, through the owner; `PROD_CHECK_TENANTS_URL` can stand in, `PROD_CHECK_EMPTY=0` skips it), and setup signs in twice so one test can sign out.
+
+`console-empty.spec.ts` (doc "Mentura console: screens, navigation and teams", tests E1 to E3): `/` lands on an empty team home with four templates and no samples, no debug controls and no chief of staff copy; the team switcher holds one team, no businesses and New business; the account menu holds Your profile, Meetings, People, Account settings, Appearance and Sign out, and Sign out works. Screenshots go to `test-results/prod`.
+
+`studio.spec.ts`: the Studio reads the account's businesses from the hosted store, a business made from a sentence is listed, and it opens with Naive's docket. Each run makes one business named "Production check" and the run's time; the next run's setup removes it.
 
 Not built: a scheduled run in CI (it needs the Neon variables as repository secrets), and checks for Integrations and Ask Mentura.

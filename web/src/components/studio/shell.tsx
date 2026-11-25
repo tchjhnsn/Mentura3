@@ -15,7 +15,7 @@ import { useBusiness } from "./business";
 import { levelOf, toolOf } from "./tools";
 import { slugOf } from "./nav";
 
-/** "Ask the agent" from any venture screen opens the chief of staff in the Agents view (V6). */
+/** "Ask the agent" from any business screen opens the Agents view (V6). */
 export function useChat() {
   const router = useRouter();
   const slug = slugOf(usePathname() ?? "");
@@ -34,10 +34,13 @@ export function StudioFrame({ children }: { children: ReactNode }) {
         <SidebarButton className="-ml-1" />
         <Crumbs path={path} />
         <div className="flex-1" />
-        <Button variant="ghost" size="sm" onClick={() => nums.set(!nums.on)} aria-pressed={nums.on} title="Show screen and component numbers">
-          <HashIcon />
-          <span className="hidden sm:inline">{nums.on ? "Numbers on" : "Numbers off"}</span>
-        </Button>
+        {/* Screen and component numbers are a design aid, shown only in development (doc "Mentura console", C2). */}
+        {process.env.NODE_ENV !== "production" ? (
+          <Button variant="ghost" size="sm" onClick={() => nums.set(!nums.on)} aria-pressed={nums.on} title="Show screen and component numbers">
+            <HashIcon />
+            <span className="hidden sm:inline">{nums.on ? "Numbers on" : "Numbers off"}</span>
+          </Button>
+        ) : null}
       </header>
       <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
     </div>

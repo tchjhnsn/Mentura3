@@ -103,7 +103,7 @@ export type Screen = { id: string; title: string; path: string; job: string; ref
 /** Paths with ":v" are inside one venture (/studio/v/<slug>/...). */
 export const SCREENS: Screen[] = [
   { id: "S0", title: "Screen map", path: "/studio/map", job: "Every screen and component number in one list.", refs: [] },
-  { id: "S1", title: "Studio home", path: "/studio", job: "Tell your chief of staff what to build; your businesses by phase; what needs you.", refs: ["openaiChatEmpty"] },
+  { id: "S1", title: "Studio home", path: "/studio", job: "Start a business in this team, or open one of its businesses.", refs: ["openaiChatEmpty"] },
   { id: "S2", title: "New business", path: "/studio/new", job: "Start from an idea, a template, or an existing folder.", refs: ["openaiChatEmpty"] },
   { id: "S3", title: "Business library", path: "/studio/library", job: "Find a template for a business, an agent or an automation.", refs: ["base44Dashboard"] },
   { id: "S4", title: "Template", path: "/studio/library/[id]", job: "See what a template sets up, then use it.", refs: [] },

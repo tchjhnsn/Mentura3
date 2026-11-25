@@ -1,7 +1,7 @@
 "use client";
 
 // Mentura's frame: the page, with C8 Complete profile at the bottom right. Its navigation is the app's one sidebar
-// (MenturaNav in src/components/sidebar.tsx), which shows Mentura's links on Mentura's pages; this frame has no sidebar
+// (StudioNav in src/components/sidebar.tsx), which shows the console on Mentura's pages; this frame has no sidebar
 // of its own (Torian, 2026-11-24: two sidebars on one screen). On a phone the header opens that sidebar.
 import Link from "next/link";
 import { usePathname } from "next/navigation";

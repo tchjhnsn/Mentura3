@@ -3,7 +3,7 @@
 import { forwardRef, useRef, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDaysIcon, ChevronLeftIcon, RocketIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
+import { ChevronLeftIcon, RocketIcon, ChevronRightIcon, ChevronsUpDownIcon, CompassIcon, GraduationCapIcon, HomeIcon, LandmarkIcon, LayoutDashboardIcon, ListMusicIcon, LogOutIcon, PaletteIcon, ListTodoIcon, MessageSquareIcon, MessagesSquareIcon, NotebookPenIcon, PanelLeftIcon, PlusIcon, SettingsIcon, UserRoundIcon, UsersRoundIcon, UtensilsIcon, VideoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -15,11 +15,12 @@ import { cn } from "@/lib/utils";
 import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
-import { FUNCTIONS, VENTURES, ventureHref, type FunctionId } from "@/components/studio/data";
+import { FUNCTIONS, type FunctionId } from "@/components/studio/data";
 import { STUDIO_NAV, functionNav, integrationsNav, ventureNav, type NavGroup } from "@/components/studio/nav";
 import { levelOf } from "@/components/studio/tools";
 import { useBusiness, type Business } from "@/components/studio/business";
-import { ModeSwitcher, modeOf } from "@/components/studio/switcher";
+import { TeamSwitcher } from "@/components/studio/switcher";
+import { authClient } from "@/lib/auth-client";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
 export type SidebarChat = { id: string; title: string };
@@ -86,19 +87,15 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   return (
     <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
-        {side === "mentura" ? <ModeSwitcher path={path} done={done} /> : <ProductHead side={side} to={to} />}
+        {side === "mentura" ? <TeamSwitcher path={path} me={me?.name ?? null} done={done} /> : <ProductHead side={side} to={to} />}
       </SidebarHeader>
 
       <SidebarContent>
         {side === "mentura" ? (
-          (() => {
-            // Personal shows Mentura's social side; the Studio and a venture show the console in its place (spec
-            // "Venture console spec", 2026-11-24: crossing modes swaps the sidebar, it never stacks).
-            const mode = modeOf(path);
-            return mode.kind === "personal"
-              ? <MenturaNav item={item} to={to} done={done} />
-              : <StudioNav groups={navFor(path, biz)} path={path} done={done} />;
-          })()
+          // Mentura is the business console (doc "Mentura console: screens, navigation and teams", 2026-11-25): every
+          // Mentura page shows the team's, a business's, a function's or Integrations' pages. Personal lives in the
+          // account menu at the foot (AccountMenu).
+          <StudioNav groups={navFor(path, biz)} path={path} done={done} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -141,7 +138,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
 
       <SidebarFooter>
         <SidebarMenu>
-          {me ? <Person me={me} to={to} profile={side === "mentura" ? "/mentura/profile" : "/settings/profile"} /> : null}
+          {me ? (side === "mentura" ? <AccountMenu me={me} to={to} done={done} /> : <Person me={me} to={to} profile="/settings/profile" />) : null}
         </SidebarMenu>
       </SidebarFooter>
 
@@ -156,7 +153,7 @@ function ProductHead({ side, to }: { side: Space; to: (p: string) => string }) {
   const PRODUCTS = {
     home: { name: "Reflect", about: "You and your household", href: "/dashboard", icon: <HomeIcon className="size-4" /> },
     polis: { name: "Village and polis", about: "Shared with others", href: "/v", icon: <LandmarkIcon className="size-4" /> },
-    mentura: { name: "Mentura", about: "Businesses, meetings and people", href: "/mentura", icon: <RocketIcon className="size-4" /> },
+    mentura: { name: "Mentura", about: "Your businesses", href: "/studio", icon: <RocketIcon className="size-4" /> },
   };
   const now = PRODUCTS[side];
   return (
@@ -193,6 +190,42 @@ function Person({ me, to, profile }: { me: { name: string; href: string }; to: (
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild><Go href={to(profile)}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
           <DropdownMenuItem asChild><Go href={to("/settings")}><SettingsIcon />Settings</Go></DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </SidebarMenuItem>
+  );
+}
+
+/** C30 and M1, Mentura's account menu at the sidebar's foot (doc "Mentura console: screens, navigation and teams",
+ * 2026-11-25, after Vercel's account menu): your name, then what was the Personal side (your profile, meetings,
+ * people), your account, appearance and Sign out. Torian chose this home for Personal on 2026-11-25. */
+function AccountMenu({ me, to, done }: { me: { name: string; href: string }; to: (p: string) => string; done: () => void }) {
+  const signOut = async () => {
+    done();
+    await authClient.signOut();
+    window.location.href = "/sign-in";
+  };
+  return (
+    <SidebarMenuItem>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarMenuButton size="lg" aria-label="Account menu" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
+            <span className="ring-sidebar-border shrink-0 rounded-full ring-1"><Face name={me.name} size={32} /></span>
+            <span className="truncate text-sm font-medium">{me.name}</span>
+            <ChevronsUpDownIcon className="ml-auto" />
+          </SidebarMenuButton>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg" side="top" align="start" sideOffset={4}>
+          <DropdownMenuLabel className="flex items-center gap-2 font-normal"><Face name={me.name} size={32} /><span className="truncate text-sm font-semibold">{me.name}</span></DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild><Go href={to("/mentura/profile")} onClick={done}><UserRoundIcon />Your profile</Go></DropdownMenuItem>
+          <DropdownMenuItem asChild><Go href={to("/meetings")} onClick={done}><VideoIcon />Meetings</Go></DropdownMenuItem>
+          <DropdownMenuItem asChild><Go href={to("/mentura/discover")} onClick={done}><UsersRoundIcon />People</Go></DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild><Go href={to("/settings")} onClick={done}><SettingsIcon />Account settings</Go></DropdownMenuItem>
+          <DropdownMenuItem asChild><Go href={to("/settings/appearance")} onClick={done}><PaletteIcon />Appearance</Go></DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => void signOut()}><LogOutIcon />Sign out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
@@ -288,40 +321,6 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
   { href: "/meals/new", label: "Meal", what: "A recipe or a dish for your week", icon: <UtensilsIcon /> },
 ];
 
-/** The sidebar's first button: Create, a menu of what Reflect can make. */
-/** Mentura's navigation (Torian, 2026-11-21: "use the 5-step algorithm on it, then use Contra for reference"): one flat
- * list like Contra's sidebar, not a rail of tabs with a panel each. The rail held ten links behind two levels; a flat
- * list shows all of them at once. Create first, then the pages you use daily, then the ventures in their own group. */
-function MenturaNav({ item, to, done }: { item: (href: string, label: string, icon: ReactNode) => ReactNode; to: (p: string) => string; done: () => void }) {
-  return (
-    <>
-      <Group>
-        <SidebarMenu>
-          <MenturaCreate to={to} done={done} />
-          {item("/mentura", "Home", <HomeIcon />)}
-          {item("/meetings", "Meetings", <VideoIcon />)}
-          {item("/mentura/discover", "People", <UsersRoundIcon />)}
-          {item("/mentura/profile", "My profile", <UserRoundIcon />)}
-        </SidebarMenu>
-      </Group>
-      <Group>
-        <SidebarGroupLabel>Businesses</SidebarGroupLabel>
-        <SidebarMenu>
-          {/* One door per venture, into its console (Whop's "Your businesses"). */}
-          {VENTURES.map((v) => item(ventureHref(v.slug), v.name, <span aria-hidden className="size-4 shrink-0 rounded" style={{ background: `oklch(0.65 0.14 ${v.hue})` }} />))}
-          {item("/studio", "All businesses", <LayoutDashboardIcon />)}
-        </SidebarMenu>
-      </Group>
-      <Group>
-        <SidebarGroupLabel>Discover</SidebarGroupLabel>
-        <SidebarMenu>
-          {item("/mentura/events", "Events", <CalendarDaysIcon />)}
-        </SidebarMenu>
-      </Group>
-    </>
-  );
-}
-
 /** Which of the console's sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
  * after Vercel): the Studio's, one business's, one function's, or a business's integrations (doc "Business console
  * integrations", 2026-11-24). Each replaces the one before it; nothing folds. */
@@ -364,34 +363,6 @@ function StudioNav({ groups, path, done }: { groups: NavGroup[]; path: string; d
         </SidebarMenu>
       ))}
     </Group>
-  );
-}
-
-/** Mentura's Create: a meeting or a venture. */
-function MenturaCreate({ to, done }: { to: (p: string) => string; done: () => void }) {
-  const MADE = [
-    { href: "/meetings", label: "Meeting", what: "Notes, guests and the call", icon: <VideoIcon /> },
-    { href: "/studio/new", label: "Business", what: "Start one in the Business Studio", icon: <RocketIcon /> },
-  ];
-  return (
-    <SidebarMenuItem>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <SidebarMenuButton tooltip="Create" className="font-medium"><PlusIcon /><span>Create</span></SidebarMenuButton>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" side="bottom" className="w-72">
-          <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Create in Mentura</DropdownMenuLabel>
-          {MADE.map((m) => (
-            <DropdownMenuItem key={m.label} asChild>
-              <Go href={to(m.href)} onClick={done} className="flex items-start gap-2">
-                {m.icon}
-                <span className="flex flex-col"><span className="font-medium">{m.label}</span><span className="text-muted-foreground text-xs">{m.what}</span></span>
-              </Go>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SidebarMenuItem>
   );
 }
 

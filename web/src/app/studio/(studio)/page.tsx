@@ -1,20 +1,21 @@
 "use client";
 
-// S1 Studio home: ask for a venture in words (OpenAI and Base44 prompt-first home), or open one you have.
-// The prompt creates a real Naive venture and the list shows the person's ventures, through src/server/naive.ts.
+// T1 Team home (doc "Mentura console: screens, navigation and teams", 2026-11-25; was S1). The one action is Start:
+// say a business in a sentence. An empty team shows the prompt in a hero with suggestions and four templates; once the
+// team has businesses the prompt sits above their cards and the templates move behind "See the library". The prompt
+// creates a real Naive business and the cards are the team's businesses, through src/server/naive.ts.
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { ArrowRightIcon, Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Num } from "@/components/studio/bits";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PromptBox } from "@/components/studio/prompt-box";
-import { ScreenHead } from "@/components/studio/shell";
 import { TemplateCard } from "@/components/studio/template-card";
-import { SCREENS, TEMPLATES } from "@/components/studio/data";
+import { TEMPLATES } from "@/components/studio/data";
+import { teamName } from "@/components/studio/team";
+import { authClient } from "@/lib/auth-client";
 import { createVenture, listVentures, type Result } from "../actions";
 import type { VentureSummary } from "@/server/naive";
-
-const S1 = SCREENS.find((s) => s.id === "S1")!;
 
 const SUGGESTIONS = [
   "A wearable that lets coaches call plays by touch",
@@ -25,13 +26,16 @@ const SUGGESTIONS = [
 
 const realHref = (id: string) => `/studio/v/${encodeURIComponent(id)}`;
 
-export default function StudioHome() {
+export default function TeamHome() {
+  const session = authClient.useSession();
+  const team = teamName(session.data?.user.name);
   const [idea, setIdea] = useState<string | null>(null);
   const [made, setMade] = useState<Result<{ id: string }> | null>(null);
   const [ventures, setVentures] = useState<Result<VentureSummary[]> | null>(null);
   const [pending, startTransition] = useTransition();
 
-  useEffect(() => { listVentures().then(setVentures); }, []);
+  const load = () => { setVentures(null); void listVentures().then(setVentures); };
+  useEffect(load, []);
 
   const start = (text: string) => {
     setIdea(text);
@@ -43,76 +47,81 @@ export default function StudioHome() {
     });
   };
 
+  const list = ventures?.ok ? ventures.value : null;
+  const empty = list !== null && list.length === 0;
+  const unreachable = ventures !== null && !ventures.ok;
+
+  const prompt = idea === null ? (
+    <PromptBox autoFocus placeholder="Describe the business, who it is for, and what hurts today" suggestions={empty ? SUGGESTIONS : []} onSubmit={unreachable ? undefined : start} />
+  ) : (
+    <div className="bg-card rounded-xl border p-4" aria-live="polite">
+      <div className="text-muted-foreground text-xs">Your idea</div>
+      <p className="mt-0.5 text-sm font-medium">{idea}</p>
+      {pending || !made ? (
+        <div className="mt-4 flex items-center gap-2 text-sm"><Loader2Icon className="size-4 animate-spin" />Setting up the business</div>
+      ) : made.ok ? (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm font-semibold">Your business is ready</span>
+          <Button asChild><Link href={realHref(made.value.id)}>Open the business<ArrowRightIcon /></Link></Button>
+          <Button variant="ghost" onClick={() => setIdea(null)}>Start another</Button>
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-sm">{made.error}</span>
+          <Button variant="ghost" onClick={() => setIdea(null)}>Try again</Button>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <div className="pb-16">
-      <ScreenHead n="S1" title={S1.title} job={S1.job} />
+    <div data-virtu-screen="T1" className="pb-16">
+      <div className="px-4 pt-5 md:px-8 md:pt-8">
+        <p className="text-muted-foreground text-sm"><span className="text-foreground font-medium">{team}</span> · Businesses in this team</p>
+      </div>
 
-      <section className="relative mx-4 rounded-2xl border px-4 py-8 md:mx-8 md:px-10 md:py-12">
-        <Num n="S1.1" className="absolute top-2 left-2" />
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">What business do you want to work on?</h2>
-          <p className="text-muted-foreground mt-2 text-center text-sm">Say it in a sentence. The studio sets up the business, its agents and its first questions.</p>
-          <div className="mt-6">
-            {idea === null ? (
-              <PromptBox autoFocus placeholder="Describe the business, who it is for, and what hurts today" suggestions={SUGGESTIONS} onSubmit={start} />
-            ) : (
-              <div className="bg-card rounded-xl border p-4" aria-live="polite">
-                <div className="text-muted-foreground text-xs">Your idea</div>
-                <p className="mt-0.5 text-sm font-medium">{idea}</p>
-                {pending || !made ? (
-                  <div className="mt-4 flex items-center gap-2 text-sm"><Loader2Icon className="size-4 animate-spin" />Naive is setting up the business</div>
-                ) : made.ok ? (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold">Your business is ready</span>
-                    <Button asChild><Link href={realHref(made.value.id)}>Open the business<ArrowRightIcon /></Link></Button>
-                    <Button variant="ghost" onClick={() => setIdea(null)}>Start another</Button>
-                  </div>
-                ) : (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className="text-sm">{made.error}</span>
-                    <Button variant="ghost" onClick={() => setIdea(null)}>Try again</Button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
+      {/* P1: the question and the prompt. A hero on an empty team, top left above the cards otherwise. */}
+      <section className={empty || ventures === null ? "mx-auto mt-10 max-w-2xl px-4 md:mt-16" : "mt-4 max-w-2xl px-4 md:px-8"}>
+        <h1 className={`${empty || ventures === null ? "text-center" : ""} text-2xl font-bold tracking-tight md:text-[30px] md:leading-tight`}>What business do you want to work on?</h1>
+        {empty ? <p className="text-muted-foreground mt-2 text-center text-sm">Say it in a sentence. Mentura sets up the business, its agents and its first questions.</p> : null}
+        <div className="mt-6">{prompt}</div>
       </section>
 
-      <section className="relative mt-8 px-4 md:px-8">
-        <Num n="S1.3" className="absolute -top-2 right-4 md:right-8" />
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold">Your businesses</h2>
-          <Link href="/studio/new" className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline">New business</Link>
-        </div>
-        {ventures === null ? (
-          <p className="text-muted-foreground mt-2 text-sm">Reading your businesses</p>
-        ) : !ventures.ok ? (
-          <p className="text-muted-foreground mt-2 text-sm">{ventures.error}</p>
-        ) : ventures.value.length === 0 ? (
-          <p className="text-muted-foreground mt-2 text-sm">No businesses yet. Say one in a sentence above.</p>
-        ) : (
-          <div className="mt-2 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {ventures.value.map((v) => (
-              <Link key={v.id} href={realHref(v.id)} className="bg-card hover:border-foreground/30 group flex min-w-0 flex-col rounded-xl border p-4 transition-colors">
-                <span className="truncate font-semibold group-hover:underline">{v.name}</span>
-                <span className="text-muted-foreground mt-1 text-sm capitalize">{v.phase}</span>
-              </Link>
+      {unreachable ? (
+        <section className="mt-8 px-4 md:px-8" role="alert">
+          <p className="text-sm">Mentura can&apos;t reach this team&apos;s businesses right now.</p>
+          <p className="text-muted-foreground mt-1 text-xs">{ventures.error}</p>
+          <Button variant="outline" size="sm" className="mt-3" onClick={load}>Try again</Button>
+        </section>
+      ) : ventures === null ? (
+        <section className="mt-10 grid gap-3 px-4 md:grid-cols-2 md:px-8 xl:grid-cols-3" aria-label="Loading businesses">
+          {[0, 1, 2].map((i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+        </section>
+      ) : empty ? (
+        <section className="mx-auto mt-12 max-w-5xl px-4 md:px-8">
+          <h2 className="text-sm font-semibold">Or start from a template</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {TEMPLATES.filter((t) => t.kind === "venture").slice(0, 4).map((t) => <TemplateCard key={t.id} t={t} />)}
+          </div>
+        </section>
+      ) : (
+        <section className="mt-10 px-4 md:px-8">
+          <div className="flex items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold">Businesses</h2>
+            <Link href="/studio/library" className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline">See the library</Link>
+          </div>
+          <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3" aria-label="Businesses in this team">
+            {list!.map((v) => (
+              <li key={v.id}>
+                <Link href={realHref(v.id)} className="bg-card hover:border-foreground/30 group flex min-w-0 flex-col rounded-xl border p-4 transition-colors">
+                  <span className="truncate text-[15px] font-semibold group-hover:underline">{v.name}</span>
+                  <span className="text-muted-foreground mt-1 text-[13px] capitalize">{v.phase}</span>
+                </Link>
+              </li>
             ))}
-          </div>
-        )}
-      </section>
-
-      <section className="relative mt-8 px-4 md:px-8">
-        <Num n="S1.4" className="absolute -top-2 right-4 md:right-8" />
-        <div className="flex items-baseline justify-between gap-2">
-          <h2 className="text-sm font-semibold">Start from a template</h2>
-          <Link href="/studio/library" className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline">See the library</Link>
-        </div>
-        <div className="mt-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {TEMPLATES.filter((t) => t.kind === "venture").slice(0, 4).map((t) => <TemplateCard key={t.id} t={t} />)}
-        </div>
-      </section>
+          </ul>
+        </section>
+      )}
     </div>
   );
 }
