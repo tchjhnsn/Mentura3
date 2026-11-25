@@ -42,6 +42,7 @@ const steps: [string, string[]][] = [
   ["the bridge into Naive: signed identity, path guard, setup and judge errors", ["bridge/bridge-test.ts"]],
   ["each venture's own storage: files/ round trip and every way out refused", ["bridge/files-test.ts"]],
   ["offline sync paths: every record path maps to a route the router resolves", ["bridge/sync-paths-test.ts"]],
+  ["offline sync push: logical paths, the working copy's provenance written again on the store's log", ["bridge/sync-push-test.ts"]],
 ];
 
 type Result = { name: string; code: number; out: string };

@@ -48,7 +48,7 @@ export interface PushChange {
 export interface PushInput {
   working_copy: string;
   changes: PushChange[];
-  /** The working copy's own provenance lines, oldest first. Re-chaining them onto the store's chain is not built. */
+  /** The working copy's own provenance lines, oldest first. The store writes them again on top of its own chain. */
   provenance: Record<string, unknown>[];
 }
 

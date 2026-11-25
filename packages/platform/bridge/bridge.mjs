@@ -12,7 +12,7 @@
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -760,16 +760,18 @@ const ops = {
   // so the schema, the gate, decision rights and the provenance log apply as they do for a write from the console.
   // A refused write throws, so the hosted workspace commits nothing and the store is left as it was.
   //
-  // The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto
-  // the store's chain is its own piece of work (the design's Not built list). It belongs at the end of this
-  // operation, after every write has landed, because only there is the push all or none and only there is
-  // the store's chain settled: the router appends a line of its own per write. Naive's `rechain`
-  // (packages/naive/src/core/rechain.ts, EE-177) owns which tip to pass and when to read it.
-  async syncPush({ venture, changes }, { identity, workspace }) {
+  // The working copy's own provenance lines arrive as `provenance`, oldest first, with the `working_copy` they
+  // came from. They are written again on top of the store's chain at the end of this operation, after every write
+  // has landed, because only there is the push all or none and only there is the store's chain settled: the router
+  // appends a line of its own per write. Naive's `rechain` (packages/naive/src/core/rechain.ts, EE-177) checks each
+  // line's own hash and refuses an edited or already re-chained one, which refuses the whole push.
+  async syncPush({ venture, changes, provenance, working_copy: workingCopy }, { identity, workspace }) {
     const dir = await dirOf(venture, workspace);
     if (!Array.isArray(changes) || !changes.length) throw new Error("This push carries no changes.");
     const { blobSha } = await fw("packages/naive/src/store/connectors/contract.mjs");
     const { call, resolve: routeOf, routes } = await fw("packages/naive/src/router/router.mjs");
+    // A working copy names records by their logical path; a structured or src business keeps them elsewhere on disk.
+    const { ventureFile } = await fw("packages/naive/src/core/venture-paths.mjs");
     const table = routes().filter((/** @type {any} */ r) => r.kind === "record" && r.actions.includes("write"));
     const planned = changes.map((/** @type {any} */ raw) => {
       const c = raw && typeof raw === "object" ? raw : {};
@@ -782,11 +784,22 @@ const ops = {
     // Every base first, so a push that would overwrite a record the store moved writes none of its changes.
     const stale = [];
     for (const p of planned) {
-      const file = join(dir, p.path);
+      const file = ventureFile(dir, p.path);
       const current = existsSync(file) ? blobSha(readFileSync(file)) : null;
       if (current !== p.base) stale.push({ path: p.path, current });
     }
     if (stale.length) return { stale };
+    // The working copy's lines are checked before anything is written, so an edited or already re-chained line
+    // refuses the push on a filesystem workspace too, where nothing rolls a landed write back.
+    const lines = Array.isArray(provenance) ? provenance : [];
+    const { rechain } = await fw("packages/naive/src/core/rechain.mjs");
+    const { entries, LOG } = await fw("packages/naive/src/core/provenance.mjs");
+    if (lines.length) {
+      if (typeof workingCopy !== "string" || !workingCopy) throw new Error("This push carries provenance but names no working copy, so nothing was written.");
+      try { rechain("genesis", lines, workingCopy); } catch (e) {
+        throw new Error(`The working copy's provenance could not be written onto the store's log (${e instanceof Error ? e.message : String(e)}), so nothing was written.`);
+      }
+    }
     const accepted = [];
     for (const p of planned) {
       const r = await call({ venture, route: p.route, action: "write", input: p.content, actor: "person", workspace, via: "sync",
@@ -795,12 +808,18 @@ const ops = {
       // A write the gate holds leaves the record as it was, so reporting its old version as accepted would tell the
       // working copy it had converged when the store never took it. The whole push is refused instead.
       if (landedAsDraft(r.result)) throw new Error(`${p.path} is waiting for a person to accept it, so nothing was written.`);
-      const file = join(dir, p.path);
+      const file = ventureFile(dir, p.path);
       if (!existsSync(file)) throw new Error(`Naive did not write ${p.path} where the working copy keeps it, so nothing was written.`);
       accepted.push({ path: p.path, version: blobSha(readFileSync(file)) });
     }
     // Every change the push carried, each with its new version: a working copy moves its base versions from this.
     if (accepted.length !== planned.length) throw new Error("Naive did not write every change in this push, so nothing was written.");
+    if (lines.length) {
+      // The tip is read here, after the router's own lines for this push, so the first re-chained line follows them.
+      const log = entries(dir);
+      const again = rechain(log.length ? log[log.length - 1].hash : "genesis", lines, workingCopy);
+      appendFileSync(ventureFile(dir, LOG), again.map((/** @type {unknown} */ l) => `${JSON.stringify(l)}\n`).join(""));
+    }
     return { accepted };
   },
 };
