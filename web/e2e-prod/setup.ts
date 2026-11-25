@@ -6,12 +6,13 @@
 // and keeps only the session cookie (in PROD_CHECK_STATE, under test-results/, which git ignores).
 //
 // The identity database comes from PROD_CHECK_DATABASE_URL, or from the Neon API with NEON_API_KEY,
-// NEON_PROJECT_ID and NEON_BRANCH_ID (database neondb, role neondb_owner). Neither is ever printed. Each run also
-// empties the account's business store (database mentura_tenants, or PROD_CHECK_TENANTS_URL), so the console starts empty.
+// NEON_PROJECT_ID and NEON_BRANCH_ID (database neondb, role neondb_owner). Neither is ever printed. A second standing
+// account, which no test lets make a business, gives the empty console (the business store is append-only, so the
+// check account's businesses cannot be removed).
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { randomBytes } from "node:crypto";
-import { request, type FullConfig } from "@playwright/test";
+import { request, type APIRequestContext, type FullConfig } from "@playwright/test";
 import { hashPassword } from "better-auth/crypto";
 import { Pool, neonConfig } from "@neondatabase/serverless";
 import ws from "ws";
@@ -20,8 +21,12 @@ neonConfig.webSocketConstructor = ws;
 
 export const CHECK_EMAIL = process.env.PROD_CHECK_EMAIL ?? "production-check@mentura.xyz";
 export const CHECK_NAME = "Mentura production check";
-/** Where the second session is kept, beside the first. */
-export const signOutState = (statePath: string) => statePath.replace(/\.json$/, "") + ".sign-out.json";
+/** The second standing account, which never makes a business: its console is always empty. */
+export const EMPTY_EMAIL = process.env.PROD_CHECK_EMPTY_EMAIL ?? "production-check-empty@mentura.xyz";
+export const EMPTY_NAME = "Empty console check";
+/** Where the empty account's two sessions are kept, beside the check account's. */
+export const emptyState = (statePath: string) => statePath.replace(/\.json$/, "") + ".empty.json";
+export const signOutState = (statePath: string) => statePath.replace(/\.json$/, "") + ".empty-sign-out.json";
 
 /** The owner's connection to one of the production branch's databases, from the Neon API. */
 async function ownerUrl(database: string): Promise<string> {
@@ -34,20 +39,35 @@ async function ownerUrl(database: string): Promise<string> {
 }
 
 const identityUrl = async () => process.env.PROD_CHECK_DATABASE_URL ?? ownerUrl("neondb");
-const tenantsUrl = async () => process.env.PROD_CHECK_TENANTS_URL ?? ownerUrl("mentura_tenants");
 
-/**
- * Empties the check account's business store, so every run starts from an empty console (doc "Mentura console:
- * screens, navigation and teams", 2026-11-25, tests E1 to E3). Only rows whose tenant is the check account's id are
- * removed; until teams exist (round 2) a person's id is their tenant. PROD_CHECK_EMPTY=0 skips it.
- */
-async function emptyStore(userId: string) {
-  if (process.env.PROD_CHECK_EMPTY === "0") return;
-  const db = new Pool({ connectionString: await tenantsUrl() });
+
+/** Gives a standing account a fresh random password through the identity database's owner, making the account
+ * through the site's own sign-up the first time, and returns the password. */
+async function resetPassword(db: Pool, api: APIRequestContext, email: string, name: string): Promise<string> {
+  const password = randomBytes(24).toString("base64url");
+  const found = await db.query(`select id from "user" where email = $1`, [email]);
+  if (!found.rowCount) {
+    const r = await api.post("/api/auth/sign-up/email", { data: { email, password, name, adult: true } });
+    if (!r.ok()) throw new Error(`sign-up of ${name} answered ${r.status()}`);
+    return password;
+  }
+  const set = await db.query(`update account set password = $1, "updatedAt" = now() where "userId" = $2 and "providerId" = 'credential'`,
+    [await hashPassword(password), found.rows[0].id]);
+  if (set.rowCount !== 1) throw new Error(`${name} has no password sign-in`);
+  return password;
+}
+
+/** Signs in as a new session and saves its cookies to path. */
+async function signIn(baseURL: string, email: string, password: string, path: string) {
+  // Better Auth refuses a POST whose Origin is not a trusted origin.
+  const api = await request.newContext({ baseURL, extraHTTPHeaders: { origin: new URL(baseURL).origin } });
   try {
-    await db.query(`delete from naive_records where tenant = $1`, [userId]);
+    const r = await api.post("/api/auth/sign-in/email", { data: { email, password } });
+    if (!r.ok()) throw new Error(`sign-in of ${email.split("@")[0]} answered ${r.status()}: ${String((await r.json().catch(() => ({}))).message ?? "")}`);
+    mkdirSync(dirname(path), { recursive: true });
+    await api.storageState({ path });
   } finally {
-    await db.end();
+    await api.dispose();
   }
 }
 
@@ -55,36 +75,16 @@ export default async function setup(config: FullConfig) {
   const use = config.projects[0]!.use;
   const baseURL = String(use.baseURL);
   const statePath = String(use.storageState);
-  const password = randomBytes(24).toString("base64url");
-  // Better Auth refuses a POST whose Origin is not a trusted origin.
   const api = await request.newContext({ baseURL, extraHTTPHeaders: { origin: new URL(baseURL).origin } });
   const db = new Pool({ connectionString: await identityUrl() });
   try {
-    const found = await db.query(`select id from "user" where email = $1`, [CHECK_EMAIL]);
-    if (!found.rowCount) {
-      const r = await api.post("/api/auth/sign-up/email", { data: { email: CHECK_EMAIL, password, name: CHECK_NAME, adult: true } });
-      if (!r.ok()) throw new Error(`sign-up of the check account answered ${r.status()}`);
-    } else {
-      const set = await db.query(`update account set password = $1, "updatedAt" = now() where "userId" = $2 and "providerId" = 'credential'`,
-        [await hashPassword(password), found.rows[0].id]);
-      if (set.rowCount !== 1) throw new Error("the check account has no password sign-in");
-    }
-    const id = (await db.query(`select id from "user" where email = $1`, [CHECK_EMAIL])).rows[0]?.id as string | undefined;
-    if (!id) throw new Error("the check account was not made");
-    await emptyStore(id);
-    const r = await api.post("/api/auth/sign-in/email", { data: { email: CHECK_EMAIL, password } });
-    if (!r.ok()) throw new Error(`sign-in of the check account answered ${r.status()}: ${String((await r.json().catch(() => ({}))).message ?? "")}`);
-    mkdirSync(dirname(statePath), { recursive: true });
-    await api.storageState({ path: statePath });
-    // A second session for the test that signs out (console-empty.spec.ts E3), so signing out leaves the first one live.
-    const spare = await request.newContext({ baseURL, extraHTTPHeaders: { origin: new URL(baseURL).origin } });
-    try {
-      const r2 = await spare.post("/api/auth/sign-in/email", { data: { email: CHECK_EMAIL, password } });
-      if (!r2.ok()) throw new Error(`the second sign-in of the check account answered ${r2.status()}`);
-      await spare.storageState({ path: signOutState(statePath) });
-    } finally {
-      await spare.dispose();
-    }
+    const password = await resetPassword(db, api, CHECK_EMAIL, CHECK_NAME);
+    await signIn(baseURL, CHECK_EMAIL, password, statePath);
+    // The empty account never makes a business, so its console is always empty (console-empty.spec.ts). Two
+    // sessions: E3 signs one out and the other tests keep theirs.
+    const empty = await resetPassword(db, api, EMPTY_EMAIL, EMPTY_NAME);
+    await signIn(baseURL, EMPTY_EMAIL, empty, emptyState(statePath));
+    await signIn(baseURL, EMPTY_EMAIL, empty, signOutState(statePath));
   } finally {
     await db.end();
     await api.dispose();

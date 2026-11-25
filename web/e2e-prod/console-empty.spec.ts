@@ -1,8 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { signOutState } from "./setup";
+import { emptyState, signOutState } from "./setup";
+
+const STATE = process.env.PROD_CHECK_STATE ?? "test-results/prod/state.json";
+test.use({ storageState: emptyState(STATE) });
 
 // An empty console on the live site (doc "Mentura console: screens, navigation and teams", 2026-11-25, tests E1 to
-// E3). setup.ts empties the check account's store first, so these run before studio.spec.ts makes a business.
+// E3), as the empty account (setup.ts), which no test lets make a business.
 // Each test saves a screenshot under test-results/prod.
 
 test("E1 the front door lands on an empty team home", async ({ page }) => {
@@ -40,7 +43,7 @@ test("E3 the account menu holds Personal and signs out", async ({ page, browser,
   await expect(page.getByRole("link", { name: "Screen map" })).toHaveCount(0);
   await page.screenshot({ path: "test-results/prod/e3-account-menu.png" });
   // Sign out with the spare session setup.ts made, so the other tests keep theirs.
-  const other = await browser.newContext({ baseURL, storageState: signOutState(String(test.info().project.use.storageState)) });
+  const other = await browser.newContext({ baseURL, storageState: signOutState(STATE) });
   const p2 = await other.newPage();
   await p2.goto("/studio");
   await p2.getByRole("button", { name: "Account menu" }).click();
