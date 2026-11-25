@@ -23,6 +23,7 @@ import { registerPlatformConnectors } from "../connectors/register.mjs";
 import { deleteStored, FILES_DIR, filesRoot, listFiles, makeFolder, moveStored, readStored, writeStored } from "./files.ts";
 import { naiveFile } from "./naive-file.mjs";
 import { closeClaim, openClaim, sharedRoot, stampedOwner } from "./claims.ts";
+import { syncPath, syncRoute } from "./sync-paths.ts";
 import { gateRefusal, phaseView, statable, wanted } from "./phase.ts";
 import { CANONICAL_STATEMENTS, changesOf, cleaned, criteriaOf, filled, formOf, get, landedAsDraft, MAX_CHARS, merge, plainDecideRefusal, plainWriteRefusal, slug as itemSlug, STATEMENT_RECORD, STATEMENTS, throughArray } from "./record-forms.ts";
 
@@ -750,6 +751,47 @@ const ops = {
     await moveIn(dir, workspace).catch((e) => { throw e.code === "ENOENT" ? refused : e; });
     closeClaim(shared, code, identity.userId);
     return { id: v.id, name: v.name };
+  },
+
+  // A working copy pushes what it changed while it was offline (the offline sync contract, 2026-11-25; Naive
+  // docs/design/OFFLINE_SYNC_2026-11-25.md, EE-174). All or none: every change's base version is checked against
+  // the working copy before anything is written, and one base that no longer matches refuses the whole push with
+  // the paths that moved. Each accepted change then goes through the router as the person the sync token names,
+  // so the schema, the gate, decision rights and the provenance log apply as they do for a write from the console.
+  // A refused write throws, so the hosted workspace commits nothing and the store is left as it was.
+  //
+  // The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto
+  // the store's chain is its own piece of work (the design's Not built list).
+  async syncPush({ venture, changes }, { identity, workspace }) {
+    const dir = await dirOf(venture, workspace);
+    if (!Array.isArray(changes) || !changes.length) throw new Error("This push carries no changes.");
+    const { blobSha } = await fw("packages/naive/src/store/connectors/contract.mjs");
+    const { call, resolve: routeOf, routes } = await fw("packages/naive/src/router/router.mjs");
+    const table = routes().filter((/** @type {any} */ r) => r.kind === "record" && r.actions.includes("write"));
+    const planned = changes.map((/** @type {any} */ raw) => {
+      const c = raw && typeof raw === "object" ? raw : {};
+      const path = syncPath(c.path);
+      const route = syncRoute(table, path);
+      if (!route || !routeOf(route).r) throw new Error(`Naive keeps no record at ${path}, so nothing was written.`);
+      if (c.content === null || c.content === undefined) throw new Error(`Removing ${path} over sync is not built, so nothing was written.`);
+      return { path, route, content: c.content, base: typeof c.base === "string" ? c.base : null };
+    });
+    // Every base first, so a push that would overwrite a record the store moved writes none of its changes.
+    const stale = [];
+    for (const p of planned) {
+      const file = join(dir, p.path);
+      const current = existsSync(file) ? blobSha(readFileSync(file)) : null;
+      if (current !== p.base) stale.push({ path: p.path, current });
+    }
+    if (stale.length) return { stale };
+    const accepted = [];
+    for (const p of planned) {
+      const r = await call({ venture, route: p.route, action: "write", input: p.content, actor: "person", workspace, via: "sync",
+        provenance: { agent: { id: identity.name, account: identity.userId } } });
+      if (!r.ok) throw new Error(`Naive did not accept ${p.path}: ${r.error ?? "it was refused"}`);
+      accepted.push({ path: p.path, version: blobSha(readFileSync(join(dir, p.path))) });
+    }
+    return { accepted };
   },
 };
 

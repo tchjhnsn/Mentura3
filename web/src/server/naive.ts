@@ -21,6 +21,8 @@ import { OWNER_ID } from "./session";
 import { openMode } from "./open-mode";
 import { siteUrl } from "./site";
 
+export type { Identity };
+
 /** Runs the bridge with the signed request on stdin, not the command line: an upload is larger than one argument may be,
  *  and the command line would show the founder's words to anyone listing processes. */
 function run(bridge: string, input: string, { timeout, env }: { timeout: number; env: NodeJS.ProcessEnv }): Promise<string> {
@@ -63,7 +65,7 @@ export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string 
   return null;
 }
 
-const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete", "source"]);
+const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete", "source", "syncPush"]);
 const READ_MS = 15_000;
 const WRITE_MS = 120_000;
 // A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store
@@ -83,12 +85,11 @@ async function identity(): Promise<Identity> {
   return { userId: id, name: name || "Founder", email, organizationId: id, organizationRole: "owner" };
 }
 
-async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
+async function call<T>(op: string, args: Record<string, unknown>, who: Identity): Promise<T> {
   const why = studioUnavailable();
   if (why) throw new Error(why);
   const timeout = WRITES.has(op) ? WRITE_MS : READ_MS;
   const bridge = bridgePath();
-  const who = await identity();
   const key = bridgeKey();
   const assertion = signAssertion(who, { op, ...args }, key);
   if (hostedWorkspaceRequired()) {
@@ -107,10 +108,21 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   return r.result as T;
 }
 
-/** One operation through Naive, as the signed-in person. */
-export function naive<T>(op: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (!WRITES.has(op)) return call<T>(op, args);
-  const next = writes.then(() => call<T>(op, args));
+/** Writes wait their turn; a read runs now. */
+function queued<T>(op: string, run: () => Promise<T>): Promise<T> {
+  if (!WRITES.has(op)) return run();
+  const next = writes.then(run);
   writes = next.catch(() => undefined);
   return next;
+}
+
+/** One operation through Naive, as the signed-in person. */
+export function naive<T>(op: string, args: Record<string, unknown> = {}): Promise<T> {
+  return queued(op, async () => call<T>(op, args, await identity()));
+}
+
+/** One operation through Naive as a person this server has already named another way: a sync token's person,
+ *  who carries no browser session (src/server/sync-store.ts). The caller owns the check that made that name. */
+export function naiveAs<T>(who: Identity, op: string, args: Record<string, unknown> = {}): Promise<T> {
+  return queued(op, () => call<T>(op, args, who));
 }
