@@ -226,6 +226,9 @@ const SETTINGS = "Settings only: the household others share, invitations, where 
 
 /** Page server actions that are not registry entries, each with its reason. */
 const EXCLUDED: Record<string, string> = {
+  "device/actions.ts#approveDeviceAction": "Approving a device sign-in hands a command line a token that reads and writes one business as the person: their own tap on the code their terminal printed, never a model, which could otherwise sign itself in.",
+  "device/actions.ts#denyDeviceAction": "Turning down a device sign-in is the counterpart of approving it; both stay the person's own tap on /device.",
+  "settings/cli/actions.ts#revokeCliTokenAction": "Takes back one command line's sign-in, which signs that command line out: a tap in Settings, so a model never revokes or keeps its own reach.",
   "m/[token]/actions.ts#acceptInviteAction": "Accepting an invite ties the signed-in account to a meeting and may mark it a guest account: only the invitee's own tap on the invite page, never a model.",
   "meetings/[id]/actions.ts#setPartAction": "The host sets one part of the meeting from its row on the page (store setMeetingPart); the chat's equivalent is set_meeting_part.",
   "meetings/[id]/actions.ts#setCancelledAction": "Cancelling or restoring a meeting reaches every guest, so it stays a tap on the meeting page.",

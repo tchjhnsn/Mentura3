@@ -7,7 +7,7 @@
 import { createContext, useContext, useEffect, type ComponentType, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BlocksIcon, GlobeIcon, HouseIcon, IdCardIcon, LayoutGridIcon, MapPinIcon, PaletteIcon, ShieldIcon, UserIcon, XIcon, HourglassIcon, WrenchIcon, ShapesIcon } from "lucide-react";
+import { BlocksIcon, GlobeIcon, HouseIcon, IdCardIcon, LayoutGridIcon, MapPinIcon, PaletteIcon, ShieldIcon, TerminalIcon, UserIcon, XIcon, HourglassIcon, WrenchIcon, ShapesIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ export const SECTIONS: Section[][] = [
   ],
   [
     { href: "/settings/site", label: "Your site", icon: GlobeIcon, under: ["/settings/site"] },
+    { href: "/settings/cli", label: "Command line", icon: TerminalIcon, under: ["/settings/cli"] },
     { href: "/marketplace", label: "Marketplace", icon: BlocksIcon, under: ["/marketplace", "/settings/connections"] },
   ],
 ];
