@@ -27,6 +27,7 @@ const steps: [string, string[]][] = [
   ["hosted working copy: check out, run hosted, commit with base versions, retry on conflict", ["hosted/working-copy-test.ts"]],
   ["hosted workspace: naive_records, a second process, isolation, a refused write, a conflict (skips without a database URL)", ["hosted/account-workspace-test.ts"]],
   ["hosted store setup: schema, runtime login without bypass, hidden key (skips without a database URL)", ["hosted/setup-store-test.ts"]],
+  ["moving a business between teams and removing a team: on disk, and in naive_records in one transaction with both chains whole (skips the database half without a database URL)", ["hosted/move-business-test.ts"]],
   ["Mentura as Naive's platform adapter", ["adapter-test.mjs"]],
   ["LangSmith exporter", ["integrations/langsmith-test.mjs"]],
   ["LangChain over Naive: a deep agent edits records through the router", ["agents/agents-test.ts"]],

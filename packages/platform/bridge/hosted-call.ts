@@ -56,3 +56,23 @@ export async function runHostedConsole<T>(input: {
   if (!parsed.ok) throw new Error(publicMessage(parsed.error));
   return parsed.result as T;
 }
+
+/** Run one change to a whole business or team (hosted/store-child.ts: a move between teams, or a team's removal),
+ * hosted or on disk as the child decides. The request, with its assertions, is the child's stdin. Throws only a
+ * message that can reach the browser. */
+export async function runStoreChild<T>(input: { request: Record<string, unknown>; timeoutMs: number; env?: NodeJS.ProcessEnv; childPath?: string }): Promise<T> {
+  let stdout = "";
+  try {
+    stdout = await runChild(JSON.stringify(input.request), input.timeoutMs, input.env ?? process.env, input.childPath ?? fileURLToPath(new URL("../hosted/store-child.ts", import.meta.url)));
+  } catch (error) {
+    throw new Error(publicMessage(error));
+  }
+  let parsed: { ok?: boolean; result?: T; error?: unknown };
+  try {
+    parsed = JSON.parse(stdout) as { ok?: boolean; result?: T; error?: unknown };
+  } catch {
+    throw new Error(publicMessage(""));
+  }
+  if (!parsed.ok) throw new Error(publicMessage(parsed.error));
+  return parsed.result as T;
+}

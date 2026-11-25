@@ -130,6 +130,15 @@ async function poolFor(url: string): Promise<Client & { end(): Promise<void> }> 
   return pool;
 }
 
+/** The runtime's pool on MENTURA_DATABASE_URL, once that database is proved apart from the identity and outside ones.
+ * hosted/store-child.ts moves and removes businesses through it (hosted/move-business.ts). */
+export async function tenantPool(env: NodeJS.ProcessEnv = process.env): Promise<Client & { end(): Promise<void> }> {
+  const url = env.MENTURA_DATABASE_URL ?? "";
+  if (!url) throw new Error("the hosted workspace refused this database");
+  await proveTenantSeparate(url, env);
+  return poolFor(url);
+}
+
 export interface WorkspaceRun<T> { ok: boolean; result?: T; error?: string }
 
 /**
