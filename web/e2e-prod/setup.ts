@@ -57,6 +57,13 @@ async function resetPassword(db: Pool, api: APIRequestContext, email: string, na
   return password;
 }
 
+/** members.spec.ts (E6 to E9) puts the empty account on a team the check account made, and E9 takes it off again. A run
+ * that fails between the two would leave it there, and its console must hold one team (E1, E2), so each run first takes
+ * it off every team but its personal one. Only member rows of that one account are removed. */
+async function leaveCheckTeams(db: Pool, email: string) {
+  await db.query(`delete from "member" where "userId" = (select id from "user" where email = $1) and "organizationId" <> "userId"`, [email]);
+}
+
 /** Signs in as a new session and saves its cookies to path. */
 async function signIn(baseURL: string, email: string, password: string, path: string) {
   // Better Auth refuses a POST whose Origin is not a trusted origin.
@@ -83,6 +90,7 @@ export default async function setup(config: FullConfig) {
     // The empty account never makes a business, so its console is always empty (console-empty.spec.ts). Two
     // sessions: E3 signs one out and the other tests keep theirs.
     const empty = await resetPassword(db, api, EMPTY_EMAIL, EMPTY_NAME);
+    await leaveCheckTeams(db, EMPTY_EMAIL);
     await signIn(baseURL, EMPTY_EMAIL, empty, emptyState(statePath));
     await signIn(baseURL, EMPTY_EMAIL, empty, signOutState(statePath));
   } finally {
