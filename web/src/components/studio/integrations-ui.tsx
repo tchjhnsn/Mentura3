@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/app/marketplace/logos";
 import { cn } from "@/lib/utils";
-import { fnOf, isSample, ventureHref, type FunctionId } from "./data";
+import { fnOf, isSample, businessHref, type FunctionId } from "./data";
 import { categoriesOf, forFunction, membersOf, type Category, type Recommendation } from "./integrations";
 import { M2, WAIT_ACTIONS, failureAction, type SignInState } from "./integrations-machines";
 import { WhyThis } from "./integrations-why";
@@ -15,10 +15,10 @@ import type { Alternative, Scored } from "./recommend";
 import { toolOf, toolPath } from "./tools";
 
 /** One integration in the grid: its category, mark, name and line; Connected when the person has it. */
-export function IntegrationCard({ slug, c, connected }: { slug: string; c: MarketConnector; connected: boolean }) {
+export function IntegrationCard({ team, slug, c, connected }: { team: string; slug: string; c: MarketConnector; connected: boolean }) {
   const cat = categoriesOf(c.id)[0];
   return (
-    <Link href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors">
+    <Link href={businessHref(team, slug, `integrations/${c.id}`)} className="hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors">
       <div className="flex items-center justify-between gap-2">
         {cat ? <Badge variant="outline" className="font-normal">{cat.name}</Badge> : <span />}
         {connected ? <Badge variant="secondary" className="font-normal">Connected</Badge> : null}
@@ -37,20 +37,20 @@ export function Grid({ children, className }: { children: React.ReactNode; class
 }
 
 /** A category's heading and its cards; an empty category says so and offers the way to add one's own server. */
-export function CategorySection({ slug, category, connected, head = true }: { slug: string; category: Category; connected: ReadonlySet<string>; head?: boolean }) {
+export function CategorySection({ team, slug, category, connected, head = true }: { team: string; slug: string; category: Category; connected: ReadonlySet<string>; head?: boolean }) {
   const members = membersOf(category);
   return (
     <section id={category.id} className="scroll-mt-20">
       {head ? (
         <div className="mb-3 flex items-baseline justify-between gap-3">
           <h2 className="font-semibold">
-            <Link href={ventureHref(slug, `integrations/category/${category.id}`)} className="hover:underline">{category.name}</Link>
+            <Link href={businessHref(team, slug, `integrations/category/${category.id}`)} className="hover:underline">{category.name}</Link>
           </h2>
           <span className="text-muted-foreground text-xs tabular-nums">{members.length}</span>
         </div>
       ) : null}
       {members.length ? (
-        <Grid>{members.map((c) => <IntegrationCard key={c.id} slug={slug} c={c} connected={connected.has(c.id)} />)}</Grid>
+        <Grid>{members.map((c) => <IntegrationCard key={c.id} team={team} slug={slug} c={c} connected={connected.has(c.id)} />)}</Grid>
       ) : <NotYet />}
     </section>
   );
@@ -82,19 +82,19 @@ export function Fact({ label, children }: { label: string; children: React.React
 }
 
 /** On a function's Overview (V12): the kinds of software it should connect, Needed first, and a link to V22. */
-export function FunctionIntegrationsCard({ slug, fn }: { slug: string; fn: FunctionId }) {
+export function FunctionIntegrationsCard({ team, slug, fn }: { team: string; slug: string; fn: FunctionId }) {
   const recs = forFunction(fn).slice(0, 4);
   return (
     <section>
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-sm font-semibold">Recommended integrations</h2>
-        <Link href={ventureHref(slug, `integrations/function/${fn}`)} className="text-muted-foreground hover:text-foreground text-xs underline">See all</Link>
+        <Link href={businessHref(team, slug, `integrations/function/${fn}`)} className="text-muted-foreground hover:text-foreground text-xs underline">See all</Link>
       </div>
       {recs.length ? (
         <ul className="mt-2 divide-y rounded-lg border">
           {recs.map((r) => (
             <li key={r.category.id}>
-              <Link href={ventureHref(slug, `integrations/category/${r.category.id}`)} className="hover:bg-accent flex items-center justify-between gap-3 px-3 py-2">
+              <Link href={businessHref(team, slug, `integrations/category/${r.category.id}`)} className="hover:bg-accent flex items-center justify-between gap-3 px-3 py-2">
                 <span className="text-sm">{r.category.name}</span>
                 <FitBadge fit={r.fit} />
               </Link>
@@ -107,14 +107,14 @@ export function FunctionIntegrationsCard({ slug, fn }: { slug: string; fn: Funct
 }
 
 /** Where an alternative opens: the built-in tool's page in this business, or the connected integration's page. */
-export function alternativeHref(slug: string, a: Alternative): string {
-  if (a.integration) return ventureHref(slug, `integrations/${a.integration}`);
+export function alternativeHref(team: string, slug: string, a: Alternative): string {
+  if (a.integration) return businessHref(team, slug, `integrations/${a.integration}`);
   const t = a.tool ? toolOf(a.tool) : undefined;
-  return ventureHref(slug, t ? toolPath(t, !isSample(slug)) : "integrations");
+  return businessHref(team, slug, t ? toolPath(t, !isSample(slug)) : "integrations");
 }
 
 /** The reasons a category scores what it does: each factor that moved it, and the ways to do the work without it. */
-export function Reasons({ slug, r }: { slug: string; r: Scored }) {
+export function Reasons({ team, slug, r }: { team: string; slug: string; r: Scored }) {
   const reasons = r.factors.filter((f) => f.points !== 0);
   return (
     <div className="space-y-3 text-sm">
@@ -132,7 +132,7 @@ export function Reasons({ slug, r }: { slug: string; r: Scored }) {
           <ul className="mt-1 space-y-1">
             {r.alternatives.map((a) => (
               <li key={`${a.kind}-${a.tool ?? a.integration}`}>
-                <Link href={alternativeHref(slug, a)} className="font-medium hover:underline">{a.label}</Link>
+                <Link href={alternativeHref(team, slug, a)} className="font-medium hover:underline">{a.label}</Link>
                 <span className="text-muted-foreground"> · {a.how.replace(/\.$/, "")}</span>
               </li>
             ))}
@@ -145,18 +145,18 @@ export function Reasons({ slug, r }: { slug: string; r: Scored }) {
 
 /** A scored recommendation: the category, Needed, Helpful or Later, its reasons and alternatives, its integrations, and
  * "Why this?", which has AI explain the reasons. */
-export function ScoredCard({ slug, r }: { slug: string; r: Scored }) {
+export function ScoredCard({ team, slug, r }: { team: string; slug: string; r: Scored }) {
   const members = membersOf(r.category);
   return (
     <div className="flex flex-col gap-3 rounded-xl border p-4">
       <div className="flex items-center justify-between gap-2">
-        <Link href={ventureHref(slug, `integrations/category/${r.category.id}`)} className="font-medium hover:underline">{r.category.name}</Link>
+        <Link href={businessHref(team, slug, `integrations/category/${r.category.id}`)} className="font-medium hover:underline">{r.category.name}</Link>
         {r.connected ? <Badge variant="secondary" className="font-normal">Connected</Badge> : r.later ? <Badge variant="outline" className="text-muted-foreground font-normal">Later</Badge> : <FitBadge fit={r.fit} />}
       </div>
-      <Reasons slug={slug} r={r} />
+      <Reasons team={team} slug={slug} r={r} />
       <div className="mt-auto flex flex-wrap gap-2">
         {members.length ? members.map((c) => (
-          <Link key={c.id} href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent flex items-center gap-2 rounded-lg border px-2 py-1 text-sm">
+          <Link key={c.id} href={businessHref(team, slug, `integrations/${c.id}`)} className="hover:bg-accent flex items-center gap-2 rounded-lg border px-2 py-1 text-sm">
             <Logo id={c.id} name={c.name} size="size-5" glyph="size-3.5" />{c.name}
           </Link>
         )) : <span className="text-muted-foreground text-sm">Not in the catalog yet. <Link href="/marketplace/add" className="text-foreground underline">Add your own server</Link></span>}
@@ -167,10 +167,10 @@ export function ScoredCard({ slug, r }: { slug: string; r: Scored }) {
 }
 
 /** A featured integration: the best one in a top category, with the reason that weighed most. */
-export function FeaturedCard({ slug, c, r }: { slug: string; c: MarketConnector; r: Scored }) {
+export function FeaturedCard({ team, slug, c, r }: { team: string; slug: string; c: MarketConnector; r: Scored }) {
   const top = [...r.factors].sort((a, b) => b.points - a.points)[0];
   return (
-    <Link href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors">
+    <Link href={businessHref(team, slug, `integrations/${c.id}`)} className="hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors">
       <div className="flex items-center justify-between gap-2">
         <Badge variant="outline" className="font-normal">{r.category.name}</Badge>
         <FitBadge fit={r.fit} />

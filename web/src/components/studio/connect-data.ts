@@ -142,7 +142,7 @@ export const FN_FOLDER: Record<FunctionId, string> = {
   "external-relationships": "relations", capabilities: "operations",
 };
 
-/** Tools that open a real screen in the prototype, as the part after /studio/v/<slug>/. */
+/** Tools that open a real screen in the prototype, as the part after /studio/<team>/<slug>/. */
 export const TOOL_ROUTES: Record<string, string> = {
   Decks: "decks/investor", "Outreach sequences": "outreach", "Strategy canvas": "strategy", "Assumption map": "strategy",
   Connectors: "integrations", Accounts: "integrations", Handoffs: "activity", Spend: "settings", Budget: "settings", Playbooks: "automations", Skills: "agents",

@@ -10,10 +10,11 @@ test.use({ storageState: emptyState(STATE) });
 
 test("E1 the front door lands on an empty team home", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/studio$/, { timeout: 60_000 });
+  // The console lands on the person's personal team, which is in the URL (round 2, teams).
+  await expect(page).toHaveURL(/\/studio\/[a-z0-9-]+$/, { timeout: 60_000 });
   await expect(page.getByRole("heading", { name: "What business do you want to work on?" })).toBeVisible();
   await expect(page.getByText("Or start from a template")).toBeVisible({ timeout: 60_000 });
-  await expect(page.locator('a[href^="/studio/library/"]')).toHaveCount(4);
+  await expect(page.locator('main a[href*="/library/"]')).toHaveCount(4);
   await expect(page.getByRole("list", { name: "Businesses in this team" })).toHaveCount(0);
   await expect(page.getByText(/chief of staff|Good evening|Good morning|Good afternoon/i)).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Attach a file" })).toHaveCount(0);

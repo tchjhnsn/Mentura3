@@ -4,8 +4,8 @@
 import { ventureWithDocket } from "@/app/studio/actions";
 import { ScreenHead } from "./shell";
 
-export async function RealHome({ id }: { id: string }) {
-  const r = await ventureWithDocket(id);
+export async function RealHome({ id, team }: { id: string; team: string }) {
+  const r = await ventureWithDocket(id, team);
   if (!r.ok) return <Unreachable error={r.error} />;
   const { venture, docket } = r.value;
   const next = docket.next;
@@ -31,8 +31,8 @@ export async function RealHome({ id }: { id: string }) {
   );
 }
 
-export async function RealDecisions({ id }: { id: string }) {
-  const r = await ventureWithDocket(id);
+export async function RealDecisions({ id, team }: { id: string; team: string }) {
+  const r = await ventureWithDocket(id, team);
   if (!r.ok) return <Unreachable error={r.error} />;
   return (
     <div className="pb-16">

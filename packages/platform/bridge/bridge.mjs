@@ -46,14 +46,14 @@ const MAX_READ = 400_000;
  *  @param {string} name */
 const hidden = (name) => HIDDEN.has(name) || name.startsWith(".env") || name === ".gitkeep" || (name.startsWith(".") && name !== ".gitignore");
 
-/** One account, one workspace: every op resolves inside this folder and nothing outside it, so another
- *  account's venture, raw notes and logs do not exist as far as a request can tell. The folder is keyed
- *  by account because the owner stamps and signer_account on disk already hold the account id. The
- *  dot keeps it out of the framework's walks of the shared root.
- *  @param {string} userId */
-function workspaceOf(userId) {
-  if (!/^[A-Za-z0-9_-]+$/.test(userId)) throw new Error("The console refused this request: it carries no usable account.");
-  const dir = join(shared, ".accounts", userId);
+/** One team, one workspace: every op resolves inside this folder and nothing outside it, so another
+ *  team's venture, raw notes and logs do not exist as far as a request can tell. The folder is keyed
+ *  by the team's id, and a personal team's id is its person's, so it is the folder each account had
+ *  before teams. The dot keeps it out of the framework's walks of the shared root.
+ *  @param {string} tenant */
+function workspaceOf(tenant) {
+  if (!/^[A-Za-z0-9_-]+$/.test(tenant)) throw new Error("The console refused this request: it carries no usable account.");
+  const dir = join(shared, ".accounts", tenant);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   return dir;
 }
@@ -760,7 +760,9 @@ try {
   const { identity, request } = openAssertion(process.argv[2] ?? readFileSync(0, "utf8"), key);
   const fn = Object.hasOwn(ops, request.op) ? ops[request.op] : null;
   if (!fn) throw new Error(`no operation ${request.op}`);
-  const workspace = workspaceOf(identity.userId);
+  // One workspace per team (web/src/server/naive.ts checks the person's membership before signing). A personal team's
+  // id is its person's, so the folder is the one each account had before teams.
+  const workspace = workspaceOf(identity.organizationId || identity.userId);
   // A business may read a record kind from a service the person connected (connectors/mcp.ts): the connector asks
   // Reflect for each read, signed for this person and business only, with the key held here rather than in the env.
   registerPlatformConnectors();

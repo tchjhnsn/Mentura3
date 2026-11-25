@@ -285,5 +285,5 @@ export const recordBody = (f: VFile) =>
 export const SHEET_ROWS: string[][] = [["Item", "Planned", "Spent"], ["Vest parts", "$60", "$41"], ["Agent runs", "$40", "$18"], ["Pilot travel", "$20", "$0"]];
 
 /** Where a file opens: decks open V5, everything else opens V3. */
-export const hrefOfFile = (slug: string, f: VFile) =>
-  f.kind === "deck" ? `/studio/v/${slug}/decks/${f.deckId ?? "investor"}` : `/studio/v/${slug}/files/${f.path}`;
+export const hrefOfFile = (team: string, slug: string, f: VFile) =>
+  f.kind === "deck" ? `/studio/${team}/${slug}/decks/${f.deckId ?? "investor"}` : `/studio/${team}/${slug}/files/${f.path}`;

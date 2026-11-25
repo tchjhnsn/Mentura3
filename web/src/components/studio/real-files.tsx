@@ -2,7 +2,7 @@
 
 // Files: a venture's own storage (venture console spec, 2026-11-24, phase 2), the first universal tool. The founder
 // uploads, opens folders, downloads, renames and deletes; every change is a person's act in Naive's provenance log.
-// Listing and changes go through src/app/studio/actions.ts; bytes go through src/app/studio/(studio)/r/[id]/files/raw/route.ts.
+// Listing and changes go through src/app/studio/actions.ts; bytes go through src/app/studio/r/[id]/files/raw/route.ts (with ?team=).
 import { useCallback, useEffect, useRef, useState, type DragEvent } from "react";
 import { ChevronRightIcon, DownloadIcon, FileIcon, FolderIcon, FolderPlusIcon, Loader2Icon, MoreHorizontalIcon, PencilIcon, Trash2Icon, UploadIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { deleteFile, moveFile, newFolder, ventureFiles, type StoredFile } from "@/app/studio/actions";
+import { useTeamSlug } from "./team";
 
 const size = (n: number) => (n < 1024 ? `${n} B` : n < 1024 ** 2 ? `${(n / 1024).toFixed(0)} KB` : `${(n / 1024 ** 2).toFixed(1)} MB`);
 const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
@@ -29,8 +30,10 @@ function at(tree: StoredFile[], path: string): StoredFile[] | null {
 
 type Ask = { kind: "folder" } | { kind: "rename"; file: StoredFile } | { kind: "delete"; file: StoredFile } | null;
 
-/** V2 Files for a real business, inside the console at /studio/v/<id>/files. */
+/** V2 Files for a real business, inside the console at /studio/<team>/<id>/files. */
 export function RealFiles({ id }: { id: string }) {
+  const team = useTeamSlug() ?? "";
+  const raw = (q = "") => `/studio/r/${encodeURIComponent(id)}/files/raw?team=${encodeURIComponent(team)}${q}`;
   const [tree, setTree] = useState<StoredFile[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [folder, setFolder] = useState("");
@@ -41,7 +44,7 @@ export function RealFiles({ id }: { id: string }) {
   const picker = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
-    const r = await ventureFiles(id);
+    const r = await ventureFiles(id, team);
     if (r.ok) { setTree(r.value.files); setError(null); } else setError(r.error);
   }, [id]);
   useEffect(() => { load(); }, [load]);
@@ -52,7 +55,7 @@ export function RealFiles({ id }: { id: string }) {
       const body = new FormData();
       body.set("file", file);
       body.set("folder", folder);
-      const res = await fetch(`/studio/r/${encodeURIComponent(id)}/files/raw`, { method: "POST", body });
+      const res = await fetch(raw(), { method: "POST", body });
       if (!res.ok) { setError(`${file.name}: ${await res.text()}`); break; }
     }
     setBusy(null);
@@ -71,9 +74,9 @@ export function RealFiles({ id }: { id: string }) {
   const confirm = () => {
     if (!ask) return;
     const joined = (n: string) => (folder ? `${folder}/${n}` : n);
-    if (ask.kind === "folder") void act("Making the folder", () => newFolder(id, joined(text.trim())));
-    if (ask.kind === "rename") void act("Renaming", () => moveFile(id, ask.file.path, joined(text.trim())));
-    if (ask.kind === "delete") void act("Deleting", () => deleteFile(id, ask.file.path));
+    if (ask.kind === "folder") void act("Making the folder", () => newFolder(id, joined(text.trim()), team));
+    if (ask.kind === "rename") void act("Renaming", () => moveFile(id, ask.file.path, joined(text.trim()), team));
+    if (ask.kind === "delete") void act("Deleting", () => deleteFile(id, ask.file.path, team));
   };
 
   const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); if (e.dataTransfer.files.length) void upload(e.dataTransfer.files); };
@@ -125,14 +128,14 @@ export function RealFiles({ id }: { id: string }) {
                 {f.kind === "folder" ? (
                   <button type="button" onClick={() => setFolder(f.path)} className="min-w-0 flex-1 truncate text-left font-medium hover:underline">{f.name}</button>
                 ) : (
-                  <a href={`/studio/r/${encodeURIComponent(id)}/files/raw?path=${encodeURIComponent(f.path)}`} className="min-w-0 flex-1 truncate hover:underline">{f.name}</a>
+                  <a href={raw(`&path=${encodeURIComponent(f.path)}`)} className="min-w-0 flex-1 truncate hover:underline">{f.name}</a>
                 )}
                 <span className="text-muted-foreground hidden w-20 text-right tabular-nums sm:block">{f.kind === "file" ? size(f.size) : `${f.children?.length ?? 0} items`}</span>
                 <span className="text-muted-foreground hidden w-28 text-right md:block">{when(f.modified)}</span>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label={`More for ${f.name}`}><MoreHorizontalIcon /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {f.kind === "file" ? <DropdownMenuItem asChild><a href={`/studio/r/${encodeURIComponent(id)}/files/raw?path=${encodeURIComponent(f.path)}`}><DownloadIcon />Download</a></DropdownMenuItem> : null}
+                    {f.kind === "file" ? <DropdownMenuItem asChild><a href={raw(`&path=${encodeURIComponent(f.path)}`)}><DownloadIcon />Download</a></DropdownMenuItem> : null}
                     <DropdownMenuItem onSelect={() => { setText(f.name); setAsk({ kind: "rename", file: f }); }}><PencilIcon />Rename</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onSelect={() => setAsk({ kind: "delete", file: f })}><Trash2Icon />Delete</DropdownMenuItem>

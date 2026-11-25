@@ -2,10 +2,24 @@
 // in-memory store (auth-options.test.ts) and the app runs it on Postgres (./auth.ts).
 import type { BetterAuthOptions } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { jwt } from "better-auth/plugins";
+import { jwt, organization } from "better-auth/plugins";
+import { createAccessControl } from "better-auth/plugins/access";
+import { defaultStatements, ownerAc } from "better-auth/plugins/organization/access";
 import { nextCookies } from "better-auth/next-js";
 import { mcp } from "@better-auth/mcp";
 import { ADULT_REQUIRED, confirmsAdult } from "./adult";
+import { ensurePersonalTeam, PERSONAL_TEAM_KEPT, teamSlugProblem } from "./teams-core";
+
+// Teams (doc "Mentura console: screens, navigation and teams", 2026-11-25): a team is a Better Auth organization, and
+// Mentura says "team" on every screen. Three roles, cut down from Vercel's five: an Owner does everything, a Member
+// works the team's businesses, a Viewer only sees them. Members and Viewers manage nobody. (Better Auth's own "teams"
+// inside an organization stay off: Mentura's team is the organization.)
+const teamAccess = createAccessControl(defaultStatements);
+export const TEAM_ACCESS_ROLES = {
+  owner: teamAccess.newRole(ownerAc.statements),
+  member: teamAccess.newRole({ organization: [], member: [], invitation: [], team: [], ac: ["read"] }),
+  viewer: teamAccess.newRole({ organization: [], member: [], invitation: [], team: [], ac: ["read"] }),
+};
 
 /** What a person's own AI may ask for. "journal" covers what the MCP tools do (see /consent for the words). */
 export const MCP_SCOPES = ["openid", "profile", "offline_access", "journal"] as const;
@@ -35,6 +49,11 @@ export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(data
         if (ctx.path === "/sign-up/email" && !confirmsAdult(ctx.body)) throw new APIError("BAD_REQUEST", { message: ADULT_REQUIRED });
       }),
     },
+    // Every person gets a personal team at sign-up, with the person's own id (./teams-core.ts), so the hosted business
+    // store's tenant, which was the person's id, is now that team's id and every existing business stays where it is.
+    databaseHooks: {
+      user: { create: { after: async (user, ctx) => { if (ctx) await ensurePersonalTeam(ctx.context.adapter, user); } } },
+    },
     // Browser tests sign up many accounts from one address; they turn the limit off explicitly.
     rateLimit: { enabled: process.env.REFLECT_RATE_LIMIT !== "off" },
     plugins: [
@@ -52,6 +71,19 @@ export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(data
         clientRegistrationDefaultScopes: [...MCP_SCOPES],
         allowDynamicClientRegistration: true,
         allowUnauthenticatedClientRegistration: true,
+      }),
+      organization({
+        ac: teamAccess,
+        roles: TEAM_ACCESS_ROLES,
+        creatorRole: "owner",
+        allowUserToCreateOrganization: true,
+        organizationHooks: {
+          beforeCreateOrganization: async ({ organization: o }) => { const why = o.slug ? teamSlugProblem(o.slug) : null; if (why) throw new APIError("BAD_REQUEST", { message: why }); },
+          beforeUpdateOrganization: async ({ organization: o }) => { const why = o.slug ? teamSlugProblem(o.slug) : null; if (why) throw new APIError("BAD_REQUEST", { message: why }); },
+          // A personal team cannot be deleted or left: its id is its person's.
+          beforeDeleteOrganization: async ({ organization: o, user }) => { if (o.id === user.id) throw new APIError("BAD_REQUEST", { message: PERSONAL_TEAM_KEPT }); },
+          beforeRemoveMember: async ({ member, organization: o }) => { if (member.userId === o.id) throw new APIError("BAD_REQUEST", { message: PERSONAL_TEAM_KEPT }); },
+        },
       }),
       nextCookies(),
     ],

@@ -23,7 +23,7 @@ const filesUnder = (dir: string): string[] =>
     return statSync(join(SRC, path)).isDirectory() ? filesUnder(path) : [path];
   });
 
-const PAGES = "app/studio/v/[slug]/integrations";
+const PAGES = "app/studio/[team]/[slug]/integrations";
 const drawn = SCREENS.filter((s) => s.status !== "proposed");
 const UI_FILES = { ui: "components/studio/integrations-ui.tsx", search: "components/studio/integrations-search.tsx", why: "components/studio/integrations-why.tsx" };
 

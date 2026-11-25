@@ -3,8 +3,10 @@ import "server-only";
 // operation, signed for the signed-in person, so Naive is never bundled into the app and every write goes through
 // Naive's router, gate and provenance log (packages/platform/README.md, "The bridge").
 //
+// Each call is for one team (src/server/teams.ts): the person must belong to it, and the team's id is the tenant.
+//
 // Where ventures live:
-// - On a machine with a disk (next dev, next start): one workspace per account under NAIVE_CONSOLE_WORKSPACE, by
+// - On a machine with a disk (next dev, next start): one workspace per team under NAIVE_CONSOLE_WORKSPACE, by
 //   default packages/platform/.data/workspace. Naive must be installed there: cd packages/platform && npm install.
 // - On the hosted site: the hosted venture store, when MENTURA_PUBLIC_ORIGIN is https and NAIVE_BRIDGE_KEY is set
 //   (packages/platform/hosted). Until then the Studio says it is not connected and writes nothing.
@@ -13,13 +15,11 @@ import { spawn } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { headers } from "next/headers";
 import { signAssertion, type Identity } from "../../../packages/platform/bridge/assertion.ts";
 import { hostedWorkspaceRequired } from "../../../packages/platform/hosted/required.ts";
-import { auth } from "./auth";
-import { OWNER_ID } from "./session";
-import { openMode } from "./open-mode";
 import { siteUrl } from "./site";
+import { consolePerson, landingTeam, teamAt, teamsFor } from "./teams";
+import { VIEWER_REFUSED, type Team } from "./teams-core";
 
 /** Runs the bridge with the signed request on stdin, not the command line: an upload is larger than one argument may be,
  *  and the command line would show the founder's words to anyone listing processes. */
@@ -75,20 +75,32 @@ export const bridgeKey = (): string => process.env.NAIVE_BRIDGE_KEY ?? processKe
 // Writes run one at a time: each appends to a venture's hash-chained provenance log.
 let writes: Promise<unknown> = Promise.resolve();
 
-async function identity(): Promise<Identity> {
-  if (openMode()) return { userId: OWNER_ID, name: "Owner", email: "owner@reflect.local", organizationId: OWNER_ID, organizationRole: "owner" };
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session) throw new Error("Sign in to use the Studio.");
-  const { id, name, email } = session.user;
-  return { userId: id, name: name || "Founder", email, organizationId: id, organizationRole: "owner" };
+/** The team a call is for, checked against the person's memberships here, before anything is signed: the team at
+ *  this URL slug, or the person's personal team when no slug is given (the command line's sign-in, for one). The
+ *  business store's tenant is the team's id; a personal team's id is its person's, so businesses made before teams
+ *  are where they were. */
+export async function teamOfCall(team?: string): Promise<{ person: { id: string; name: string; email: string }; team: Team }> {
+  const person = await consolePerson();
+  if (!person) throw new Error("Sign in to use the Studio.");
+  if (!team) return { person, team: (await teamsFor(person)).find((t) => t.personal) ?? await landingTeam(person) };
+  const at = await teamAt(person, team);
+  if (!at.ok) throw new Error(at.error);
+  return { person, team: at.team };
 }
 
-async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
+async function identity(op: string, team?: string): Promise<Identity> {
+  const { person, team: t } = await teamOfCall(team);
+  // A Viewer sees the team's businesses and changes nothing; Naive's own gate decides the rest inside a business.
+  if (WRITES.has(op) && t.role === "viewer") throw new Error(VIEWER_REFUSED);
+  return { userId: person.id, name: person.name, email: person.email, organizationId: t.id, organizationRole: t.role };
+}
+
+async function call<T>(op: string, args: Record<string, unknown>, team?: string): Promise<T> {
   const why = studioUnavailable();
   if (why) throw new Error(why);
   const timeout = WRITES.has(op) ? WRITE_MS : READ_MS;
   const bridge = bridgePath();
-  const who = await identity();
+  const who = await identity(op, team);
   const key = bridgeKey();
   const assertion = signAssertion(who, { op, ...args }, key);
   if (hostedWorkspaceRequired()) {
@@ -107,10 +119,11 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   return r.result as T;
 }
 
-/** One operation through Naive, as the signed-in person. */
-export function naive<T>(op: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (!WRITES.has(op)) return call<T>(op, args);
-  const next = writes.then(() => call<T>(op, args));
+/** One operation through Naive, as the signed-in person, on one team's businesses: `team` is the team's URL slug,
+ *  and the person's personal team when it is left out. */
+export function naive<T>(op: string, args: Record<string, unknown> = {}, team?: string): Promise<T> {
+  if (!WRITES.has(op)) return call<T>(op, args, team);
+  const next = writes.then(() => call<T>(op, args, team));
   writes = next.catch(() => undefined);
   return next;
 }

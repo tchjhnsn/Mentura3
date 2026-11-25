@@ -23,6 +23,10 @@ A second standing account, `production-check-empty@mentura.xyz` ("Empty console 
 
 `console-empty.spec.ts` (doc "Mentura console: screens, navigation and teams", tests E1 to E3): `/` lands on an empty team home with four templates and no samples, no debug controls and no chief of staff copy; the team switcher holds one team, no businesses and New business; the account menu holds Your profile, Meetings, People, Account settings, Appearance and Sign out, and Sign out works. Screenshots go to `test-results/prod`.
 
-`studio.spec.ts`: the Studio reads the account's businesses from the hosted store, a business made from a sentence is listed, and it opens with Naive's docket. Each run makes one business named "Production check" and the run's time, and those businesses stay in the check account.
+`console-empty.spec.ts` expects `/` to land on the person's personal team at `/studio/<team>` (teams, round 2).
+
+`studio.spec.ts` (E4): as the check account in its personal team, a business said in a sentence shows "Setting up", opens inside its team at `/studio/<team>/<business>` on Needs you next, and the team home shows one more card. Each run makes one business named "Production check" and the run's time, and those businesses stay in the check account.
+
+`teams.spec.ts` (E5, E7): E5 makes a team from the switcher (Create team, a name, Create, then Skip on the invite step), lands on its empty home and finds it in the switcher; each run makes one team named "Production check" and the run's time, which stays on the check account until Delete team exists. E7 opens the check account's personal team and one of its businesses as the empty account and expects "You are not a member of this team." with none of the team's businesses shown. Both need migration 0070 and `packages/platform/hosted/sql/003-team-tenant.sql` applied on production; nothing here deletes anything.
 
 Not built: a scheduled run in CI (it needs the Neon variables as repository secrets), and checks for Integrations and Ask Mentura.

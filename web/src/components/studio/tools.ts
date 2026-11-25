@@ -38,7 +38,7 @@ export function functionGroups(fn: FunctionId): { group: ProcessGroup; tools: To
     .filter((g) => g.tools.length > 0);
 }
 
-/** Universal tools that already have a page of their own in a business, by the page's path under /studio/v/<slug>/. */
+/** Universal tools that already have a page of their own in a business, by the page's path under /studio/<team>/<slug>/. */
 const UNIVERSAL_PAGES: Record<string, string> = {
   home: "", decisions: "decisions", agents: "agents", files: "files", activity: "activity", connections: "integrations", settings: "settings",
 };
@@ -52,14 +52,29 @@ export const toolPath = (t: Tool, real = false): string =>
   t.function !== null ? `functions/${t.function}/${t.id}`
     : real && !REAL_PAGES.has(t.id) ? `tools/${t.id}` : UNIVERSAL_PAGES[t.id] ?? `tools/${t.id}`;
 
-/** Where the sidebar is, read from the path: the Studio, one business, or one function of a business. */
-export type Level = { kind: "studio" } | { kind: "business"; slug: string } | { kind: "function"; slug: string; fn: string; tool: string | null }
-  | { kind: "integrations"; slug: string };
+/** The pages of a team, at /studio/<team>/<page>: none of them is a business. */
+export const TEAM_PAGES: ReadonlySet<string> = new Set(["new", "library", "usage", "settings", "map", "members"]);
+/** The old addresses under /studio that redirect into a team; none of them is a team. */
+const NOT_TEAMS: ReadonlySet<string> = new Set(["v", "r", "new", "library", "usage", "settings", "map"]);
+
+/** The team's URL slug in a console path (/studio/<team>/...), or null. */
+export function teamOf(path: string): string | null {
+  const t = path.split(/[?#]/)[0]!.match(/^\/studio\/([^/]+)/)?.[1];
+  return t && !NOT_TEAMS.has(t) ? t : null;
+}
+
+/** Where the sidebar is, read from the path: the team, one business, one function of a business, or its integrations. */
+export type Level = { kind: "studio"; team: string | null } | { kind: "business"; team: string; slug: string }
+  | { kind: "function"; team: string; slug: string; fn: string; tool: string | null } | { kind: "integrations"; team: string; slug: string };
 export function levelOf(path: string): Level {
-  const i = path.match(/^\/studio\/v\/([^/]+)\/integrations(?:\/|$)/);
-  if (i) return { kind: "integrations", slug: i[1]! };
-  const f = path.match(/^\/studio\/v\/([^/]+)\/functions\/([^/]+)(?:\/([^/]+))?/);
-  if (f) return { kind: "function", slug: f[1]!, fn: f[2]!, tool: f[3] ?? null };
-  const b = path.match(/^\/studio\/v\/([^/]+)/);
-  return b ? { kind: "business", slug: b[1]! } : { kind: "studio" };
+  const team = teamOf(path);
+  if (!team) return { kind: "studio", team: null };
+  const rest = path.split(/[?#]/)[0]!.slice(`/studio/${team}`.length);
+  const slug = rest.match(/^\/([^/]+)/)?.[1];
+  if (!slug || TEAM_PAGES.has(slug)) return { kind: "studio", team };
+  const i = rest.match(/^\/[^/]+\/integrations(?:\/|$)/);
+  if (i) return { kind: "integrations", team, slug };
+  const f = rest.match(/^\/[^/]+\/functions\/([^/]+)(?:\/([^/]+))?/);
+  if (f) return { kind: "function", team, slug, fn: f[1]!, tool: f[2] ?? null };
+  return { kind: "business", team, slug };
 }

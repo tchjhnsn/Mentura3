@@ -1,14 +1,14 @@
 // The Business Studio's pages, as the app's one sidebar lists them in place of Mentura's (src/components/sidebar.tsx):
-// C3 the studio's pages, C4 one business's, C25 one function of a business, C26 a business's integrations. Each level replaces the whole sidebar.
+// C3 a team's pages, C4 one business's, C25 one function of a business, C26 a business's integrations. Each level replaces the whole sidebar.
 import {
   ActivityIcon, BlocksIcon, BotIcon, BoxIcon, BuildingIcon, CalendarDaysIcon, FileTextIcon, FolderIcon, GaugeIcon, GlobeIcon, HandshakeIcon,
   HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
   PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TagIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
   DatabaseIcon,
 } from "lucide-react";
-import { fnOf, ventureHref, ventureOf, type FunctionId } from "./data";
+import { businessHref, fnOf, teamHref, ventureOf, type FunctionId } from "./data";
 import { fnsAt } from "./connect-data";
-import { functionGroups, toolPath, universalTools, type Tool, type ToolKind } from "./tools";
+import { functionGroups, levelOf, toolPath, universalTools, type Tool, type ToolKind } from "./tools";
 import type { Business } from "./business-data";
 import { CATEGORIES } from "./integrations";
 
@@ -18,24 +18,25 @@ export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: s
 /** `back`: the row at the top of a replaced sidebar that returns to the level above it. */
 export type NavGroup = { label?: string; more?: boolean; back?: { href: string; label: string }; items: NavItem[] };
 
-export const STUDIO_NAV: NavGroup[] = [
+/** C3 one team's pages. */
+export const teamNav = (team: string): NavGroup[] => [
   { items: [
-    { href: "/studio", label: "Home", icon: HomeIcon, n: "S1", exact: true },
-    { href: "/studio/new", label: "New business", icon: PlusIcon, n: "S2" },
+    { href: teamHref(team), label: "Home", icon: HomeIcon, n: "T1", exact: true },
+    { href: teamHref(team, "new"), label: "New business", icon: PlusIcon, n: "T2" },
   ] },
   { label: "Find", items: [
-    { href: "/studio/library", label: "Library", icon: LibraryIcon, n: "S3", exact: true },
+    { href: teamHref(team, "library"), label: "Library", icon: LibraryIcon, n: "T3", exact: true },
   ] },
   { label: "Manage", items: [
-    { href: "/studio/usage", label: "Usage", icon: GaugeIcon, n: "S6" },
-    { href: "/studio/settings", label: "Settings", icon: SettingsIcon, n: "S7" },
+    { href: teamHref(team, "usage"), label: "Usage", icon: GaugeIcon, n: "T6" },
+    { href: teamHref(team, "settings"), label: "Settings", icon: SettingsIcon, n: "T5" },
   ] },
 ];
 
 /** C4 one business: its universal tools, one row per function it has turned on (each replaces the sidebar with that
  * function's tools), then the pages used less often. Drawn from Naive's tool catalog (./tools.ts). */
-export const ventureNav = (slug: string, biz?: Business | null): NavGroup[] => {
-  const h = (r: string) => ventureHref(slug, r);
+export const ventureNav = (team: string, slug: string, biz?: Business | null): NavGroup[] => {
+  const h = (r: string) => businessHref(team, slug, r);
   const real = biz?.real ?? false;
   const tool = (t: Tool, exact = false): NavItem => t.id === "connections"
     // Connections opens the Integrations level (C26), which replaces the sidebar as a function does.
@@ -66,8 +67,8 @@ export const ventureNav = (slug: string, biz?: Business | null): NavGroup[] => {
 /** C25 one function of a business: a back row to the business, the function's overview, then its tools under the
  * process group each serves (APQC level 2), in phase order. Replaces the business's sidebar entirely, as Vercel's
  * sections replace its project sidebar. */
-export const functionNav = (slug: string, fn: FunctionId): NavGroup[] => {
-  const h = (r: string) => ventureHref(slug, r);
+export const functionNav = (team: string, slug: string, fn: FunctionId): NavGroup[] => {
+  const h = (r: string) => businessHref(team, slug, r);
   return [
     { back: { href: h(""), label: fnOf(fn).label }, items: [{ href: h(`functions/${fn}`), label: "Overview", icon: LayoutGridIcon, n: "V12", exact: true }] },
     ...functionGroups(fn).map(({ group, tools }): NavGroup => ({
@@ -79,10 +80,10 @@ export const functionNav = (slug: string, fn: FunctionId): NavGroup[] => {
 
 /** C26 a business's integrations, after Vercel's Marketplace sidebar: a back row to the business, the ways to browse,
  * the business's functions, then the categories that have something in the catalog, each with its count. */
-export const integrationsNav = (slug: string, biz?: Business | null): NavGroup[] => {
-  const h = (r: string) => ventureHref(slug, `integrations${r}`);
+export const integrationsNav = (team: string, slug: string, biz?: Business | null): NavGroup[] => {
+  const h = (r: string) => businessHref(team, slug, `integrations${r}`);
   return [
-    { back: { href: ventureHref(slug, ""), label: "Integrations" }, items: [
+    { back: { href: businessHref(team, slug), label: "Integrations" }, items: [
       { href: h(""), label: "All", icon: LayoutGridIcon, n: "V20", exact: true },
       { href: h("/connected"), label: "Connected", icon: PlugIcon, n: "V25" },
       { href: h("/sources"), label: "Sources of truth", icon: DatabaseIcon, n: "V27" },
@@ -110,5 +111,6 @@ const FN_ICONS: Record<FunctionId, typeof HomeIcon> = {
   "risk-and-compliance": ShieldIcon, "external-relationships": GlobeIcon, capabilities: BlocksIcon,
 };
 
-export const slugOf = (path: string) => path.match(/^\/studio\/v\/([^/]+)/)?.[1] ?? null;
+/** The business's slug in a console path (/studio/<team>/<business>/...), or null on a team's own page. */
+export const slugOf = (path: string): string | null => { const at = levelOf(path); return at.kind === "studio" ? null : at.slug; };
 

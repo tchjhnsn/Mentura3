@@ -3,6 +3,7 @@
 // Skips without MENTURA_EVAL_DATABASE_URL (a loopback Postgres, as in CI).
 
 import pg from "pg";
+import { signAssertion } from "../bridge/assertion.ts";
 import { passwordLiteral, RUNTIME_ROLE, setupStore, setupSteps } from "./setup-store.ts";
 
 let failed = 0;
@@ -55,6 +56,19 @@ try {
     await runtime.query("insert into naive_records (tenant, path, content, version, hash) values ('someone', 'a.json', '{}', 'v', 'h')");
   } catch { unsignedRefused = true; }
   expect("without a signed grant the runtime login writes nothing", unsignedRefused);
+  // Tenant = team (sql/003-team-tenant.sql): the grant binds the assertion's team id, else the person's id.
+  const writes = async (identity: { userId: string; organizationId: string }, tenant: string) => {
+    const conn = await runtime.connect();
+    try {
+      await conn.query("begin");
+      await conn.query("select mentura_authorize($1)", [signAssertion({ ...identity, name: "T", email: "t@example.com", organizationRole: "owner" }, { op: "ventures" }, key)]);
+      await conn.query("insert into naive_records (tenant, path, content, version, hash) values ($1, 'team.json', '{}', 'v', 'h')", [tenant]);
+      return true;
+    } catch { return false; } finally { await conn.query("rollback").catch(() => undefined); conn.release(); }
+  };
+  expect("an assertion for a team writes that team's rows", await writes({ userId: "person-1", organizationId: "team-a" }, "team-a"));
+  expect("an assertion for a team does not write its person's own rows", !(await writes({ userId: "person-1", organizationId: "team-a" }, "person-1")));
+  expect("an assertion with no team writes its person's rows, as before teams", await writes({ userId: "person-1", organizationId: "" }, "person-1"));
 } finally {
   await runtime.end();
 }
