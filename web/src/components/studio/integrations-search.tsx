@@ -27,7 +27,7 @@ export function Marketplace({ slug, name, profile, connected: ids }: { slug: str
   const hits = useMemo(() => (q.trim() ? search(q) : null), [q]);
   return (
     <div className="pb-16">
-      <ScreenHead n="V20" title="Integrations" job={`Connect the services ${name} works in, so Reflect can read them when you ask and draft for you.`}>
+      <ScreenHead n="V20" title="Integrations" job={`Connect the services ${name} works in, so Mentura can read them when you ask and draft for you.`}>
         <Button variant="outline" size="sm" asChild><Link href={ventureHref(slug, "integrations/connected")}>Connected{ids.length ? ` (${ids.length})` : ""}</Link></Button>
       </ScreenHead>
       <div className="max-w-5xl space-y-10 px-4 md:px-8">
@@ -51,7 +51,7 @@ export function Marketplace({ slug, name, profile, connected: ids }: { slug: str
               <section>
                 <h2 className="font-semibold">Recommended for {name}</h2>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  From the work its functions do{knew.length ? `, and what Reflect knows of it: ${knew.join(", ")}` : ""}. Needed means that work cannot stay in files.
+                  From the work its functions do{knew.length ? `, and what Mentura knows of it: ${knew.join(", ")}` : ""}. Needed means that work cannot stay in files.
                 </p>
                 <Grid className="mt-3">{recs.map((r) => <ScoredCard key={r.category.id} slug={slug} r={r} />)}</Grid>
                 {later.length ? (

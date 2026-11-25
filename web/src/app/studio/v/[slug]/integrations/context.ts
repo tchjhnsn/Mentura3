@@ -44,6 +44,6 @@ export async function sourceMapOf(slug: string): Promise<{ map: SourceMap; error
     // The bridge finds knowledge/sources.json wherever the venture's layout keeps it; a new business has none.
     return { map: await naive<SourceMap>("sources", { venture: decodeURIComponent(slug) }), error: null };
   } catch {
-    return { map: {}, error: "Reflect could not read where this business keeps its records." };
+    return { map: {}, error: "Mentura could not read where this business keeps its records." };
   }
 }

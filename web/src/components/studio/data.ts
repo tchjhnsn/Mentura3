@@ -135,7 +135,7 @@ export const SCREENS: Screen[] = [
   { id: "V24", title: "Connect", path: "/studio/v/:v/integrations/[id]/connect", job: "What connecting allows, before the sign-in at the service.", refs: ["v0InstallCheckout", "gitbookPermissions"] },
   { id: "V25", title: "Connected", path: "/studio/v/:v/integrations/connected", job: "Every account you have connected, and sign-ins left unfinished.", refs: ["neonIntegrations", "v0InstallCheckout"] },
   { id: "V26", title: "Manage connection", path: "/studio/v/:v/integrations/[id]", job: "A connected integration: when it was connected, what it serves, and Disconnect.", refs: ["vercelInstallation", "gitbookPermissions"] },
-  { id: "V27", title: "Sources of truth", path: "/studio/v/:v/integrations/sources", job: "Where this business keeps each kind of record: in Reflect, or in a service you connected.", refs: ["lindyConnections"] },
+  { id: "V27", title: "Sources of truth", path: "/studio/v/:v/integrations/sources", job: "Where this business keeps each kind of record: in Mentura, or in a service you connected.", refs: ["lindyConnections"] },
   { id: "V16", title: "Business settings", path: "/studio/v/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
 ];
 

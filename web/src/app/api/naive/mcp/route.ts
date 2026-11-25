@@ -15,6 +15,6 @@ export async function POST(req: Request) {
     return Response.json({ items });
   } catch (e) {
     const status = e instanceof McpRefusal ? e.status : 502;
-    return Response.json({ error: e instanceof Error ? e.message : "Reflect could not read the service." }, { status });
+    return Response.json({ error: e instanceof Error ? e.message : "Mentura could not read the service." }, { status });
   }
 }
