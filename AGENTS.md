@@ -1,42 +1,33 @@
-# AGENTS.md: reflect
+# AGENTS.md: mentura3
 
 The map of this repo, loaded by every agent. Keep it to about a page; details belong in `docs/` and folder READMEs.
 
 ## What this is
 
-Reflect, an open-source reference project. Vault: `projects/reflect/`.
+Mentura, hosted Naive: the business console at https://mentura.xyz, with Teams (Owner, Member, Viewer), Integrations, the hosted business store, offline sync through `naive sync`, and Meetings. Naive, the venture development framework, has its own repository, tchjhnsn/naive. This repository was tchjhnsn/reflect until it became Mentura's.
 
-**Reflect is an open-source memory-graph-based self-reflection engine and backend.** It helps a user build a persistent, transparent representation of their beliefs, observations, reflections, and conversations, and supports AI-assisted insight generation on top of that graph.
+In product copy and in replies, the product is Mentura. Reflect is a separate product, and so is Village and polis. In the interface, say business, not venture. Code, routes and Naive keep venture.
 
 ## Where things are
 
 | Path | Holds |
 |---|---|
-| `thrivesight_core/` | the hackathon reasoning engine (Python) |
-| `packages/cli/` | the `reflect` command over an instance in a folder (`init`, `write`, `add`, `close`, `list`, `check`, `present` for the presentation gate, `quote`, `tag` and `claim` for quotes and their tags, `friendship` and `friendships` for friendships and their evaluations, `publish`, `unpublish`, `approve` and `decline` for the `published/` folder a site reads, and `actions`, `act` and `mcp` over the core's action registry); see `packages/cli/README.md` |
-| `action/` | the GitHub Action an instance repository runs: refuses a public repository, checks the vault and records hand-written changes |
-| `packages/core/` | the headless core: the person's stores, journal and packs, and `published/`, the files a site reads (Reflect writes files, never a site's code), in plain TypeScript that runs in Node with no database; see `packages/core/README.md` |
-| `packages/platform/` | Mentura's platform library, moved here with its history from tchjhnsn/mentura when Reflect became the monorepo for Reflect and Mentura: connectors (GitHub, Postgres), integrations, kits, webhooks, the research engine, the agents over Naive, the outside host and `bridge/`, the one door from a web server into Naive. Depends on `naive-framework` pinned to one commit of tchjhnsn/naive; `npm install` and `npm test` there, CI in `.github/workflows/platform.yml` (needs the `NAIVE_READ_TOKEN` secret); see `packages/platform/README.md` |
-| `tools/ontology/` | the ontology program's scripts from tchjhnsn/mentura (ledger import, reconcile runner, agreement and closure reports, preservation coverage), with their history; `npm install` and `npm test` there, CI in `.github/workflows/ontology.yml`; see `tools/ontology/README.md` |
-| `packages/virtu/` | the Virtu design system's editor and check, vendored from tchjhnsn/design-system-theory, and the personal site's design system (`site/`); see `packages/virtu/README.md` |
-| `lean/` | Lean 4 proofs with no Mathlib (`cd lean && lake build`): every ontology noun has one category, serves links form no cycle, every choice reaches a telos, the communities nest, every source of a value but stated starts proposed; CI builds them (`.github/workflows/lean.yml`); see `lean/README.md` |
-| `web/` | the Reflect web app (Next.js), one interface over the core; see `web/README.md` |
-| `docs/mentura/` | Mentura's company docs and the EE decision log (`decisions/decisions.json`, `EE-NNN`), from tchjhnsn/mentura with their history; see `docs/mentura/README.md` |
-| `docs/design/` | designs; `HEADLESS_REFLECT_2026-11-10.md` is the plan for one core with two hosts, `REFLECT_FRAMEWORK_2026-11-19.md` the plan for Reflect as a framework for a life, with Aristotle's Categories as its ontology, `REFLECT_QUOTES_2026-11-20.md` the design for claims and beliefs as tags on quotes, and `REFLECT_FRIENDSHIP_2026-11-21.md` friendship as a relation with an evaluation tool (Aristotle's Nicomachean Ethics VIII and IX as the base, Christian and Lewis schemes mapped to it; core and CLI built, app screens and sharing not) |
-| `README.md` | overview |
-| `pyproject.toml` | dependencies and scripts |
+| `web/` | The web app (Next.js) that serves Mentura, plus the pages of the two other products until each has a host of its own; its README lists them by product. See `web/README.md` |
+| `packages/platform/` | Mentura's platform library: connectors (GitHub, Postgres, MCP), the hosted business store (`hosted/`), integrations, kits, webhooks, the research engine, the agents over Naive, the outside host and `bridge/`, the one door from the web server into Naive. Depends on `naive-framework` pinned to one commit of tchjhnsn/naive. See `packages/platform/README.md` |
+| `tools/ontology/` | The ontology program's scripts (ledger import, reconcile runner, agreement and closure reports, preservation coverage). See `tools/ontology/README.md` |
+| `docs/mentura/` | Mentura's company docs and the decision log (`decisions/decisions.json`, `EE-NNN`). See `docs/mentura/README.md` |
+| `packages/core/`, `packages/cli/`, `action/`, `packages/virtu/`, `lean/`, `docs/design/`, `thrivesight_core/`, `api/` | Reflect, a separate product kept here: its headless core, its `reflect` command, its GitHub Action, its copy of Virtu, its Lean proofs, its designs, and its original Python engine and Django backend. Mentura's web app imports `packages/core/` as `@reflect/core` |
 
 ## Build and test
 
-- Python project: see `pyproject.toml` / `requirements.txt` for dependencies.
-- `cd web && pnpm test` runs the core's, the CLI's and the web app's tests (the Neon ones only with `DATABASE_URL`); `pnpm typecheck` type-checks them.
+- `cd web && pnpm test` runs the web app's, the core's and the CLI's tests (the Neon ones only with `DATABASE_URL`); `pnpm typecheck` type-checks them.
 - `cd packages/platform && npm install && npm test` runs the platform library's tests; `npx tsc -p tsconfig.json` type-checks it. Its install needs read access to tchjhnsn/naive (`NAIVE_READ_TOKEN`, see `packages/platform/README.md`).
-- The Number Theory of the Soul (the element table, its Lean model and the labeling reader) left Reflect on 2026-11-11 for its own repository. Nothing here imports it. The boundary (decided 2026-11-20): NTS models the inner mind; Reflect records what is observed, what the person says and does. A stated belief, telos or value is kept here as a statement with its source; the inner state is NTS's (`docs/design/REFLECT_FRAMEWORK_2026-11-19.md`, "Reflect and NTS").
+- `cd tools/ontology && npm install && npm test` runs the ontology program's tests.
+- `cd lean && lake build` builds Reflect's Lean proofs.
+- CI: `.github/workflows/platform.yml`, `ontology.yml` and `lean.yml`.
 
 ## Rules
 
 - Never read or print `.env*` files. Refer to secrets by variable name only.
-- Governing decisions are cited by id (`G-NNN` workspace, `D-NNN` Polity), not by vault path, because this repo may be cloned alone.
+- Governing decisions are cited by id (`G-NNN` workspace, `D-NNN` Polity, `EE-NNN` Mentura), not by vault path, because this repo may be cloned alone.
 - Agents open draft PRs and merge their own on green CI (Torian, 2026-11-07).
-
-*Drafted 2026-10-26 from the README and layout (workspace stage 3, G-027). Correct it the next time you work here.*
