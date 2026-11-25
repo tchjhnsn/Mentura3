@@ -1,0 +1,124 @@
+{
+  "note": "Mentura's record types and the JSON files here that are not records, added to Naive's data model by packages/naive/src/records (readDataModel merges this file from the root of the repository it checks). Naive's own adapter and kit types name no paths in this repository, so Mentura's copies carry their own ids (EE-118). Moved from tchjhnsn/mentura on 2026-11-25.",
+  "records": [
+    {
+      "id": "mentura-adapter",
+      "layer": "interface",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/adapter.schema.json",
+      "paths": [
+        "packages/platform/adapter.json"
+      ],
+      "note": "Mentura as Naive's platform adapter (Z-4): the tests it runs, passed to Naive with NAIVE_PLATFORM_ADAPTER. Verified by mentura adapters verify mentura"
+    },
+    {
+      "id": "mentura-kit",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/naive/src/records/kit.schema.json",
+      "paths": [
+        "packages/platform/kits/*/kit.json"
+      ],
+      "refs": [
+        {
+          "field": "extends.package",
+          "to": "venture-packages",
+          "checked_by": null
+        }
+      ],
+      "note": "A Mentura kit (EE-071): an enhanced package or command, with its automations (M-12) or its agent workflow (U-3). Naive finds kits through NAIVE_KITS and reads them as data (schema/kits.mjs)"
+    },
+    {
+      "id": "research-cell",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/platform/research/schemas/research-cell.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/cells.jsonl"
+      ],
+      "note": "A research cell (confidential, Mentura): state(subject, time, aspect) for a venture, function and frame. Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-source",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/platform/research/schemas/source.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/sources.jsonl"
+      ],
+      "note": "A source the research engine read, with credibility factors 1-4 (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-claim",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/platform/research/schemas/claim.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/claims.jsonl"
+      ],
+      "note": "A claim for a research cell; confidence and verdict computed in code by packages/platform/research/credibility.mjs (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "confidential": true
+    },
+    {
+      "id": "research-citation",
+      "layer": "system",
+      "function": null,
+      "level": "method",
+      "schema": "packages/platform/research/schemas/citation.schema.json",
+      "form": "json-lines",
+      "paths": [
+        ".naive/research/citations.jsonl"
+      ],
+      "note": "Ties a research claim to a source with a locator and an optional short quote (confidential, Mentura). Stored as JSONL under RESEARCH_STORE (gitignored), later Neon Postgres.",
+      "refs": [
+        {
+          "field": "claim_id",
+          "to": "research-claim",
+          "checked_by": null
+        },
+        {
+          "field": "source_id",
+          "to": "research-source",
+          "checked_by": null
+        }
+      ],
+      "confidential": true
+    }
+  ],
+  "ignore": [
+    {
+      "path": "docs/mentura/design/preserved/**/*.json",
+      "reason": "Copies preserved byte for byte by the ontology program's stage 1 and not reconciled; each has a .preserved.md sidecar naming its source, sha256 and ledger row. Records of off-main sources, not live records"
+    },
+    {
+      "path": "docs/mentura/design/term-harvest/claude-2026-11-03/TERM_LIST_2026-11-01.json",
+      "reason": "Preserved byte for byte from preserve/sources-2026-11-03 and not reconciled (ledger N-001); a record of Claude's 340-term list, not a live record. The live seed list is docs/mentura/design/term-harvest/TERM_LIST_2026-11-01.json"
+    },
+    {
+      "path": "packages/platform/integrations/fixtures/rho-sandbox.json",
+      "reason": "What Rho's sandbox (a fictional company) answered to one sync, replayed offline by packages/platform/integrations/rho-test.mjs; vendor data, not a record"
+    },
+    {
+      "path": "packages/platform/package.json",
+      "reason": "The platform library's npm manifest; not a record"
+    },
+    {
+      "path": "packages/platform/package-lock.json",
+      "reason": "npm lockfile for the platform library; generated by npm"
+    },
+    {
+      "path": "packages/platform/tsconfig.json",
+      "reason": "TypeScript config for the platform library; not a record"
+    }
+  ]
+}

@@ -22,6 +22,7 @@ A template is framework, the way `create-next-app --example` is. The gallery tha
 
 - `npm install` here. naive-framework comes from tchjhnsn/naive, which is private, so git needs read access: your own credentials, or a read-only token in `NAIVE_READ_TOKEN` given to git by `sh naive-git-auth.sh` (CI does this, `.github/workflows/platform.yml`).
 - `npm test` (`node test.ts`) runs every test here and reports each one. Tests that need Postgres skip without `MENTURA_EVAL_DATABASE_URL` or their own database URL, except in CI, where the workflow starts a throwaway Postgres and a missing URL fails.
+- `naive.data-model.json` at the repository root declares this library's record types to Naive: `adapter.json`, each `kits/*/kit.json`, and the research engine's records, whose schemas are in `research/schemas/`.
 - `naive.ts` says where the installed Naive sits (`naivePath`, `naiveCode`, `naivePhases`).
 
 ## The boundary
