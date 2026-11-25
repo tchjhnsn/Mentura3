@@ -761,7 +761,10 @@ const ops = {
   // A refused write throws, so the hosted workspace commits nothing and the store is left as it was.
   //
   // The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto
-  // the store's chain is its own piece of work (the design's Not built list).
+  // the store's chain is its own piece of work (the design's Not built list). It belongs at the end of this
+  // operation, after every write has landed: only there is the push all or none, and only there does
+  // provenance.jsonl already hold the router's own lines, whose last line is the tip to re-chain onto. A tip
+  // read any earlier names a line the store has written past, and the chain breaks.
   async syncPush({ venture, changes }, { identity, workspace }) {
     const dir = await dirOf(venture, workspace);
     if (!Array.isArray(changes) || !changes.length) throw new Error("This push carries no changes.");
