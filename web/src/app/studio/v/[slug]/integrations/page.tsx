@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 export default async function IntegrationsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const ctx = await integrationsContext(slug);
-  return <Marketplace slug={slug} name={ctx.name} functions={ctx.functions} connected={[...ctx.connected]} />;
+  return <Marketplace slug={slug} name={ctx.name} profile={ctx.profile} connected={[...ctx.connected]} />;
 }

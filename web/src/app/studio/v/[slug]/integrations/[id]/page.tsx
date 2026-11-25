@@ -10,8 +10,9 @@ import { Logo } from "@/app/marketplace/logos";
 import { Num } from "@/components/studio/bits";
 import { fnOf, ventureHref } from "@/components/studio/data";
 import { categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
-import { Fact, FitBadge } from "@/components/studio/integrations-ui";
-import { forBusiness } from "@/components/studio/integrations";
+import { Fact, FitBadge, Reasons } from "@/components/studio/integrations-ui";
+import { WhyThis } from "@/components/studio/integrations-why";
+import { recommend } from "@/components/studio/recommend";
 import { listVentures } from "@/app/studio/actions";
 import { disconnectIntegration, saveBusinesses, useHere } from "../actions";
 import { integrationsContext, usableBy } from "../context";
@@ -35,7 +36,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
   const ready = marketReady(c, process.env);
   const cats = categoriesOf(id);
   const fns = [...new Set(cats.flatMap(functionsOf))];
-  const recs = forBusiness(ctx.functions).filter((r) => cats.some((k) => k.id === r.category.id));
+  const recs = recommend({ ...ctx.profile, connected: ctx.connected }).filter((r) => cats.some((k) => k.id === r.category.id));
   return (
     <div className="pb-16" data-virtu-screen={conn ? "V26" : "V23"}>
       <div className="px-4 pt-5 md:px-8 md:pt-8">
@@ -73,9 +74,10 @@ export default async function IntegrationPage({ params, searchParams }: { params
               <ul className="mt-2 divide-y rounded-xl border">
                 {recs.map((r) => (
                   <li key={r.category.id} className="px-4 py-3">
-                    <div className="flex items-center gap-2 text-sm font-medium">{r.category.name}<FitBadge fit={r.fit} /></div>
-                    <p className="text-muted-foreground mt-1 text-sm">{r.why}</p>
-                    <p className="text-muted-foreground mt-1 text-xs">For {r.functions.map((f) => fnOf(f).label).join(", ")}</p>
+                    <div className="flex items-center gap-2 text-sm font-medium">{r.category.name}{r.later ? <Badge variant="outline" className="text-muted-foreground font-normal">Later</Badge> : <FitBadge fit={r.fit} />}</div>
+                    <div className="mt-2"><Reasons slug={slug} r={r} /></div>
+                    <p className="text-muted-foreground mt-2 text-xs">For {r.functions.map((f) => fnOf(f).label).join(", ")}</p>
+                    <div className="mt-1"><WhyThis slug={slug} category={r.category.id} /></div>
                   </li>
                 ))}
               </ul>

@@ -387,7 +387,12 @@ const ops = {
     let founder = null;
     try { if (signers(dir).size) founder = founderName(dir); } catch { /* a delegation file that does not parse */ }
     // departments: the functions this venture has turned on (venture.schema.json), which the console's sidebar lists.
-    return { id: v.id, name: v.name, phase: v.phase, founder, departments: Array.isArray(v.departments) ? v.departments : [], tree: tree(dir) };
+    // industry, regulation and funding: what the console's integrations recommender weighs besides the functions.
+    const industry = v.industry && typeof v.industry.code === "string" ? { code: v.industry.code, label: v.industry.label ?? null } : null;
+    return {
+      id: v.id, name: v.name, phase: v.phase, founder, departments: Array.isArray(v.departments) ? v.departments : [],
+      industry, regulation: v.regulation?.exposure ?? null, funding: v.form?.funding ?? null, tree: tree(dir),
+    };
   },
 
   async read({ venture, path }, { workspace }) {

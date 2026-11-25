@@ -265,6 +265,7 @@ const EXCLUDED: Record<string, string> = {
   "marketplace/actions.ts#disconnectAction": "A connector's sign-in happens in the person's own browser at the service, and disconnecting clears that sign-in, which only a new sign-in brings back; both stay taps on the marketplace.",
   "studio/v/[slug]/integrations/actions.ts#connectIntegration": "The business console's Connect (V24) is the same sign-in in the person's own browser at the service as the marketplace's connectAction, so it stays a tap.",
   "studio/v/[slug]/integrations/actions.ts#disconnectIntegration": "The business console's Disconnect (V26) clears the sign-in as the marketplace's disconnectAction does, which only a new sign-in brings back, so it stays a tap.",
+  "studio/v/[slug]/integrations/explain.ts#explainRecommendation": "Reads only: a model restates the factors behind one recommendation, citing each; it changes nothing, and the chat can already read the catalog.",
   "studio/v/[slug]/integrations/actions.ts#saveBusinesses": "Chooses which of the person's businesses may use a connection they signed in to; ticks beside the connection in the business console, so a model never widens its own reach.",
   "studio/v/[slug]/integrations/actions.ts#useHere": "Adds this business to a connection the person kept to others; a tap on the integration's page, so a model never widens its own reach.",
   "settings/site/actions.ts#pushSiteAction": "Pushes the person's site to their own GitHub through their GitHub connector, an outside service; it stays a tap on the page.",
