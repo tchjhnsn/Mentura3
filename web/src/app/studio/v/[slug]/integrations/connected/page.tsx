@@ -34,6 +34,7 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                     <div className="flex items-center gap-2 text-sm font-medium">
                       {c.name}
                       {c.status === "pending" ? <Badge variant="outline" className="font-normal">Sign-in not finished</Badge> : null}
+                      {c.status === "expired" ? <Badge variant="destructive" className="font-normal">Needs reconnect</Badge> : null}
                       {c.status === "connected" && !usableBy(c, ctx.id) ? <Badge variant="outline" className="font-normal">Not used by {ctx.name}</Badge> : null}
                       {c.status === "connected" && c.businesses !== null && usableBy(c, ctx.id) ? <Badge variant="outline" className="font-normal">{c.businesses.length === 1 ? "Only this business" : `${c.businesses.length} businesses`}</Badge> : null}
                     </div>
@@ -43,6 +44,8 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                   </div>
                   {c.status === "pending" && inCatalog ? (
                     <form action={connectIntegration.bind(null, slug, c.connector)}><Button size="sm" type="submit">Finish</Button></form>
+                  ) : c.status === "expired" && inCatalog ? (
+                    <form action={connectIntegration.bind(null, slug, c.connector)}><Button size="sm" type="submit">Reconnect</Button></form>
                   ) : (
                     <Button variant="outline" size="sm" asChild><Link href={href}>Manage</Link></Button>
                   )}

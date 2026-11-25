@@ -12,7 +12,7 @@ import { privateAddress, urlProblem } from "./link-back";
 import { siteUrl } from "./site";
 
 /** `businesses`: the business ids that may use it in the business console, or null for every business (migration 0066). */
-export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected"; connectedAt: string | null; catalog: MarketConnector | null; businesses: string[] | null };
+export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected" | "expired"; connectedAt: string | null; catalog: MarketConnector | null; businesses: string[] | null };
 
 type Row = {
   id: string; user_id: string; connector: string; name: string; server_url: string; state: string | null;
@@ -23,7 +23,7 @@ type Row = {
 const newId = () => randomBytes(9).toString("base64url");
 export const callbackUrl = () => `${siteUrl()}/api/connectors/callback`;
 const toConnection = (r: Row): Connection => ({
-  id: r.id, connector: r.connector, name: r.name, serverUrl: r.server_url, status: r.status === "connected" ? "connected" : "pending",
+  id: r.id, connector: r.connector, name: r.name, serverUrl: r.server_url, status: r.status === "connected" || r.status === "expired" ? r.status : "pending",
   connectedAt: r.connected_at ? r.connected_at.toISOString() : null, catalog: marketById(r.connector) ?? null, businesses: r.businesses ?? null,
 });
 
@@ -147,18 +147,21 @@ export async function startConnect(userId: string, target: { connector: string }
     name = known?.name ?? (target.name?.trim().slice(0, 60) || nameFromUrl(url));
   }
   await db().query("UPDATE mcp_connection SET status = 'removed', removed_at = now(), tokens_ct = NULL, verifier_ct = NULL WHERE user_id = $1 AND server_url = $2 AND status = 'pending'", [userId, url]);
-  const live = await db().query("SELECT id FROM mcp_connection WHERE user_id = $1 AND server_url = $2 AND status = 'connected'", [userId, url]);
-  if (live.rows[0]) return { id: live.rows[0].id as string, redirect: null };
-  const id = newId();
+  const live = await db().query("SELECT id, status FROM mcp_connection WHERE user_id = $1 AND server_url = $2 AND status IN ('connected', 'expired')", [userId, url]);
+  if (live.rows[0]?.status === "connected") return { id: live.rows[0].id as string, redirect: null };
+  // Reconnect (M1: expired, reconnect, connected): the same row signs in again, so its businesses and id stay.
+  const expired = live.rows[0] ? (live.rows[0].id as string) : null;
+  const id = expired ?? newId();
   const state = randomBytes(24).toString("base64url");
-  await db().query("INSERT INTO mcp_connection (id, user_id, connector, name, server_url, state) VALUES ($1, $2, $3, $4, $5, $6)", [id, userId, connector, name, url, state]);
+  if (expired) await db().query("UPDATE mcp_connection SET state = $2 WHERE id = $1", [id, state]);
+  else await db().query("INSERT INTO mcp_connection (id, user_id, connector, name, server_url, state) VALUES ($1, $2, $3, $4, $5, $6)", [id, userId, connector, name, url, state]);
   const r = (await rowOf(userId, id))!;
   let redirect: string | null = null;
   const result = await auth(providerFor(r, (u) => { redirect = u.toString(); }), { serverUrl: url }).catch((e: unknown) => {
     throw new Error(e instanceof Error && /register/i.test(e.message) ? `${name} would not let Reflect sign in on its own. It may need Reflect registered with it first.` : `${name} did not answer the way a connector should.`);
   });
   if (result === "AUTHORIZED") {
-    await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), state = NULL WHERE id = $1", [id]);
+    await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), expired_at = NULL, state = NULL WHERE id = $1", [id]);
     return { id, redirect: null };
   }
   return { id, redirect };
@@ -166,15 +169,15 @@ export async function startConnect(userId: string, target: { connector: string }
 
 /** The sign-in came back with a code: trade it for tokens and mark the connector connected. Returns its id. */
 export async function finishConnect(userId: string, state: string, code: string, iss?: string | null): Promise<string> {
-  const r = (await db().query("SELECT * FROM mcp_connection WHERE state = $1 AND user_id = $2 AND status = 'pending'", [state, userId])).rows[0] as Row | undefined;
+  const r = (await db().query("SELECT * FROM mcp_connection WHERE state = $1 AND user_id = $2 AND status IN ('pending', 'expired')", [state, userId])).rows[0] as Row | undefined;
   if (!r) throw new Error("This sign-in has expired. Connect again.");
   const result = await auth(providerFor(r), { serverUrl: r.server_url, authorizationCode: code, ...(iss ? { iss } : {}) });
   if (result !== "AUTHORIZED") throw new Error("The sign-in did not finish.");
-  await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), state = NULL, verifier_ct = NULL WHERE id = $1", [r.id]);
+  await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), expired_at = NULL, state = NULL, verifier_ct = NULL WHERE id = $1", [r.id]);
   return r.id;
 }
 
-/** Disconnect: the tokens and registration are cleared and the row marked removed. */
+/** Disconnect, from pending, connected or expired: the tokens and registration are cleared and the row marked removed. */
 export async function disconnect(userId: string, id: string): Promise<Connection | null> {
   const r = await rowOf(userId, id);
   if (!r) return null;
@@ -185,6 +188,7 @@ export async function disconnect(userId: string, id: string): Promise<Connection
 /** Runs `use` with a connected MCP client for one connection, closing it after. */
 export async function withClient<T>(userId: string, id: string, use: (c: Client) => Promise<T>): Promise<T> {
   const r = await rowOf(userId, id);
+  if (r?.status === "expired") throw new Error(`${r.name} needs you to connect it again.`);
   if (!r || r.status !== "connected") throw new Error("That connector is not connected.");
   const client = new Client({ name: "Reflect", version: "1.0.0" });
   const transport = new StreamableHTTPClientTransport(new URL(r.server_url), { authProvider: providerFor(r) });
@@ -192,7 +196,12 @@ export async function withClient<T>(userId: string, id: string, use: (c: Client)
     await client.connect(transport);
     return await use(client);
   } catch (e) {
-    if (e instanceof Error && /unauthori[sz]ed|401/i.test(e.message)) throw new Error(`${r.name} needs you to connect it again.`);
+    if (e instanceof Error && /unauthori[sz]ed|401/i.test(e.message)) {
+      // M1: connected, token rejected, expired. The SDK has already tried its one refresh; businesses stay as they are.
+      // Until migration 0067 runs the database refuses the state; the person still gets the message below.
+      await db().query("UPDATE mcp_connection SET status = 'expired', expired_at = now() WHERE id = $1 AND status = 'connected'", [id]).catch(() => undefined);
+      throw new Error(`${r.name} needs you to connect it again.`);
+    }
     throw e;
   } finally {
     await client.close().catch(() => undefined);
