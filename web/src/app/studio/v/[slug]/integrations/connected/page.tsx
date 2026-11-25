@@ -32,7 +32,7 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                   <Logo id={c.connector} name={c.name} size="size-9" glyph="size-5" />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 text-sm font-medium">
-                      {c.name}
+                      {c.name}{c.account ? <span className="text-muted-foreground font-normal">{c.account}</span> : null}
                       {c.status === "pending" ? <Badge variant="outline" className="font-normal">Sign-in not finished</Badge> : null}
                       {c.status === "expired" ? <Badge variant="destructive" className="font-normal">Needs reconnect</Badge> : null}
                       {c.status === "connected" && !usableBy(c, ctx.id) ? <Badge variant="outline" className="font-normal">Not used by {ctx.name}</Badge> : null}
@@ -43,9 +43,9 @@ export default async function ConnectedPage({ params }: { params: Promise<{ slug
                     </div>
                   </div>
                   {c.status === "pending" && inCatalog ? (
-                    <form action={connectIntegration.bind(null, slug, c.connector)}><Button size="sm" type="submit">Finish</Button></form>
+                    <form action={connectIntegration.bind(null, slug, c.connector)}><input type="hidden" name="account" value={c.account ?? ""} /><Button size="sm" type="submit">Finish</Button></form>
                   ) : c.status === "expired" && inCatalog ? (
-                    <form action={connectIntegration.bind(null, slug, c.connector)}><Button size="sm" type="submit">Reconnect</Button></form>
+                    <form action={connectIntegration.bind(null, slug, c.connector)}><input type="hidden" name="account" value={c.account ?? ""} /><Button size="sm" type="submit">Reconnect</Button></form>
                   ) : (
                     <Button variant="outline" size="sm" asChild><Link href={href}>Manage</Link></Button>
                   )}

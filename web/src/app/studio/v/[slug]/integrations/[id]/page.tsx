@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/app/marketplace/logos";
 import { Num } from "@/components/studio/bits";
 import { fnOf, ventureHref } from "@/components/studio/data";
-import { CAPABILITIES, SERVICE_CAPABILITIES, categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
+import { ACCOUNT_LABEL_MAX, CAPABILITIES, SERVICE_CAPABILITIES, categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
 import { Fact, FitBadge, Reasons } from "@/components/studio/integrations-ui";
 import { WhyThis } from "@/components/studio/integrations-why";
 import { recommend } from "@/components/studio/recommend";
 import { listVentures } from "@/app/studio/actions";
-import { connectIntegration, disconnectIntegration, saveBusinesses, useHere } from "../actions";
+import { connectAnother, connectIntegration, disconnectIntegration, saveBusinesses, useHere } from "../actions";
 import { integrationsContext, usableBy } from "../context";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,10 @@ export default async function IntegrationPage({ params, searchParams }: { params
   const c = integrationOf(id);
   if (!c) notFound();
   const [ctx, sp] = await Promise.all([integrationsContext(slug), searchParams]);
-  const mine = ctx.connections.find((x) => x.connector === id && (x.status === "connected" || x.status === "expired"));
+  // Every account of this service the person holds, the unnamed first account first (R18, P26).
+  const accounts = ctx.connections.filter((x) => x.connector === id && (x.status === "connected" || x.status === "expired")).sort((a, b) => Number(a.account !== null) - Number(b.account !== null));
+  const here = accounts.filter((x) => usableBy(x, ctx.id));
+  const mine = here[0] ?? accounts[0];
   // Connected here only when this business may use it; a connection kept to other businesses offers Use it here.
   const conn = mine && usableBy(mine, ctx.id) ? mine : undefined;
   const others = mine && !conn ? mine : undefined;
@@ -50,7 +53,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
               <p className="text-muted-foreground text-sm">{c.line}</p>
             </div>
           </div>
-          {conn?.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><Button type="submit">Reconnect</Button></form>
+          {conn?.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={conn.account ?? ""} /><Button type="submit">Reconnect</Button></form>
             : conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
             : others ? <form action={useHere.bind(null, slug, id, others.id, others.businesses ?? [])}><Button type="submit">Use it in {ctx.name}</Button></form>
             : ready ? <Button asChild><Link href={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)}>Connect</Link></Button>
@@ -83,6 +86,28 @@ export default async function IntegrationPage({ params, searchParams }: { params
                   </li>
                 ))}
               </ul>
+            </section>
+          ) : null}
+          {conn ? (
+            <section className="rounded-xl border p-4">
+              <h2 className="font-semibold">Accounts</h2>
+              <p className="text-muted-foreground mt-1 text-sm">Each account is its own sign-in at {c.name}. Connect another to use, say, a work and a personal account side by side.</p>
+              <ul className="mt-3 divide-y rounded-lg border text-sm">
+                {here.map((a) => (
+                  <li key={a.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
+                    <span className="flex-1 font-medium">{a.account ?? "First account"}</span>
+                    {a.status === "expired" ? <Badge variant="destructive" className="font-normal">Needs reconnect</Badge> : <span className="text-muted-foreground">Connected {day(a.connectedAt)}</span>}
+                    {a.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={a.account ?? ""} /><Button size="sm" type="submit">Reconnect</Button></form> : null}
+                    {a.id !== conn.id ? <form action={disconnectIntegration.bind(null, slug, id, a.id)}><Button size="sm" variant="outline" type="submit">Disconnect</Button></form> : null}
+                  </li>
+                ))}
+              </ul>
+              <form action={connectAnother.bind(null, slug, id)} className="mt-3 flex flex-wrap items-center gap-2">
+                <label htmlFor="account" className="sr-only">Name for the other account</label>
+                <input id="account" name="account" required maxLength={ACCOUNT_LABEL_MAX} placeholder="Name it, such as Work" className="border-input bg-background h-8 min-w-0 flex-1 rounded-md border px-2 text-sm" />
+                <Button size="sm" variant="outline" type="submit">Connect another account</Button>
+              </form>
+              <p className="text-muted-foreground mt-2 text-xs">A new account starts kept to {ctx.name}. Tick other businesses for it once it is connected.</p>
             </section>
           ) : null}
           {conn ? (

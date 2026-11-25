@@ -176,3 +176,18 @@ export function search(q: string, list: readonly MarketConnector[] = MARKET): Ma
 
 /** Whether a business may use a connection: every business when none are named (null), else only those named. */
 export const usableBy = (c: { businesses: readonly string[] | null }, business: string): boolean => c.businesses === null || c.businesses.includes(business);
+
+/** The longest name a person may give a second account of one service (R18). */
+export const ACCOUNT_LABEL_MAX = 40;
+
+/**
+ * Why a name for another account of one service will not do, or null when it will (R18, P26). The first account has
+ * no name; every further one needs a name that differs, ignoring case, from the names already held for that service.
+ */
+export function accountProblem(label: string, held: readonly (string | null)[]): string | null {
+  const name = label.trim();
+  if (!name) return "Give the account a name, such as Work or Personal.";
+  if (name.length > ACCOUNT_LABEL_MAX) return `Keep the name to ${ACCOUNT_LABEL_MAX} characters.`;
+  if (held.some((h) => (h ?? "").trim().toLowerCase() === name.toLowerCase())) return "You already have an account by that name here.";
+  return null;
+}
