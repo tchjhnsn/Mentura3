@@ -33,7 +33,7 @@ const key = "bridge-test-key";
 const ada = { userId: "acct-ada", name: "Ada", email: "ada@example.test", organizationId: "org-ada", organizationRole: "owner" };
 const judge = `node ${naiveFile(naive, "packages/naive/src/records/examples/frames/judge.mjs")}`;
 
-type Answer = { ok: boolean; error?: string; result: { id: string; folder: string; name?: string; ventures: { id: string }[]; tree?: unknown; signer?: string; wording?: string | null; proposed?: unknown[]; chunks?: { venture: string }[]; departments?: string[]; next: { decision: string } } };
+type Answer = { ok: boolean; error?: string; result: { id: string; folder: string; name?: string; ventures: { id: string }[]; tree?: unknown; signer?: string; wording?: string | null; proposed?: unknown[]; chunks?: { venture: string }[]; departments?: string[]; industry?: unknown; regulation?: unknown; funding?: unknown; next: { decision: string } } };
 function bridge(input: { op: string; [k: string]: unknown }, env: Record<string, string> = {}, as: Identity = ada): Answer {
   return raw(signAssertion(as, input, key), { NAIVE_BRIDGE_KEY: key, ...env });
 }
@@ -103,6 +103,7 @@ try {
   const shown = bridge({ op: "venture", venture: id });
   expect("a dangling link does not take the venture down", shown.ok, shown);
   expect("a venture names the functions it has turned on", Array.isArray(shown.result.departments) && shown.result.departments.every((d) => typeof d === "string"), shown.result.departments);
+  expect("a venture says its industry, regulation and funding, or null", ["industry", "regulation", "funding"].every((k) => k in shown.result), shown.result);
 
   const decision = bridge({ op: "docket", venture: id }).result.next.decision as string;
   const broken = join(scratch, "broken");

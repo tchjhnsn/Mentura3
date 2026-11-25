@@ -50,7 +50,9 @@ export type Docket = {
   functions: { id: string; function: string; attention: number; decisions: DocketDecision[] }[];
 };
 /** `departments`: the functions the venture has turned on, by id from Naive's departments.json. */
-export type VentureDetail = { id: string; name: string; phase: string; founder: string | null; departments: string[] };
+export type VentureDetail = { id: string; name: string; phase: string; founder: string | null; departments: string[];
+  /** venture.json `industry` (NAICS), `regulation.exposure` and `form.funding`, for the integrations recommender. Absent from an older bridge. */
+  industry?: { code: string; label: string | null } | null; regulation?: string | null; funding?: string | null };
 
 /** Why the Studio cannot reach Naive here, or null when it can. */
 export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string | null {

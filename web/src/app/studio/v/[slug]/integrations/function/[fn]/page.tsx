@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { ScreenHead } from "@/components/studio/shell";
 import { FUNCTIONS, fnOf, ventureHref, type FunctionId } from "@/components/studio/data";
 import { forFunction } from "@/components/studio/integrations";
-import { Grid, RecommendationCard } from "@/components/studio/integrations-ui";
+import { Grid, ScoredCard } from "@/components/studio/integrations-ui";
+import { recommend } from "@/components/studio/recommend";
 import { integrationsContext } from "../../context";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,9 @@ export default async function FunctionIntegrations({ params }: { params: Promise
   if (!FUNCTIONS.some((f) => f.id === fn)) notFound();
   const ctx = await integrationsContext(slug);
   const recs = forFunction(fn as FunctionId, ctx.connected);
+  // Each card is scored for the whole business (phase, industry, regulation, funding), so its reasons match V20's.
+  const scored = new Map(recommend({ ...ctx.profile, functions: [...new Set([...ctx.profile.functions, fn as FunctionId])], connected: ctx.connected }).map((r) => [r.category.id, r]));
+  const card = (id: string) => { const r = scored.get(id); return r ? <ScoredCard key={id} slug={slug} r={r} /> : null; };
   const needed = recs.filter((r) => r.fit === "needed");
   const groups = [...new Map(recs.flatMap((r) => r.groups).map((g) => [g.id, g])).values()].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
   return (
@@ -26,7 +30,7 @@ export default async function FunctionIntegrations({ params }: { params: Promise
           <section>
             <h2 className="font-semibold">Needed</h2>
             <p className="text-muted-foreground mt-1 text-sm">This function&apos;s tools reach outside its files for these.</p>
-            <Grid className="mt-3">{needed.map((r) => <RecommendationCard key={r.category.id} slug={slug} r={r} showFunctions={false} />)}</Grid>
+            <Grid className="mt-3">{needed.map((r) => card(r.category.id))}</Grid>
           </section>
         ) : null}
         {groups.map((g) => {
@@ -34,7 +38,7 @@ export default async function FunctionIntegrations({ params }: { params: Promise
           return (
             <section key={g.id}>
               <h2 className="font-semibold">{g.name}</h2>
-              <Grid className="mt-3">{here.map((r) => <RecommendationCard key={r.category.id} slug={slug} r={r} showFunctions={false} />)}</Grid>
+              <Grid className="mt-3">{here.map((r) => card(r.category.id))}</Grid>
             </section>
           );
         })}

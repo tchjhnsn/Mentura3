@@ -6,8 +6,11 @@ import type { MarketConnector } from "@reflect/core/marketplace";
 import { Badge } from "@/components/ui/badge";
 import { Logo } from "@/app/marketplace/logos";
 import { cn } from "@/lib/utils";
-import { fnOf, ventureHref, type FunctionId } from "./data";
+import { fnOf, isSample, ventureHref, type FunctionId } from "./data";
 import { categoriesOf, forFunction, membersOf, type Category, type Recommendation } from "./integrations";
+import { WhyThis } from "./integrations-why";
+import type { Alternative, Scored } from "./recommend";
+import { toolOf, toolPath } from "./tools";
 
 /** One integration in the grid: its category, mark, name and line; Connected when the person has it. */
 export function IntegrationCard({ slug, c, connected }: { slug: string; c: MarketConnector; connected: boolean }) {
@@ -66,28 +69,6 @@ export function FitBadge({ fit }: { fit: Recommendation["fit"] }) {
     : <Badge variant="outline" className="font-normal">Helpful</Badge>;
 }
 
-/** One recommended category: Needed or Helpful, the reason, the functions it serves and the integrations in it. */
-export function RecommendationCard({ slug, r, showFunctions = true }: { slug: string; r: Recommendation; showFunctions?: boolean }) {
-  const members = membersOf(r.category);
-  return (
-    <div className="flex flex-col gap-3 rounded-xl border p-4">
-      <div className="flex items-center justify-between gap-2">
-        <Link href={ventureHref(slug, `integrations/category/${r.category.id}`)} className="font-medium hover:underline">{r.category.name}</Link>
-        {r.connected ? <Badge variant="secondary" className="font-normal">Connected</Badge> : <FitBadge fit={r.fit} />}
-      </div>
-      <p className="text-muted-foreground text-sm">{r.why}</p>
-      {showFunctions ? <p className="text-muted-foreground text-xs">For {r.functions.map((f) => fnOf(f).label).join(", ")}</p> : null}
-      <div className="mt-auto flex flex-wrap gap-2">
-        {members.length ? members.map((c) => (
-          <Link key={c.id} href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent flex items-center gap-2 rounded-lg border px-2 py-1 text-sm">
-            <Logo id={c.id} name={c.name} size="size-5" glyph="size-3.5" />{c.name}
-          </Link>
-        )) : <span className="text-muted-foreground text-sm">Not in the catalog yet. <Link href="/marketplace/add" className="text-foreground underline">Add your own server</Link></span>}
-      </div>
-    </div>
-  );
-}
-
 /** A row of facts in a detail page's right column, as Vercel's Details list. */
 export function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -120,5 +101,83 @@ export function FunctionIntegrationsCard({ slug, fn }: { slug: string; fn: Funct
         </ul>
       ) : <p className="text-muted-foreground mt-2 rounded-lg border p-3 text-sm">Nothing in the catalog serves this function&apos;s work yet.</p>}
     </section>
+  );
+}
+
+/** Where an alternative opens: the built-in tool's page in this business, or the connected integration's page. */
+export function alternativeHref(slug: string, a: Alternative): string {
+  if (a.integration) return ventureHref(slug, `integrations/${a.integration}`);
+  const t = a.tool ? toolOf(a.tool) : undefined;
+  return ventureHref(slug, t ? toolPath(t, !isSample(slug)) : "integrations");
+}
+
+/** The reasons a category scores what it does: each factor that moved it, and the ways to do the work without it. */
+export function Reasons({ slug, r }: { slug: string; r: Scored }) {
+  const reasons = r.factors.filter((f) => f.points !== 0);
+  return (
+    <div className="space-y-3 text-sm">
+      <ul className="space-y-1">
+        {reasons.map((f) => (
+          <li key={f.id} className="flex gap-2">
+            <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", f.points > 0 ? "bg-foreground" : "bg-muted-foreground/50")} aria-hidden />
+            <span className={f.points > 0 ? undefined : "text-muted-foreground"}>{f.text}</span>
+          </li>
+        ))}
+      </ul>
+      {r.alternatives.length ? (
+        <div>
+          <div className="text-muted-foreground text-xs">Or use what you have</div>
+          <ul className="mt-1 space-y-1">
+            {r.alternatives.map((a) => (
+              <li key={`${a.kind}-${a.tool ?? a.integration}`}>
+                <Link href={alternativeHref(slug, a)} className="font-medium hover:underline">{a.label}</Link>
+                <span className="text-muted-foreground"> · {a.how.replace(/\.$/, "")}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+/** A scored recommendation: the category, Needed, Helpful or Later, its reasons and alternatives, its integrations, and
+ * "Why this?", which has AI explain the reasons. */
+export function ScoredCard({ slug, r }: { slug: string; r: Scored }) {
+  const members = membersOf(r.category);
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border p-4">
+      <div className="flex items-center justify-between gap-2">
+        <Link href={ventureHref(slug, `integrations/category/${r.category.id}`)} className="font-medium hover:underline">{r.category.name}</Link>
+        {r.connected ? <Badge variant="secondary" className="font-normal">Connected</Badge> : r.later ? <Badge variant="outline" className="text-muted-foreground font-normal">Later</Badge> : <FitBadge fit={r.fit} />}
+      </div>
+      <Reasons slug={slug} r={r} />
+      <div className="mt-auto flex flex-wrap gap-2">
+        {members.length ? members.map((c) => (
+          <Link key={c.id} href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent flex items-center gap-2 rounded-lg border px-2 py-1 text-sm">
+            <Logo id={c.id} name={c.name} size="size-5" glyph="size-3.5" />{c.name}
+          </Link>
+        )) : <span className="text-muted-foreground text-sm">Not in the catalog yet. <Link href="/marketplace/add" className="text-foreground underline">Add your own server</Link></span>}
+      </div>
+      <WhyThis slug={slug} category={r.category.id} />
+    </div>
+  );
+}
+
+/** A featured integration: the best one in a top category, with the reason that weighed most. */
+export function FeaturedCard({ slug, c, r }: { slug: string; c: MarketConnector; r: Scored }) {
+  const top = [...r.factors].sort((a, b) => b.points - a.points)[0];
+  return (
+    <Link href={ventureHref(slug, `integrations/${c.id}`)} className="hover:bg-accent/50 flex flex-col gap-3 rounded-xl border p-4 transition-colors">
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="outline" className="font-normal">{r.category.name}</Badge>
+        <FitBadge fit={r.fit} />
+      </div>
+      <div className="flex items-center gap-3">
+        <Logo id={c.id} name={c.name} size="size-9" glyph="size-5" />
+        <span className="font-medium">{c.name}</span>
+      </div>
+      {top ? <p className="text-muted-foreground text-sm">{top.text}</p> : null}
+    </Link>
   );
 }
