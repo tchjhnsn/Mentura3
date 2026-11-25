@@ -1,11 +1,12 @@
 import { expect, test, type Browser, type BrowserContext, type Page } from "@playwright/test";
-import { EMPTY_EMAIL, emptyState } from "./setup";
+import { emptyState, runAccounts } from "./setup";
 
 // Members on the live site (doc "Mentura console: screens, navigation and teams", 2026-11-25, tests E6, E8 and E9). The
-// check account (setup.ts) is the Owner and the empty account the invitee. Each run makes one team, named by the run's
-// time, and one business in it, which stay on the check account until Delete team (D6) exists. E9 takes the empty
-// account off the team again, and setup.ts takes it off any team a failed run left it on, so its console stays empty.
+// run's Owner (setup.ts) is the Owner and the run's invitee the invitee. Each run makes one team, named by the run's
+// time, and one business in it; teardown.ts deletes both accounts after the run, and the team and business with the
+// Owner. E9 takes the invitee off the team again.
 const STATE = process.env.PROD_CHECK_STATE ?? "test-results/prod/state.json";
+const EMPTY_EMAIL = runAccounts(STATE).invitee;
 const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
 const teamName = `Production check members ${stamp}`;
 

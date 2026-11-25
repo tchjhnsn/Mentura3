@@ -2,9 +2,8 @@ import { expect, test } from "@playwright/test";
 import { emptyState } from "./setup";
 
 // Teams on the live site (doc "Mentura console: screens, navigation and teams", 2026-11-25, tests E5 and E7), as the
-// check account (setup.ts). Nothing here deletes anything: E5 makes one team per run, named by the run's time, and
-// those teams stay on the check account until Delete team (D6) exists. The empty account never gets a team, so its
-// switcher keeps one (E2).
+// run's Owner (setup.ts). E5 makes one team per run, named by the run's time, which goes when teardown.ts deletes the
+// Owner. E7 opens the Owner's team as the run's invitee, who is on none of the Owner's teams by then (E9).
 const STATE = process.env.PROD_CHECK_STATE ?? "test-results/prod/state.json";
 const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
 
@@ -37,7 +36,7 @@ test("E5 Create team opens the new team's empty home, and the switcher lists it"
 });
 
 test("E7 someone who is not on a team is refused at its URL and sees none of it", async ({ page, browser, baseURL }) => {
-  // The check account's personal team and one of its businesses (E4 leaves at least one).
+  // The Owner's personal team and one of its businesses (E4 made one).
   await page.goto("/studio");
   await expect(page).toHaveURL(/\/studio\/[a-z0-9-]+$/, { timeout: 60_000 });
   const team = new URL(page.url()).pathname;

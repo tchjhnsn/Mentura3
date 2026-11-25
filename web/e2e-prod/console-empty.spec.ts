@@ -5,8 +5,8 @@ const STATE = process.env.PROD_CHECK_STATE ?? "test-results/prod/state.json";
 test.use({ storageState: emptyState(STATE) });
 
 // An empty console on the live site (doc "Mentura console: screens, navigation and teams", 2026-11-25, tests E1 to
-// E3), as the empty account (setup.ts), which no test lets make a business.
-// Each test saves a screenshot under test-results/prod.
+// E3 and E11), as the run's invitee (setup.ts), a fresh account that has made nothing. These run first, before
+// members.spec.ts puts the invitee on a team. Each test saves a screenshot under test-results/prod.
 
 test("E1 the front door lands on an empty team home", async ({ page }) => {
   await page.goto("/");
@@ -51,4 +51,31 @@ test("E3 the account menu holds Personal and signs out", async ({ page, browser,
   await p2.getByRole("menuitem", { name: "Sign out" }).click();
   await expect(p2).toHaveURL(/\/sign-in/, { timeout: 60_000 });
   await other.close();
+});
+
+test.describe("at phone width", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("E11 at 390 px the empty home and the switcher fit, and the sidebar opens as a sheet", async ({ page }) => {
+    const sideways = () => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/studio\/[a-z0-9-]+$/, { timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: "What business do you want to work on?" })).toBeVisible();
+    await expect(page.getByText("Or start from a template")).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator('main a[href*="/library/"]')).toHaveCount(4);
+    expect(await sideways(), "no sideways scroll on the empty home").toBeLessThanOrEqual(0);
+    await page.screenshot({ path: "test-results/prod/e11-phone-home.png", fullPage: true });
+
+    // The sidebar is a sheet on a phone, and the switcher (E2) is at its top.
+    await page.getByRole("button", { name: "Open the sidebar" }).click();
+    const sheet = page.getByRole("dialog", { name: "Sidebar" });
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole("button", { name: /switch team or business/ }).click();
+    const menu = page.getByRole("menu");
+    await expect(menu.getByText(/'s businesses$/)).toHaveCount(1);
+    await expect(menu.getByText("No businesses yet")).toBeVisible({ timeout: 60_000 });
+    await expect(menu.getByRole("menuitem", { name: "New business" })).toBeVisible();
+    expect(await sideways(), "no sideways scroll with the switcher open").toBeLessThanOrEqual(0);
+    await page.screenshot({ path: "test-results/prod/e11-phone-switcher.png" });
+  });
 });

@@ -1,12 +1,13 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// The production check (e2e-prod/README.md): the same browser tests, against the live site, as one standing check
-// account. No web server: PROD_BASE_URL (default https://mentura.xyz) is already running.
+// The production check (e2e-prod/README.md): browser tests against the live site, as two fresh accounts made for each
+// run and deleted after it. No web server: PROD_BASE_URL (default https://mentura.xyz) is already running.
 export const PROD_BASE_URL = process.env.PROD_BASE_URL ?? "https://mentura.xyz";
 
 export default defineConfig({
   testDir: "e2e-prod",
   globalSetup: "./e2e-prod/setup.ts",
+  globalTeardown: "./e2e-prod/teardown.ts",
   timeout: 180_000,
   workers: 1,
   reporter: [["list"]],
