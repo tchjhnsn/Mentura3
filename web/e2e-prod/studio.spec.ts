@@ -7,9 +7,10 @@ const idea = `Production check ${stamp}: sourdough delivered to cafes before 7am
 
 test("a business is made, listed and opened on the hosted store", async ({ page }) => {
   await page.goto("/studio");
-  const list = page.locator("section").filter({ has: page.getByRole("heading", { name: "Your businesses" }) });
-  await expect(list.getByText("Reading your businesses")).toHaveCount(0, { timeout: 60_000 });
-  await expect(list.getByText(/Sign in|not connected|could not|failed/i)).toHaveCount(0);
+  // The check account keeps the businesses earlier runs made, so its home shows them as cards (T1).
+  const list = page.getByRole("list", { name: "Businesses in this team" });
+  await expect(list.or(page.getByText("Or start from a template"))).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText(/can.t reach this team/)).toHaveCount(0);
   const before = await list.locator('a[href^="/studio/v/"]').count();
 
   await page.getByPlaceholder("Describe the business").fill(idea);
