@@ -11,7 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { deleteFile, moveFile, newFolder, ventureFiles, type StoredFile } from "@/app/studio/actions";
-import { useTeamSlug } from "./team";
+import { useTeam, useTeamSlug } from "./team";
 
 const size = (n: number) => (n < 1024 ? `${n} B` : n < 1024 ** 2 ? `${(n / 1024).toFixed(0)} KB` : `${(n / 1024 ** 2).toFixed(1)} MB`);
 const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
@@ -33,6 +33,8 @@ type Ask = { kind: "folder" } | { kind: "rename"; file: StoredFile } | { kind: "
 /** V2 Files for a real business, inside the console at /studio/<team>/<id>/files. */
 export function RealFiles({ id }: { id: string }) {
   const team = useTeamSlug() ?? "";
+  // A Viewer reads and downloads; the server refuses their changes (src/server/naive.ts), so no change control shows.
+  const viewer = useTeam()?.role === "viewer";
   const raw = (q = "") => `/studio/r/${encodeURIComponent(id)}/files/raw?team=${encodeURIComponent(team)}${q}`;
   const [tree, setTree] = useState<StoredFile[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,22 +81,24 @@ export function RealFiles({ id }: { id: string }) {
     if (ask.kind === "delete") void act("Deleting", () => deleteFile(id, ask.file.path, team));
   };
 
-  const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); if (e.dataTransfer.files.length) void upload(e.dataTransfer.files); };
+  const drop = (e: DragEvent) => { e.preventDefault(); setOver(false); if (!viewer && e.dataTransfer.files.length) void upload(e.dataTransfer.files); };
   const items = tree ? at(tree, folder) : null;
   const crumbs = folder ? folder.split("/") : [];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pt-6 pb-16 md:px-8" onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)} onDrop={drop}>
+    <div className="mx-auto max-w-4xl px-4 pt-6 pb-16 md:px-8" onDragOver={(e) => { e.preventDefault(); setOver(!viewer); }} onDragLeave={() => setOver(false)} onDrop={drop}>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Files</h1>
           <p className="text-muted-foreground mt-1 text-sm">This business&apos;s own storage. Only you can open it, and every change is logged.</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => { setText(""); setAsk({ kind: "folder" }); }} disabled={!!busy || !tree}><FolderPlusIcon />New folder</Button>
-          <Button onClick={() => picker.current?.click()} disabled={!!busy || !tree}><UploadIcon />Upload</Button>
-          <input ref={picker} type="file" multiple hidden onChange={(e) => { if (e.target.files?.length) void upload(e.target.files); e.target.value = ""; }} />
-        </div>
+        {viewer ? null : (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { setText(""); setAsk({ kind: "folder" }); }} disabled={!!busy || !tree}><FolderPlusIcon />New folder</Button>
+            <Button onClick={() => picker.current?.click()} disabled={!!busy || !tree}><UploadIcon />Upload</Button>
+            <input ref={picker} type="file" multiple hidden onChange={(e) => { if (e.target.files?.length) void upload(e.target.files); e.target.value = ""; }} />
+          </div>
+        )}
       </div>
 
       <nav aria-label="Folder" className="mt-6 flex flex-wrap items-center gap-1 text-sm">
@@ -117,8 +121,10 @@ export function RealFiles({ id }: { id: string }) {
           <div className="flex flex-col items-center gap-3 p-10 text-center">
             <UploadIcon className="text-muted-foreground size-6" />
             <p className="text-sm font-medium">{folder ? "This folder is empty" : "No files yet"}</p>
-            <p className="text-muted-foreground max-w-sm text-sm">Drop files here, or upload decks, contracts, receipts and anything else the business keeps. Up to 20 MB each.</p>
-            <Button size="sm" onClick={() => picker.current?.click()} disabled={!!busy || !tree}><UploadIcon />Upload a file</Button>
+            {viewer ? <p className="text-muted-foreground max-w-sm text-sm">A Viewer can open and download this business&apos;s files, but cannot add any.</p> : <>
+              <p className="text-muted-foreground max-w-sm text-sm">Drop files here, or upload decks, contracts, receipts and anything else the business keeps. Up to 20 MB each.</p>
+              <Button size="sm" onClick={() => picker.current?.click()} disabled={!!busy || !tree}><UploadIcon />Upload a file</Button>
+            </>}
           </div>
         ) : (
           <ul>
@@ -132,15 +138,17 @@ export function RealFiles({ id }: { id: string }) {
                 )}
                 <span className="text-muted-foreground hidden w-20 text-right tabular-nums sm:block">{f.kind === "file" ? size(f.size) : `${f.children?.length ?? 0} items`}</span>
                 <span className="text-muted-foreground hidden w-28 text-right md:block">{when(f.modified)}</span>
-                <DropdownMenu>
+                {viewer && f.kind === "folder" ? <span className="size-8" aria-hidden /> : <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="size-8" aria-label={`More for ${f.name}`}><MoreHorizontalIcon /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     {f.kind === "file" ? <DropdownMenuItem asChild><a href={raw(`&path=${encodeURIComponent(f.path)}`)}><DownloadIcon />Download</a></DropdownMenuItem> : null}
-                    <DropdownMenuItem onSelect={() => { setText(f.name); setAsk({ kind: "rename", file: f }); }}><PencilIcon />Rename</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive" onSelect={() => setAsk({ kind: "delete", file: f })}><Trash2Icon />Delete</DropdownMenuItem>
+                    {viewer ? null : <>
+                      <DropdownMenuItem onSelect={() => { setText(f.name); setAsk({ kind: "rename", file: f }); }}><PencilIcon />Rename</DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem variant="destructive" onSelect={() => setAsk({ kind: "delete", file: f })}><Trash2Icon />Delete</DropdownMenuItem>
+                    </>}
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu>}
               </li>
             ))}
           </ul>
