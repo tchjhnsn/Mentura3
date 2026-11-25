@@ -1,76 +1,54 @@
 "use client";
 
-// The switcher at the top of Mentura's sidebar: Personal (Mentura's social side), the Venture Studio, or one venture's
-// console (spec "Venture console spec", 2026-11-24, after Whop's business switcher). Crossing it swaps the sidebar's
-// contents; nothing stacks.
+// C1 Team switcher, the top of Mentura's sidebar (doc "Mentura console: screens, navigation and teams", 2026-11-25,
+// after Vercel's team and project popover, Mobbin "Switching teams" e626cf86). It names the team you are in, never a
+// mode: Personal moved into the account menu at the sidebar's foot (Torian chose it on 2026-11-25), and the sample
+// businesses left it. Until teams exist (round 2) everyone has one team, their own, named after them.
 import Link from "next/link";
-import { CheckIcon, ChevronsUpDownIcon, LayoutGridIcon, PlusIcon, RocketIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { useState } from "react";
 import { listVentures } from "@/app/studio/actions";
-import { VENTURES, ventureHref } from "./data";
-import { useBusiness } from "./business";
+import { ventureHref } from "./data";
 import { hueOf } from "./business-data";
 import { slugOf } from "./nav";
-
-export type Mode = { kind: "personal" } | { kind: "studio" } | { kind: "venture"; slug: string };
-
-export const modeOf = (path: string): Mode => {
-  const slug = slugOf(path);
-  if (slug) return { kind: "venture", slug };
-  return path === "/studio" || path.startsWith("/studio/") ? { kind: "studio" } : { kind: "personal" };
-};
+import { TeamAvatar, teamName } from "./team";
 
 const Swatch = ({ hue }: { hue: number }) => <span aria-hidden className="size-4 shrink-0 rounded" style={{ background: `oklch(0.65 0.14 ${hue})` }} />;
 
-export function ModeSwitcher({ path, done }: { path: string; done: () => void }) {
-  const mode = modeOf(path);
-  const v = useBusiness(mode.kind === "venture" ? mode.slug : null);
-  // The signed-in person's real businesses, read from Naive once the menu is first opened.
+export function TeamSwitcher({ path, me, done }: { path: string; /** The signed-in person's name, which names their team. */ me: string | null; done: () => void }) {
+  const team = teamName(me);
+  const current = slugOf(path);
+  // The team's businesses, read from Naive once the menu is first opened.
   const [real, setReal] = useState<{ id: string; name: string }[] | null>(null);
   const load = (open: boolean) => { if (open && real === null) void listVentures().then((r) => setReal(r.ok ? r.value : [])); };
-  const now = v
-    ? { name: v.name, about: "Business console", icon: <Swatch hue={v.hue} /> }
-    : mode.kind === "studio"
-      ? { name: "Business Studio", about: "All your businesses", icon: <LayoutGridIcon className="size-4" /> }
-      : { name: "Mentura", about: "Personal", icon: <RocketIcon className="size-4" /> };
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu onOpenChange={load}>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuButton size="lg" aria-label={`${now.name}, switch`}>
-              <span className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">{now.icon}</span>
+            <SidebarMenuButton size="lg" aria-label={`${team}, switch team or business`}>
+              <TeamAvatar name={team} />
               <span className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{now.name}</span>
-                <span className="text-muted-foreground truncate text-xs">{now.about}</span>
+                <span className="truncate font-medium">{team}</span>
+                <span className="text-muted-foreground truncate text-xs">Owner</span>
               </span>
               <ChevronsUpDownIcon className="text-muted-foreground ml-auto size-4" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-64">
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Teams</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href="/mentura" onClick={done} className="flex items-center gap-2"><RocketIcon className="size-4" /><span className="flex-1">Personal</span>{mode.kind === "personal" ? <CheckIcon className="size-4" /> : null}</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/studio" onClick={done} className="flex items-center gap-2"><LayoutGridIcon className="size-4" /><span className="flex-1">Business Studio</span>{mode.kind === "studio" ? <CheckIcon className="size-4" /> : null}</Link>
+              <Link href="/studio" onClick={done} className="flex items-center gap-2"><TeamAvatar name={team} small /><span className="flex-1 truncate">{team}</span><CheckIcon className="size-4" aria-label="Current team" /></Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Your businesses</DropdownMenuLabel>
-            {real === null ? <DropdownMenuItem disabled>Loading</DropdownMenuItem> : real.length === 0 ? <DropdownMenuItem disabled>None yet</DropdownMenuItem> : real.map((x) => (
-                <DropdownMenuItem key={x.id} asChild>
-                  <Link href={ventureHref(encodeURIComponent(x.id))} onClick={done} className="flex items-center gap-2"><Swatch hue={hueOf(x.id)} /><span className="flex-1 truncate">{x.name}</span>{v?.id === x.id ? <CheckIcon className="size-4" /> : null}</Link>
-                </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Samples</DropdownMenuLabel>
-            {VENTURES.map((x) => (
-              <DropdownMenuItem key={x.slug} asChild>
-                <Link href={ventureHref(x.slug)} onClick={done} className="flex items-center gap-2"><Swatch hue={x.hue} /><span className="flex-1 truncate">{x.name}</span>{v?.id === x.slug ? <CheckIcon className="size-4" /> : null}</Link>
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-normal">Businesses</DropdownMenuLabel>
+            {real === null ? <DropdownMenuItem disabled>Loading</DropdownMenuItem> : real.length === 0 ? <DropdownMenuItem disabled>No businesses yet</DropdownMenuItem> : real.map((x) => (
+              <DropdownMenuItem key={x.id} asChild>
+                <Link href={ventureHref(encodeURIComponent(x.id))} onClick={done} className="flex items-center gap-2"><Swatch hue={hueOf(x.id)} /><span className="flex-1 truncate">{x.name}</span>{current && decodeURIComponent(current) === x.id ? <CheckIcon className="size-4" aria-label="Current business" /> : null}</Link>
               </DropdownMenuItem>
             ))}
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/studio/new" onClick={done} className="flex items-center gap-2"><PlusIcon className="size-4" />New business</Link>
             </DropdownMenuItem>

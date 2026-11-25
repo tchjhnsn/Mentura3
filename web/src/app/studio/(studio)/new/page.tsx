@@ -61,7 +61,7 @@ export default function NewVenture() {
           <Num n="S2.6" className="absolute top-2 right-2" />
           <span className="grid size-10 place-items-center rounded-full bg-emerald-600 text-white"><CheckIcon className="size-5" /></span>
           <h2 className="mt-3 text-lg font-semibold">{ventureName} is set up</h2>
-          <p className="text-muted-foreground mt-1 text-sm">It starts at explore with a ${budget} monthly budget. The chief of staff is planning the first week and will ask you before anything goes out.</p>
+          <p className="text-muted-foreground mt-1 text-sm">It starts at explore with a ${budget} monthly budget. Mentura is planning the first week and will ask you before anything goes out.</p>
           <div className="mt-3 flex flex-wrap gap-3">{team.map((id) => <Face key={id} id={id} size={24} />)}</div>
           <div className="mt-5 flex flex-wrap gap-2">
             <Button asChild><Link href={ventureHref("haptic-plays")}>Open {ventureName}<ArrowRightIcon /></Link></Button>

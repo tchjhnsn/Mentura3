@@ -2,7 +2,7 @@
 // C3 the studio's pages, C4 one business's, C25 one function of a business, C26 a business's integrations. Each level replaces the whole sidebar.
 import {
   ActivityIcon, BlocksIcon, BotIcon, BoxIcon, BuildingIcon, CalendarDaysIcon, FileTextIcon, FolderIcon, GaugeIcon, GlobeIcon, HandshakeIcon,
-  HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MapIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
+  HomeIcon, LandmarkIcon, LayoutGridIcon, LibraryIcon, LifeBuoyIcon, ListTodoIcon, MegaphoneIcon, PencilLineIcon, PlugIcon, PlusIcon,
   PuzzleIcon, ScaleIcon, ServerIcon, SettingsIcon, ShieldIcon, TagIcon, TargetIcon, TruckIcon, UsersRoundIcon, WorkflowIcon,
   DatabaseIcon,
 } from "lucide-react";
@@ -29,7 +29,6 @@ export const STUDIO_NAV: NavGroup[] = [
   { label: "Manage", items: [
     { href: "/studio/usage", label: "Usage", icon: GaugeIcon, n: "S6" },
     { href: "/studio/settings", label: "Settings", icon: SettingsIcon, n: "S7" },
-    { href: "/studio/map", label: "Screen map", icon: MapIcon, n: "S0" },
   ] },
 ];
 
