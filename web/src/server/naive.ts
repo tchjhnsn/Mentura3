@@ -93,7 +93,10 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   const assertion = signAssertion(who, { op, ...args }, key);
   if (hostedWorkspaceRequired()) {
     const { runHostedConsole } = await import("../../../packages/platform/bridge/hosted-call.ts");
-    return runHostedConsole<T>({ userId: who.userId, assertion, bridgePath: bridge, key, timeoutMs: timeout });
+    // The child script sits beside the bridge; its path is found here because the bundler rewrites import.meta.url.
+    const childPath = join(bridge, "../../hosted/console-child.ts");
+    return runHostedConsole<T>({ userId: who.userId, assertion, bridgePath: bridge, key, timeoutMs: timeout, childPath,
+      env: { ...process.env, NAIVE_MCP_URL: `${siteUrl()}/api/naive/mcp` } });
   }
   const { BETTER_AUTH_SECRET: _secret, ...env } = process.env;
   // The child's own error would name server paths, so the founder sees one plain sentence instead.

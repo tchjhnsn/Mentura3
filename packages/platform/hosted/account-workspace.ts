@@ -27,7 +27,7 @@ import { checkout, commit, refresh, type Store } from "./working-copy.ts";
 
 export { hostedWorkspaceRequired };
 const LOOPBACK = new Set(["localhost", "127.0.0.1", "::1"]);
-const BRIDGE_ENV = ["PATH", "LANG", "LC_ALL", "LC_CTYPE", "TZ", "TMPDIR", "NAIVE_FRAMEWORK_DIR"];
+const BRIDGE_ENV = ["PATH", "LANG", "LC_ALL", "LC_CTYPE", "TZ", "TMPDIR", "NAIVE_FRAMEWORK_DIR", "NAIVE_MCP_URL"];
 const REFUSED_IDENTITY = "The console refused this request: it carries no signed identity.";
 const pools = new Map<string, Client & { end(): Promise<void> }>();
 

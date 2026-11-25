@@ -26,6 +26,7 @@ const steps: [string, string[]][] = [
   ["raw intake from GitHub: a signed push writes the raw files it added", ["intake/github-push-test.ts"]],
   ["hosted working copy: check out, run hosted, commit with base versions, retry on conflict", ["hosted/working-copy-test.ts"]],
   ["hosted workspace: naive_records, a second process, isolation, a refused write, a conflict (skips without a database URL)", ["hosted/account-workspace-test.ts"]],
+  ["hosted store setup: schema, runtime login without bypass, hidden key (skips without a database URL)", ["hosted/setup-store-test.ts"]],
   ["Mentura as Naive's platform adapter", ["adapter-test.mjs"]],
   ["LangSmith exporter", ["integrations/langsmith-test.mjs"]],
   ["LangChain over Naive: a deep agent edits records through the router", ["agents/agents-test.ts"]],

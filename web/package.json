@@ -12,7 +12,8 @@
     "migrate": "tsx scripts/migrate.ts",
     "bundle": "tsx scripts/person-bundle.ts",
     "schemas": "tsx scripts/life-schemas.ts",
-    "check:life": "tsx scripts/check-life-records.ts"
+    "check:life": "tsx scripts/check-life-records.ts",
+    "vercel-build": "npm --prefix ../packages/platform ci --omit=dev --no-audit --no-fund && next build"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^3.0.235",
