@@ -14,6 +14,7 @@ import { businessHref, FUNCTIONS, teamHref } from "./data";
 import { useBusiness } from "./business";
 import { levelOf, toolOf } from "./tools";
 import { useTeam } from "./team";
+import { BottomBar } from "./bottom-bar";
 
 /** "Ask the agent" from any business screen opens the Agents view (V6). */
 export function useChat() {
@@ -22,7 +23,7 @@ export function useChat() {
   return { open: false, setOpen: (v: boolean) => { if (v && at.kind !== "studio") router.push(businessHref(at.team, at.slug, "agents")); } };
 }
 
-/** C1 Top bar for every Studio screen. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
+/** C1 Top bar for every Studio screen, and B1 the bottom bar inside a business. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
  * src/components/sidebar.tsx: C3 studio pages, C4 a venture's pages), in place of Mentura's, under the switcher. */
 export function StudioFrame({ children }: { children: ReactNode }) {
   const path = usePathname() ?? "/studio";
@@ -42,7 +43,11 @@ export function StudioFrame({ children }: { children: ReactNode }) {
           </Button>
         ) : null}
       </header>
-      <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+      {/* B1 Bottom bar (./bottom-bar.tsx) under the content, never under the sidebar; its panel opens over the page's foot. */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+        <BottomBar />
+      </div>
     </div>
   );
 }

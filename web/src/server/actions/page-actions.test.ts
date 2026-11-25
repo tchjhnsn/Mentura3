@@ -275,6 +275,8 @@ const EXCLUDED: Record<string, string> = {
   "studio/actions.ts#ventureHome": "Reads only what needs the person and the briefing for the business home (round 5); it changes nothing.",
   "studio/actions.ts#ventureNeeds": "Reads only the decisions waiting on the person in one business, in the decision index's order; it changes nothing.",
   "studio/actions.ts#functionBriefing": "Reads only one function's briefing and activities for its page; it changes nothing.",
+  "studio/bar-actions.ts#readStream": "Reads only the bottom bar's Stream, the decisions waiting on the person; it changes nothing.",
+  "studio/bar-actions.ts#readRunning": "Reads only the bottom bar's Running, the feed of running work for one business; it changes nothing.",
   "studio/team-actions.ts#listTeams": "Reads only the teams the signed-in person belongs to, for the team switcher; it changes nothing.",
   "studio/team-actions.ts#createTeamAction": "Making a team (D2) creates a new place that owns businesses and people: the person's own tap in the team switcher, so a model never makes teams of its own.",
   "studio/team-actions.ts#updateTeamAction": "Renaming a team or changing its URL (T5 General) changes every teammate's links: an Owner's own tap in Team settings, never a model.",
