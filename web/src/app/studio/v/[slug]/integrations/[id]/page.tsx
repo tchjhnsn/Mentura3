@@ -10,7 +10,8 @@ import { Logo } from "@/app/marketplace/logos";
 import { Num } from "@/components/studio/bits";
 import { fnOf, ventureHref } from "@/components/studio/data";
 import { ACCOUNT_LABEL_MAX, CAPABILITIES, SERVICE_CAPABILITIES, categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
-import { Fact, FitBadge, Reasons } from "@/components/studio/integrations-ui";
+import { Fact, FitBadge, Reasons, SignInFailed } from "@/components/studio/integrations-ui";
+import { M1, failureAction, signInFailureFrom } from "@/components/studio/integrations-machines";
 import { WhyThis } from "@/components/studio/integrations-why";
 import { recommend } from "@/components/studio/recommend";
 import { listVentures } from "@/app/studio/actions";
@@ -21,7 +22,7 @@ export const dynamic = "force-dynamic";
 
 const day = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 
-export default async function IntegrationPage({ params, searchParams }: { params: Promise<{ slug: string; id: string }>; searchParams: Promise<{ connected?: string; disconnected?: string; saved?: string; error?: string }> }) {
+export default async function IntegrationPage({ params, searchParams }: { params: Promise<{ slug: string; id: string }>; searchParams: Promise<{ connected?: string; disconnected?: string; saved?: string; error?: string; failed?: string }> }) {
   const { slug, id: raw } = await params;
   const id = decodeURIComponent(raw);
   const c = integrationOf(id);
@@ -39,6 +40,8 @@ export default async function IntegrationPage({ params, searchParams }: { params
   const ready = marketReady(c, process.env);
   const cats = categoriesOf(id);
   const fns = [...new Set(cats.flatMap(functionsOf))];
+  const failed = signInFailureFrom(sp.failed);
+  const reconnect = failureAction(M1, "expired");
   const recs = recommend({ ...ctx.profile, connected: ctx.connected }).filter((r) => cats.some((k) => k.id === r.category.id));
   return (
     <div className="pb-16" data-virtu-screen={conn ? "V26" : "V23"}>
@@ -53,7 +56,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
               <p className="text-muted-foreground text-sm">{c.line}</p>
             </div>
           </div>
-          {conn?.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={conn.account ?? ""} /><Button type="submit">Reconnect</Button></form>
+          {conn?.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={conn.account ?? ""} /><Button type="submit">{reconnect}</Button></form>
             : conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
             : others ? <form action={useHere.bind(null, slug, id, others.id, others.businesses ?? [])}><Button type="submit">Use it in {ctx.name}</Button></form>
             : ready ? <Button asChild><Link href={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)}>Connect</Link></Button>
@@ -64,7 +67,8 @@ export default async function IntegrationPage({ params, searchParams }: { params
         {others ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">You have connected {c.name}, but kept it to your other businesses.</p> : null}
         {sp.saved ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">Saved which businesses can use {c.name}.</p> : null}
         {sp.disconnected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is disconnected. Reflect no longer holds your sign-in.</p> : null}
-        {sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
+        {failed ? <SignInFailed state={failed} message={sp.error} retry={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)} />
+          : sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
       </div>
       <div className="mt-6 grid max-w-5xl gap-8 px-4 md:grid-cols-[1fr_16rem] md:px-8">
         <div className="space-y-8">
@@ -97,7 +101,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
                   <li key={a.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
                     <span className="flex-1 font-medium">{a.account ?? "First account"}</span>
                     {a.status === "expired" ? <Badge variant="destructive" className="font-normal">Needs reconnect</Badge> : <span className="text-muted-foreground">Connected {day(a.connectedAt)}</span>}
-                    {a.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={a.account ?? ""} /><Button size="sm" type="submit">Reconnect</Button></form> : null}
+                    {a.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><input type="hidden" name="account" value={a.account ?? ""} /><Button size="sm" type="submit">{reconnect}</Button></form> : null}
                     {a.id !== conn.id ? <form action={disconnectIntegration.bind(null, slug, id, a.id)}><Button size="sm" variant="outline" type="submit">Disconnect</Button></form> : null}
                   </li>
                 ))}

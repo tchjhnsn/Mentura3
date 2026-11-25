@@ -2,7 +2,7 @@
 // P15, P22 and P31). Every reachable state is walked, so these are proofs over the machines' data, not samples.
 import { describe, expect, it } from "vitest";
 import {
-  GRANTABLE, HOLDS_TOKENS, M1, M2, M3, M4, M7, MACHINES, ON_CONNECTION, next, reachable,
+  GRANTABLE, HOLDS_TOKENS, M1, M2, M3, M4, M7, MACHINES, ON_CONNECTION, can, connectionStep, failureAction, next, reachable, signInFailure, signInFailureFrom,
   type ConnectionEvent, type ConnectionState, type GrantEvent, type GrantState, type Machine,
 } from "./integrations-machines";
 
@@ -140,5 +140,37 @@ describe("M7 Action", () => {
     expect(send?.from).toEqual(["waiting"]);
     expect(send?.guard).toMatch(/Send pressed/);
     expect(into.find((t) => t.on === "propose read")?.guard).toMatch(/read-only/);
+  });
+});
+
+describe("helpers the screens and the server read", () => {
+  it("connectionStep follows M1 and refuses what it lacks", () => {
+    expect(connectionStep(null, "connect")).toBe("pending");
+    expect(connectionStep("pending", "signed in")).toBe("connected");
+    expect(connectionStep("connected", "token rejected")).toBe("expired");
+    expect(connectionStep("expired", "reconnect")).toBe("connected");
+    expect(connectionStep("expired", "disconnect")).toBe("removed");
+    expect(() => connectionStep("removed", "reconnect")).toThrow(/cannot/);
+    expect(() => connectionStep("pending", "token rejected")).toThrow(/cannot/);
+    expect(() => connectionStep("deleted", "connect")).toThrow(/Unknown/);
+  });
+  it("a failed sign-in lands on a failure state of M2 with one next action", () => {
+    for (const [error, threw] of [["access_denied", false], ["insufficient_scope", false], [null, false], ["server_error", false], [null, true]] as const) {
+      const s = signInFailure(error, threw);
+      expect(M2.terminal).toContain(s);
+      expect(failureAction(M2, s)).not.toBeNull();
+    }
+    expect(signInFailure("access_denied")).toBe("denied");
+    expect(signInFailure(null, true)).toBe("unreachable");
+  });
+  it("an address names only a failure state M2 has", () => {
+    expect(signInFailureFrom("denied")).toBe("denied");
+    expect(signInFailureFrom("done")).toBeNull();
+    expect(signInFailureFrom("constructor")).toBeNull();
+    expect(signInFailureFrom(undefined)).toBeNull();
+  });
+  it("can says whether a row leads out", () => {
+    expect(can(M1, "expired", "reconnect")).toBe(true);
+    expect(can(M1, "none", "disconnect")).toBe(false);
   });
 });

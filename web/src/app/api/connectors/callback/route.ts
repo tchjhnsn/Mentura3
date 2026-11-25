@@ -4,6 +4,7 @@ import { siteUrl } from "@/server/site";
 import { db } from "@/db/pool";
 import { cookies } from "next/headers";
 import { CONNECT_BACK_COOKIE, consoleBack } from "@/components/studio/connect-back";
+import { signInFailure } from "@/components/studio/integrations-machines";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,12 @@ export async function GET(req: Request) {
   const back = kept && row?.connector && kept.endsWith(`/integrations/${encodeURIComponent(row.connector)}`) ? kept : null;
   jar.delete(CONNECT_BACK_COOKIE);
   const page = back ? `${siteUrl()}${back}` : `${siteUrl()}/marketplace/${encodeURIComponent(row?.connector ?? "")}`.replace(/\/$/, "");
-  if (denied || !code) return Response.redirect(`${page}?error=${encodeURIComponent(denied === "access_denied" ? "You did not approve Reflect." : "The sign-in did not finish.")}`, 303);
+  // A failed sign-in names where it ended in M2 (failed=), so the page shows that state's one next action (P31).
+  if (denied || !code) return Response.redirect(`${page}?failed=${encodeURIComponent(signInFailure(denied))}&error=${encodeURIComponent(denied === "access_denied" ? "You did not approve Reflect." : "The sign-in did not finish.")}`, 303);
   try {
     await finishConnect(user.id, state, code, u.searchParams.get("iss"));
     return Response.redirect(`${page}?connected=1`, 303);
   } catch (e) {
-    return Response.redirect(`${page}?error=${encodeURIComponent(e instanceof Error ? e.message : "The sign-in did not finish.")}`, 303);
+    return Response.redirect(`${page}?failed=${encodeURIComponent(signInFailure(null, true))}&error=${encodeURIComponent(e instanceof Error ? e.message : "The sign-in did not finish.")}`, 303);
   }
 }

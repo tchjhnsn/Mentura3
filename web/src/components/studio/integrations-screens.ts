@@ -57,7 +57,7 @@ export const SCREENS: Screen[] = [
     id: "V23", name: "Service", path: "integrations/:svc", job: "Decide whether to connect: what Reflect does with it, why here, facts",
     file: `${PAGES}/[id]/page.tsx`,
     entries: [{ from: "V20", file: UI, href: "integrations/${c.id}" }],
-    states: ["not connected", "needs setup", "kept to other businesses", "error"], machine: ["M1:none"], status: "built",
+    states: ["not connected", "needs setup", "kept to other businesses", "sign-in failed", "error"], machine: ["M1:none", "M2:cancelled", "M2:denied", "M2:needs more permission", "M2:unreachable"], status: "built",
   },
   {
     id: "V24", name: "Connect", path: "integrations/:svc/connect", job: "What the connection allows, which businesses get it, then the service's sign-in",

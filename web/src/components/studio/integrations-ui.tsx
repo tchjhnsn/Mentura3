@@ -4,10 +4,12 @@
 import Link from "next/link";
 import type { MarketConnector } from "@reflect/core/marketplace";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Logo } from "@/app/marketplace/logos";
 import { cn } from "@/lib/utils";
 import { fnOf, isSample, ventureHref, type FunctionId } from "./data";
 import { categoriesOf, forFunction, membersOf, type Category, type Recommendation } from "./integrations";
+import { M2, WAIT_ACTIONS, failureAction, type SignInState } from "./integrations-machines";
 import { WhyThis } from "./integrations-why";
 import type { Alternative, Scored } from "./recommend";
 import { toolOf, toolPath } from "./tools";
@@ -179,5 +181,18 @@ export function FeaturedCard({ slug, c, r }: { slug: string; c: MarketConnector;
       </div>
       {top ? <p className="text-muted-foreground text-sm">{top.text}</p> : null}
     </Link>
+  );
+}
+
+/** A sign-in that ended in a failure state of M2: what happened, then that state's one next action (P31), as a button
+ * to `retry` when it can be done now and as words when it only waits (WAIT_ACTIONS). */
+export function SignInFailed({ state, message, retry }: { state: SignInState; message?: string; retry: string }) {
+  const action = failureAction(M2, state);
+  return (
+    <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2 text-sm" data-machine-state={`M2:${state}`}>
+      <span className="text-destructive flex-1">{message || "The sign-in did not finish."}</span>
+      {action && WAIT_ACTIONS.includes(action) ? <span className="text-muted-foreground">{action}</span>
+        : action ? <Button size="sm" variant="outline" asChild><Link href={retry}>{action}</Link></Button> : null}
+    </div>
   );
 }

@@ -26,7 +26,8 @@ export async function connectIntegration(slug: string, id: string, form?: FormDa
     to = started.redirect;
     if (form?.get("scope") === "this") await setBusinesses(user.id, started.id, [decodeURIComponent(slug)]);
   } catch (e) {
-    redirect(`${back}/connect?error=${encodeURIComponent(e instanceof Error ? e.message : "Could not connect.")}`);
+    // The service did not answer as a connector should, or refused to register Reflect: M2 unreachable.
+    redirect(`${back}/connect?failed=unreachable&error=${encodeURIComponent(e instanceof Error ? e.message : "Could not connect.")}`);
   }
   await goTo(slug, id, to);
 }

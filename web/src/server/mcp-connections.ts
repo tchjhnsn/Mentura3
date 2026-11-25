@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { lookup as dnsLookup } from "node:dns/promises";
 import { auth, Client, StreamableHTTPClientTransport, type OAuthClientMetadata, type OAuthClientProvider, type OAuthDiscoveryState, type StoredOAuthClientInformation, type StoredOAuthTokens } from "@modelcontextprotocol/client";
 import { MARKET, marketById, marketReady, nameFromUrl, type MarketConnector, type ToolLike } from "@reflect/core/marketplace";
+import { connectionStep } from "@/components/studio/integrations-machines";
 import { db } from "@/db/pool";
 import { open, seal } from "./crypto";
 import { privateAddress, urlProblem } from "./link-back";
@@ -171,6 +172,8 @@ export async function startConnect(userId: string, target: { connector: string }
   if (live.rows[0]?.status === "connected") return { id: live.rows[0].id as string, redirect: null };
   // Reconnect (M1: expired, reconnect, connected): the same row signs in again, so its businesses and id stay.
   const expired = live.rows[0] ? (live.rows[0].id as string) : null;
+  // Every status change below is a row of M1 (integrations-machines.ts); connectionStep refuses one M1 does not have.
+  connectionStep(expired ? "expired" : null, expired ? "reconnect" : "connect");
   const id = expired ?? newId();
   const state = randomBytes(24).toString("base64url");
   if (expired) await db().query("UPDATE mcp_connection SET state = $2 WHERE id = $1", [id, state]);
@@ -182,6 +185,7 @@ export async function startConnect(userId: string, target: { connector: string }
     throw new Error(e instanceof Error && /register/i.test(e.message) ? `${name} would not let Reflect sign in on its own. It may need Reflect registered with it first.` : `${name} did not answer the way a connector should.`);
   });
   if (result === "AUTHORIZED") {
+    connectionStep(expired ? "expired" : "pending", expired ? "reconnect" : "signed in");
     await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), expired_at = NULL, state = NULL WHERE id = $1", [id]);
     return { id, redirect: null };
   }
@@ -194,6 +198,7 @@ export async function finishConnect(userId: string, state: string, code: string,
   if (!r) throw new Error("This sign-in has expired. Connect again.");
   const result = await auth(providerFor(r), { serverUrl: r.server_url, authorizationCode: code, ...(iss ? { iss } : {}) });
   if (result !== "AUTHORIZED") throw new Error("The sign-in did not finish.");
+  connectionStep(r.status, r.status === "expired" ? "reconnect" : "signed in");
   await db().query("UPDATE mcp_connection SET status = 'connected', connected_at = now(), expired_at = NULL, state = NULL, verifier_ct = NULL WHERE id = $1", [r.id]);
   return r.id;
 }
@@ -202,6 +207,7 @@ export async function finishConnect(userId: string, state: string, code: string,
 export async function disconnect(userId: string, id: string): Promise<Connection | null> {
   const r = await rowOf(userId, id);
   if (!r) return null;
+  connectionStep(r.status, "disconnect");
   await db().query("UPDATE mcp_connection SET status = 'removed', removed_at = now(), tokens_ct = NULL, client_ct = NULL, verifier_ct = NULL, discovery_ct = NULL, state = NULL WHERE id = $1", [id]);
   return toConnection(r);
 }
@@ -218,6 +224,7 @@ export async function withClient<T>(userId: string, id: string, use: (c: Client)
     return await use(client);
   } catch (e) {
     if (e instanceof Error && /unauthori[sz]ed|401/i.test(e.message)) {
+      connectionStep(r.status, "token rejected");
       // M1: connected, token rejected, expired. The SDK has already tried its one refresh; businesses stay as they are.
       // Until migration 0067 runs the database refuses the state; the person still gets the message below.
       await db().query("UPDATE mcp_connection SET status = 'expired', expired_at = now() WHERE id = $1 AND status = 'connected'", [id]).catch(() => undefined);
