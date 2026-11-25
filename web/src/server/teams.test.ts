@@ -7,9 +7,10 @@ import { memoryAdapter } from "better-auth/adapters/memory";
 import { getAuthTables } from "better-auth/db";
 import { reflectAuthOptions } from "./auth-options";
 import {
-  acceptInvitation, changeMemberRole, createTeam, declineInvitation, ensurePersonalTeam, invitationState, invitationView, inviteEmailProblem,
-  inviteToTeam, LAST_OWNER, LAST_OWNER_LEAVE, leaveTeam, NOT_A_MEMBER, OWNER_ONLY_PEOPLE, PERSONAL_TEAM_KEPT, personalTeamName, removeMember,
-  resendInvitation, RESERVED_TEAM_SLUGS, revokeInvitation, roleOf, slugify, teamFor, teamPeople, teamsOf, teamSlugProblem, updateTeam,
+  acceptInvitation, ACCOUNT_BLOCKED, accountPlan, changeMemberRole, createTeam, declineInvitation, deleteTeamRows, ensurePersonalTeam, eraseAccount, erasedEmail,
+  invitationState, invitationView, inviteEmailProblem, inviteToTeam, LAST_OWNER, LAST_OWNER_LEAVE, leaveTeam, NOT_A_MEMBER, OWNER_OF_BOTH, OWNER_ONLY_PEOPLE,
+  OWNER_TO_DELETE, PERSONAL_TEAM_KEPT, personalTeamName, removeMember, resendInvitation, RESERVED_TEAM_SLUGS, revokeInvitation, roleOf, SAME_TEAM, slugify,
+  teamFor, teamPeople, teamsOf, teamSlugProblem, teamToDelete, transferTargets, transferTeams, typedProblem, updateTeam,
   type TeamStore,
 } from "./teams-core";
 
@@ -229,5 +230,97 @@ describe("invitations and members (round 3)", () => {
     expect(ola.kept).toBe(true);
     await expect(changeMemberRole(s, pat, personal.slug, ola.id, "member")).rejects.toThrow("stays its Owner");
     await expect(removeMember(s, pat, personal.slug, ola.id)).rejects.toThrow(PERSONAL_TEAM_KEPT);
+  });
+});
+
+describe("moving and removing (round 4)", () => {
+  const join = async (s: TeamStore, owner: { id: string; name: string }, slug: string, guest: { id: string; name: string; email: string }, role: "owner" | "member" | "viewer") => {
+    const { invitation } = await inviteToTeam(s, owner, slug, { email: guest.email, role });
+    await acceptInvitation(s, guest, invitation.id);
+  };
+
+  it("D5: offers and allows a transfer only between two teams the person owns", async () => {
+    const s = await store();
+    const owner = await signUp("quin@example.com", "Quin");
+    const rae = await signUp("rae@example.com", "Rae");
+    const mine = await createTeam(s, owner, "Quarry");
+    const theirs = await createTeam(s, rae, "Rafters");
+    await join(s, rae, theirs.slug, owner, "member");
+    const teams = await teamsOf(s, owner);
+    const personal = teams.find((t) => t.personal)!;
+    expect(transferTargets(teams, personal.slug).map((t) => t.slug)).toEqual([mine.slug]);
+    expect((await transferTeams(s, owner, personal.slug, mine.slug)).to.id).toBe(mine.id);
+    await expect(transferTeams(s, owner, personal.slug, theirs.slug)).rejects.toThrow(OWNER_OF_BOTH);
+    await expect(transferTeams(s, owner, theirs.slug, personal.slug)).rejects.toThrow(OWNER_OF_BOTH);
+    await expect(transferTeams(s, owner, mine.slug, mine.slug)).rejects.toThrow(SAME_TEAM);
+    await expect(transferTeams(s, rae, personal.slug, theirs.slug)).rejects.toThrow(NOT_A_MEMBER);
+  });
+
+  it("D6: only an Owner deletes a team, never a personal one, and only with its name typed; its rows go", async () => {
+    const s = await store();
+    const owner = await signUp("sol@example.com", "Sol");
+    const tam = await signUp("tam@example.com", "Tam");
+    const team = await createTeam(s, owner, "Sundial");
+    await join(s, owner, team.slug, tam, "member");
+    await inviteToTeam(s, owner, team.slug, { email: "later@example.com", role: "viewer" });
+    const personal = (await teamsOf(s, owner)).find((t) => t.personal)!;
+    await expect(teamToDelete(s, owner, personal.slug, personal.name)).rejects.toThrow(PERSONAL_TEAM_KEPT);
+    await expect(teamToDelete(s, tam, team.slug, "Sundial")).rejects.toThrow(OWNER_TO_DELETE);
+    await expect(teamToDelete(s, owner, team.slug, "Sundail")).rejects.toThrow("Type the team's name, Sundial, to confirm.");
+    const checked = await teamToDelete(s, owner, team.slug, " sundial ");
+    await deleteTeamRows(s, checked.id);
+    expect((await teamsOf(s, owner)).map((t) => t.id)).toEqual([personal.id]);
+    expect((await teamsOf(s, tam)).some((t) => t.id === team.id)).toBe(false);
+    expect(await s.findMany({ model: "invitation", where: [{ field: "organizationId", value: team.id }] })).toEqual([]);
+    expect(await s.findOne({ model: "organization", where: [{ field: "id", value: team.id }] })).toBeNull();
+  });
+
+  it("A4: plans what goes with an account, holds it back for a team it alone owns with others on it, then erases it", async () => {
+    const s = await store();
+    const una = await signUp("una@example.com", "Una");
+    const vic = await signUp("vic@example.com", "Vic");
+    const alone = await createTeam(s, una, "Solo");
+    const shared = await createTeam(s, una, "Shared");
+    const coOwned = await createTeam(s, una, "Co-owned");
+    const visiting = await createTeam(s, vic, "Visiting");
+    await join(s, una, shared.slug, vic, "member");
+    await join(s, una, coOwned.slug, vic, "owner");
+    await join(s, vic, visiting.slug, una, "member");
+    await inviteToTeam(s, una, alone.slug, { email: "someone@example.com", role: "member" });
+    const names = (ts: { name: string }[]) => ts.map((t) => t.name).sort();
+    const plan = await accountPlan(s, una);
+    expect(names(plan.remove)).toEqual(["Solo", "Una's businesses"]);
+    expect(names(plan.leave)).toEqual(["Co-owned", "Visiting"]);
+    expect(names(plan.blocked)).toEqual(["Shared"]);
+    expect(ACCOUNT_BLOCKED(["Shared"])).toContain("only Owner of Shared");
+    expect(typedProblem("UNA@example.com ", "una@example.com", "your email address")).toBeNull();
+
+    // Vic becomes an Owner of Shared, so nothing holds Una back.
+    const vicRow = (await teamPeople(s, una, shared.slug)).members.find((m) => m.userId === vic.id)!;
+    await changeMemberRole(s, una, shared.slug, vicRow.id, "owner");
+    expect((await accountPlan(s, una)).blocked).toEqual([]);
+    for (const t of (await accountPlan(s, una)).remove) await deleteTeamRows(s, t.id);
+    expect(await eraseAccount(s, una)).toBe("deleted");
+    expect(await s.findOne({ model: "user", where: [{ field: "id", value: una.id }] })).toBeNull();
+    expect(await s.findMany({ model: "member", where: [{ field: "userId", value: una.id }] })).toEqual([]);
+    expect(await s.findMany({ model: "session", where: [{ field: "userId", value: una.id }] })).toEqual([]);
+    expect(names(await teamsOf(s, vic))).toEqual(["Co-owned", "Shared", "Vic's businesses", "Visiting"]);
+    const res = await auth.handler(new Request(`${ORIGIN}/api/auth/sign-in/email`, { method: "POST", headers: { "content-type": "application/json", origin: ORIGIN }, body: JSON.stringify({ email: "una@example.com", password: "a long password" }) }));
+    expect(res.status).not.toBe(200);
+  });
+
+  it("A4: an account that other records still point at stays with no name, no address and no way in", async () => {
+    const s = await store();
+    const wen = await signUp("wen@example.com", "Wen");
+    // A store where the user row cannot be deleted, as in Postgres when history that is never rewritten points at it.
+    const kept: TeamStore = { ...s, delete: async (q) => { if (q.model === "user") throw new Error("still referenced"); return s.delete(q); } };
+    expect(await eraseAccount(kept, wen)).toBe("anonymized");
+    const row = await s.findOne<{ email: string; name: string }>({ model: "user", where: [{ field: "id", value: wen.id }] });
+    expect(row?.email).toBe(erasedEmail(wen.id));
+    expect(row?.name).toBe("Deleted account");
+    expect(await s.findMany({ model: "account", where: [{ field: "userId", value: wen.id }] })).toEqual([]);
+    // The address is free again.
+    const again = await signUp("wen@example.com", "Wen Again");
+    expect(again.id).not.toBe(wen.id);
   });
 });

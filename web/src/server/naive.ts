@@ -65,7 +65,7 @@ export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string 
   return null;
 }
 
-const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete", "source", "syncPush"]);
+const WRITES = new Set(["transfer", "removeTeam", "adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete", "source", "syncPush"]);
 const READ_MS = 15_000;
 const WRITE_MS = 120_000;
 // A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store
@@ -138,4 +138,43 @@ export function naive<T>(op: string, args: Record<string, unknown> = {}, team?: 
  *  who carries no browser session (src/server/sync-store.ts). The caller owns the check that made that name. */
 export function naiveAs<T>(who: Identity, op: string, args: Record<string, unknown> = {}): Promise<T> {
   return queued(op, () => call<T>(op, args, who));
+}
+
+// Moving and removing whole businesses (D5 Transfer business, D6 Delete team, A4 Delete account): one change across a
+// whole business or team, run by packages/platform/hosted/store-child.ts, in the hosted store or on disk. The callers in
+// src/server/moving.ts check the person is an Owner of each team first; the child checks the signed assertions again,
+// and the store's row policy checks each one a third time.
+
+const ownerIdentity = (person: { id: string; name: string; email: string }, team: Team): Identity =>
+  ({ userId: person.id, name: person.name, email: person.email, organizationId: team.id, organizationRole: team.role });
+
+async function storeChange<T>(op: string, request: Record<string, unknown>): Promise<T> {
+  return queued(op, async () => {
+    const bridge = bridgePath();
+    const { runStoreChild } = await import("../../../packages/platform/bridge/hosted-call.ts");
+    const { BETTER_AUTH_SECRET: _secret, ...env } = process.env;
+    return runStoreChild<T>({ request, timeoutMs: WRITE_MS, childPath: join(bridge, "../../hosted/store-child.ts"), env: hostedWorkspaceRequired() ? process.env : env });
+  });
+}
+
+/** D5: every record and file of a business moves from one team to another, in one step. Both teams must be the
+ *  person's, as an Owner (checked by the caller with the person's memberships). */
+export async function moveInStore(person: { id: string; name: string; email: string }, from: Team, to: Team, venture: string): Promise<{ venture: string; folder: string; moved: number }> {
+  const why = studioUnavailable();
+  if (why) throw new Error(why);
+  const key = bridgeKey();
+  const request = { op: "transfer", venture, from: from.id, to: to.id, toName: to.name };
+  return storeChange("transfer", {
+    op: "move", key,
+    from: signAssertion(ownerIdentity(person, from), request, key),
+    to: signAssertion(ownerIdentity(person, to), request, key),
+  });
+}
+
+/** D6 and A4: every business of a team the person owns is removed from the store. Where this site has no business
+ *  store, there is nothing to remove. */
+export async function removeFromStore(person: { id: string; name: string; email: string }, team: Team): Promise<{ removed: number }> {
+  if (studioUnavailable()) return { removed: 0 };
+  const key = bridgeKey();
+  return storeChange("removeTeam", { op: "remove", key, assertion: signAssertion(ownerIdentity(person, team), { op: "removeTeam", team: team.id }, key) });
 }

@@ -408,3 +408,101 @@ export async function declineInvitation(adapter: TeamStore, person: Signed, id: 
   await openInvitationFor(adapter, id, person, now);
   await adapter.update({ model: "invitation", where: [{ field: "id", value: id }], update: { status: "rejected" } });
 }
+
+// Moving and removing (round 4: D5 Transfer business, D6 Delete team, A4 Delete account). The businesses themselves
+// live in the hosted business store, keyed by team (packages/platform/hosted/move-business.ts); the rules here decide
+// who may move or remove them, and remove the team and account rows Better Auth keeps.
+
+export const OWNER_OF_BOTH = "Only someone who is an Owner of both teams can move a business between them.";
+export const SAME_TEAM = "The business is already in that team.";
+export const OWNER_TO_DELETE = "Only an Owner of this team can delete it.";
+
+/** D5: the teams a business in this team can move to, which are the person's other teams where they are an Owner. */
+export function transferTargets(teams: Team[], fromSlug: string): Team[] {
+  return teams.filter((t) => t.slug !== fromSlug && t.role === "owner");
+}
+
+/** D5: both teams of a transfer, checked: the person is an Owner of each, and they are two teams. */
+export async function transferTeams(adapter: TeamStore, person: Person, fromSlug: string, toSlug: string): Promise<{ from: Team; to: Team }> {
+  const teams = await teamsOf(adapter, person);
+  const from = teams.find((t) => t.slug === fromSlug);
+  const to = teams.find((t) => t.slug === toSlug);
+  if (!from || !to) throw new Error(from ? OWNER_OF_BOTH : NOT_A_MEMBER);
+  if (from.id === to.id) throw new Error(SAME_TEAM);
+  if (from.role !== "owner" || to.role !== "owner") throw new Error(OWNER_OF_BOTH);
+  return { from, to };
+}
+
+/** Why a typed name does not confirm a deletion, or null when it does. Case and spaces at the ends do not count. */
+export function typedProblem(typed: string, expected: string, what: string): string | null {
+  return typed.trim().toLowerCase() === expected.trim().toLowerCase() ? null : `Type ${what}, ${expected.trim()}, to confirm.`;
+}
+
+/** D6 Delete team: the team, once the person has shown they may delete it. Only an Owner, never a personal team, and
+ * only with the team's name typed. */
+export async function teamToDelete(adapter: TeamStore, person: Person, slug: string, typed: string): Promise<Team> {
+  const team = await teamFor(adapter, person, slug);
+  if (!team) throw new Error(NOT_A_MEMBER);
+  if (team.personal) throw new Error(PERSONAL_TEAM_KEPT);
+  if (team.role !== "owner") throw new Error(OWNER_TO_DELETE);
+  const why = typedProblem(typed, team.name, "the team's name");
+  if (why) throw new Error(why);
+  return team;
+}
+
+/** The team's own rows: its invitations, its memberships and the team. Run after its businesses are removed from the
+ * store, so nothing is left that no team owns. */
+export async function deleteTeamRows(adapter: TeamStore, teamId: string): Promise<void> {
+  await adapter.delete({ model: "invitation", where: [{ field: "organizationId", value: teamId }] });
+  await adapter.delete({ model: "member", where: [{ field: "organizationId", value: teamId }] });
+  await adapter.delete({ model: "organization", where: [{ field: "id", value: teamId }] });
+}
+
+/** A4 Delete account: what happens to each of the person's teams. `remove`: deleted with every business in it (their
+ * personal team, and any team where nobody else is). `leave`: they leave it, and it carries on (another Owner remains,
+ * or they are not an Owner). `blocked`: they are its only Owner and other people are on it, so it would be left with no
+ * Owner; they make someone else an Owner, or delete the team, first. */
+export type AccountPlan = { remove: Team[]; leave: Team[]; blocked: Team[] };
+
+export const ACCOUNT_BLOCKED = (names: string[]) =>
+  `You are the only Owner of ${names.join(", ")}, and other people are on ${names.length === 1 ? "it" : "them"}. Make someone else an Owner, or delete ${names.length === 1 ? "the team" : "those teams"}, first.`;
+
+export async function accountPlan(adapter: TeamStore, person: Person): Promise<AccountPlan> {
+  const plan: AccountPlan = { remove: [], leave: [], blocked: [] };
+  for (const team of await teamsOf(adapter, person)) {
+    if (team.personal) { plan.remove.push(team); continue; }
+    const rows = await membersRows(adapter, team.id);
+    const others = rows.some((m) => m.userId !== person.id);
+    const owners = ownerIds(rows);
+    if (!others) plan.remove.push(team);
+    else if (owners.has(person.id) && owners.size === 1) plan.blocked.push(team);
+    else plan.leave.push(team);
+  }
+  return plan;
+}
+
+/** The address a deleted account keeps when its row cannot be removed: no one can sign in with it, and the person's
+ * own address is free again. */
+export const erasedEmail = (id: string) => `deleted-${id.toLowerCase().replace(/[^a-z0-9-]/g, "")}@deleted.invalid`;
+
+/** A4: the account's own rows, once its teams are dealt with. Its memberships, sessions and sign-in methods go, its
+ * open invitations are revoked, and the AI apps it allowed lose their tokens. Then the user row goes; where other
+ * records still point at it (history that is never rewritten), it stays with no name, no address and no way in. */
+export async function eraseAccount(adapter: TeamStore, person: Person): Promise<"deleted" | "anonymized"> {
+  await adapter.delete({ model: "member", where: [{ field: "userId", value: person.id }] });
+  for (const r of await adapter.findMany<InvitationRow>({ model: "invitation", where: [{ field: "inviterId", value: person.id }] })) {
+    if (r.status === "pending") await adapter.update({ model: "invitation", where: [{ field: "id", value: r.id }], update: { status: "canceled" } });
+  }
+  await adapter.delete({ model: "session", where: [{ field: "userId", value: person.id }] });
+  await adapter.delete({ model: "account", where: [{ field: "userId", value: person.id }] });
+  // The OAuth server's tokens for a person's own AI (@better-auth/oauth-provider); a store without them skips them.
+  for (const model of ["oauthRefreshToken", "oauthAccessToken", "oauthConsent"]) {
+    try { await adapter.delete({ model, where: [{ field: "userId", value: person.id }] }); } catch { /* no such table here */ }
+  }
+  try {
+    await adapter.delete({ model: "user", where: [{ field: "id", value: person.id }] });
+    if (!(await adapter.findOne<UserRow>({ model: "user", where: [{ field: "id", value: person.id }] }))) return "deleted";
+  } catch { /* rows that are never deleted still point at the person */ }
+  await adapter.update({ model: "user", where: [{ field: "id", value: person.id }], update: { email: erasedEmail(person.id), name: "Deleted account", image: null, emailVerified: false, updatedAt: new Date() } });
+  return "anonymized";
+}
