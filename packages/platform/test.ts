@@ -41,6 +41,7 @@ const steps: [string, string[]][] = [
   ["site reader (offline)", ["integrations/site-test.mjs"]],
   ["Rho money source (offline)", ["integrations/rho-test.mjs"]],
   ["the bridge into Naive: signed identity, path guard, setup and judge errors", ["bridge/bridge-test.ts"]],
+  ["what needs a person and the briefing: decisions in the decision index's order, levels 1 and 2, a function's activities, nothing written", ["bridge/needs-test.ts"]],
   ["each venture's own storage: files/ round trip and every way out refused", ["bridge/files-test.ts"]],
   ["offline sync paths: every record path maps to a route the router resolves", ["bridge/sync-paths-test.ts"]],
   ["offline sync push: logical paths, the working copy's provenance written again on the store's log", ["bridge/sync-push-test.ts"]],
