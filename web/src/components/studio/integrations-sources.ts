@@ -66,15 +66,16 @@ export const adapterFor = (service: string, record: string, adapters: readonly A
 
 /** The part of knowledge/sources.json this reads (knowledge-sources.schema.json). */
 export type SourceMap = {
-  sources?: { id: string; connector: string }[];
+  sources?: { id: string; connector: string; api?: string }[];
   rules?: { record: string; attribute: string; phase: string; product: string; account: string; actor: string; system_of_record: string; owner?: string }[];
 };
 
 /** A connection as the screens see it (web/src/server/mcp-connections.ts). */
 export type SourceConnection = { id: string; connector: string; status: string; businesses: readonly string[] | null };
 
-/** The connector a connected service's source entry names. */
-export const connectorOf = (service: string) => `mcp:${service}`;
+/** A connected service's source entry: Naive's `mcp` connector (packages/platform/connectors/mcp.ts), the service in `api`, read-only. */
+export const sourceEntryOf = (service: string, connection: string) =>
+  ({ id: sourceIdOf(service, connection), connector: "mcp", api: service, writes: "none" }) as const;
 
 /** A source id for one connection: Naive's ids are lowercase words, a connection's id is not, so it is hashed (FNV-1a). */
 export function sourceIdOf(service: string, connection: string): string {
@@ -110,7 +111,7 @@ export function sourcesOf(map: SourceMap, connections: readonly SourceConnection
     const rule = ruleFor(map, kind.type);
     if (!rule || rule.system_of_record === "venture") return { kind, state: "reflect", connection: null, service: null, candidates };
     const entry = (map.sources ?? []).find((s) => s.id === rule.system_of_record);
-    const service = entry?.connector.startsWith("mcp:") ? entry.connector.slice(4) : null;
+    const service = entry?.connector === "mcp" && typeof entry.api === "string" ? entry.api : null;
     const connection = service ? connections.find((c) => c.connector === service && sourceIdOf(service, c.id) === rule.system_of_record) ?? null : null;
     // P15: a rule it cannot reach stays a rule and says so; it never falls back to Reflect on its own.
     const reachable = connection !== null && live(connection, business) && service !== null && adapterFor(service, kind.type, adapters) !== null;

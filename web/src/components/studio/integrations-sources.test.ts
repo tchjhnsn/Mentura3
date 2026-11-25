@@ -17,7 +17,7 @@ describe("sources of truth", () => {
   it("a rule whose connection is live here, with an adapter, is outside", () => {
     const c = conn("AbC_1", "stripe");
     const id = sourceIdOf("stripe", c.id);
-    const map: SourceMap = { sources: [{ id, connector: "mcp:stripe" }], rules: [rule("customer", id)] };
+    const map: SourceMap = { sources: [{ id, connector: "mcp", api: "stripe" }], rules: [rule("customer", id)] };
     const s = sourcesOf(map, [c], "biz", [stripe]).find((x) => x.kind.type === "customer")!;
     expect(s.state).toBe("outside");
     expect(s.connection?.id).toBe("AbC_1");
@@ -26,7 +26,7 @@ describe("sources of truth", () => {
   it("P15: losing the connection, the grant or the adapter makes it unreachable, never Reflect", () => {
     const c = conn("AbC_1", "stripe");
     const id = sourceIdOf("stripe", c.id);
-    const map: SourceMap = { sources: [{ id, connector: "mcp:stripe" }], rules: [rule("customer", id)] };
+    const map: SourceMap = { sources: [{ id, connector: "mcp", api: "stripe" }], rules: [rule("customer", id)] };
     const state = (cs: ReturnType<typeof conn>[], adapters: Adapter[]) => sourcesOf(map, cs, "biz", adapters).find((x) => x.kind.type === "customer")!.state;
     expect(state([], [stripe])).toBe("unreachable");
     expect(state([conn("AbC_1", "stripe", "expired")], [stripe])).toBe("unreachable");
