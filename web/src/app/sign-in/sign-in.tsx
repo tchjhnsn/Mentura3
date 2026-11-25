@@ -13,9 +13,9 @@ function oauthNext(data: unknown): string | null {
   return typeof data.url === "string" ? data.url : null;
 }
 
-export function SignIn() {
+export function SignIn({ initialMode = "sign-up" }: { initialMode?: "sign-up" | "sign-in" }) {
   const router = useRouter();
-  const [mode, setMode] = useState<"sign-up" | "sign-in">("sign-up");
+  const [mode, setMode] = useState<"sign-up" | "sign-in">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [adult, setAdult] = useState(false);
@@ -39,7 +39,7 @@ export function SignIn() {
       const next = oauthNext(result.data);
       if (next) window.location.href = next;
       else {
-        // Sent here from a page that needs an account (an invitation to examine someone): back to it after.
+        // Sent here from a page that needs an account (an invitation to examine someone, or to join a team): back to it after.
         const back = new URLSearchParams(window.location.search).get("next");
         router.replace(back && back.startsWith("/") && !back.startsWith("//") ? back : "/");
       }
