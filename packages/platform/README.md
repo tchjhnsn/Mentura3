@@ -88,6 +88,8 @@ The platform hands its parts to Naive through Naive's hooks. That is inversion o
 | `bridge/hosted-call.ts` | The server's call into the hosted workspace (`hosted/console-child.ts`), with the signed assertion on stdin |
 | `bridge/naive-file.mjs` | The same path rule as `naive.ts`, kept apart so a web build can copy the bridge alone |
 | `bridge/files.ts` | Each venture's own storage (venture console spec, 2026-11-24): a private `files` folder where the venture's layout puts that logical path (`k-base/files` by default). The bridge's `files`, `fileRead`, `fileWrite`, `fileFolder`, `fileMove` and `fileDelete` operations list, read, upload (up to 20 MB, never overwriting unless asked), make folders, move and delete inside it, and log each change in the venture's provenance as the person's act, with an upload's bytes in the blob store. Paths with a leading dot, a slash out or a link are refused. Hosted storage is not built |
+| `bridge/bridge.mjs`, operation `syncPush` | A working copy's offline changes, pushed back (the offline sync contract, 2026-11-25; Naive `docs/design/OFFLINE_SYNC_2026-11-25.md`, EE-174). All or none: every change's base version is checked against the checked-out copy first, and one base that no longer matches answers `{ stale: [...] }` with the paths that moved and writes nothing. Each accepted change then goes through the router as the person the sync token names, so the schema, the gate, decision rights and the provenance log apply as they do for a write from the console; a refused write throws, so the hosted workspace commits nothing. A venture-relative path becomes a route from the route table's own `files` patterns, with a named pattern winning over a collection's wildcard, so `money/_summary.json` is `purpose/money/summary` and not an item of `money/[id]`. A path no record type owns, `venture.json` (which has no route) and a removal are refused. The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto the store's chain is its own piece of work |
+| `bridge/sync-paths.ts`, `bridge/sync-paths-test.ts` | The path a working copy pushes, turned into the route the router writes, from the route table's own `files` patterns rather than a rule written out again. Pure, so the test proves it against Naive's real table: every writable record pattern must map to a route `resolve()` knows, a named record beats a collection's wildcard, and a path that leaves the business folder is refused |
 | `bridge/bridge-test.ts` | Signed identity, path guard, claims, setup and judge errors |
 | `bridge/files-test.ts` | The files folder round trip and every way out of it |
 
@@ -115,6 +117,28 @@ runtime login sees and appends only that account
 ```
 
 A second request on the same pooled connection starts a new transaction and a new grant. `CONNECT` on the identity and outside databases is still the default `PUBLIC` grant. That is not a row read. This package does not revoke it and does not change those databases.
+
+## Offline sync
+
+The sync API in `web/src/app/api/naive/sync/` writes through this package, on the path the console already uses.
+
+```mermaid
+flowchart TD
+  cli["naive sync push<br/>(a founder's working copy)"] --> route["web: /api/naive/sync/push"]
+  route --> api["web: sync-api.ts<br/>reads the token, checks the body"]
+  api --> store["web: sync-store.ts<br/>reads the store's point first"]
+  store --> hosted["bridge/hosted-call.ts"]
+  hosted --> child["hosted/console-child.ts"]
+  child --> work["hosted/account-workspace.ts<br/>checks the account out of naive_records"]
+  work --> op["bridge.mjs syncPush<br/>every base version, then every write"]
+  op -->|"a base moved"| stale["stale: nothing written"]
+  op -->|"every base matched"| router["Naive's router<br/>schema, gate, decision rights, provenance"]
+  router --> commit["commit back with base versions"]
+```
+
+A pull does not take this path: `web/src/server/sync-records.ts` reads the account's rows straight out of
+`naive_records`, in a transaction the database binds to that account (Tenant boundary, above). Files go to the
+assets bucket by their sha256, outside this package, in `web/src/server/sync-files.ts`.
 
 ## Not yet moved
 
