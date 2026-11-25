@@ -14,7 +14,7 @@ import { Fact, FitBadge, Reasons } from "@/components/studio/integrations-ui";
 import { WhyThis } from "@/components/studio/integrations-why";
 import { recommend } from "@/components/studio/recommend";
 import { listVentures } from "@/app/studio/actions";
-import { disconnectIntegration, saveBusinesses, useHere } from "../actions";
+import { connectIntegration, disconnectIntegration, saveBusinesses, useHere } from "../actions";
 import { integrationsContext, usableBy } from "../context";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
   const c = integrationOf(id);
   if (!c) notFound();
   const [ctx, sp] = await Promise.all([integrationsContext(slug), searchParams]);
-  const mine = ctx.connections.find((x) => x.connector === id && x.status === "connected");
+  const mine = ctx.connections.find((x) => x.connector === id && (x.status === "connected" || x.status === "expired"));
   // Connected here only when this business may use it; a connection kept to other businesses offers Use it here.
   const conn = mine && usableBy(mine, ctx.id) ? mine : undefined;
   const others = mine && !conn ? mine : undefined;
@@ -50,11 +50,13 @@ export default async function IntegrationPage({ params, searchParams }: { params
               <p className="text-muted-foreground text-sm">{c.line}</p>
             </div>
           </div>
-          {conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
+          {conn?.status === "expired" ? <form action={connectIntegration.bind(null, slug, id)}><Button type="submit">Reconnect</Button></form>
+            : conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
             : others ? <form action={useHere.bind(null, slug, id, others.id, others.businesses ?? [])}><Button type="submit">Use it in {ctx.name}</Button></form>
             : ready ? <Button asChild><Link href={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)}>Connect</Link></Button>
             : <Badge variant="outline" className="font-normal">Needs setup by Reflect</Badge>}
         </div>
+        {conn?.status === "expired" ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} stopped accepting Reflect&apos;s sign-in. Reconnect with the same account and every business that used it keeps it.</p> : null}
         {sp.connected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is connected. Reflect reads it when you ask, and anything that writes or sends waits for your Send.</p> : null}
         {others ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">You have connected {c.name}, but kept it to your other businesses.</p> : null}
         {sp.saved ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">Saved which businesses can use {c.name}.</p> : null}
