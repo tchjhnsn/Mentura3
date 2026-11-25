@@ -8,7 +8,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ventureHref } from "@/components/studio/data";
 import { CONNECT_BACK_COOKIE, consoleBack } from "@/components/studio/connect-back";
-import { accountProblem } from "@/components/studio/integrations";
+import { accountProblem, SERVICE_CAPABILITIES } from "@/components/studio/integrations";
+import { adapterFor, RECORD_KINDS, sourceEntryOf } from "@/components/studio/integrations-sources";
+import { naive } from "@/server/naive";
 import { connectionsOf, disconnect, setBusinesses, startConnect } from "@/server/mcp-connections";
 import { requireUser } from "@/server/session";
 
@@ -96,4 +98,35 @@ export async function useHere(slug: string, id: string, connection: string, curr
   }
   revalidatePath(ventureHref(slug, "integrations"), "layout");
   redirect(`${page(slug, id)}?saved=1`);
+}
+
+/** Choose where one kind of this business's records is kept on V27 (M4 choose outside, choose reflect). A connection
+ * may be named only when it is the person's, connected, open to this business, holds the kind's capability and has an
+ * adapter: the guard M4 names. An empty choice is Use Reflect. Nothing is moved or copied; the bridge writes the rule. */
+export async function chooseSource(slug: string, record: string, form: FormData): Promise<void> {
+  const user = await requireUser();
+  const business = decodeURIComponent(slug);
+  const back = ventureHref(slug, "integrations/sources");
+  const pick = String(form.get("connection") ?? "");
+  let error: string | null = null;
+  try {
+    const kind = RECORD_KINDS.find((k) => k.type === record);
+    if (!kind) throw new Error("That is not a kind of record Reflect keeps.");
+    let source = null;
+    if (pick) {
+      const c = (await connectionsOf(user.id)).find((x) => x.id === pick);
+      if (!c || c.status !== "connected" || !(c.businesses === null || c.businesses.includes(business))) {
+        throw new Error("That connection is not open to this business, so nothing changed. Choose again.");
+      }
+      if (!kind.capabilities.some((k) => SERVICE_CAPABILITIES[c.connector]?.includes(k)) || !adapterFor(c.connector, record)) {
+        throw new Error(`Reflect cannot read ${kind.name.toLowerCase()} from that service yet, so nothing changed.`);
+      }
+      source = sourceEntryOf(c.connector, c.id);
+    }
+    await naive("source", { venture: business, record, source });
+  } catch (e) {
+    error = e instanceof Error ? e.message : "Nothing changed. Try again.";
+  }
+  revalidatePath(back);
+  redirect(error ? `${back}?error=${encodeURIComponent(error)}` : back);
 }
