@@ -138,7 +138,7 @@ export function hostedSyncBackend(): SyncBackend {
       const point = await tenantRecords(storeOrRefuse(), who).head();
       const out = await naiveAs<{ stale?: { path: string; current: string | null }[]; accepted?: { path: string; version: string }[] }>(
         identityOf(who, await profileOf(who.person)), "syncPush",
-        { venture: who.business, changes: input.changes, provenance: input.provenance },
+        { venture: who.business, changes: input.changes, provenance: input.provenance, working_copy: input.working_copy },
       ).catch((error: unknown) => { throw pushRefusal(error); });
       // A 409 always carries the paths that moved, so the client has something to pull against. A refusal with
       // nothing stale is not a 409: pushRefusal has already made it a 422 or a 502.
