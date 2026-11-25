@@ -20,7 +20,7 @@ import { functionNav, integrationsNav, teamNav, ventureNav, type NavGroup } from
 import { levelOf } from "@/components/studio/tools";
 import { useBusiness, type Business } from "@/components/studio/business";
 import { TeamSwitcher } from "@/components/studio/switcher";
-import { useTeam } from "@/components/studio/team";
+import { useTeam, type Team } from "@/components/studio/team";
 import { authClient } from "@/lib/auth-client";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
@@ -98,7 +98,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
           // Mentura is the business console (doc "Mentura console: screens, navigation and teams", 2026-11-25): every
           // Mentura page shows the team's, a business's, a function's or Integrations' pages. Personal lives in the
           // account menu at the foot (AccountMenu).
-          <StudioNav groups={navFor(path, biz, team?.slug ?? null)} path={path} done={done} />
+          <StudioNav groups={navFor(path, biz, team)} path={path} done={done} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -327,11 +327,11 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 /** Which of the console's sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
  * after Vercel): the Studio's, one business's, one function's, or a business's integrations (doc "Business console
  * integrations", 2026-11-24). Each replaces the one before it; nothing folds. */
-function navFor(path: string, biz: Business | null, team: string | null): NavGroup[] {
+function navFor(path: string, biz: Business | null, team: Team | null): NavGroup[] {
   const at = levelOf(path);
   if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.team, at.slug, at.fn as FunctionId);
   if (at.kind === "integrations") return integrationsNav(at.team, at.slug, biz);
-  if (at.kind === "studio") { const t = at.team ?? team; return t ? teamNav(t) : []; }
+  if (at.kind === "studio") { const t = at.team ?? team?.slug; return t ? teamNav(t, team?.slug === t ? team.role : undefined) : []; }
   return ventureNav(at.team, at.slug, biz);
 }
 

@@ -1,30 +1,29 @@
 "use client";
 
-// T5 Team settings (was S7): General is real (the team's name, URL and avatar, ./team-general.tsx); people, billing,
-// connectors, keys, limits and data controls are still the prototype's samples (OpenAI settings anatomy: a sub-nav on
+// T5 Team settings (was S7): General is real (the team's name, URL and avatar, and Leave team, in
+// src/components/studio/team-general.tsx); people have their own page, Members (T4); billing, connectors, keys, limits
+// and data controls are still the prototype's samples (OpenAI settings anatomy: a sub-nav on
 // the left on wide screens, tabs across the top on a phone).
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
-import { CopyIcon, KeyRoundIcon, UserPlusIcon } from "lucide-react";
+import { CopyIcon, KeyRoundIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Face, Num } from "@/components/studio/bits";
 import { ScreenHead } from "@/components/studio/shell";
 import { ConnectorRow } from "@/components/studio/connector-row";
-import { businessHref, PEOPLE, teamHref } from "@/components/studio/data";
+import { businessHref, teamHref } from "@/components/studio/data";
 import { TeamGeneral } from "@/components/studio/team-general";
 import { useTeam } from "@/components/studio/team";
 import { CONNECTORS, SHARED_CONNECTORS } from "@/components/studio/connect-data";
 
-const SECTIONS = ["General", "People", "Billing", "Connectors", "API keys", "Limits", "Data controls"] as const;
+const SECTIONS = ["General", "Billing", "Connectors", "API keys", "Limits", "Data controls"] as const;
 type Section = (typeof SECTIONS)[number];
 
 type Key = { id: string; name: string; masked: string; created: string; lastUsed: string; by: string };
-const ROLES = ["Owner", "Admin", "Member", "Viewer"];
 
 function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -52,12 +51,6 @@ export default function StudioSettings() {
   const [dirty, setDirty] = useState(false);
   const touch = () => { setDirty(true); setSaved(null); };
 
-  const [roles, setRoles] = useState<Record<string, string>>({ torian: "Owner", maya: "Viewer", dev: "Member", ana: "Member" });
-  const [invites, setInvites] = useState<{ email: string; role: string }[]>([]);
-  const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState("Member");
-
   const [keys, setKeys] = useState<Key[]>([
     { id: "k1", name: "Naive CLI on laptop", masked: "sk-...a1b2", created: "Oct 3", lastUsed: "Today", by: "torian" },
     { id: "k2", name: "Vest firmware CI", masked: "sk-...9f4c", created: "Oct 28", lastUsed: "2 days ago", by: "dev" },
@@ -80,7 +73,7 @@ export default function StudioSettings() {
 
   return (
     <div className="pb-16">
-      <ScreenHead n="T5" title="Team settings" job={team ? `${team.name}: its name and URL, people, billing, connectors, keys and limits.` : "The team's name and URL, people, billing, connectors, keys and limits."}>
+      <ScreenHead n="T5" title="Team settings" job={team ? `${team.name}: its name and URL, billing, connectors, keys and limits. People are on Members.` : "The team's name and URL, billing, connectors, keys and limits. People are on Members."}>
         {section !== "General" && saved ? <span className="text-muted-foreground text-sm">{saved}</span> : null}
         {section !== "General" ? <Button onClick={() => { setSaved(dirty ? "Saved. Every business uses the new settings." : "Nothing changed. Settings are up to date."); setDirty(false); }}>Save</Button> : null}
       </ScreenHead>
@@ -101,33 +94,6 @@ export default function StudioSettings() {
         <div className="min-w-0 flex-1 space-y-8">
           {section === "General" ? (
             team ? <TeamGeneral key={`${team.id}:${team.slug}:${team.name}`} team={team} /> : <p className="text-muted-foreground text-sm">Reading the team</p>
-          ) : null}
-
-          {section === "People" ? (
-            <section className="relative">
-              <Num n="S7.3" className="absolute -top-2 right-0" />
-              <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
-                <div><h2 className="text-base font-semibold">People</h2><p className="text-muted-foreground text-sm">Who can open the team and what they may change.</p></div>
-                <Button variant="outline" size="sm" onClick={() => setInviteOpen(true)}><UserPlusIcon />Invite</Button>
-              </div>
-              <ul className="divide-y rounded-lg border">
-                {PEOPLE.map((p) => (
-                  <li key={p.id} className="flex items-center justify-between gap-3 p-3">
-                    <Face id={p.id} sub={p.role} />
-                    <Select value={roles[p.id]} onValueChange={(v) => { setRoles((r) => ({ ...r, [p.id]: v })); touch(); }} disabled={p.id === "torian"}>
-                      <SelectTrigger size="sm" className="w-28" aria-label={`Role for ${p.name}`}><SelectValue /></SelectTrigger>
-                      <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </li>
-                ))}
-                {invites.map((i) => (
-                  <li key={i.email} className="flex items-center justify-between gap-3 p-3">
-                    <span className="min-w-0"><span className="block truncate text-sm">{i.email}</span><span className="text-muted-foreground block text-xs">Invited as {i.role}, waiting to accept</span></span>
-                    <Button variant="ghost" size="sm" onClick={() => setInvites((x) => x.filter((y) => y.email !== i.email))}>Cancel</Button>
-                  </li>
-                ))}
-              </ul>
-            </section>
           ) : null}
 
           {section === "Billing" ? (
@@ -205,28 +171,6 @@ export default function StudioSettings() {
           ) : null}
         </div>
       </div>
-
-      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Invite someone</DialogTitle>
-            <DialogDescription>They get an email with a link to join {team?.name ?? "this team"}.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-3">
-            <label className="block space-y-1 text-sm"><span>Email</span><Input type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} placeholder="name@example.com" /></label>
-            <label className="block space-y-1 text-sm"><span>Role</span>
-              <Select value={inviteRole} onValueChange={setInviteRole}>
-                <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                <SelectContent>{ROLES.filter((r) => r !== "Owner").map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-              </Select>
-            </label>
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setInviteOpen(false)}>Cancel</Button>
-            <Button disabled={!/\S+@\S+\.\S+/.test(inviteEmail)} onClick={() => { setInvites((x) => [...x, { email: inviteEmail, role: inviteRole }]); setInviteEmail(""); setInviteOpen(false); }}>Send invite</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={keyOpen} onOpenChange={setKeyOpen}>
         <DialogContent>

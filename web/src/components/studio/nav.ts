@@ -11,6 +11,7 @@ import { fnsAt } from "./connect-data";
 import { functionGroups, levelOf, toolPath, universalTools, type Tool, type ToolKind } from "./tools";
 import type { Business } from "./business-data";
 import { CATEGORIES } from "./integrations";
+import type { TeamRole } from "@/server/teams-core";
 
 /** `drills`: the row replaces the whole sidebar (a function), shown with a chevron. `quiet`: muted, like Add a function. */
 /** `count`: a number at the row's end, as Typeform shows each category's count. */
@@ -18,16 +19,17 @@ export type NavItem = { href: string; label: string; icon: typeof HomeIcon; n: s
 /** `back`: the row at the top of a replaced sidebar that returns to the level above it. */
 export type NavGroup = { label?: string; more?: boolean; back?: { href: string; label: string }; items: NavItem[] };
 
-/** C3 one team's pages. */
-export const teamNav = (team: string): NavGroup[] => [
+/** C3 one team's pages. A Viewer starts no business, so their sidebar has no New business. */
+export const teamNav = (team: string, role?: TeamRole): NavGroup[] => [
   { items: [
     { href: teamHref(team), label: "Home", icon: HomeIcon, n: "T1", exact: true },
-    { href: teamHref(team, "new"), label: "New business", icon: PlusIcon, n: "T2" },
+    ...(role === "viewer" ? [] : [{ href: teamHref(team, "new"), label: "New business", icon: PlusIcon, n: "T2" }]),
   ] },
   { label: "Find", items: [
     { href: teamHref(team, "library"), label: "Library", icon: LibraryIcon, n: "T3", exact: true },
   ] },
   { label: "Manage", items: [
+    { href: teamHref(team, "members"), label: "Members", icon: UsersRoundIcon, n: "T4" },
     { href: teamHref(team, "usage"), label: "Usage", icon: GaugeIcon, n: "T6" },
     { href: teamHref(team, "settings"), label: "Settings", icon: SettingsIcon, n: "T5" },
   ] },
