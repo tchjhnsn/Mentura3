@@ -50,7 +50,7 @@ export function SignIn({ initialMode = "sign-up" }: { initialMode?: "sign-up" | 
     <main className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardDescription>Reflect</CardDescription>
+          <CardDescription>Mentura</CardDescription>
           <CardTitle className="text-xl">{mode === "sign-up" ? "Create your account" : "Welcome back"}</CardTitle>
         </CardHeader>
         <CardContent>
