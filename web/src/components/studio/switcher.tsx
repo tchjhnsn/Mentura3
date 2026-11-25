@@ -4,7 +4,7 @@
 // teams", 2026-11-25, after Vercel's team and project popover, Mobbin "Switching teams" e626cf86). It names the team you
 // are in, never a mode. Two columns on a wide screen, one list on a phone: the person's teams (their personal team
 // first, the current one checked, their role beside a team they do not own) with Create team, and the current team's
-// businesses with New business. Create team opens D2, and D2 goes on to D3 (Skip opens the new team).
+// businesses with New business. Create team opens D2, and D2 goes on to D3 (invite people, or Skip to the new team).
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition, type KeyboardEvent } from "react";
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { listVentures } from "@/app/studio/actions";
 import { createTeamAction } from "@/app/studio/team-actions";
+import { InviteForm } from "./members";
 import { roleLabel } from "@/server/teams-core";
 import { businessHref, teamHref } from "./data";
 import { hueOf } from "./business-data";
@@ -107,17 +108,18 @@ export function TeamSwitcher({ path, done }: { path: string; done: () => void })
   );
 }
 
-/** D2 Create team, then D3 Invite to your new team. D2's one action is Create; D3's Skip opens the new team's empty
- * home. Inviting people is not built in this step yet (the team's Members page and invitations come next). */
+/** D2 Create team, then D3 Invite to your new team. D2's one action is Create; D3's is Invite (the invite form of T4),
+ * and Skip, or Done once someone is invited, opens the new team's home. */
 function CreateTeam({ open, onOpenChange, done }: { open: boolean; onOpenChange: (open: boolean) => void; done: () => void }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [made, setMade] = useState<Team | null>(null);
+  const [invited, setInvited] = useState(0);
   const [pending, start] = useTransition();
   const close = (next: boolean) => {
     onOpenChange(next);
-    if (!next) { setName(""); setError(null); setMade(null); }
+    if (!next) { setName(""); setError(null); setMade(null); setInvited(0); }
   };
   const create = () => start(async () => {
     setError(null);
@@ -135,15 +137,16 @@ function CreateTeam({ open, onOpenChange, done }: { open: boolean; onOpenChange:
   };
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className={made ? "sm:max-w-lg" : "sm:max-w-md"}>
         {made ? (
           <>
             <DialogHeader>
               <DialogTitle>Invite to your new team</DialogTitle>
-              <DialogDescription>{made.name} is ready, and you are its Owner. Only you are on it for now.</DialogDescription>
+              <DialogDescription>{made.name} is ready, and you are its Owner. Add the people who will work on its businesses, or skip and invite them later from Members.</DialogDescription>
             </DialogHeader>
+            <InviteForm team={made.slug} compact onInvited={(list) => setInvited((n) => n + list.length)} />
             <DialogFooter>
-              <Button variant="outline" onClick={openTeam}>Skip</Button>
+              <Button variant="outline" onClick={openTeam}>{invited ? "Done" : "Skip"}</Button>
             </DialogFooter>
           </>
         ) : (
