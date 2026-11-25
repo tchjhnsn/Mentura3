@@ -2,6 +2,8 @@ import { siteOrigins } from "@/server/site";
 import { deleteAccount } from "@/server/moving";
 
 export const dynamic = "force-dynamic";
+// Removing every team only this person is on, and their businesses, can take a while.
+export const maxDuration = 300;
 
 /**
  * A4 Delete account for a program signed in as the person (the production check's cleanup, web/e2e-prod/setup.ts): the
