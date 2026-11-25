@@ -119,6 +119,78 @@ describe("changes since a point", () => {
   });
 });
 
+describe("logical paths, whatever the business's layout", () => {
+  const line = (entity: string, who: string, content: string) =>
+    JSON.stringify({ at, entity, activity: "write", agent: { kind: "person", id: who }, sha256: sha(content) });
+  const PRICING = `${JSON.stringify({ id: "pricing" })}\n`;
+
+  it("sends a structured business's records by logical path and reads its log from meta/", async () => {
+    const rows = [
+      row("harbor/venture.json", JSON.stringify({ id: "harbor", layout: "structured" }), 1),
+      row("harbor/k-base/foundation/problem.json", PROBLEM, 2),
+      row("harbor/k-base/(money)/decisions/pricing.decision.json", PRICING, 3),
+      row("harbor/README.md", "# Harbor\n", 4),
+      row("harbor/meta/naive.config.json", "{}", 5),
+      row("harbor/meta/provenance.jsonl", `${line("foundation/problem.json", "Ada", PROBLEM)}\n${line("decisions/pricing.decision.json", "Grace", PRICING)}\n`, 6),
+      // Not where a structured business keeps a record, so Naive would not read it and sync does not send it.
+      row("harbor/foundation/problem.json", "{}", 7),
+    ];
+    const page = await changesSince(memoryRecords(rows), "harbor", null);
+    expect(page.records.map((r) => [r.path, r.by])).toEqual([
+      ["venture.json", "the business store"],
+      ["foundation/problem.json", "Ada"],
+      ["decisions/pricing.decision.json", "Grace"],
+      ["profile.md", "the business store"],
+      ["naive.config.json", "the business store"],
+    ]);
+    expect(page.records[1]?.content).toEqual({ statement: "founders lose a day a week" });
+    expect(page.point).toBe("7");
+  });
+
+  it("reads a structured business made by Naive 0.3.0 under knowledge/", async () => {
+    const rows = [
+      row("venture.json", JSON.stringify({ id: "harbor", layout: "structured" }), 1),
+      row("knowledge/foundation/problem.json", PROBLEM, 2),
+      row("meta/sources.json", "{}", 3),
+    ];
+    const page = await changesSince(memoryRecords(rows), "harbor", null);
+    expect(page.records.map((r) => r.path)).toEqual(["venture.json", "foundation/problem.json", "knowledge/sources.json"]);
+  });
+
+  it("sends a flat business's paths as they are and reads its log at the top", async () => {
+    const rows = [
+      row("venture.json", HARBOR, 1),
+      row("foundation/problem.json", PROBLEM, 2),
+      row("k-base/foundation/problem.json", "{}", 3),
+      row("provenance.jsonl", `${line("foundation/problem.json", "Ada", PROBLEM)}\n`, 4),
+    ];
+    const page = await changesSince(memoryRecords(rows), "harbor", null);
+    expect(page.records.map((r) => [r.path, r.by])).toEqual([
+      ["venture.json", "the business store"],
+      ["foundation/problem.json", "Ada"],
+      // A flat business has no knowledge base, so this is a file at the path it names.
+      ["k-base/foundation/problem.json", "the business store"],
+    ]);
+  });
+
+  it("takes a src business's package folders out of src/<function>/", async () => {
+    const rows = [
+      row("venture.json", JSON.stringify({ id: "harbor", layout: "src" }), 1),
+      row("src/strategy/foundation/problem.json", PROBLEM, 2),
+      row("decisions/pricing.decision.json", PRICING, 3),
+      row("provenance.jsonl", `${line("foundation/problem.json", "Ada", PROBLEM)}\n`, 4),
+      // foundation/ belongs to strategy, so a copy at the top is not where Naive reads it.
+      row("foundation/problem.json", "{}", 5),
+    ];
+    const page = await changesSince(memoryRecords(rows), "harbor", null);
+    expect(page.records.map((r) => [r.path, r.by])).toEqual([
+      ["venture.json", "the business store"],
+      ["foundation/problem.json", "Ada"],
+      ["decisions/pricing.decision.json", "the business store"],
+    ]);
+  });
+});
+
 describe("the small rules", () => {
   it("counts a log, a cache and a dot folder as not sendable", () => {
     expect(sendable("foundation/problem.json")).toBe(true);
