@@ -198,7 +198,8 @@ export async function withClient<T>(userId: string, id: string, use: (c: Client)
   } catch (e) {
     if (e instanceof Error && /unauthori[sz]ed|401/i.test(e.message)) {
       // M1: connected, token rejected, expired. The SDK has already tried its one refresh; businesses stay as they are.
-      await db().query("UPDATE mcp_connection SET status = 'expired', expired_at = now() WHERE id = $1 AND status = 'connected'", [id]);
+      // Until migration 0067 runs the database refuses the state; the person still gets the message below.
+      await db().query("UPDATE mcp_connection SET status = 'expired', expired_at = now() WHERE id = $1 AND status = 'connected'", [id]).catch(() => undefined);
       throw new Error(`${r.name} needs you to connect it again.`);
     }
     throw e;
