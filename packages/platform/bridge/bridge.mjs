@@ -18,6 +18,8 @@ import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { openAssertion } from "./assertion.ts";
+import { actAs } from "../connectors/mcp.ts";
+import { registerPlatformConnectors } from "../connectors/register.mjs";
 import { deleteStored, FILES_DIR, filesRoot, listFiles, makeFolder, moveStored, readStored, writeStored } from "./files.ts";
 import { naiveFile } from "./naive-file.mjs";
 import { closeClaim, openClaim, sharedRoot, stampedOwner } from "./claims.ts";
@@ -711,6 +713,10 @@ try {
   const fn = Object.hasOwn(ops, request.op) ? ops[request.op] : null;
   if (!fn) throw new Error(`no operation ${request.op}`);
   const workspace = workspaceOf(identity.userId);
+  // A business may read a record kind from a service the person connected (connectors/mcp.ts): the connector asks
+  // Reflect for each read, signed for this person and business only, with the key held here rather than in the env.
+  registerPlatformConnectors();
+  if (key && typeof request.venture === "string") actAs({ user: identity.userId, venture: request.venture, key });
   process.stdout.write(JSON.stringify({ ok: true, result: await fn(request, { identity, workspace }) }));
 } catch (e) {
   process.stdout.write(JSON.stringify({ ok: false, error: e instanceof Error ? e.message : String(e) }));

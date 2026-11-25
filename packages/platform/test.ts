@@ -20,6 +20,7 @@ const steps: [string, string[]][] = [
   ["outside host: Naive policy exports the bridge checks", ["agents/outside-policy.test.ts"]],
   ["research engine (cells, credibility, adapters, queue; stubs only)", ["research/research-test.mjs"]],
   ["connectors: GitHub contract, registration, router and catalog evals", ["connectors/eval.mjs"]],
+  ["connectors: MCP, signed reads through Reflect and refused writes", ["connectors/mcp-test.ts"]],
   ["connectors: Postgres contract and a hosted run on a working copy (skips without MENTURA_EVAL_DATABASE_URL)", ["connectors/postgres-eval.ts"]],
   ["raw intake: claims across two workers (skips the database half without MENTURA_EVAL_DATABASE_URL)", ["intake/raw-intake-eval.ts"]],
   ["raw intake from GitHub: a signed push writes the raw files it added", ["intake/github-push-test.ts"]],

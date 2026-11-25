@@ -19,6 +19,7 @@ import { hostedWorkspaceRequired } from "../../../packages/platform/hosted/requi
 import { auth } from "./auth";
 import { OWNER_ID } from "./session";
 import { openMode } from "./open-mode";
+import { siteUrl } from "./site";
 
 /** Runs the bridge with the signed request on stdin, not the command line: an upload is larger than one argument may be,
  *  and the command line would show the founder's words to anyone listing processes. */
@@ -68,6 +69,9 @@ const WRITE_MS = 120_000;
 // A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store
 // checks the assertion again in Postgres, so it needs the same key everywhere: NAIVE_BRIDGE_KEY.
 const processKey = randomBytes(32).toString("hex");
+
+/** The key the bridge checks, which also signs the bridge's reads back to this server (src/app/api/naive/mcp). */
+export const bridgeKey = (): string => process.env.NAIVE_BRIDGE_KEY ?? processKey;
 // Writes run one at a time: each appends to a venture's hash-chained provenance log.
 let writes: Promise<unknown> = Promise.resolve();
 
@@ -85,7 +89,7 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   const timeout = WRITES.has(op) ? WRITE_MS : READ_MS;
   const bridge = bridgePath();
   const who = await identity();
-  const key = process.env.NAIVE_BRIDGE_KEY ?? processKey;
+  const key = bridgeKey();
   const assertion = signAssertion(who, { op, ...args }, key);
   if (hostedWorkspaceRequired()) {
     const { runHostedConsole } = await import("../../../packages/platform/bridge/hosted-call.ts");
@@ -93,7 +97,7 @@ async function call<T>(op: string, args: Record<string, unknown>): Promise<T> {
   }
   const { BETTER_AUTH_SECRET: _secret, ...env } = process.env;
   // The child's own error would name server paths, so the founder sees one plain sentence instead.
-  const stdout = await run(bridge, assertion, { timeout, env: { ...env, NAIVE_BRIDGE_KEY: key } })
+  const stdout = await run(bridge, assertion, { timeout, env: { ...env, NAIVE_BRIDGE_KEY: key, NAIVE_MCP_URL: `${siteUrl()}/api/naive/mcp` } })
     .catch(() => { throw new Error(`Naive did not finish in ${timeout / 1000} seconds. Try again.`); });
   const r = JSON.parse(stdout) as { ok: boolean; result?: T; error?: string };
   if (!r.ok) throw new Error(r.error ?? "Naive refused this.");
