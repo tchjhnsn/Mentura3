@@ -57,6 +57,35 @@ export type VentureDetail = { id: string; name: string; phase: string; founder: 
   /** venture.json `industry` (NAICS), `regulation.exposure` and `form.funding`, for the integrations recommender. Absent from an older bridge. */
   industry?: { code: string; label: string | null } | null; regulation?: string | null; funding?: string | null };
 
+/** One open decision waiting on a person (bridge op `needs`, round 5), in the order of Naive's decision index. `function`
+ *  is the Naive package that owns the record it decides (a function id, or "venture" for the business itself). */
+export type NeedsDecision = {
+  id: string; question: string; function: string | null; render: "now" | "overdue" | "stale"; rank: number;
+  /** Activities this decision opens (decision-record `unlocks`, EE-058). */
+  unlocks: string[];
+  /** How many decisions are held until this one is settled. */
+  opens: number;
+  due: string | null; why: string[];
+};
+/** What needs a person in one business: the decisions they can settle now, how many more wait behind others, and the
+ *  last decision a person made. */
+export type Needs = { venture: string; phase: string; decisions: NeedsDecision[]; held: number; last_decided: { id: string; question: string; at: string } | null };
+/** One activity a process group needs from a person (Naive's activity-briefing.ts `Needed`). */
+export type BriefedActivity = { id: string; from: "pcf" | "catalog"; statement: string; source: "assigned" | "default"; kind?: string };
+/** Levels 1 and 2 for one function (Naive's activity-briefing.ts `FunctionBriefing`, EE-180). */
+export type FunctionBriefing = {
+  function: string; category: { id: string; name: string } | null; needs_person: number;
+  process_groups: { id: string; name: string; performs: BriefedActivity[]; approves: BriefedActivity[]; agent: number }[];
+};
+/** An activity with a rule in one business: assigned in operations/activity-assignments.json, or the default for its
+ *  kind (Naive's agents/assignments.ts, EE-173 and EE-179). */
+export type RuledActivity = {
+  id: string; from: "pcf" | "catalog"; process_group: string; statement: string;
+  performer: "person" | "agent" | null; approval: "person" | "none" | null; source: "assigned" | "default"; kind: string | null;
+};
+/** The bridge op `briefing`: every listed function, or one function with its activities. */
+export type Briefing = { briefing: FunctionBriefing[]; listed: string[]; activities?: RuledActivity[] };
+
 /** Why the Studio cannot reach Naive here, or null when it can. */
 export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string | null {
   if (hostedWorkspaceRequired(env)) return env.NAIVE_BRIDGE_KEY ? null : "The Studio is not connected to a venture store on this site yet.";

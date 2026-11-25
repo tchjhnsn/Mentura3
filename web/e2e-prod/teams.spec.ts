@@ -52,7 +52,7 @@ test("E7 someone who is not on a team is refused at its URL and sees none of it"
     await p2.goto(path);
     await expect(p2.getByRole("heading", { name: "You are not a member of this team." })).toBeVisible({ timeout: 60_000 });
     await expect(p2.getByRole("list", { name: "Businesses in this team" })).toHaveCount(0);
-    await expect(p2.getByRole("heading", { name: "Needs you next" })).toHaveCount(0);
+    await expect(p2.getByRole("heading", { name: "Needs you", exact: true })).toHaveCount(0);
     if (businessName) await expect(p2.getByText(businessName, { exact: true })).toHaveCount(0);
   }
   await p2.screenshot({ path: "test-results/prod/e7-isolation.png" });
