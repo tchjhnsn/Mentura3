@@ -1,5 +1,5 @@
 // Sets up the hosted business store in a tenant database, as its owner: the naive_records table, the runtime login,
-// its grants, the row policy (sql/002-tenant-isolation.sql) and the key that signs each account's assertion. It runs
+// its grants, the row policy (sql/002-tenant-isolation.sql, with the team as tenant from sql/003-team-tenant.sql) and the key that signs each account's assertion. It runs
 // the same steps as hosted/account-workspace-test.ts does on a throwaway database. Safe to run again: each step is
 // idempotent, and a second run resets the runtime password and the key to the values given.
 //
@@ -49,6 +49,8 @@ export async function setupStore(env: NodeJS.ProcessEnv = process.env, driver: D
     await admin.query(`alter role ${RUNTIME_ROLE} with login password ${literal}`);
     for (const sql of setupSteps(database)) await admin.query(sql);
     await admin.query(readFileSync(new URL("./sql/002-tenant-isolation.sql", import.meta.url), "utf8"));
+    // Tenant = team: the row policy binds the assertion's team id (a personal team's id is its person's).
+    await admin.query(readFileSync(new URL("./sql/003-team-tenant.sql", import.meta.url), "utf8"));
     await admin.query("insert into mentura_tenant_key (id, secret) values (true, $1) on conflict (id) do update set secret = excluded.secret", [key]);
     const bypass = await admin.query("select rolbypassrls as b, rolsuper as s from pg_roles where rolname = $1", [RUNTIME_ROLE]);
     if (bypass.rows[0]?.b || bypass.rows[0]?.s) throw new Error(`${RUNTIME_ROLE} can bypass row security; drop it and run this again`);

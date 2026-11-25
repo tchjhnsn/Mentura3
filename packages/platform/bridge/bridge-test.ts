@@ -30,7 +30,7 @@ const temp = join(scratch, "tmp");
 const xdg = join(scratch, "xdg");
 mkdirSync(temp);
 const key = "bridge-test-key";
-const ada = { userId: "acct-ada", name: "Ada", email: "ada@example.test", organizationId: "org-ada", organizationRole: "owner" };
+const ada = { userId: "acct-ada", name: "Ada", email: "ada@example.test", organizationId: "acct-ada", organizationRole: "owner" };
 const judge = `node ${naiveFile(naive, "packages/naive/src/records/examples/frames/judge.mjs")}`;
 
 type Answer = { ok: boolean; error?: string; result: { id: string; folder: string; name?: string; ventures: { id: string }[]; tree?: unknown; signer?: string; wording?: string | null; proposed?: unknown[]; chunks?: { venture: string }[]; departments?: string[]; industry?: unknown; regulation?: unknown; funding?: unknown; next: { decision: string } } };
@@ -168,7 +168,7 @@ try {
     const r = bridge({ op: "decide", venture: id, id: decision, answer: "Dock workers", actor: { MENTURA_ACTOR: said } });
     expect(`an actor declared as ${JSON.stringify(said)} is refused`, !r.ok && /only a person approves/.test(r.error ?? ""), r);
   }
-  const mallory = { ...ada, userId: "acct-mallory" };
+  const mallory = { ...ada, userId: "acct-mallory", organizationId: "acct-mallory" };
   const as = (input: { op: string; [k: string]: unknown }) => bridge(input, {}, mallory);
   const own = as({ op: "create", name: "Mallory Ltd" });
   expect("each account lists only its own ventures", as({ op: "ventures" }).result.ventures.map((v) => v.id).join() === own.result.id && bridge({ op: "ventures" }).result.ventures.every((v) => v.id !== own.result.id));
@@ -192,10 +192,10 @@ try {
   const same = as({ op: "create", name: "Harbor" });
   expect("two accounts can use the same name without learning of each other", same.ok && same.result.folder === made.result.folder, same);
   expect("one account's raw notes stay in its workspace", !readdirSync(join(workspace, "raw")).some((f) => readFileSync(join(workspace, "raw", f), "utf8").includes("Harbor")));
-  expect("an account id cannot name a path", !bridge({ op: "ventures" }, {}, { ...ada, userId: "../acct-ada" }).ok);
+  expect("an account id cannot name a path", !bridge({ op: "ventures" }, {}, { ...ada, userId: "../acct-ada", organizationId: "../acct-ada" }).ok);
 
   const venture = (folder: string, owner?: string) => {
-    const made = bridge({ op: "create", name: folder }, {}, { ...ada, userId: "acct-maker" });
+    const made = bridge({ op: "create", name: folder }, {}, { ...ada, userId: "acct-maker", organizationId: "acct-maker" });
     const from = join(shared, ".accounts/acct-maker", made.result.folder), to = join(shared, folder);
     renameSync(from, to);
     if (owner) { mkdirSync(join(to, ".naive"), { recursive: true }); writeFileSync(join(to, ".naive/owner-account"), `${owner}\n`); }
@@ -306,7 +306,7 @@ try {
 
     const empty = write("alignment", { principles: "  " });
     expect("an empty answer is refused in plain words", !empty.ok && /needs an answer/.test(empty.error ?? "") && !/schema|\.json/.test(empty.error ?? ""), empty);
-    const mallory = { ...ada, userId: "acct-mallory", name: "Mallory" };
+    const mallory = { ...ada, userId: "acct-mallory", organizationId: "acct-mallory", name: "Mallory" };
     expect("another account's write finds no venture", !write("alignment", { principles: "Mine now" }, {}, mallory).ok && !existsSync(join(home, "foundation/alignment.json")));
     const agent = write("alignment", { principles: "Agents obey" }, {}, ada, { actor: { MENTURA_ACTOR: "agent", MENTURA_MODEL: null } });
     expect("a declared agent writes nothing", !agent.ok && /Only a person/.test(agent.error ?? "") && !existsSync(join(home, "foundation/alignment.json")), agent);
@@ -507,7 +507,7 @@ try {
     const accept = (extra: object, as: Identity = ada) => bridge({ op: "accept", venture: gated.id, id: "foundation-alignment", pick: "a", seen: variant?.seen, ...extra }, {}, as);
     expect("accepting needs what the page showed", /changed since/.test(accept({ seen: "stale" }).error ?? "") && !existsSync(onDisk));
     expect("a declared agent cannot accept", /Only a person/.test(accept({ actor: { MENTURA_ACTOR: "agent" } }).error ?? "") && !existsSync(onDisk));
-    expect("another account cannot accept", !accept({}, { ...ada, userId: "acct-mallory" }).ok && !existsSync(onDisk));
+    expect("another account cannot accept", !accept({}, { ...ada, userId: "acct-mallory", organizationId: "acct-mallory" }).ok && !existsSync(onDisk));
     const accepted = accept({});
     const acceptLine = provOf(gated.dir).at(-1);
     expect("a person accepts the draft, signed by the account", accepted.ok && JSON.parse(readFileSync(onDisk, "utf8")).principles[0].statement === "Agent's principle" && acceptLine.activity === "accept" && acceptLine.agent.account === ada.userId && !existsSync(join(fileIn(gated.dir, "_drafts"), "foundation__alignment.json.draft")), { accepted, acceptLine });
@@ -547,7 +547,7 @@ try {
     expect("the phase card lists the framework's playbooks, none chosen", chosen().playbooks.map((p) => p.id).sort().join() === "product-first,revenue-first" && chosen().chosen === null, chosen());
     expect("a playbook Naive does not have is refused", /no such playbook/.test(pick("made-up").error ?? "") && !venture().lifecycle_playbook);
     expect("a declared agent cannot choose", /Only a person/.test(pick("revenue-first", { actor: { MENTURA_ACTOR: "agent" } }).error ?? "") && !venture().lifecycle_playbook);
-    expect("another account cannot choose", !pick("revenue-first", {}, { ...ada, userId: "acct-mallory" }).ok && !venture().lifecycle_playbook);
+    expect("another account cannot choose", !pick("revenue-first", {}, { ...ada, userId: "acct-mallory", organizationId: "acct-mallory" }).ok && !venture().lifecycle_playbook);
     const teamed = atGate("Teamed", [{ name: "Ada", role: "founder" }, { name: "Ben", role: "engineer" }]);
     expect("someone who cannot sign the move cannot change its gate", /only a founder/.test(bridge({ op: "playbook", venture: teamed.id, id: "revenue-first", from: null }, {}, ben).error ?? ""));
     const statuses = () => rowsOf(tied.id).map((d) => d.id).join();
@@ -566,7 +566,7 @@ try {
     const heldWords = readFileSync(file, "utf8");
     expect("a save on the canonical route does not sign an agent's content", !!unconfirmedSeen && /not been confirmed/.test(addCanon().error ?? "") && readFileSync(file, "utf8") === heldWords, canon());
     expect("the canonical confirm is tied to what was shown", /changed since/.test(bridge({ op: "confirmCriteria", venture: moved2.id, seen: "stale" }).error ?? ""));
-    expect("another account cannot confirm them", !bridge({ op: "confirmCriteria", venture: moved2.id, seen: unconfirmedSeen }, {}, { ...ada, userId: "acct-mallory" }).ok);
+    expect("another account cannot confirm them", !bridge({ op: "confirmCriteria", venture: moved2.id, seen: unconfirmedSeen }, {}, { ...ada, userId: "acct-mallory", organizationId: "acct-mallory" }).ok);
     const canonConfirmed = bridge({ op: "confirmCriteria", venture: moved2.id, seen: unconfirmedSeen });
     expect("after the founder confirms, saving works", canonConfirmed.ok && canon().unconfirmed === null && addCanon().ok, canonConfirmed);
 

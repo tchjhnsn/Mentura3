@@ -1,11 +1,11 @@
 // Every document is a view of a record. The record (JSON) is the source of truth; the document, deck or sheet is
 // how a person reads it. These helpers give each file its record.
-import { ventureHref } from "./data";
+import { businessHref } from "./data";
 import { fileAt, mdBlocks, titleOf, type VFile } from "./files-data";
 
 /** A file's path from a piece of evidence text such as "a/b.md and four more". */
 const pathIn = (text: string) => text.split(" ")[0] ?? text;
-export const fileHrefOf = (slug: string, evidence: string) => ventureHref(slug, `files/${pathIn(evidence)}`);
+export const fileHrefOf = (team: string, slug: string, evidence: string) => businessHref(team, slug, `files/${pathIn(evidence)}`);
 
 /** The JSON record behind a file. A markdown document's record holds its title and sections; the markdown is
  * rendered from it. */

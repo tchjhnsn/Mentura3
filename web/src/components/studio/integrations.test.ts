@@ -92,8 +92,8 @@ describe("which businesses use a connection", () => {
 
 describe("returning from a sign-in", () => {
   it("keeps only a path inside the business console", () => {
-    expect(consoleBack("/studio/v/corner-bakery/integrations/stripe")).toBe("/studio/v/corner-bakery/integrations/stripe");
-    for (const bad of ["https://evil.example/studio/v/x", "//evil.example", "/marketplace/stripe", "/studio/v/x?next=//evil", "/studio/v/x\\y", undefined, null, ""]) {
+    expect(consoleBack("/studio/acme/corner-bakery/integrations/stripe")).toBe("/studio/acme/corner-bakery/integrations/stripe");
+    for (const bad of ["https://evil.example/studio/acme/x/integrations", "//evil.example", "/marketplace/stripe", "/studio/acme/x/integrations?next=//evil", "/studio/acme/x/integrations\\y", undefined, null, ""]) {
       expect(consoleBack(bad), String(bad)).toBeNull();
     }
   });

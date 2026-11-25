@@ -13,10 +13,12 @@ import { RunRow } from "./run-row";
 import { answerCatalog } from "./answer-catalog";
 import { recordAt } from "./records";
 import { leadOf, nextPhase, phaseLabel, phaseOf } from "./phase";
-import { ventureHref } from "./data";
+import { businessHref } from "./data";
+import { useTeamSlug } from "@/components/studio/team";
 
 /** C18 Record: a record read as a document, with its JSON behind a toggle. */
 function RecordPiece({ slug, path, title, lines }: { slug: string; path: string; title: string; lines: string[] }) {
+  const team = useTeamSlug() ?? "";
   const [json, setJson] = useState(false);
   const rec = recordAt(slug, path) ?? { id: path, venture: slug, title, lines };
   return (
@@ -24,7 +26,7 @@ function RecordPiece({ slug, path, title, lines }: { slug: string; path: string;
       <Num n="C18" className="absolute -top-2 right-2" />
       <div className="flex items-center gap-2 border-b px-3 py-2">
         <FileTextIcon className="text-muted-foreground size-4 shrink-0" />
-        <Link href={ventureHref(slug, `files/${path}`)} className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">{title}</Link>
+        <Link href={businessHref(team, slug, `files/${path}`)} className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">{title}</Link>
         <div className="bg-muted flex shrink-0 rounded-md p-0.5 text-xs">
           <button type="button" onClick={() => setJson(false)} className={cn("rounded px-2 py-0.5", !json && "bg-background shadow-xs")}>Document</button>
           <button type="button" onClick={() => setJson(true)} className={cn("rounded px-2 py-0.5", json && "bg-background shadow-xs")}>Record</button>

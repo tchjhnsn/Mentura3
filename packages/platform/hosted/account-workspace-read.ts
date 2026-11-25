@@ -3,7 +3,7 @@ import { signAssertion, type Identity } from "../bridge/assertion.ts";
 import { runHostedBridge, closeWorkspacePools } from "./account-workspace.ts";
 
 const [bridge, userId, key] = process.argv.slice(2);
-const identity: Identity = { userId, name: "Ada", email: "ada@example.com", organizationId: "org", organizationRole: "owner" };
+const identity: Identity = { userId, name: "Ada", email: "ada@example.com", organizationId: userId, organizationRole: "owner" };
 const assertion = signAssertion(identity, { op: "ventures" }, key);
 const result = await runHostedBridge<{ ventures: { id: string }[] }>({ userId, assertion, bridgePath: bridge, key });
 await closeWorkspacePools();

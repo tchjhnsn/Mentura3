@@ -16,10 +16,11 @@ import { Face } from "./dash";
 import { SIDE_COOKIE, SIDE_DEFAULT, SIDE_MAX, SIDE_MIN, type SideState } from "./sidebar-state";
 import { hrefOn, isFullScreen, spaceOfPath, type Side, type Space } from "@/lib/sides";
 import { FUNCTIONS, type FunctionId } from "@/components/studio/data";
-import { STUDIO_NAV, functionNav, integrationsNav, ventureNav, type NavGroup } from "@/components/studio/nav";
+import { functionNav, integrationsNav, teamNav, ventureNav, type NavGroup } from "@/components/studio/nav";
 import { levelOf } from "@/components/studio/tools";
 import { useBusiness, type Business } from "@/components/studio/business";
 import { TeamSwitcher } from "@/components/studio/switcher";
+import { useTeam } from "@/components/studio/team";
 import { authClient } from "@/lib/auth-client";
 
 export type SidebarGroup = { label: string; tiles: { id: string; label: string; href: string; glyph: string }[] };
@@ -73,6 +74,8 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   const { isMobile, setOpenMobile } = useSidebar();
   const at = levelOf(path);
   const biz = useBusiness(at.kind === "studio" ? null : at.slug);
+  // The team in the URL, else the last one opened, else the person's personal team (a Mentura page outside a team).
+  const team = useTeam();
   // On a phone, choosing a page closes the sheet.
   const done = () => { if (isMobile) setOpenMobile(false); };
   const item = (href: string, label: string, icon: ReactNode) => (
@@ -87,7 +90,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
   return (
     <Sidebar variant="inset" collapsible="offcanvas" aria-label="Reflect">
       <SidebarHeader>
-        {side === "mentura" ? <TeamSwitcher path={path} me={me?.name ?? null} done={done} /> : <ProductHead side={side} to={to} />}
+        {side === "mentura" ? <TeamSwitcher path={path} done={done} /> : <ProductHead side={side} to={to} />}
       </SidebarHeader>
 
       <SidebarContent>
@@ -95,7 +98,7 @@ function Nav({ groups, polisTiles, places, chats, me, width, onWidth, onResized 
           // Mentura is the business console (doc "Mentura console: screens, navigation and teams", 2026-11-25): every
           // Mentura page shows the team's, a business's, a function's or Integrations' pages. Personal lives in the
           // account menu at the foot (AccountMenu).
-          <StudioNav groups={navFor(path, biz)} path={path} done={done} />
+          <StudioNav groups={navFor(path, biz, team?.slug ?? null)} path={path} done={done} />
         ) : side === "polis" ? (
           <>
             <Group>
@@ -324,11 +327,12 @@ const MAKES: { href: string; label: string; what: string; icon: ReactNode }[] = 
 /** Which of the console's sidebars this path shows (doc "Where actions live in the business console", 2026-11-24,
  * after Vercel): the Studio's, one business's, one function's, or a business's integrations (doc "Business console
  * integrations", 2026-11-24). Each replaces the one before it; nothing folds. */
-function navFor(path: string, biz: Business | null): NavGroup[] {
+function navFor(path: string, biz: Business | null, team: string | null): NavGroup[] {
   const at = levelOf(path);
-  if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.slug, at.fn as FunctionId);
-  if (at.kind === "integrations") return integrationsNav(at.slug, biz);
-  return at.kind === "studio" ? STUDIO_NAV : ventureNav(at.slug, biz);
+  if (at.kind === "function" && FUNCTIONS.some((f) => f.id === at.fn)) return functionNav(at.team, at.slug, at.fn as FunctionId);
+  if (at.kind === "integrations") return integrationsNav(at.team, at.slug, biz);
+  if (at.kind === "studio") { const t = at.team ?? team; return t ? teamNav(t) : []; }
+  return ventureNav(at.team, at.slug, biz);
 }
 
 /** The console: the Business Studio's pages, one business's, one function's or its integrations, in place of Mentura's own. A row with a

@@ -14,7 +14,7 @@ export type EntryPoint = { from: string; file: string; href: string };
 export type Screen = {
   id: string;
   name: string;
-  /** Path under /studio/v/:biz, or an absolute path when it lives outside the business console. */
+  /** Path under /studio/:team/:biz, or an absolute path when it lives outside the business console. */
   path: string;
   job: string;
   /** The file that draws it, relative to web/src. Built and partial screens only. */
@@ -31,14 +31,14 @@ export type Screen = {
   note?: string;
 };
 
-const PAGES = "app/studio/v/[slug]/integrations";
+const PAGES = "app/studio/[team]/[slug]/integrations";
 const UI = "components/studio/integrations-ui.tsx";
 
 export const SCREENS: Screen[] = [
   {
     id: "V20", name: "Integrations", path: "integrations", job: "Find what this business should connect, and browse everything",
     file: "components/studio/integrations-search.tsx", page: `${PAGES}/page.tsx`,
-    entries: [{ from: "V25", file: `${PAGES}/connected/page.tsx`, href: 'ventureHref(slug, "integrations")' }],
+    entries: [{ from: "V25", file: `${PAGES}/connected/page.tsx`, href: 'businessHref(team, slug, "integrations")' }],
     states: ["loading", "ready", "searching", "no matches", "store unavailable"], machine: [], status: "built",
   },
   {

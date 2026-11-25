@@ -4,8 +4,9 @@
 
 export const CONNECT_BACK_COOKIE = "reflect_connect_back";
 
-/** The path when it is a page of the business console, else null. */
+/** The path when it is a business's Integrations page in the console (/studio/<team>/<business>/integrations/...),
+ * else null. */
 export function consoleBack(path: string | undefined | null): string | null {
-  if (!path || !path.startsWith("/studio/v/") || path.includes("//") || path.includes("\\") || /[\s?#]/.test(path)) return null;
+  if (!path || !/^\/studio\/[a-z0-9-]+\/[^/]+\/integrations(\/|$)/.test(path) || path.includes("//") || path.includes("\\") || /[\s?#]/.test(path)) return null;
   return path;
 }

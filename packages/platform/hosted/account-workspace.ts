@@ -1,4 +1,5 @@
-// The hosted console's venture workspace. Records live in naive_records, one tenant per account.
+// The hosted console's venture workspace. Records live in naive_records, one tenant per team (a personal team's id
+// is its person's id, so the tenants made before teams are those people's personal teams).
 // A request checks them out to a temporary folder, runs the console bridge there with NAIVE_RUNTIME=hosted,
 // and commits what that run wrote. The folder is removed afterwards. A hosted origin does not use
 // console/.data as the store. Local npm start does not call this.
@@ -6,7 +7,8 @@
 // The Next server does not import this file. It starts console-child.ts, and that process imports it.
 // The signed assertion is the bridge's stdin, not an argument.
 //
-// The tenant is the account id inside the signed assertion. A different id on the call is refused.
+// The tenant is the team id inside the signed assertion (identity.organizationId, else identity.userId), and the
+// database binds the row policy to the same id (sql/003-team-tenant.sql). A different person on the call is refused.
 // The runtime role may select and insert on naive_records, and use its sequence. It may not update,
 // delete, or create the table. That login is not limited to one tenant: the table has no row policy.
 // The owner applies the connector's SCHEMA before the role is used.
@@ -209,15 +211,20 @@ export async function runHostedBridge<T>(input: {
 }): Promise<T> {
   const env = input.env ?? process.env;
   let signedId = "";
+  let tenant = "";
   try {
-    signedId = openAssertion(input.assertion, input.key).identity.userId;
+    const { identity } = openAssertion(input.assertion, input.key);
+    signedId = identity.userId;
+    // The tenant is the team the web server checked the person's membership of (web/src/server/naive.ts). A personal
+    // team's id is its person's, so an assertion without a team names the person's own tenant, as before teams.
+    tenant = identity.organizationId || identity.userId;
   } catch (error) {
     throw new Error(publicMessage(error));
   }
-  if (typeof signedId !== "string" || signedId !== input.userId) throw new Error(REFUSED_IDENTITY);
+  if (typeof signedId !== "string" || signedId !== input.userId || typeof tenant !== "string") throw new Error(REFUSED_IDENTITY);
   try {
     return await runAccountWorkspace({
-      userId: signedId,
+      userId: tenant,
       assertion: input.assertion,
       env,
       tmp: input.tmp,

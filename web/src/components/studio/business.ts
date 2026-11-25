@@ -2,7 +2,7 @@
 
 // Which business the console is showing, for the parts drawn outside its pages (the sidebar, the switcher, the top
 // bar). A sample business (data.ts, the design prototype) is known here; a real one is read from Naive by the business
-// layout (src/app/studio/v/[slug]/layout.tsx), which hands it over with <BusinessSeen>.
+// layout (src/app/studio/[team]/[slug]/layout.tsx), which hands it over with <BusinessSeen>.
 import { useEffect, useSyncExternalStore } from "react";
 import { VENTURES } from "./data";
 import { hueOf, type Business } from "./business-data";

@@ -1,14 +1,16 @@
 "use client";
 
-// "Why this?": asks the server to explain one recommendation (app/studio/v/[slug]/integrations/explain.ts) and shows
+// "Why this?": asks the server to explain one recommendation (app/studio/[team]/[slug]/integrations/explain.ts) and shows
 // the sentences, each traced to the factors listed on the card. Written by AI only when a model answered.
 import { useState, useTransition } from "react";
 import { SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Num } from "./bits";
-import { explainRecommendation, type Explanation } from "@/app/studio/v/[slug]/integrations/explain";
+import { explainRecommendation, type Explanation } from "@/app/studio/[team]/[slug]/integrations/explain";
+import { useTeamSlug } from "./team";
 
 export function WhyThis({ slug, category }: { slug: string; category: string }) {
+  const team = useTeamSlug() ?? "";
   const [answer, setAnswer] = useState<Explanation | null>(null);
   const [pending, start] = useTransition();
   if (answer && !("error" in answer)) {
@@ -23,7 +25,7 @@ export function WhyThis({ slug, category }: { slug: string; category: string }) 
   return (
     <div>
       <Button type="button" variant="ghost" size="sm" className="-ml-2 h-7 gap-1.5 px-2" disabled={pending}
-        onClick={() => start(async () => setAnswer(await explainRecommendation(slug, category).catch(() => ({ error: "Could not explain it just now." }))))}>
+        onClick={() => start(async () => setAnswer(await explainRecommendation(team, slug, category).catch(() => ({ error: "Could not explain it just now." }))))}>
         <SparklesIcon className="size-3.5" />{pending ? "Explaining" : "Why this?"}
       </Button>
       {answer && "error" in answer ? <p className="text-destructive text-xs">{answer.error}</p> : null}

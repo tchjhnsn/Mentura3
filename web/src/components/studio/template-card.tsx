@@ -5,7 +5,8 @@ import Link from "next/link";
 import { BadgeCheckIcon, BotIcon, PresentationIcon, RocketIcon, UsersIcon, WorkflowIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Face, Num } from "./bits";
-import type { Template } from "./data";
+import { teamHref, type Template } from "./data";
+import { useTeamSlug } from "./team";
 
 const KIND = {
   venture: { label: "Business", icon: RocketIcon },
@@ -21,9 +22,10 @@ export function Maker({ maker, size = 20 }: { maker: string; size?: number }) {
 }
 
 export function TemplateCard({ t, className }: { t: Template; className?: string }) {
+  const team = useTeamSlug() ?? "";
   const K = KIND[t.kind];
   return (
-    <Link href={`/studio/library/${t.id}`} className={cn("bg-card hover:border-foreground/30 group relative flex min-w-0 flex-col rounded-xl border p-4 transition-colors", className)}>
+    <Link href={teamHref(team, `library/${t.id}`)} className={cn("bg-card hover:border-foreground/30 group relative flex min-w-0 flex-col rounded-xl border p-4 transition-colors", className)}>
       <Num n="C13" className="absolute -top-2 right-3" />
       <div className="flex items-center gap-2">
         <span className="grid size-8 shrink-0 place-items-center rounded-lg text-white" style={{ background: `oklch(0.62 0.13 ${t.hue})` }}><K.icon className="size-4" /></span>

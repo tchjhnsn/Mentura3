@@ -10,16 +10,16 @@ import { HashIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarButton } from "@/components/sidebar";
 import { Num, useNums } from "./bits";
-import { FUNCTIONS, ventureHref } from "./data";
+import { businessHref, FUNCTIONS, teamHref } from "./data";
 import { useBusiness } from "./business";
 import { levelOf, toolOf } from "./tools";
-import { slugOf } from "./nav";
+import { useTeam } from "./team";
 
 /** "Ask the agent" from any business screen opens the Agents view (V6). */
 export function useChat() {
   const router = useRouter();
-  const slug = slugOf(usePathname() ?? "");
-  return { open: false, setOpen: (v: boolean) => { if (v && slug) router.push(ventureHref(slug, "agents")); } };
+  const at = levelOf(usePathname() ?? "");
+  return { open: false, setOpen: (v: boolean) => { if (v && at.kind !== "studio") router.push(businessHref(at.team, at.slug, "agents")); } };
 }
 
 /** C1 Top bar for every Studio screen. Its pages are in the app's one sidebar, under Mentura's (StudioNav in
@@ -47,27 +47,36 @@ export function StudioFrame({ children }: { children: ReactNode }) {
   );
 }
 
-/** The path in the top bar, after Vercel's: the business, then the function, then the tool, each a link up. */
+/** The path in the top bar, after Vercel's: the team, then the business, the function and the tool, each a link up. */
 function Crumbs({ path }: { path: string }) {
   const at = levelOf(path);
+  const team = useTeam();
   const link = "hover:bg-accent truncate rounded-md px-2 py-1.5 text-sm";
   const sep = <span aria-hidden className="text-muted-foreground/60 text-sm">/</span>;
-  if (at.kind === "studio") return <Link href="/studio" className={`${link} font-medium`}>Business Studio</Link>;
+  const teamSlug = at.team ?? team?.slug ?? null;
+  const teamLink = teamSlug
+    ? <Link href={teamHref(teamSlug)} className={`${link} ${at.kind === "studio" ? "font-medium" : "text-muted-foreground hidden sm:inline"}`}>{team?.slug === teamSlug ? team.name : "Team"}</Link>
+    : <Link href="/studio" className={`${link} font-medium`}>Businesses</Link>;
+  if (at.kind === "studio") return teamLink;
   const fn = at.kind === "function" ? FUNCTIONS.find((f) => f.id === at.fn) : undefined;
   const tool = at.kind === "function" && at.tool ? toolOf(at.tool) : undefined;
-  return <Path slug={at.slug} fn={fn} tool={tool} integrations={at.kind === "integrations"} link={link} sep={sep} />;
-}
-
-function Path({ slug, fn, tool, integrations, link, sep }: { slug: string; fn?: { id: string; label: string }; tool?: { title: string }; integrations?: boolean; link: string; sep: ReactNode }) {
-  const at = { slug };
-  const name = useBusiness(slug)?.name ?? slug;
   return (
     <nav aria-label="Where you are" className="flex min-w-0 items-center gap-0.5">
-      <Link href={ventureHref(at.slug)} className={`${link} font-medium`}>{name}</Link>
-      {fn ? <>{sep}<Link href={ventureHref(at.slug, `functions/${fn.id}`)} className={link}>{fn.label}</Link></> : null}
-      {tool ? <>{sep}<span className="truncate px-2 py-1.5 text-sm">{tool.title}</span></> : null}
-      {integrations ? <>{sep}<Link href={ventureHref(at.slug, "integrations")} className={link}>Integrations</Link></> : null}
+      {teamLink}<span className="hidden sm:inline">{sep}</span>
+      <Path team={at.team} slug={at.slug} fn={fn} tool={tool} integrations={at.kind === "integrations"} link={link} sep={sep} />
     </nav>
+  );
+}
+
+function Path({ team, slug, fn, tool, integrations, link, sep }: { team: string; slug: string; fn?: { id: string; label: string }; tool?: { title: string }; integrations?: boolean; link: string; sep: ReactNode }) {
+  const name = useBusiness(slug)?.name ?? slug;
+  return (
+    <>
+      <Link href={businessHref(team, slug)} className={`${link} font-medium`}>{name}</Link>
+      {fn ? <>{sep}<Link href={businessHref(team, slug, `functions/${fn.id}`)} className={link}>{fn.label}</Link></> : null}
+      {tool ? <>{sep}<span className="truncate px-2 py-1.5 text-sm">{tool.title}</span></> : null}
+      {integrations ? <>{sep}<Link href={businessHref(team, slug, "integrations")} className={link}>Integrations</Link></> : null}
+    </>
   );
 }
 

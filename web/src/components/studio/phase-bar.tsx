@@ -7,9 +7,11 @@ import { CheckIcon, ChevronDownIcon, CircleIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Face, Num } from "./bits";
 import { fileHrefOf } from "./records";
+import { useTeamSlug } from "./team";
 import { PHASES, leadOf, nextPhase, phaseLabel, phaseOf } from "./phase";
 
 export function PhaseBar({ slug }: { slug: string }) {
+  const team = useTeamSlug() ?? "";
   const start = phaseOf(slug);
   const [criteria, setCriteria] = useState(start.criteria);
   const [open, setOpen] = useState(false);
@@ -46,7 +48,7 @@ export function PhaseBar({ slug }: { slug: string }) {
                 <div className="min-w-0 flex-1">
                   <p className={cn("text-sm", c.met && "text-muted-foreground")}>{c.statement}</p>
                   {c.met ? (
-                    <p className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 text-xs"><Face id={c.met.by} size={16} showName={false} />Met {c.met.at}, evidence <Link href={fileHrefOf(slug, c.met.evidence)} className="underline">{c.met.evidence}</Link></p>
+                    <p className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-2 text-xs"><Face id={c.met.by} size={16} showName={false} />Met {c.met.at}, evidence <Link href={fileHrefOf(team, slug, c.met.evidence)} className="underline">{c.met.evidence}</Link></p>
                   ) : (
                     <p className="text-muted-foreground mt-1 text-xs">{leadOf(c.owner).name} is on it{c.proposedBy ? `. ${leadOf(c.proposedBy).name} thinks it is close and will bring you the evidence.` : "."}</p>
                   )}

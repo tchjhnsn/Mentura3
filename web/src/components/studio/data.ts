@@ -100,43 +100,43 @@ export const MOBBIN = {
 } as const;
 
 export type Screen = { id: string; title: string; path: string; job: string; refs: (keyof typeof MOBBIN)[] };
-/** Paths with ":v" are inside one venture (/studio/v/<slug>/...). */
+/** Paths with ":team" are inside one team (/studio/<team>/...), and with ":v" inside one of its businesses. */
 export const SCREENS: Screen[] = [
-  { id: "S0", title: "Screen map", path: "/studio/map", job: "Every screen and component number in one list.", refs: [] },
-  { id: "S1", title: "Studio home", path: "/studio", job: "Start a business in this team, or open one of its businesses.", refs: ["openaiChatEmpty"] },
-  { id: "S2", title: "New business", path: "/studio/new", job: "Start from an idea, a template, or an existing folder.", refs: ["openaiChatEmpty"] },
-  { id: "S3", title: "Business library", path: "/studio/library", job: "Find a template for a business, an agent or an automation.", refs: ["base44Dashboard"] },
-  { id: "S4", title: "Template", path: "/studio/library/[id]", job: "See what a template sets up, then use it.", refs: [] },
-  { id: "S5", title: "Publish a template", path: "/studio/library/publish", job: "Share one of your businesses, agents or automations with the community.", refs: [] },
-  { id: "S6", title: "Usage", path: "/studio/usage", job: "Spend and agent runs across every business against the budget.", refs: ["openaiUsage"] },
-  { id: "S7", title: "Studio settings", path: "/studio/settings", job: "People, billing, connectors, keys and limits for the whole studio.", refs: ["openaiProjects"] },
-  { id: "V1", title: "Overview", path: "/studio/v/:v", job: "Where the business is in its phase, what it needs now, and what waits for you.", refs: ["base44Dashboard"] },
-  { id: "V2", title: "Records and documents", path: "/studio/v/:v/files", job: "Every record the business keeps, by folder, each readable as a document.", refs: ["replitFiles"] },
-  { id: "V3", title: "Document", path: "/studio/v/:v/files/[...path]", job: "One record, read as a document or as its JSON, and edited.", refs: ["replitFiles"] },
-  { id: "V4", title: "Strategy", path: "/studio/v/:v/strategy", job: "The strategy canvas and the four assumptions, graded by evidence.", refs: [] },
-  { id: "V5", title: "Deck", path: "/studio/v/:v/decks/[id]", job: "Build a marketing or investor deck slide by slide with the agent.", refs: [] },
-  { id: "V6", title: "Agents", path: "/studio/v/:v/agents", job: "Pick an agent and talk to it. Its model, skills and plugins sit beside the chat.", refs: ["openaiAssistants", "sparkAgent"] },
-  { id: "V7", title: "Agent builder", path: "/studio/v/:v/agents/[id]", job: "Build or change an agent on a canvas of steps.", refs: ["openaiAgentBuilder", "openaiAgentNode"] },
-  { id: "V8", title: "Automations", path: "/studio/v/:v/automations", job: "Each function's automations: trigger, steps, who approves.", refs: ["replitTools"] },
-  { id: "V9", title: "Activity", path: "/studio/v/:v/activity", job: "Watch every agent run live, with logs, spend and what it changed.", refs: ["replitChat", "base44Testing"] },
-  { id: "V10", title: "Run", path: "/studio/v/:v/activity/[id]", job: "One run step by step, with rollback.", refs: ["replitChat"] },
-  { id: "V17", title: "Skills and plugins", path: "/studio/v/:v/skills", job: "What your agents know how to do and which outside tools they may use.", refs: ["openaiAssistants", "openaiToolConfig"] },
-  { id: "V11", title: "Functions", path: "/studio/v/:v/functions", job: "The 13 functions of the business and the tools each one needs.", refs: ["replitTools"] },
-  { id: "V12", title: "Function", path: "/studio/v/:v/functions/[fn]", job: "One function's tools, agent, automations and records.", refs: ["replitTools"] },
-  { id: "V13", title: "Outreach", path: "/studio/v/:v/outreach", job: "People to reach, sequences, and every send held for your yes.", refs: [] },
-  { id: "V14", title: "Connectors", path: "/studio/v/:v/connectors", job: "Moved to Integrations (V20); the old address opens it.", refs: ["planeAi"] },
-  { id: "V15", title: "Decisions", path: "/studio/v/:v/decisions", job: "Calls only you can make, ranked, each with the agent's evidence.", refs: [] },
-  { id: "V18", title: "Tool", path: "/studio/v/:v/functions/[fn]/[tool]", job: "One tool of a function, from Naive's tool catalog: what it does and the records it keeps.", refs: ["vercelSectionSidebar"] },
-  { id: "V19", title: "Universal tool", path: "/studio/v/:v/tools/[tool]", job: "A tool every business gets that has no screen of its own yet.", refs: [] },
-  { id: "V20", title: "Integrations", path: "/studio/v/:v/integrations", job: "Search the catalog, see what this business should connect and why, and browse by category.", refs: ["vercelMarketplace", "vercelNativeGrid"] },
-  { id: "V21", title: "Integration category", path: "/studio/v/:v/integrations/category/[category]", job: "One kind of software, the work it serves and its integrations.", refs: ["vercelCategoryList"] },
-  { id: "V22", title: "Integrations for a function", path: "/studio/v/:v/integrations/function/[fn]", job: "What one function should connect, by the process group each kind of software serves.", refs: ["neonIntegrations"] },
-  { id: "V23", title: "Integration", path: "/studio/v/:v/integrations/[id]", job: "What an integration does, why this business would use it, and Connect.", refs: ["vercelIntegrationDetail"] },
-  { id: "V24", title: "Connect", path: "/studio/v/:v/integrations/[id]/connect", job: "What connecting allows, before the sign-in at the service.", refs: ["v0InstallCheckout", "gitbookPermissions"] },
-  { id: "V25", title: "Connected", path: "/studio/v/:v/integrations/connected", job: "Every account you have connected, and sign-ins left unfinished.", refs: ["neonIntegrations", "v0InstallCheckout"] },
-  { id: "V26", title: "Manage connection", path: "/studio/v/:v/integrations/[id]", job: "A connected integration: when it was connected, what it serves, and Disconnect.", refs: ["vercelInstallation", "gitbookPermissions"] },
-  { id: "V27", title: "Sources of truth", path: "/studio/v/:v/integrations/sources", job: "Where this business keeps each kind of record: in Mentura, or in a service you connected.", refs: ["lindyConnections"] },
-  { id: "V16", title: "Business settings", path: "/studio/v/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
+  { id: "S0", title: "Screen map", path: "/studio/:team/map", job: "Every screen and component number in one list.", refs: [] },
+  { id: "S1", title: "Studio home", path: "/studio/:team", job: "Start a business in this team, or open one of its businesses.", refs: ["openaiChatEmpty"] },
+  { id: "S2", title: "New business", path: "/studio/:team/new", job: "Start from an idea, a template, or an existing folder.", refs: ["openaiChatEmpty"] },
+  { id: "S3", title: "Business library", path: "/studio/:team/library", job: "Find a template for a business, an agent or an automation.", refs: ["base44Dashboard"] },
+  { id: "S4", title: "Template", path: "/studio/:team/library/[id]", job: "See what a template sets up, then use it.", refs: [] },
+  { id: "S5", title: "Publish a template", path: "/studio/:team/library/publish", job: "Share one of your businesses, agents or automations with the community.", refs: [] },
+  { id: "S6", title: "Usage", path: "/studio/:team/usage", job: "Spend and agent runs across every business against the budget.", refs: ["openaiUsage"] },
+  { id: "S7", title: "Studio settings", path: "/studio/:team/settings", job: "People, billing, connectors, keys and limits for the whole studio.", refs: ["openaiProjects"] },
+  { id: "V1", title: "Overview", path: "/studio/:team/:v", job: "Where the business is in its phase, what it needs now, and what waits for you.", refs: ["base44Dashboard"] },
+  { id: "V2", title: "Records and documents", path: "/studio/:team/:v/files", job: "Every record the business keeps, by folder, each readable as a document.", refs: ["replitFiles"] },
+  { id: "V3", title: "Document", path: "/studio/:team/:v/files/[...path]", job: "One record, read as a document or as its JSON, and edited.", refs: ["replitFiles"] },
+  { id: "V4", title: "Strategy", path: "/studio/:team/:v/strategy", job: "The strategy canvas and the four assumptions, graded by evidence.", refs: [] },
+  { id: "V5", title: "Deck", path: "/studio/:team/:v/decks/[id]", job: "Build a marketing or investor deck slide by slide with the agent.", refs: [] },
+  { id: "V6", title: "Agents", path: "/studio/:team/:v/agents", job: "Pick an agent and talk to it. Its model, skills and plugins sit beside the chat.", refs: ["openaiAssistants", "sparkAgent"] },
+  { id: "V7", title: "Agent builder", path: "/studio/:team/:v/agents/[id]", job: "Build or change an agent on a canvas of steps.", refs: ["openaiAgentBuilder", "openaiAgentNode"] },
+  { id: "V8", title: "Automations", path: "/studio/:team/:v/automations", job: "Each function's automations: trigger, steps, who approves.", refs: ["replitTools"] },
+  { id: "V9", title: "Activity", path: "/studio/:team/:v/activity", job: "Watch every agent run live, with logs, spend and what it changed.", refs: ["replitChat", "base44Testing"] },
+  { id: "V10", title: "Run", path: "/studio/:team/:v/activity/[id]", job: "One run step by step, with rollback.", refs: ["replitChat"] },
+  { id: "V17", title: "Skills and plugins", path: "/studio/:team/:v/skills", job: "What your agents know how to do and which outside tools they may use.", refs: ["openaiAssistants", "openaiToolConfig"] },
+  { id: "V11", title: "Functions", path: "/studio/:team/:v/functions", job: "The 13 functions of the business and the tools each one needs.", refs: ["replitTools"] },
+  { id: "V12", title: "Function", path: "/studio/:team/:v/functions/[fn]", job: "One function's tools, agent, automations and records.", refs: ["replitTools"] },
+  { id: "V13", title: "Outreach", path: "/studio/:team/:v/outreach", job: "People to reach, sequences, and every send held for your yes.", refs: [] },
+  { id: "V14", title: "Connectors", path: "/studio/:team/:v/connectors", job: "Moved to Integrations (V20); the old address opens it.", refs: ["planeAi"] },
+  { id: "V15", title: "Decisions", path: "/studio/:team/:v/decisions", job: "Calls only you can make, ranked, each with the agent's evidence.", refs: [] },
+  { id: "V18", title: "Tool", path: "/studio/:team/:v/functions/[fn]/[tool]", job: "One tool of a function, from Naive's tool catalog: what it does and the records it keeps.", refs: ["vercelSectionSidebar"] },
+  { id: "V19", title: "Universal tool", path: "/studio/:team/:v/tools/[tool]", job: "A tool every business gets that has no screen of its own yet.", refs: [] },
+  { id: "V20", title: "Integrations", path: "/studio/:team/:v/integrations", job: "Search the catalog, see what this business should connect and why, and browse by category.", refs: ["vercelMarketplace", "vercelNativeGrid"] },
+  { id: "V21", title: "Integration category", path: "/studio/:team/:v/integrations/category/[category]", job: "One kind of software, the work it serves and its integrations.", refs: ["vercelCategoryList"] },
+  { id: "V22", title: "Integrations for a function", path: "/studio/:team/:v/integrations/function/[fn]", job: "What one function should connect, by the process group each kind of software serves.", refs: ["neonIntegrations"] },
+  { id: "V23", title: "Integration", path: "/studio/:team/:v/integrations/[id]", job: "What an integration does, why this business would use it, and Connect.", refs: ["vercelIntegrationDetail"] },
+  { id: "V24", title: "Connect", path: "/studio/:team/:v/integrations/[id]/connect", job: "What connecting allows, before the sign-in at the service.", refs: ["v0InstallCheckout", "gitbookPermissions"] },
+  { id: "V25", title: "Connected", path: "/studio/:team/:v/integrations/connected", job: "Every account you have connected, and sign-ins left unfinished.", refs: ["neonIntegrations", "v0InstallCheckout"] },
+  { id: "V26", title: "Manage connection", path: "/studio/:team/:v/integrations/[id]", job: "A connected integration: when it was connected, what it serves, and Disconnect.", refs: ["vercelInstallation", "gitbookPermissions"] },
+  { id: "V27", title: "Sources of truth", path: "/studio/:team/:v/integrations/sources", job: "Where this business keeps each kind of record: in Mentura, or in a service you connected.", refs: ["lindyConnections"] },
+  { id: "V16", title: "Business settings", path: "/studio/:team/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
 ];
 
 export const COMPONENTS: { id: string; name: string; where: string }[] = [
@@ -168,7 +168,11 @@ export const COMPONENTS: { id: string; name: string; where: string }[] = [
   { id: "C26", name: "Integrations nav: back row, browse, the business's functions, categories with counts", where: "V20 to V26, left" },
 ];
 
-export const ventureHref = (slug: string, rest = "") => `/studio/v/${slug}${rest ? `/${rest}` : ""}`;
+/** One team's page: /studio/<team>/<rest> (doc "Mentura console: screens, navigation and teams": the team is in the URL,
+ * so a link pasted to a teammate opens the same page for them). */
+export const teamHref = (team: string, rest = "") => `/studio/${team}${rest ? `/${rest}` : ""}`;
+/** One business's page, inside its team: /studio/<team>/<business>/<rest>. */
+export const businessHref = (team: string, slug: string, rest = "") => `/studio/${team}/${slug}${rest ? `/${rest}` : ""}`;
 
 export type Run = { id: string; agent: string; venture: string; title: string; status: "running" | "done" | "held" | "failed"; started: string; took: string; cost: number; changed: string[] };
 export const RUNS: Run[] = [
