@@ -5,7 +5,17 @@ import type { NextConfig } from "next";
 // The repository root, so the app can import the headless core in ../packages/core.
 const root = fileURLToPath(new URL("..", import.meta.url));
 
-const config: NextConfig = { reactStrictMode: true, experimental: { serverActions: { bodySizeLimit: "4mb" } }, agentRules: false, turbopack: { root }, outputFileTracingRoot: root, outputFileTracingIncludes: { "/**": ["./src/data/*.txt", "./src/data/*.json", "./src/data/dialogues/*.txt"] },
+// The Studio runs Naive in a child process (src/server/naive.ts): the bridge, the hosted child and their packages are
+// not imported by the app, so the tracer cannot find them. They ship with the Studio's routes only. `vercel-build`
+// installs packages/platform first. Effect ships its runtime JavaScript only.
+const PLATFORM = "../packages/platform";
+const RUNTIME_PACKAGES = ["naive-framework", "pg", "pg-connection-string", "pg-pool", "pg-protocol", "pg-types", "pg-int8", "postgres-array",
+  "postgres-bytea", "postgres-date", "postgres-interval", "xtend", "pgpass", "split2", "pg-cloudflare", "@neondatabase/serverless", "ws",
+  "https-proxy-agent", "debug", "ms", "agent-base", "proxy-agent-negotiate"];
+const STUDIO_BRIDGE = [`${PLATFORM}/package.json`, `${PLATFORM}/bridge/**`, `${PLATFORM}/hosted/**`, `${PLATFORM}/connectors/**`,
+  ...RUNTIME_PACKAGES.map((p) => `${PLATFORM}/node_modules/${p}/**`), `${PLATFORM}/node_modules/effect/package.json`, `${PLATFORM}/node_modules/effect/dist/**/*.js`];
+
+const config: NextConfig = { reactStrictMode: true, experimental: { serverActions: { bodySizeLimit: "4mb" } }, agentRules: false, turbopack: { root }, outputFileTracingRoot: root, outputFileTracingIncludes: { "/**": ["./src/data/*.txt", "./src/data/*.json", "./src/data/dialogues/*.txt"], "/studio/**": STUDIO_BRIDGE },
   // Learn became Scholē, Aristotle's leisure (Torian, 2026-11-15 02:39Z); old links still land.
   redirects: async () => [{ source: "/learn", destination: "/schole", permanent: true }, { source: "/learn/:path*", destination: "/schole/:path*", permanent: true },
     // Qualities moved into Scholē, Legacy into Settings (Torian, 2026-11-19).

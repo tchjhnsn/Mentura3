@@ -9,9 +9,9 @@ function childScript(): string {
   return fileURLToPath(new URL("../hosted/console-child.ts", import.meta.url));
 }
 
-function runChild(payload: string, timeoutMs: number, env: NodeJS.ProcessEnv): Promise<string> {
+function runChild(payload: string, timeoutMs: number, env: NodeJS.ProcessEnv, script: string): Promise<string> {
   return new Promise((resolve, reject) => {
-    const child = execFile(process.execPath, [childScript()], {
+    const child = execFile(process.execPath, [script], {
       maxBuffer: 32 * 1024 * 1024,
       timeout: timeoutMs + 5_000,
       env,
@@ -31,6 +31,8 @@ export async function runHostedConsole<T>(input: {
   key: string;
   timeoutMs: number;
   env?: NodeJS.ProcessEnv;
+  /** The child script's path. A bundled server passes it, because a bundler rewrites import.meta.url. */
+  childPath?: string;
 }): Promise<T> {
   const env = input.env ?? process.env;
   let stdout = "";
@@ -41,7 +43,7 @@ export async function runHostedConsole<T>(input: {
       bridgePath: input.bridgePath,
       key: input.key,
       timeoutMs: input.timeoutMs,
-    }), input.timeoutMs, env);
+    }), input.timeoutMs, env, input.childPath ?? childScript());
   } catch (error) {
     throw new Error(publicMessage(error));
   }
