@@ -6,10 +6,20 @@
 // is in a pull when the newest row for its path sits above the point the client last saw.
 //
 // The account's store holds every business it has, one folder each, so the business the token names is found by its
-// `venture.json` and only paths inside that folder are ever sent. This file holds no SQL and opens no connection:
+// `venture.json` and only paths inside that folder are ever sent.
+//
+// The store keeps each row at its physical path, where the business keeps it on disk; a working copy names records
+// by their logical path, as Naive does (foundation/problem.json, provenance.jsonl). A structured business keeps its
+// records under k-base/ and its provenance log in meta/, and a src business keeps package folders under
+// src/<function>/, so a pull reads the business's layout from its venture.json and sends every record by its logical
+// path. The rules are Naive's `physical` and `logical`, said over a list of paths in
+// packages/platform/bridge/venture-layout.ts and pinned against Naive there.
+//
+// This file holds no SQL and opens no connection:
 // it works over the RecordStore port below, so the tests drive it with an in-memory store.
 
 import { createHash } from "node:crypto";
+import { physicalPath, recordAt, storeLayout } from "../../../packages/platform/bridge/venture-layout.ts";
 import type { SyncRecord } from "./sync-api";
 
 /** One path in a business store, as the newest row has it. */
@@ -35,7 +45,7 @@ export interface RecordStore {
 /** The most records one pull answers with. Past this the point stops at the last one sent, so the client pulls again. */
 export const PULL_LIMIT = 2000;
 
-/** Sync never sends a venture's own logs, its caches or anything under a dot folder. */
+/** Sync never sends a venture's own logs, its caches or anything under a dot folder. Read on the logical path. */
 export const sendable = (path: string): boolean =>
   !path.endsWith(".jsonl") && !path.split("/").some((p) => p.startsWith("."));
 
@@ -59,7 +69,7 @@ export async function businessFolder(store: RecordStore, business: string): Prom
 }
 
 /** Who wrote each record, read from the business's provenance log: the newest line per path, and per path and
- *  content hash when a line names one. A record the log does not mention is the store's own. */
+ *  content hash when a line names one. The log names records by their logical path. A record the log does not mention is the store's own. */
 export function writersIn(log: string | undefined): Map<string, string> {
   const by = new Map<string, string>();
   if (!log) return by;
@@ -97,27 +107,33 @@ export async function changesSince(store: RecordStore, business: string, since: 
   if (folder === null) throw new Error("this token names a business the store does not hold");
   const prefix = folder ? `${folder}/` : "";
   const after = since === null ? -1 : Number(since);
-  const changed = (await store.index())
-    .filter((p) => p.path.startsWith(prefix) && sendable(p.path.slice(prefix.length)) && Number(p.seq) > after)
-    .sort((a, b) => Number(a.seq) - Number(b.seq));
+  const inBusiness = (await store.index()).filter((p) => p.path.startsWith(prefix));
+  const layout = storeLayout((await store.contents([`${prefix}venture.json`])).get(`${prefix}venture.json`), inBusiness.map((p) => p.path.slice(prefix.length)));
+  // Each row by the logical path Naive reads it as. A file Naive would not find where it sits (a stray copy at the
+  // top of a structured business) is no record, and the logs and caches are never sent.
+  const changed: (StoredPath & { logical: string })[] = [];
+  for (const p of inBusiness) {
+    const logical = recordAt(layout, p.path.slice(prefix.length));
+    if (logical !== null && sendable(logical) && Number(p.seq) > after) changed.push({ ...p, logical });
+  }
+  changed.sort((a, b) => Number(a.seq) - Number(b.seq));
   const page = changed.slice(0, PULL_LIMIT);
   const last = page[page.length - 1];
   const point = page.length < changed.length && last ? last.seq : head;
-  const log = `${prefix}provenance.jsonl`;
+  const log = `${prefix}${physicalPath(layout, "provenance.jsonl")}`;
   const held = await store.contents([...page.map((p) => p.path), log]);
   const by = writersIn(held.get(log));
   const records: SyncRecord[] = [];
   for (const p of page) {
     const text = held.get(p.path);
     if (text === undefined) continue;
-    const relative = p.path.slice(prefix.length);
     const hash = sha256(text);
     records.push({
-      path: relative,
+      path: p.logical,
       version: p.version,
       sha256: hash,
-      content: contentOf(relative, text),
-      by: by.get(`${relative}@${hash}`) ?? by.get(relative) ?? "the business store",
+      content: contentOf(p.logical, text),
+      by: by.get(`${p.logical}@${hash}`) ?? by.get(p.logical) ?? "the business store",
       at: p.writtenAt,
     });
   }
