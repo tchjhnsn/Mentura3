@@ -8,6 +8,8 @@ import { isSample, ventureOf, type FunctionId } from "@/components/studio/data";
 import { usableBy } from "@/components/studio/integrations";
 import { profileOf, SAMPLE_PROFILES, type Profile } from "@/components/studio/recommend";
 import { connectionsOf, type Connection } from "@/server/mcp-connections";
+import { naive, studioUnavailable } from "@/server/naive";
+import type { SourceMap } from "@/components/studio/integrations-sources";
 import { requireUser } from "@/server/session";
 
 /** `connected`: catalog ids connected and open to this business. `elsewhere`: connected, but kept to other businesses. */
@@ -32,4 +34,18 @@ export async function integrationsContext(slug: string): Promise<IntegrationsCon
     connected: new Set(live.filter((c) => usableBy(c, id)).map((c) => c.connector)),
     elsewhere: new Set(live.filter((c) => !usableBy(c, id)).map((c) => c.connector)),
   };
+}
+
+/** The business's source map (knowledge/sources.json, EE-042) through the bridge. A sample business, or one with no
+ * map yet, keeps every record kind in Reflect. Read-only: V27 changes it through the router, not here. */
+export async function sourceMapOf(slug: string): Promise<{ map: SourceMap; error: string | null }> {
+  if (isSample(slug) || studioUnavailable()) return { map: {}, error: null };
+  try {
+    const r = await naive<{ text: string | null }>("read", { venture: decodeURIComponent(slug), path: "knowledge/sources.json" });
+    return { map: r.text ? (JSON.parse(r.text) as SourceMap) : {}, error: null };
+  } catch (e) {
+    // No knowledge/sources.json is the usual case for a new business: everything stays in Reflect.
+    if (e instanceof Error && /ENOENT|no such file|not found/i.test(e.message)) return { map: {}, error: null };
+    return { map: {}, error: "Reflect could not read where this business keeps its records." };
+  }
 }

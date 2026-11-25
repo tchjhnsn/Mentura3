@@ -92,6 +92,7 @@ export const MOBBIN = {
   vercelNativeGrid: "https://mobbin.com/screens/2010062d-7281-4d52-b761-8bcb6bf9e605",
   vercelCategoryList: "https://mobbin.com/screens/996430ec-934f-4de3-b630-e3e9f73f4d17",
   neonIntegrations: "https://mobbin.com/flows/61da0254-f665-4c03-ab35-657aa79b6ab6",
+  lindyConnections: "https://mobbin.com/screens/8db0619f-693e-4b23-b588-6111e9f0d0db",
   vercelIntegrationDetail: "https://mobbin.com/screens/f9ebd5a4-c177-4ad4-badd-c686bd3304cb",
   v0InstallCheckout: "https://mobbin.com/flows/651884bb-4b77-4b24-ad0c-971e7be2dbd9",
   gitbookPermissions: "https://mobbin.com/flows/69ba1579-3218-4974-ab40-f4954dd7b6a7",
@@ -134,6 +135,7 @@ export const SCREENS: Screen[] = [
   { id: "V24", title: "Connect", path: "/studio/v/:v/integrations/[id]/connect", job: "What connecting allows, before the sign-in at the service.", refs: ["v0InstallCheckout", "gitbookPermissions"] },
   { id: "V25", title: "Connected", path: "/studio/v/:v/integrations/connected", job: "Every account you have connected, and sign-ins left unfinished.", refs: ["neonIntegrations", "v0InstallCheckout"] },
   { id: "V26", title: "Manage connection", path: "/studio/v/:v/integrations/[id]", job: "A connected integration: when it was connected, what it serves, and Disconnect.", refs: ["vercelInstallation", "gitbookPermissions"] },
+  { id: "V27", title: "Sources of truth", path: "/studio/v/:v/integrations/sources", job: "Where this business keeps each kind of record: in Reflect, or in a service you connected.", refs: ["lindyConnections"] },
   { id: "V16", title: "Business settings", path: "/studio/v/:v/settings", job: "Team, budget, approvals and publishing for this business.", refs: ["openaiProjects"] },
 ];
 

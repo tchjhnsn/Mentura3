@@ -79,7 +79,10 @@ export const SCREENS: Screen[] = [
   },
   {
     id: "V27", name: "Sources of truth", path: "integrations/sources", job: "For each kind of record, where this business keeps it: Reflect or a connected service",
-    entries: [], states: ["unset", "set", "source unreachable", "capability missing"], machine: ["M4:reflect", "M4:outside", "M4:unreachable"], status: "proposed",
+    file: `${PAGES}/sources/page.tsx`,
+    entries: [{ from: "V20", file: "components/studio/nav.ts", href: "/sources" }],
+    states: ["unset", "set", "source unreachable", "capability missing"], machine: ["M4:reflect", "M4:outside", "M4:unreachable"], status: "partial",
+    note: "Reads the source map and shows each record kind's state; choosing a source (the bridge op) and the first adapter come next.",
   },
   {
     id: "V28", name: "Use existing storage", path: "integrations/sources/:kind", job: "Point a record kind at an outside folder, base or space without moving anything",
