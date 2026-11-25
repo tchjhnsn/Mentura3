@@ -761,7 +761,10 @@ const ops = {
   // A refused write throws, so the hosted workspace commits nothing and the store is left as it was.
   //
   // The working copy's own provenance lines arrive as `provenance` and are not used yet: re-chaining them onto
-  // the store's chain is its own piece of work (the design's Not built list).
+  // the store's chain is its own piece of work (the design's Not built list). It belongs at the end of this
+  // operation, after every write has landed, because only there is the push all or none and only there is
+  // the store's chain settled: the router appends a line of its own per write. Naive's `rechain`
+  // (packages/naive/src/core/rechain.ts, EE-177) owns which tip to pass and when to read it.
   async syncPush({ venture, changes }, { identity, workspace }) {
     const dir = await dirOf(venture, workspace);
     if (!Array.isArray(changes) || !changes.length) throw new Error("This push carries no changes.");
@@ -789,8 +792,15 @@ const ops = {
       const r = await call({ venture, route: p.route, action: "write", input: p.content, actor: "person", workspace, via: "sync",
         provenance: { agent: { id: identity.name, account: identity.userId } } });
       if (!r.ok) throw new Error(`Naive did not accept ${p.path}: ${r.error ?? "it was refused"}`);
-      accepted.push({ path: p.path, version: blobSha(readFileSync(join(dir, p.path))) });
+      // A write the gate holds leaves the record as it was, so reporting its old version as accepted would tell the
+      // working copy it had converged when the store never took it. The whole push is refused instead.
+      if (landedAsDraft(r.result)) throw new Error(`${p.path} is waiting for a person to accept it, so nothing was written.`);
+      const file = join(dir, p.path);
+      if (!existsSync(file)) throw new Error(`Naive did not write ${p.path} where the working copy keeps it, so nothing was written.`);
+      accepted.push({ path: p.path, version: blobSha(readFileSync(file)) });
     }
+    // Every change the push carried, each with its new version: a working copy moves its base versions from this.
+    if (accepted.length !== planned.length) throw new Error("Naive did not write every change in this push, so nothing was written.");
     return { accepted };
   },
 };
