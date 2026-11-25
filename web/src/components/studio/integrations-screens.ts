@@ -72,7 +72,7 @@ export const SCREENS: Screen[] = [
     states: ["empty", "list", "needs reconnect"], machine: ["M1:pending", "M1:connected", "M1:expired"], status: "built",
   },
   {
-    id: "V26", name: "Service, connected", path: "integrations/:svc", job: "Manage one connection: businesses, tools, Disconnect",
+    id: "V26", name: "Service, connected", path: "integrations/:svc", job: "Manage one service: its accounts, businesses, tools, Disconnect",
     file: `${PAGES}/[id]/page.tsx`,
     entries: [{ from: "V25", file: `${PAGES}/connected/page.tsx`, href: "integrations/${encodeURIComponent(c.connector)}" }],
     states: ["connected", "saving", "saved", "needs migration", "disconnecting"], machine: ["M1:connected", "M1:expired", "M3:granted", "M3:revoked"], status: "built",

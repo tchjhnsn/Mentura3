@@ -11,20 +11,21 @@ import { open, seal } from "./crypto";
 import { privateAddress, urlProblem } from "./link-back";
 import { siteUrl } from "./site";
 
-/** `businesses`: the business ids that may use it in the business console, or null for every business (migration 0066). */
-export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected" | "expired"; connectedAt: string | null; catalog: MarketConnector | null; businesses: string[] | null };
+/** `account`: the name the person gave a second or later account of one service, null for the first (migration 0068).
+ * `businesses`: the business ids that may use it in the business console, or null for every business (migration 0066). */
+export type Connection = { id: string; connector: string; name: string; serverUrl: string; status: "pending" | "connected" | "expired"; account: string | null; connectedAt: string | null; catalog: MarketConnector | null; businesses: string[] | null };
 
 type Row = {
   id: string; user_id: string; connector: string; name: string; server_url: string; state: string | null;
   client_ct: string | null; tokens_ct: string | null; verifier_ct: string | null; discovery_ct: string | null;
-  status: string; connected_at: Date | null; businesses?: string[] | null;
+  status: string; connected_at: Date | null; businesses?: string[] | null; account?: string | null;
 };
 
 const newId = () => randomBytes(9).toString("base64url");
 export const callbackUrl = () => `${siteUrl()}/api/connectors/callback`;
 const toConnection = (r: Row): Connection => ({
   id: r.id, connector: r.connector, name: r.name, serverUrl: r.server_url, status: r.status === "connected" || r.status === "expired" ? r.status : "pending",
-  connectedAt: r.connected_at ? r.connected_at.toISOString() : null, catalog: marketById(r.connector) ?? null, businesses: r.businesses ?? null,
+  account: r.account ?? null, connectedAt: r.connected_at ? r.connected_at.toISOString() : null, catalog: marketById(r.connector) ?? null, businesses: r.businesses ?? null,
 });
 
 /**
@@ -125,10 +126,28 @@ function providerFor(r: Row, onRedirect: (u: URL) => void = () => undefined): OA
 }
 
 /**
- * Starts connecting: a pending row and the address of the server's sign-in page, where the person approves Reflect.
- * Returns null for the address when the server needs no sign-in (then it is connected at once).
+ * Runs `sql` (whose $1 and $2 are the person and the server) on the rows of one account at that server: the unnamed
+ * first account when `label` is null, else the account of that name, ignoring case (R18, P26). Until migration 0068
+ * runs there is only the first account, so the plain query serves it and a named account is refused with the reason.
  */
-export async function startConnect(userId: string, target: { connector: string } | { url: string; name?: string }): Promise<{ id: string; redirect: string | null }> {
+async function sameAccount(userId: string, url: string, label: string | null, sql: string) {
+  try {
+    return label
+      ? await db().query(`${sql} AND lower(account) = lower($3)`, [userId, url, label])
+      : await db().query(`${sql} AND account IS NULL`, [userId, url]);
+  } catch (e) {
+    if ((e as { code?: string }).code !== "42703") throw e;
+    if (label) throw new Error("Connecting a second account needs the database updated first (migration 0068).");
+    return db().query(sql, [userId, url]);
+  }
+}
+
+/**
+ * Starts connecting: a pending row and the address of the server's sign-in page, where the person approves Reflect.
+ * Returns null for the address when the server needs no sign-in (then it is connected at once). `account` names a
+ * second or later account of the same service; null is the first. Each account is its own row and its own sign-in.
+ */
+export async function startConnect(userId: string, target: { connector: string } | { url: string; name?: string }, account: string | null = null): Promise<{ id: string; redirect: string | null }> {
   let connector: string;
   let url: string;
   let name: string;
@@ -146,14 +165,16 @@ export async function startConnect(userId: string, target: { connector: string }
     connector = known?.id ?? `custom:${newId()}`;
     name = known?.name ?? (target.name?.trim().slice(0, 60) || nameFromUrl(url));
   }
-  await db().query("UPDATE mcp_connection SET status = 'removed', removed_at = now(), tokens_ct = NULL, verifier_ct = NULL WHERE user_id = $1 AND server_url = $2 AND status = 'pending'", [userId, url]);
-  const live = await db().query("SELECT id, status FROM mcp_connection WHERE user_id = $1 AND server_url = $2 AND status IN ('connected', 'expired')", [userId, url]);
+  const label = account?.trim() || null;
+  await sameAccount(userId, url, label, "UPDATE mcp_connection SET status = 'removed', removed_at = now(), tokens_ct = NULL, verifier_ct = NULL WHERE user_id = $1 AND server_url = $2 AND status = 'pending'");
+  const live = await sameAccount(userId, url, label, "SELECT id, status FROM mcp_connection WHERE user_id = $1 AND server_url = $2 AND status IN ('connected', 'expired')");
   if (live.rows[0]?.status === "connected") return { id: live.rows[0].id as string, redirect: null };
   // Reconnect (M1: expired, reconnect, connected): the same row signs in again, so its businesses and id stay.
   const expired = live.rows[0] ? (live.rows[0].id as string) : null;
   const id = expired ?? newId();
   const state = randomBytes(24).toString("base64url");
   if (expired) await db().query("UPDATE mcp_connection SET state = $2 WHERE id = $1", [id, state]);
+  else if (label) await db().query("INSERT INTO mcp_connection (id, user_id, connector, name, server_url, state, account) VALUES ($1, $2, $3, $4, $5, $6, $7)", [id, userId, connector, name, url, state, label]);
   else await db().query("INSERT INTO mcp_connection (id, user_id, connector, name, server_url, state) VALUES ($1, $2, $3, $4, $5, $6)", [id, userId, connector, name, url, state]);
   const r = (await rowOf(userId, id))!;
   let redirect: string | null = null;
