@@ -6,7 +6,7 @@
 import { cn } from "@/lib/utils";
 import { Mark } from "./parts";
 
-const SVG = ["atlassian", "canva", "cloudflare", "figma", "github", "gmail", "google-calendar", "google-docs", "google-drive", "google-sheets", "huggingface", "intercom", "linear", "microsoft-calendar", "monday", "neon", "notion", "resend", "sentry", "shopify", "slack", "supabase", "vercel"];
+const SVG = ["amplitude", "atlassian", "calendly", "canva", "cloudflare", "figma", "github", "gmail", "google-calendar", "google-docs", "google-drive", "google-sheets", "huggingface", "intercom", "linear", "microsoft-calendar", "monday", "neon", "notion", "posthog", "resend", "sentry", "shopify", "slack", "supabase", "vercel", "workos"];
 const PNG = ["apple-health", "etsy", "instacart", "plaid", "strava", "stripe", "zapier"];
 
 /** The file for a connector's logo, or null when Reflect has none. */
