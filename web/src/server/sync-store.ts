@@ -19,7 +19,7 @@ import ws from "ws";
 import { db } from "@/db/pool";
 import { signAssertion } from "../../../packages/platform/bridge/assertion.ts";
 import { bridgeKey, naiveAs, type Identity } from "./naive";
-import type { PushOutcome, SyncBackend } from "./sync-api";
+import { SyncRefusal, type PushOutcome, type SyncBackend } from "./sync-api";
 import { changesSince, type RecordStore, type StoredPath } from "./sync-records";
 import type { TokenHolder } from "./sync-token";
 
@@ -115,6 +115,17 @@ function storeOrRefuse(): Pool {
   return tenant;
 }
 
+// A store that could not answer is not the same as a store that refused what was sent. Naive's own "did not finish"
+// wording, and this site having no store at all, are the first; everything else the push comes back with is Naive
+// refusing the content (a schema, the gate, a path no record owns), which is the client's to fix, so it is a 422.
+const UNREACHABLE = /did not finish|keeps no business store|not connected to a venture store/i;
+
+/** A push refusal as the client should read it. */
+function pushRefusal(error: unknown): SyncRefusal {
+  const message = error instanceof Error && error.message ? error.message : "the business store did not answer";
+  return new SyncRefusal(UNREACHABLE.test(message) ? 502 : 422, message);
+}
+
 /** The hosted business store as the sync API's backend. */
 export function hostedSyncBackend(): SyncBackend {
   return {
@@ -128,9 +139,13 @@ export function hostedSyncBackend(): SyncBackend {
       const out = await naiveAs<{ stale?: { path: string; current: string | null }[]; accepted?: { path: string; version: string }[] }>(
         identityOf(who, await profileOf(who.person)), "syncPush",
         { venture: who.business, changes: input.changes, provenance: input.provenance },
-      );
+      ).catch((error: unknown) => { throw pushRefusal(error); });
+      // A 409 always carries the paths that moved, so the client has something to pull against. A refusal with
+      // nothing stale is not a 409: pushRefusal has already made it a 422 or a 502.
       if (out.stale?.length) return { stale: out.stale } satisfies PushOutcome;
-      return { point, accepted: out.accepted ?? [] } satisfies PushOutcome;
+      const accepted = out.accepted ?? [];
+      if (accepted.length !== input.changes.length) throw new SyncRefusal(502, "the business store did not say what it wrote");
+      return { point, accepted } satisfies PushOutcome;
     },
   };
 }

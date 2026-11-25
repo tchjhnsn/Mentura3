@@ -789,8 +789,15 @@ const ops = {
       const r = await call({ venture, route: p.route, action: "write", input: p.content, actor: "person", workspace, via: "sync",
         provenance: { agent: { id: identity.name, account: identity.userId } } });
       if (!r.ok) throw new Error(`Naive did not accept ${p.path}: ${r.error ?? "it was refused"}`);
-      accepted.push({ path: p.path, version: blobSha(readFileSync(join(dir, p.path))) });
+      // A write the gate holds leaves the record as it was, so reporting its old version as accepted would tell the
+      // working copy it had converged when the store never took it. The whole push is refused instead.
+      if (landedAsDraft(r.result)) throw new Error(`${p.path} is waiting for a person to accept it, so nothing was written.`);
+      const file = join(dir, p.path);
+      if (!existsSync(file)) throw new Error(`Naive did not write ${p.path} where the working copy keeps it, so nothing was written.`);
+      accepted.push({ path: p.path, version: blobSha(readFileSync(file)) });
     }
+    // Every change the push carried, each with its new version: a working copy moves its base versions from this.
+    if (accepted.length !== planned.length) throw new Error("Naive did not write every change in this push, so nothing was written.");
     return { accepted };
   },
 };

@@ -161,7 +161,12 @@ export async function servePush(req: Request, deps: SyncDeps): Promise<Response>
   }
   try {
     const outcome = await deps.backend.push(who, input);
-    if ("stale" in outcome) return json({ error: "stale", stale: outcome.stale }, 409);
+    // A 409 always names the paths that moved, so the client has something to pull against. A refusal with nothing
+    // stale is not a 409, because a client told only "stale" with an empty list has nothing to do but loop.
+    if ("stale" in outcome) {
+      if (!outcome.stale.length) throw new SyncRefusal(502, "the business store refused this push without saying what moved");
+      return json({ error: "stale", stale: outcome.stale }, 409);
+    }
     return json(outcome);
   } catch (error) {
     return refused(error);

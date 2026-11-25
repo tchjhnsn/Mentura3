@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { serveChanges, serveFileGet, serveFilePut, serveMissing, servePush, type PushInput, type SyncBackend, type Verify } from "./sync-api";
+import { serveChanges, serveFileGet, serveFilePut, serveMissing, servePush, SyncRefusal, type PushInput, type SyncBackend, type Verify } from "./sync-api";
 import { memoryBlobs, sha256Of, syncFileKey, type BlobStore } from "./sync-files";
 import type { TokenHolder } from "./sync-token";
 
@@ -120,6 +120,33 @@ describe("push", () => {
       { path: "foundation/problem.json", current: "v9" },
       { path: "decisions/pricing.json", current: null },
     ] });
+  });
+
+  it("names every change it accepted, so the client can move each base version", async () => {
+    const backend = stubBackend();
+    const two = { working_copy: "laptop", changes: [
+      { path: "foundation/problem.json", base: "v1", content: { statement: "x" } },
+      { path: "decisions/pricing.decision.json", base: null, content: { id: "pricing" } },
+    ] };
+    const r = await servePush(push(two), { backend, verify: signedIn() });
+    expect(await r.json()).toEqual({ point: "9", accepted: [
+      { path: "foundation/problem.json", version: "v2" },
+      { path: "decisions/pricing.decision.json", version: "v2" },
+    ] });
+  });
+
+  it("passes a refusal of the content on as 422, not as a 409 the client would try to pull against", async () => {
+    const backend = stubBackend({ push: async () => { throw new SyncRefusal(422, "Naive did not accept foundation/problem.json: statement is required"); } });
+    const r = await servePush(push(onePush), { backend, verify: signedIn() });
+    expect(r.status).toBe(422);
+    expect(await r.json()).toEqual({ error: "Naive did not accept foundation/problem.json: statement is required" });
+  });
+
+  it("never answers 409 with nothing stale, which would leave the client looping", async () => {
+    const backend = stubBackend({ push: async () => ({ stale: [] }) });
+    const r = await servePush(push(onePush), { backend, verify: signedIn() });
+    expect(r.status).toBe(502);
+    expect(await r.json()).toEqual({ error: "the business store refused this push without saying what moved" });
   });
 
   it("refuses a body that is not the shape the contract names, before the backend sees it", async () => {
