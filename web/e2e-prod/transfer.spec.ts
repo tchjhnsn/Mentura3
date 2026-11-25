@@ -49,13 +49,13 @@ test("E10 Transfer moves a business to another team, and its old URL redirects",
   // It opens in its new team, at the new team's URL.
   await expect(page).toHaveURL(new RegExp(`/studio/${team}/${id}(-\\d+)?$`), { timeout: 120_000 });
   const href = new URL(page.url()).pathname;
-  await expect(page.getByRole("heading", { name: "Needs you next" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Needs you", exact: true })).toBeVisible({ timeout: 60_000 });
   await page.screenshot({ path: "test-results/prod/e10-transferred.png" });
 
   // The old URL sends the person to the business in its new team.
   await page.goto(oldHref);
   await expect(page).toHaveURL(new RegExp(`${href}$`), { timeout: 60_000 });
-  await expect(page.getByRole("heading", { name: "Needs you next" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Needs you", exact: true })).toBeVisible({ timeout: 60_000 });
 
   // The personal team no longer lists it.
   await page.goto(personal);

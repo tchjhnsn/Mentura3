@@ -31,7 +31,9 @@ The files run in name order, one test at a time.
 
 `members.spec.ts` (E6, E8, E9), with the Owner and the invitee: E6 makes a team, invites the invitee as a Member on the invite step (D3), makes one business in the team, and the invitee opens the invitation link, accepts, lands on the team and sees the business. E8 makes it a Viewer on Members: it sees the business but no prompt and no New business, and an upload straight to the business's Files is refused by the server. E9 leaves the team from Team settings and lands on its own team.
 
-`studio.spec.ts` (E4): as the Owner in its personal team, a business said in a sentence shows "Setting up", opens inside its team at `/studio/<team>/<business>` on Needs you next, and the team home shows one more card.
+`studio.spec.ts` (E4): as the Owner in its personal team, a business said in a sentence shows "Setting up", opens inside its team at `/studio/<team>/<business>` on Needs you, and the team home shows one more card.
+
+`surfaces.spec.ts` (round 5), as the Owner on E4's business: the business home shows Needs you, with one Open decision button that opens Decisions, or says nothing needs you, then Done by agents.
 
 `teams.spec.ts` (E5, E7): E5 makes a team from the switcher (Create team, a name, Create, then Skip on the invite step), lands on its empty home and finds it in the switcher. E7 opens the Owner's personal team and one of its businesses as the invitee and expects "You are not a member of this team." with none of the team's businesses shown.
 

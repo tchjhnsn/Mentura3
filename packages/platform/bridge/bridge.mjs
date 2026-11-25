@@ -339,6 +339,23 @@ async function logFile(dir, identity, entity, activity, note, sha256) {
   record(dir, { entity, route: FILES_DIR, activity, agent, note, ...(sha256 ? { sha256 } : isFolder ? { content: Buffer.from(entity) } : {}) });
 }
 
+/** Runs `f` and puts the named files back as they were, so a read that has to run a framework function which also
+ *  keeps a cache (the decision index writes .naive/decision-index.json and its history) leaves the business as it
+ *  found it. On the hosted store every file a call changes is committed, so a read must change nothing.
+ *  @template T @param {string} dir @param {string[]} files paths relative to the business folder @param {() => T} f @returns {T} */
+function leavingAsFound(dir, files, f) {
+  const before = files.map((rel) => { const p = join(dir, rel); return { p, text: existsSync(p) ? readFileSync(p) : null }; });
+  const dotDirs = [...new Set(files.map((rel) => dirname(join(dir, rel))))].filter((d) => !existsSync(d));
+  try { return f(); } finally {
+    for (const { p, text } of before) { if (text === null) rmSync(p, { force: true }); else writeFileSync(p, text); }
+    for (const d of dotDirs) if (existsSync(d) && !readdirSync(d).length) rmSync(d, { recursive: true, force: true });
+  }
+}
+
+/** The decisions shown as waiting on a person: ones a person can settle now, overdue or stale. Held ones wait on another
+ *  decision first, and later ones belong to a later phase. */
+const ACTIONABLE = new Set(["now", "overdue", "stale"]);
+
 const ops = {
   // Each venture's own storage (files.ts): the founder's files, logged in provenance as the person's acts.
   async files({ venture }, { workspace }) {
@@ -404,6 +421,61 @@ const ops = {
       id: v.id, name: v.name, phase: v.phase, founder, departments: Array.isArray(v.departments) ? v.departments : [],
       industry, regulation: v.regulation?.exposure ?? null, funding: v.form?.funding ?? null, tree: tree(dir),
     };
+  },
+
+  // What needs a person in this business (round 5, "Needs you" and the bottom bar's Stream): the open decisions in the
+  // order of Naive's decision index (system/decision-index, packages/naive/src/engine/decision-index.ts), each with
+  // what it unlocks, its function and its due time from the decision matrix. Read only: the index is recomputed here,
+  // and its cache files are put back as they were.
+  async needs({ venture }, { workspace }) {
+    const dir = await dirOf(venture, workspace);
+    const { update, INDEX, HISTORY } = await fw("packages/naive/src/engine/decision-index.mjs");
+    const { decisions } = await fw("packages/naive/src/engine/decisions.mjs");
+    const idx = leavingAsFound(dir, [INDEX, HISTORY], () => update(dir));
+    const matrix = decisions(dir);
+    const byId = new Map(matrix.decisions.map((/** @type {any} */ d) => [d.id, d]));
+    /** @type {Map<string, string>} */
+    const fnOf = new Map();
+    for (const [fn, list] of Object.entries(idx.by_function ?? {})) for (const e of /** @type {any[]} */ (list)) fnOf.set(e.id, fn);
+    const active = idx.entries.filter((/** @type {any} */ e) => byId.has(e.id));
+    const shown = active.filter((/** @type {any} */ e) => ACTIONABLE.has(e.render)).map((/** @type {any} */ e) => {
+      const d = byId.get(e.id);
+      return {
+        id: e.id, question: e.question, function: fnOf.get(e.id) ?? null, render: e.render, rank: e.rank,
+        unlocks: Array.isArray(d.unlocks) ? d.unlocks : [],
+        opens: matrix.decisions.filter((/** @type {any} */ x) => x.held_by === e.id).length,
+        due: d.due ?? null, why: e.why,
+      };
+    });
+    const decided = matrix.decisions
+      .map((/** @type {any} */ d) => ({ d, at: d.status === "decided" ? d.provenance?.approved_at ?? d.decided_at ?? null : null }))
+      .filter((/** @type {any} */ x) => x.at && x.d.provenance?.approved_by)
+      .sort((/** @type {any} */ a, /** @type {any} */ b) => String(b.at).localeCompare(String(a.at)))[0];
+    return {
+      venture: idx.venture, phase: idx.phase, decisions: shown, held: active.length - shown.length,
+      last_decided: decided ? { id: decided.d.id, question: decided.d.question, at: decided.at } : null,
+    };
+  },
+
+  // Levels 1 and 2 of the business's activities (EE-180, packages/naive/src/engine/activity-briefing.ts, `naive
+  // activities briefing`): for each function, what needs a person by process group and how many activities its agent
+  // does. With `function`, that one function, whether or not the business lists it, and its activities that have a rule
+  // (operations/activity-assignments.json, or the default from the activity's kind, EE-179). Writes nothing.
+  async briefing({ venture, function: only }, { workspace }) {
+    const dir = await dirOf(venture, workspace);
+    const { briefing, briefingFor } = await fw("packages/naive/src/engine/activity-briefing.mjs");
+    const { runSync } = await fw("packages/naive/src/core/effect/run.mjs");
+    const { functionsOf } = await fw("packages/naive/src/engine/research-programs.mjs");
+    if (only === undefined || only === null) return { briefing: runSync(briefingFor(dir)), listed: functionsOf(dir) };
+    const { readCatalog, readGroups, readPcf } = await fw("packages/naive/src/engine/activity-proposals.mjs");
+    const { assignedActivities, readAssignments } = await fw("packages/naive/src/engine/agents/assignments.mjs");
+    const groups = runSync(readGroups());
+    if (typeof only !== "string" || ![...groups.values()].includes(only)) throw new Error("Naive has no function by that name.");
+    const catalog = runSync(readCatalog()), pcf = runSync(readPcf()), record = runSync(readAssignments(dir));
+    const activities = assignedActivities(catalog, groups, only, record, pcf)
+      .map((/** @type {any} */ { id, from, process_group, statement, performer, approval, source, kind }) =>
+        ({ id, from, process_group, statement, performer: performer ?? null, approval: approval ?? null, source, kind: kind ?? null }));
+    return { briefing: briefing(catalog, groups, pcf, [only], record), listed: functionsOf(dir), activities };
   },
 
   async read({ venture, path }, { workspace }) {

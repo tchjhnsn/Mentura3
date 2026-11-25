@@ -3,7 +3,8 @@
 // `team` is the team's URL slug from the page's address; src/server/naive.ts checks the person belongs to it before it
 // signs anything, so a team slug a page passes is never trusted on its own. Left out, it is the personal team.
 
-import { naive, studioUnavailable, type Docket, type VentureDetail, type VentureSummary } from "@/server/naive";
+import { naive, studioUnavailable, teamOfCall, type Briefing, type Docket, type Needs, type VentureDetail, type VentureSummary } from "@/server/naive";
+import type { TeamRole } from "@/server/teams-core";
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
 
@@ -39,6 +40,39 @@ export async function ventureWithDocket(id: string, team?: string): Promise<Resu
   return attempt(async () => {
     const [venture, docket] = await Promise.all([naive<VentureDetail>("venture", { venture: id }, team), naive<Docket>("docket", { venture: id }, team)]);
     return { venture, docket };
+  });
+}
+
+// Round 5, "Needs you" and briefings: what waits on the person, in the order of Naive's decision index, and levels 1 and 2
+// of the business's activities. Reads only, so a Viewer reads them too; `role` lets the page leave out what a Viewer
+// cannot act on.
+
+/** The business home: the business, what needs the person, and the briefing for each function it lists. */
+export async function ventureHome(id: string, team?: string): Promise<Result<{ venture: VentureDetail; needs: Needs; briefing: Briefing; role: TeamRole }>> {
+  return attempt(async () => {
+    const [venture, needs, briefing, { team: t }] = await Promise.all([
+      naive<VentureDetail>("venture", { venture: id }, team), naive<Needs>("needs", { venture: id }, team),
+      naive<Briefing>("briefing", { venture: id }, team), teamOfCall(team),
+    ]);
+    return { venture, needs, briefing, role: t.role };
+  });
+}
+
+/** What needs the person in one business, for the bottom bar's Stream. */
+export async function ventureNeeds(id: string, team?: string): Promise<Result<{ needs: Needs; role: TeamRole }>> {
+  return attempt(async () => {
+    const [needs, { team: t }] = await Promise.all([naive<Needs>("needs", { venture: id }, team), teamOfCall(team)]);
+    return { needs, role: t.role };
+  });
+}
+
+/** One function page's briefing: its process groups, its activities with who does each, and what needs the person in it. */
+export async function functionBriefing(id: string, fn: string, team?: string): Promise<Result<{ needs: Needs; briefing: Briefing; role: TeamRole }>> {
+  return attempt(async () => {
+    const [needs, briefing, { team: t }] = await Promise.all([
+      naive<Needs>("needs", { venture: id }, team), naive<Briefing>("briefing", { venture: id, function: fn }, team), teamOfCall(team),
+    ]);
+    return { needs, briefing, role: t.role };
   });
 }
 
