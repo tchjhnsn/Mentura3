@@ -67,7 +67,7 @@ function copyIn(source: string): string[] {
   return [...jsxText, ...literals].filter((w): w is string => w !== undefined);
 }
 
-describe("C-5 words: the copy says business, never venture, and never coming soon", () => {
+describe("C-5 words: the copy says business and Mentura, never venture, Reflect or coming soon", () => {
   const files = [
     ...filesUnder(PAGES).filter((f) => f.endsWith(".tsx")),
     UI_FILES.ui, UI_FILES.search, UI_FILES.why,
@@ -75,7 +75,7 @@ describe("C-5 words: the copy says business, never venture, and never coming soo
   for (const file of files) {
     it(relative(".", file), () => {
       for (const words of copyIn(read(file))) {
-        expect(words, `${file}: "${words.trim()}"`).not.toMatch(/\bventures?\b|coming soon/i);
+        expect(words, `${file}: "${words.trim()}"`).not.toMatch(/\bventures?\b|coming soon|\bReflect\b/i);
       }
     });
   }
@@ -83,6 +83,7 @@ describe("C-5 words: the copy says business, never venture, and never coming soo
   it("the rule itself catches the words it is for", () => {
     expect(copyIn('<p>Your venture is ready</p>').join()).toMatch(/venture/);
     expect(copyIn('const t = "Coming soon to you";').join()).toMatch(/Coming soon/);
+    expect(copyIn('<p>Reflect reads it</p>').join()).toMatch(/Reflect/);
     expect(copyIn('ventureHref(slug, "integrations") // venture word in a comment').join()).not.toMatch(/venture/);
   });
 });

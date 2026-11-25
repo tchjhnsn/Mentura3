@@ -17,7 +17,7 @@ export function factsOf(r: Scored): Fact[] {
 export function explainPrompt(r: Scored, business: string): string {
   const facts = factsOf(r);
   return [
-    `You explain to a founder why Reflect recommends ${r.category.name} (${r.category.line.replace(/\.$/, "")}) for their business, ${business}.`,
+    `You explain to a founder why Mentura recommends ${r.category.name} (${r.category.line.replace(/\.$/, "")}) for their business, ${business}.`,
     r.later ? "It is recommended for later, not now." : "It is recommended now.",
     "Write 2 to 4 short, plain sentences using ONLY the facts below. Address the founder as \"you\".",
     "End every sentence with the ids of the facts it uses, in square brackets, like [need] or [industry][a1]. Every sentence must cite at least one fact.",

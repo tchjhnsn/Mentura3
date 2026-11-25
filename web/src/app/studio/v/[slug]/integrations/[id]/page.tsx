@@ -60,20 +60,20 @@ export default async function IntegrationPage({ params, searchParams }: { params
             : conn ? <Badge variant="secondary" className="font-normal">Connected</Badge>
             : others ? <form action={useHere.bind(null, slug, id, others.id, others.businesses ?? [])}><Button type="submit">Use it in {ctx.name}</Button></form>
             : ready ? <Button asChild><Link href={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)}>Connect</Link></Button>
-            : <Badge variant="outline" className="font-normal">Needs setup by Reflect</Badge>}
+            : <Badge variant="outline" className="font-normal">Needs setup by Mentura</Badge>}
         </div>
-        {conn?.status === "expired" ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} stopped accepting Reflect&apos;s sign-in. Reconnect with the same account and every business that used it keeps it.</p> : null}
-        {sp.connected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is connected. Reflect reads it when you ask, and anything that writes or sends waits for your Send.</p> : null}
+        {conn?.status === "expired" ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} stopped accepting Mentura&apos;s sign-in. Reconnect with the same account and every business that used it keeps it.</p> : null}
+        {sp.connected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is connected. Mentura reads it when you ask, and anything that writes or sends waits for your Send.</p> : null}
         {others ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">You have connected {c.name}, but kept it to your other businesses.</p> : null}
         {sp.saved ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">Saved which businesses can use {c.name}.</p> : null}
-        {sp.disconnected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is disconnected. Reflect no longer holds your sign-in.</p> : null}
+        {sp.disconnected ? <p className="bg-muted mt-4 rounded-lg px-3 py-2 text-sm">{c.name} is disconnected. Mentura no longer holds your sign-in.</p> : null}
         {failed ? <SignInFailed state={failed} message={sp.error} retry={ventureHref(slug, `integrations/${encodeURIComponent(id)}/connect`)} />
           : sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
       </div>
       <div className="mt-6 grid max-w-5xl gap-8 px-4 md:grid-cols-[1fr_16rem] md:px-8">
         <div className="space-y-8">
           <section>
-            <h2 className="font-semibold">What Reflect does with it</h2>
+            <h2 className="font-semibold">What Mentura does with it</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">{c.does.map((d) => <li key={d}>{d}</li>)}</ul>
             <p className="text-muted-foreground mt-3 text-sm">Reads run when you ask. Anything that writes, sends or pays waits for you to tap Send on a card that names it.</p>
           </section>
@@ -130,7 +130,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
           {conn ? (
             <section className="rounded-xl border p-4">
               <h2 className="font-semibold">Disconnect</h2>
-              <p className="text-muted-foreground mt-1 text-sm">Reflect forgets your sign-in. Every business that uses it loses it, not only {ctx.name}.</p>
+              <p className="text-muted-foreground mt-1 text-sm">Mentura forgets your sign-in. Every business that uses it loses it, not only {ctx.name}.</p>
               <form action={disconnectIntegration.bind(null, slug, id, conn.id)} className="mt-3"><Button variant="destructive" size="sm" type="submit">Disconnect {c.name}</Button></form>
             </section>
           ) : null}

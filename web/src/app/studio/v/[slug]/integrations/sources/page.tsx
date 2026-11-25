@@ -21,7 +21,7 @@ const nameOf = (service: string | null) => (service ? integrationOf(service)?.na
 function Status({ s }: { s: KindSource }) {
   if (s.state === "outside") return <Badge variant="secondary" className="font-normal">From {nameOf(s.service)}</Badge>;
   if (s.state === "unreachable") return <Badge variant="destructive" className="font-normal">Unreachable</Badge>;
-  return <Badge variant="outline" className="font-normal">In Reflect</Badge>;
+  return <Badge variant="outline" className="font-normal">In Mentura</Badge>;
 }
 
 export default async function SourcesPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ error?: string }> }) {
@@ -34,11 +34,11 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
   const accountOf = (id: string) => ctx.connections.find((c) => c.id === id)?.account ?? null;
   return (
     <div className="pb-16">
-      <ScreenHead n="V27" title="Sources of truth" job={`Where ${ctx.name} keeps each kind of record: in Reflect, or in a service you connected.`}>
+      <ScreenHead n="V27" title="Sources of truth" job={`Where ${ctx.name} keeps each kind of record: in Mentura, or in a service you connected.`}>
         <Button variant="outline" size="sm" asChild><Link href={ventureHref(slug, "integrations/connected")}>Connected</Link></Button>
       </ScreenHead>
       <div className="max-w-4xl space-y-3 px-4 md:px-8">
-        <p className="text-muted-foreground text-sm">Choosing a service moves and copies nothing: Reflect reads that kind of record from the service from then on. If it loses access, it says so here and never quietly falls back to its own copy.</p>
+        <p className="text-muted-foreground text-sm">Choosing a service moves and copies nothing: Mentura reads that kind of record from the service from then on. If it loses access, it says so here and never quietly falls back to its own copy.</p>
         {error ? <p className="text-destructive text-sm">{error}</p> : null}
         {refused ? <p className="text-destructive text-sm" role="alert">{refused}</p> : null}
         <ul className="divide-y rounded-xl border">
@@ -51,10 +51,10 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
                   <div className="flex items-center gap-2 text-sm font-medium">{s.kind.name}<Status s={s} /></div>
                   <p className="text-muted-foreground text-sm">{s.kind.line}</p>
                   {s.state === "unreachable" ? (
-                    <p className="text-destructive mt-1 text-sm">Reflect cannot reach {nameOf(s.service)} for this. {failureAction(M4, "unreachable")} to read it again.</p>
+                    <p className="text-destructive mt-1 text-sm">Mentura cannot reach {nameOf(s.service)} for this. {failureAction(M4, "unreachable")} to read it again.</p>
                   ) : null}
                   {ready.length ? <p className="text-muted-foreground mt-1 text-xs">Can come from {ready.map((c) => nameOf(c.connection.connector)).join(", ")}.</p> : null}
-                  {waiting.length ? <p className="text-muted-foreground mt-1 text-xs">Reflect cannot read {s.kind.name.toLowerCase()} from {waiting.map((c) => nameOf(c.connection.connector)).join(", ")} yet.</p> : null}
+                  {waiting.length ? <p className="text-muted-foreground mt-1 text-xs">Mentura cannot read {s.kind.name.toLowerCase()} from {waiting.map((c) => nameOf(c.connection.connector)).join(", ")} yet.</p> : null}
                   {!s.candidates.length && s.state === "reflect" ? <p className="text-muted-foreground mt-1 text-xs">None of your connected services keeps {s.kind.name.toLowerCase()}.</p> : null}
                 </div>
                 {error || !canChoose ? null : (
@@ -71,7 +71,7 @@ export default async function SourcesPage({ params, searchParams }: { params: Pr
                     {s.state === "reflect" ? null : (
                       <form action={chooseSource.bind(null, slug, s.kind.type)}>
                         <input type="hidden" name="connection" value="" />
-                        <Button type="submit" size="sm" variant={s.state === "unreachable" ? "default" : "outline"}>Use Reflect</Button>
+                        <Button type="submit" size="sm" variant={s.state === "unreachable" ? "default" : "outline"}>Use Mentura</Button>
                       </form>
                     )}
                   </div>

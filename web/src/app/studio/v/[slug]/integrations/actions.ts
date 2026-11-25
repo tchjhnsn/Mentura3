@@ -111,7 +111,7 @@ export async function chooseSource(slug: string, record: string, form: FormData)
   let error: string | null = null;
   try {
     const kind = RECORD_KINDS.find((k) => k.type === record);
-    if (!kind) throw new Error("That is not a kind of record Reflect keeps.");
+    if (!kind) throw new Error("That is not a kind of record Mentura keeps.");
     let source = null;
     if (pick) {
       const c = (await connectionsOf(user.id)).find((x) => x.id === pick);
@@ -119,7 +119,7 @@ export async function chooseSource(slug: string, record: string, form: FormData)
         throw new Error("That connection is not open to this business, so nothing changed. Choose again.");
       }
       if (!kind.capabilities.some((k) => SERVICE_CAPABILITIES[c.connector]?.includes(k)) || !adapterFor(c.connector, record)) {
-        throw new Error(`Reflect cannot read ${kind.name.toLowerCase()} from that service yet, so nothing changed.`);
+        throw new Error(`Mentura cannot read ${kind.name.toLowerCase()} from that service yet, so nothing changed.`);
       }
       source = sourceEntryOf(c.connector, c.id);
     }

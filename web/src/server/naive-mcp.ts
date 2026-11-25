@@ -17,7 +17,7 @@ export const signBody = (body: string, key: string): string => createHmac("sha25
 export function verifyMcpRequest(body: string, signature: string | null, key: string, now = Date.now()): McpListRequest {
   const want = Buffer.from(signBody(body, key), "hex");
   const got = Buffer.from(signature ?? "", "hex");
-  if (got.length !== want.length || !timingSafeEqual(got, want)) throw new McpRefusal(401, "The request is not signed by Reflect's bridge.");
+  if (got.length !== want.length || !timingSafeEqual(got, want)) throw new McpRefusal(401, "The request is not signed by Mentura's bridge.");
   let r: Partial<McpListRequest>;
   try { r = JSON.parse(body) as Partial<McpListRequest>; } catch { throw new McpRefusal(400, "The request is not JSON."); }
   if (r.op !== "list" || typeof r.user !== "string" || typeof r.venture !== "string" || typeof r.source !== "string" || typeof r.api !== "string" || typeof r.at !== "number")

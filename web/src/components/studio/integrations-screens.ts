@@ -54,7 +54,7 @@ export const SCREENS: Screen[] = [
     states: ["ready", "function off", "nothing serves it"], machine: [], status: "built",
   },
   {
-    id: "V23", name: "Service", path: "integrations/:svc", job: "Decide whether to connect: what Reflect does with it, why here, facts",
+    id: "V23", name: "Service", path: "integrations/:svc", job: "Decide whether to connect: what Mentura does with it, why here, facts",
     file: `${PAGES}/[id]/page.tsx`,
     entries: [{ from: "V20", file: UI, href: "integrations/${c.id}" }],
     states: ["not connected", "needs setup", "kept to other businesses", "sign-in failed", "error"], machine: ["M1:none", "M2:cancelled", "M2:denied", "M2:needs more permission", "M2:unreachable"], status: "built",
@@ -78,11 +78,11 @@ export const SCREENS: Screen[] = [
     states: ["connected", "saving", "saved", "needs migration", "disconnecting"], machine: ["M1:connected", "M1:expired", "M3:granted", "M3:revoked"], status: "built",
   },
   {
-    id: "V27", name: "Sources of truth", path: "integrations/sources", job: "For each kind of record, where this business keeps it: Reflect or a connected service",
+    id: "V27", name: "Sources of truth", path: "integrations/sources", job: "For each kind of record, where this business keeps it: Mentura or a connected service",
     file: `${PAGES}/sources/page.tsx`,
     entries: [{ from: "V20", file: "components/studio/nav.ts", href: "/sources" }],
     states: ["unset", "set", "source unreachable", "capability missing"], machine: ["M4:reflect", "M4:outside", "M4:unreachable"], status: "built",
-    note: "Reads the source map, shows each record kind's state, and chooses a source: a connected service with an adapter (Stripe for customers so far) or Use Reflect, written through Naive's router.",
+    note: "Reads the source map, shows each record kind's state, and chooses a source: a connected service with an adapter (Stripe for customers so far) or Use Mentura, written through Naive's router.",
   },
   {
     id: "V28", name: "Use existing storage", path: "integrations/sources/:kind", job: "Point a record kind at an outside folder, base or space without moving anything",
@@ -93,7 +93,7 @@ export const SCREENS: Screen[] = [
     entries: [], states: ["ready", "signing in", "restored", "failed"], machine: ["M1:expired", "M1:connected", "M2:wrong account"], status: "proposed",
   },
   {
-    id: "V30", name: "Connection activity", path: "integrations/:svc/activity", job: "What Reflect read and did through this connection, when and for whom",
+    id: "V30", name: "Connection activity", path: "integrations/:svc/activity", job: "What Mentura read and did through this connection, when and for whom",
     entries: [], states: ["empty", "list", "filtered"], machine: ["M7:done", "M7:failed"], status: "proposed",
   },
   {

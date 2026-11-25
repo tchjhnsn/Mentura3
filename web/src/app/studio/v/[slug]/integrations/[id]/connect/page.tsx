@@ -32,7 +32,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
         <Logo id={c.id} name={c.name} />
         <h1 className="text-xl font-semibold tracking-tight">Connect {c.name}</h1>
       </div>
-      <p className="text-muted-foreground mt-2 text-sm">You sign in at {c.by} with your own account. Reflect keeps the sign-in encrypted and never sees your password.</p>
+      <p className="text-muted-foreground mt-2 text-sm">You sign in at {c.by} with your own account. Mentura keeps the sign-in encrypted and never sees your password.</p>
       <section className="mt-6 rounded-xl border">
         <h2 className="border-b px-4 py-3 text-sm font-medium">What it allows</h2>
         <ul className="space-y-2 px-4 py-3 text-sm">
@@ -50,7 +50,7 @@ export default async function ConnectPage({ params, searchParams }: { params: Pr
           : sp.error ? <p className="text-destructive mt-4 text-sm">{sp.error}</p> : null}
         <div className="mt-6 flex justify-between gap-3">
           <Button variant="outline" asChild><Link href={back}>Cancel</Link></Button>
-          {ready ? <Button type="submit">Continue to {c.by}</Button> : <p className="text-muted-foreground text-sm">{c.name} needs Reflect registered with it first.</p>}
+          {ready ? <Button type="submit">Continue to {c.by}</Button> : <p className="text-muted-foreground text-sm">{c.name} needs Mentura registered with it first.</p>}
         </div>
       </form>
     </div>
