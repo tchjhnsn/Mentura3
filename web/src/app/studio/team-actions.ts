@@ -1,13 +1,14 @@
 "use server";
 // The console's team actions (doc "Mentura console: screens, navigation and teams", 2026-11-25): the switcher's list of
 // teams (D1), Create team (D2), the team's General settings (T5), Members (T4: invite, roles, remove), Leave team (D4)
-// and the invitation page (A3). Each checks the signed-in person on the server, and src/server/teams-core.ts checks
+// the invitation page (A3), Transfer business (D5) and Delete team (D6). Each checks the signed-in person on the server, and src/server/teams-core.ts checks
 // their role: only an Owner invites, changes roles or removes people.
 import { revalidatePath } from "next/cache";
 import {
   accept, changeTeam, consolePerson, decline, invitePerson, landingTeam, leave, newTeam, peopleOf, sendInvitationAgain, setMemberRole, takeOffTeam,
   teamsFor, withdrawInvitation, type Invited, type Team, type TeamPeople, type TeamRole,
 } from "@/server/teams";
+import { deleteTeam, transferBusiness } from "@/server/moving";
 import type { Result } from "./actions";
 
 const attempt = async <T>(f: () => Promise<T>): Promise<Result<T>> => {
@@ -96,4 +97,21 @@ export async function declineInvitationAction(id: string): Promise<Result<{ home
     await decline(p, id);
     return { home: (await landingTeam(p)).slug };
   });
+}
+
+/** D5 Transfer: the business, with every record and file, moves to another team the person owns, and opens there. An
+ * Owner of both teams only (src/server/teams-core.ts, then the business store checks again). */
+export async function transferBusinessAction(team: string, venture: string, to: string): Promise<Result<{ team: string; venture: string }>> {
+  return attempt(async () => {
+    const r = await transferBusiness(team, venture, to);
+    revalidatePath(`/studio/${team}`, "layout");
+    revalidatePath(`/studio/${r.team}`, "layout");
+    return r;
+  });
+}
+
+/** D6 Delete team: an Owner, with the team's name typed. Every business in it goes, then the team. The console opens
+ * the person's personal team. */
+export async function deleteTeamAction(team: string, typed: string): Promise<Result<{ home: string }>> {
+  return attempt(async () => deleteTeam(team, typed));
 }

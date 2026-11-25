@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AtSignIcon, DownloadIcon, EyeIcon, IdCardIcon, KeyRoundIcon, ShieldIcon, UserIcon, UserRoundIcon } from "lucide-react";
+import { AtSignIcon, DownloadIcon, EyeIcon, IdCardIcon, KeyRoundIcon, ShieldIcon, Trash2Icon, UserIcon, UserRoundIcon } from "lucide-react";
 import { AUDIENCES } from "@reflect/core/profile";
 import { ThingHeader } from "@/components/headers";
 import { PAGE } from "@/components/page-header";
@@ -42,6 +42,10 @@ export default async function AccountPage() {
               </span>
             </a>
           </li>
+        </Group>
+
+        <Group title="Delete" id="delete">
+          <Row href="/settings/account/delete" icon={<Trash2Icon />} label="Delete account" sub="Your sign-in and the teams only you are on" />
         </Group>
       </div>
     </main>

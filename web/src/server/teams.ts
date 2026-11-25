@@ -11,12 +11,12 @@ import { currentUser, OWNER_ID } from "./session";
 import { canSendMail, sendMail } from "./mail";
 import { siteUrl } from "./site";
 import {
-  acceptInvitation, changeMemberRole, createTeam, declineInvitation, invitationView, inviteToTeam, leaveTeam, NOT_A_MEMBER, personalTeamName,
-  removeMember, resendInvitation, revokeInvitation, roleLabel, teamPeople, teamsOf, updateTeam,
-  type Invitation, type InvitationView, type Team, type TeamPeople, type TeamRole, type TeamStore,
+  acceptInvitation, accountPlan, changeMemberRole, createTeam, declineInvitation, deleteTeamRows, eraseAccount, invitationView, inviteToTeam, leaveTeam,
+  NOT_A_MEMBER, personalTeamName, removeMember, resendInvitation, revokeInvitation, roleLabel, teamPeople, teamsOf, teamToDelete, transferTeams, updateTeam,
+  type AccountPlan, type Invitation, type InvitationView, type Team, type TeamPeople, type TeamRole, type TeamStore,
 } from "./teams-core";
 
-export type { Invitation, InvitationView, Team, TeamMember, TeamPeople, TeamRole } from "./teams-core";
+export type { AccountPlan, Invitation, InvitationView, Team, TeamMember, TeamPeople, TeamRole } from "./teams-core";
 
 /** The cookie that remembers the last team the person opened, so mentura.xyz/ lands there. */
 export const LAST_TEAM_COOKIE = "mentura_team";
@@ -165,4 +165,31 @@ export async function accept(p: Person, id: string): Promise<Team> {
 /** A3 Decline. */
 export async function decline(p: Person, id: string): Promise<void> {
   return onTeams((a) => declineInvitation(a, p, id));
+}
+
+// Round 4, moving and removing (src/server/moving.ts runs them with the business store).
+
+/** D5: both teams of a transfer, when the person is an Owner of each. */
+export async function transferCheck(p: Person, from: string, to: string): Promise<{ from: Team; to: Team }> {
+  return onTeams((a) => transferTeams(a, p, from, to));
+}
+
+/** D6: the team, when the person may delete it and typed its name. */
+export async function deleteTeamCheck(p: Person, slug: string, typed: string): Promise<Team> {
+  return onTeams((a) => teamToDelete(a, p, slug, typed));
+}
+
+/** D6 and A4: the team's invitations, memberships and the team itself. */
+export async function dropTeamRows(teamId: string): Promise<void> {
+  return onTeams((a) => deleteTeamRows(a, teamId));
+}
+
+/** A4: which of the person's teams go with the account, which they leave, and which hold them back. */
+export async function accountPlanFor(p: Person): Promise<AccountPlan> {
+  return onTeams((a) => accountPlan(a, p));
+}
+
+/** A4: the account's own rows (./teams-core.ts, eraseAccount). */
+export async function eraseAccountRows(p: Person): Promise<"deleted" | "anonymized"> {
+  return onTeams((a) => eraseAccount(a, p));
 }

@@ -14,6 +14,11 @@
 // and DELETE, and each row carries a hash chained to the tenant's previous row, so history is never lost
 // and a changed row is caught (verify). A read gives the newest row for a path. version is the git blob
 // SHA-1 of the content, as every connector gives it.
+//
+// A path is removed by a tombstone: a new row whose version is REMOVED and whose content is empty, chained like any
+// other. Reads, lists and searches skip a path whose newest row is a tombstone, and a write after one starts the path
+// again. Nothing in the contract removes a record; hosted/move-business.ts writes tombstones when a business moves to
+// another team or a team is deleted, so the history stays and the chain stays whole.
 
 import { createHash } from "node:crypto";
 import pg from "pg";
@@ -37,6 +42,8 @@ export interface Options {
 interface Row { path: string, content: string, version: string, seq: string, hash: string }
 
 export const TABLE = "naive_records";
+/** The version a tombstone row carries. A real version is a 40 character hex blob SHA, so the two never meet. */
+export const REMOVED = "removed";
 
 /** The table, its index and the trigger that keeps it append-only. Safe to run more than once. */
 export const SCHEMA = `
@@ -166,9 +173,13 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
   // The newest row of each path under the root. LIKE is escaped so a path's own % and _ match only themselves.
   const latest = (prefix: string) => {
     const like = prefix ? `${prefix.replace(/[\\%_]/g, (m) => `\\${m}`)}/%` : "%";
-    return q(`select distinct on (path) path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and (path like $2 or path = $3) order by path, ${TABLE}.seq desc`, [tenant, like, prefix]);
+    // A path whose newest row is a tombstone is gone.
+    return q(`select * from (select distinct on (path) path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and (path like $2 or path = $3) order by path, ${TABLE}.seq desc) live where live.version <> $4`, [tenant, like, prefix, REMOVED]);
   };
-  const one = async (p: string) => (await q(`select path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and path = $2 order by ${TABLE}.seq desc limit 1`, [tenant, full(p)]))[0] ?? null;
+  const one = async (p: string) => {
+    const r = (await q(`select path, content, version, seq::text as seq, hash from ${TABLE} where tenant = $1 and path = $2 order by ${TABLE}.seq desc limit 1`, [tenant, full(p)]))[0] ?? null;
+    return r && r.version !== REMOVED ? r : null;
+  };
 
   return {
     id, kind: "postgres", writes, tenant, root: base,
@@ -204,7 +215,9 @@ export function connect({ id = "postgres", url = "MENTURA_DATABASE_URL", tenant,
       const out = await tx(async (run) => {
         await run("select pg_advisory_xact_lock(hashtext($1))", [`${TABLE}/${tenant}`]);
         const head = (await run(`select hash from ${TABLE} where tenant = $1 order by seq desc limit 1`, [tenant]))[0] ?? null;
-        const now = (await run(`select content, version from ${TABLE} where tenant = $1 and path = $2 order by seq desc limit 1`, [tenant, path]))[0];
+        const newest = (await run(`select content, version from ${TABLE} where tenant = $1 and path = $2 order by seq desc limit 1`, [tenant, path]))[0];
+        // A tombstone reads as no item, so a write after a removal starts the path again.
+        const now = newest && newest.version !== REMOVED ? newest : undefined;
         if (opts.base !== undefined || opts.append) checkWrite(safePath(p), now?.version ?? null, now?.content ?? null, content, opts);
         const whole = opts.append ? (now?.content ?? "") + content : content;
         const version = blobSha(whole);

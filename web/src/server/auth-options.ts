@@ -77,6 +77,9 @@ export function reflectAuthOptions<D extends BetterAuthOptions["database"]>(data
         roles: TEAM_ACCESS_ROLES,
         creatorRole: "owner",
         allowUserToCreateOrganization: true,
+        // A team is deleted only through D6 (src/server/moving.ts), which removes its businesses from the business store
+        // first; Better Auth's own delete endpoint would leave them with no team.
+        disableOrganizationDeletion: true,
         // An invitation lasts 7 days (src/server/teams-core.ts, INVITE_DAYS), whichever door made it.
         invitationExpiresIn: INVITE_DAYS * 24 * 60 * 60,
         organizationHooks: {
