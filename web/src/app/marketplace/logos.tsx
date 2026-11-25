@@ -9,6 +9,9 @@ import { Mark } from "./parts";
 const SVG = ["amplitude", "atlassian", "calendly", "canva", "cloudflare", "figma", "github", "gmail", "google-calendar", "google-docs", "google-drive", "google-sheets", "huggingface", "intercom", "linear", "microsoft-calendar", "monday", "neon", "notion", "posthog", "resend", "sentry", "shopify", "slack", "supabase", "vercel", "workos"];
 const PNG = ["apple-health", "etsy", "instacart", "plaid", "strava", "stripe", "zapier"];
 
+/** Connectors that keep their initial on purpose until a mark is added (the catalog lint's K-4 reads this). */
+export const INITIAL_ONLY = ["hubspot", "cal-com", "docusign", "gusto", "deel"];
+
 /** The file for a connector's logo, or null when Reflect has none. */
 export const logoSrc = (id: string): string | null => (SVG.includes(id) ? `/logos/${id}.svg` : PNG.includes(id) ? `/logos/${id}.png` : null);
 

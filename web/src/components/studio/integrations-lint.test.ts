@@ -1,10 +1,16 @@
 // The Integrations lint (spec "Integrations: formal specification", Lint suites). It reads the screen inventory and the
-// machines as data and the code as text. Rules here: S-1 numbered, S-3 entry points, C-5 words and T-4 names agree.
+// machines as data and the code as text. Rules here: S-1 numbered, S-3 entry points, C-5 words, T-4 names agree, and
+// the catalog's K-1 membership, K-2 capabilities, K-4 logos and K-6 coverage.
 // The rest of the suites follow as the catalogs they read (components, capabilities) are written.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { MARKET } from "@reflect/core/marketplace";
+import { INITIAL_ONLY, logoSrc } from "@/app/marketplace/logos";
+import { FUNCTIONS } from "./data";
+import { CAPABILITIES, CATEGORIES, PRIMARY, SERVICE_CAPABILITIES, categoriesOf, categoryOf, servicesThat } from "./integrations";
 import { MACHINES } from "./integrations-machines";
+import { alternativesFor } from "./recommend";
 import { SCREENS } from "./integrations-screens";
 
 const SRC = join(__dirname, "..", "..");
@@ -89,4 +95,53 @@ describe("T-4 names agree: every machine state a screen cites is a state of that
       }
     });
   }
+});
+
+describe("catalog lint", () => {
+  const services = MARKET.map((c) => c.id);
+
+  it("K-1 membership: every service has one primary category, it is among its categories, and every member is in the catalog (P1, P2)", () => {
+    for (const id of services) {
+      const primary = PRIMARY[id];
+      expect(primary, `${id} has no primary category`).toBeTruthy();
+      expect(categoryOf(primary as string)?.members, `${id}'s primary ${primary} does not list it`).toContain(id);
+      expect(categoriesOf(id)[0]?.id, `${id} is not shown under its primary first`).toBe(primary);
+    }
+    for (const id of Object.keys(PRIMARY)) expect(services, `${id} has a primary but is not in the catalog`).toContain(id);
+    for (const c of CATEGORIES) for (const m of c.members) expect(services, `${c.id} lists ${m}`).toContain(m);
+  });
+
+  it("K-1 a service can carry several categories: Notion keeps knowledge, documents and plans", () => {
+    expect(categoriesOf("notion").map((c) => c.id)).toEqual(["knowledge", "files", "project-management"]);
+  });
+
+  it("K-2 capabilities: every service names at least one, each from the fixed list (P4)", () => {
+    for (const id of services) {
+      const caps = SERVICE_CAPABILITIES[id] ?? [];
+      expect(caps.length, `${id} has no capabilities`).toBeGreaterThan(0);
+      for (const cap of caps) expect(Object.keys(CAPABILITIES), `${id}: ${cap}`).toContain(cap);
+    }
+    for (const id of Object.keys(SERVICE_CAPABILITIES)) expect(services, `${id} has capabilities but is not in the catalog`).toContain(id);
+  });
+
+  it("K-2 existing storage: files and knowledge can live in more than one outside service, so no business has to move", () => {
+    expect(servicesThat("store-files").length).toBeGreaterThan(1);
+    expect(servicesThat("store-knowledge")).toEqual(expect.arrayContaining(["notion", "atlassian"]));
+  });
+
+  it("K-4 logos: every service has a logo file or keeps its initial on purpose", () => {
+    for (const id of services) {
+      const src = logoSrc(id);
+      if (src) expect(existsSync(join(SRC, "..", "public", src)), `${id}: ${src}`).toBe(true);
+      else expect(INITIAL_ONLY, `${id} has no logo and is not listed as initial only`).toContain(id);
+    }
+    for (const id of INITIAL_ONLY) expect(logoSrc(id), `${id} has a logo now; take it off INITIAL_ONLY`).toBeNull();
+  });
+
+  it("K-6 coverage: a category that fills a capability cluster has a service or a built-in alternative", () => {
+    for (const c of CATEGORIES.filter((c) => c.cluster)) {
+      if (c.members.length) continue;
+      expect(alternativesFor(c.id, { functions: FUNCTIONS.map((f) => f.id) }).length, `${c.id} is empty with no alternative`).toBeGreaterThan(0);
+    }
+  });
 });

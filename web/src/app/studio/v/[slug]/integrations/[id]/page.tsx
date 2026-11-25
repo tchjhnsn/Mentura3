@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/app/marketplace/logos";
 import { Num } from "@/components/studio/bits";
 import { fnOf, ventureHref } from "@/components/studio/data";
-import { categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
+import { CAPABILITIES, SERVICE_CAPABILITIES, categoriesOf, functionsOf, integrationOf } from "@/components/studio/integrations";
 import { Fact, FitBadge, Reasons } from "@/components/studio/integrations-ui";
 import { WhyThis } from "@/components/studio/integrations-why";
 import { recommend } from "@/components/studio/recommend";
@@ -109,6 +109,7 @@ export default async function IntegrationPage({ params, searchParams }: { params
           <Fact label="Categories">
             <div className="flex flex-wrap gap-1">{cats.map((k) => <Link key={k.id} href={ventureHref(slug, `integrations/category/${k.id}`)}><Badge variant="outline" className="font-normal hover:underline">{k.name}</Badge></Link>)}</div>
           </Fact>
+          {SERVICE_CAPABILITIES[id]?.length ? <Fact label="What it can do">{SERVICE_CAPABILITIES[id].map((k) => CAPABILITIES[k]).join(", ")}</Fact> : null}
           <Fact label="Functions it serves">{fns.map((f) => fnOf(f).label).join(", ")}</Fact>
           <Fact label="Sign in">With your own {c.by} account</Fact>
           <Fact label="Made by">{c.by}</Fact>

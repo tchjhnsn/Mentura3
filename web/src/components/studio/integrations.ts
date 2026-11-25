@@ -32,10 +32,10 @@ export const CATEGORIES: Category[] = [
   { id: "crm", name: "CRM", line: "Keep contacts, companies and deals in one place.", groups: ["3.1", "3.5", "6.2", "12.1"], cluster: "private-contact-records", members: ["hubspot"] },
   { id: "help-desk", name: "Help desk", line: "Answer customers' questions and keep each conversation.", groups: ["6.2", "6.3", "6.5"], cluster: "private-contact-records", members: ["intercom"] },
   { id: "scheduling", name: "Calendar and scheduling", line: "Find times and book calls.", groups: ["3.5", "6.2", "7.2"], members: ["calendly", "cal-com"] },
-  { id: "files", name: "File storage and documents", line: "Store and write files and documents.", groups: ["8.4", "13.5"], members: ["google-drive", "google-docs"] },
+  { id: "files", name: "File storage and documents", line: "Store and write files and documents.", groups: ["8.4", "13.5"], members: ["google-drive", "google-docs", "notion"] },
   { id: "spreadsheets", name: "Spreadsheets", line: "Model numbers and keep lists in sheets.", groups: ["1.4", "9.1", "13.7"], members: ["google-sheets"] },
   { id: "knowledge", name: "Knowledge base", line: "Write down what the business knows so anyone can find it.", groups: ["2.2", "6.1", "13.5"], members: ["notion", "atlassian"] },
-  { id: "project-management", name: "Project management", line: "Plan work as issues, projects and boards.", groups: ["2.1", "2.3", "5.2", "13.2"], members: ["linear", "atlassian", "monday"] },
+  { id: "project-management", name: "Project management", line: "Plan work as issues, projects and boards.", groups: ["2.1", "2.3", "5.2", "13.2"], members: ["linear", "atlassian", "monday", "notion"] },
   { id: "design", name: "Design", line: "Design screens, graphics and brand assets.", groups: ["2.2", "2.3", "3.3"], members: ["figma", "canva"] },
   { id: "source-control", name: "Source control", line: "Keep code and its history, and review changes.", groups: ["2.3", "8.5", "8.6"], members: ["github"] },
   { id: "hosting", name: "Hosting and deployment", line: "Put sites and apps online and keep them running.", groups: ["2.3", "8.5", "8.6"], cluster: "runtime-and-data", members: ["vercel", "cloudflare"] },
@@ -51,10 +51,70 @@ export const CATEGORIES: Category[] = [
   { id: "identity", name: "Identity and access", line: "Manage who can sign in to what.", groups: ["7.7", "8.3", "8.6"], cluster: "identity-and-secrets", members: ["workos"] },
 ];
 
+// A service can belong to several categories (Notion keeps knowledge and documents, Atlassian keeps knowledge and plans
+// work). One is its primary: the one its card names. The others are its other memberships, and it is listed in each
+// (spec "Integrations: formal specification", R6 and P2). Membership says what kind of software it is; capabilities
+// say what Reflect can do through it, and decide which services may be a business's source of truth for a kind of
+// record (spec R7, P4, P13).
+export const PRIMARY: Record<string, string> = {
+  github: "source-control", vercel: "hosting", cloudflare: "hosting", supabase: "databases", neon: "databases",
+  resend: "email", gmail: "email", "google-drive": "files", "google-docs": "files", "google-sheets": "spreadsheets",
+  slack: "team-chat", atlassian: "knowledge", monday: "project-management", intercom: "help-desk", zapier: "automation",
+  notion: "knowledge", linear: "project-management", sentry: "monitoring", stripe: "payments", hubspot: "crm",
+  calendly: "scheduling", "cal-com": "scheduling", posthog: "analytics", amplitude: "analytics", docusign: "e-signature",
+  gusto: "payroll-hr", deel: "payroll-hr", workos: "identity", canva: "design", figma: "design", huggingface: "ai-models",
+};
+
+/** What Reflect can do through a service, in plain words. Vendor-free, so a capability never names a product. */
+export const CAPABILITIES = {
+  "store-files": "Store files",
+  "store-documents": "Write documents",
+  "store-knowledge": "Keep what the business knows",
+  "store-records": "Keep structured records",
+  "store-code": "Keep code",
+  "send-email": "Send email",
+  "send-messages": "Send messages",
+  "plan-work": "Plan work",
+  "book-time": "Book time",
+  "keep-contacts": "Keep contacts and deals",
+  "answer-customers": "Answer customers",
+  "take-payments": "Take payments",
+  "pay-people": "Pay people",
+  "collect-signatures": "Collect signatures",
+  "measure-usage": "Measure usage",
+  "host-apps": "Host sites and apps",
+  "watch-errors": "Watch for errors",
+  "manage-sign-in": "Manage sign-in",
+  "make-designs": "Make designs",
+  "run-automations": "Run automations",
+  "run-models": "Run AI models",
+} as const;
+export type Capability = keyof typeof CAPABILITIES;
+
+export const SERVICE_CAPABILITIES: Record<string, Capability[]> = {
+  github: ["store-code", "plan-work"], vercel: ["host-apps"], cloudflare: ["host-apps", "store-files"],
+  supabase: ["store-records", "store-files", "manage-sign-in"], neon: ["store-records"],
+  resend: ["send-email"], gmail: ["send-email"], "google-drive": ["store-files"], "google-docs": ["store-documents"],
+  "google-sheets": ["store-records"], slack: ["send-messages"], atlassian: ["store-knowledge", "store-documents", "plan-work"],
+  monday: ["plan-work", "store-records"], intercom: ["answer-customers", "keep-contacts"], zapier: ["run-automations"],
+  notion: ["store-knowledge", "store-documents", "store-records", "plan-work"], linear: ["plan-work"],
+  sentry: ["watch-errors"], stripe: ["take-payments"], hubspot: ["keep-contacts", "send-email"],
+  calendly: ["book-time"], "cal-com": ["book-time"], posthog: ["measure-usage"], amplitude: ["measure-usage"],
+  docusign: ["collect-signatures"], gusto: ["pay-people"], deel: ["pay-people"], workos: ["manage-sign-in"],
+  canva: ["make-designs"], figma: ["make-designs"], huggingface: ["run-models"],
+};
+
+/** The services that can do one thing: the candidates for a business's source of truth for that kind of record. */
+export const servicesThat = (capability: Capability): string[] =>
+  Object.entries(SERVICE_CAPABILITIES).filter(([, caps]) => caps.includes(capability)).map(([id]) => id);
+
 export const categoryOf = (id: string): Category | undefined => CATEGORIES.find((c) => c.id === id);
 export const integrationOf = (id: string): MarketConnector | undefined => MARKET.find((c) => c.id === id);
 export const membersOf = (c: Category): MarketConnector[] => c.members.map(integrationOf).filter((m): m is MarketConnector => !!m);
-export const categoriesOf = (integration: string): Category[] => CATEGORIES.filter((c) => c.members.includes(integration));
+/** A service's categories, its primary first. */
+export const categoriesOf = (integration: string): Category[] =>
+  CATEGORIES.filter((c) => c.members.includes(integration)).sort((a, b) => Number(b.id === PRIMARY[integration]) - Number(a.id === PRIMARY[integration]));
+export const primaryOf = (integration: string): Category | undefined => categoryOf(PRIMARY[integration] ?? "");
 /** The functions whose work a category serves, in APQC order. */
 export const functionsOf = (c: Category): FunctionId[] => [...new Set(c.groups.map((g) => groupOf(g)?.function).filter((f): f is FunctionId => !!f))];
 
