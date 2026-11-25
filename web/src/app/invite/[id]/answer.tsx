@@ -8,6 +8,7 @@ import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { acceptInvitationAction, declineInvitationAction } from "@/app/studio/team-actions";
+import { refreshTeams } from "@/components/studio/team";
 
 export function InvitationAnswer({ id }: { id: string }) {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function InvitationAnswer({ id }: { id: string }) {
     setError(null);
     if (kind === "accept") {
       const r = await acceptInvitationAction(id);
-      if (r.ok) { router.replace(`/studio/${r.value.team}`); return; }
+      if (r.ok) { await refreshTeams(); router.replace(`/studio/${r.value.team}`); return; }
       setError(r.error);
     } else {
       const r = await declineInvitationAction(id);
