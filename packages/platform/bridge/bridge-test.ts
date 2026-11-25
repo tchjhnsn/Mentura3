@@ -105,6 +105,27 @@ try {
   expect("a venture names the functions it has turned on", Array.isArray(shown.result.departments) && shown.result.departments.every((d) => typeof d === "string"), shown.result.departments);
   expect("a venture says its industry, regulation and funding, or null", ["industry", "regulation", "funding"].every((k) => k in shown.result), shown.result);
 
+  // A person chooses where customers are kept: a connected service, then Reflect again.
+  const stripe = { id: "mcp-stripe-0a1b2c3d", connector: "mcp", api: "stripe", writes: "none" };
+  type Map = { sources: { id: string }[]; rules?: { record: string; attribute: string; system_of_record: string }[] };
+  const map = () => bridge({ op: "sources", venture: id }).result as unknown as Map;
+  const whole = (m: { rules?: { record: string; attribute: string; system_of_record: string }[] }) => (m.rules ?? []).filter((r) => r.record === "customer" && r.attribute === "*");
+  const before = map();
+  const chose = bridge({ op: "source", venture: id, record: "customer", source: stripe });
+  expect("a person names a connected service as where customers are kept", chose.ok && whole(map()).length === 1 && whole(map())[0].system_of_record === stripe.id
+    && map().sources.some((s: { id: string }) => s.id === stripe.id), chose);
+  const again = bridge({ op: "source", venture: id, record: "customer", source: stripe });
+  expect("choosing the same source again leaves one rule and one entry", again.ok && whole(map()).length === 1 && map().sources.filter((s: { id: string }) => s.id === stripe.id).length === 1, again);
+  for (const [name, source] of [["a source that writes", { ...stripe, writes: "all" }], ["a source that is not the mcp connector", { ...stripe, connector: "filesystem", root: "/" }], ["a source with a path in its id", { ...stripe, id: "../x" }]] as const) {
+    const r = bridge({ op: "source", venture: id, record: "customer", source });
+    expect(`refuses ${name}`, !r.ok && whole(map())[0].system_of_record === stripe.id, r);
+  }
+  const agentSource = bridge({ op: "source", venture: id, record: "customer", source: null, actor: { MENTURA_ACTOR: "agent", MENTURA_MODEL: null } });
+  expect("an agent cannot choose a source", !agentSource.ok && whole(map()).length === 1, agentSource);
+  const back = bridge({ op: "source", venture: id, record: "customer", source: null });
+  expect("Use Reflect removes the rule and the service's entry", back.ok && whole(map()).length === 0 && !map().sources.some((s: { id: string }) => s.id === stripe.id), back);
+  expect("every other source and rule is as it was", JSON.stringify(map().sources) === JSON.stringify(before.sources) && JSON.stringify(map().rules ?? []) === JSON.stringify(before.rules ?? []), [before, map()]);
+
   const decision = bridge({ op: "docket", venture: id }).result.next.decision as string;
   const broken = join(scratch, "broken");
   mkdirSync(broken);

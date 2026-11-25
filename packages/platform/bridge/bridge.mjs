@@ -236,6 +236,14 @@ async function openDecision(dir, id) {
   return docket(dir).functions.flatMap((/** @type {any} */ f) => f.decisions).find((/** @type {any} */ d) => d.id === id) ?? null;
 }
 
+/** The venture's source map (knowledge/sources.json, EE-042) wherever the layout keeps it, or an empty one.
+ *  @param {string} dir */
+async function sourceMapIn(dir) {
+  const { ventureFile } = await fw("packages/naive/src/core/venture-paths.mjs");
+  const file = ventureFile(dir, "knowledge/sources.json");
+  return existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : { sources: [], records: {} };
+}
+
 /** The record a statement lands on: its route once known, what it holds now, and its neighbours' ids.
  *  @param {any} s @param {string} venture @param {string} workspace */
 async function targetOf(s, venture, workspace) {
@@ -467,6 +475,46 @@ const ops = {
       provenance: { agent: { id: identity.name, account: identity.userId } } });
     if (!r.ok) throw new Error(plainWriteRefusal(s, r.error));
     return { written: r.result.written, draft: landedAsDraft(r.result), signer: "verified" };
+  },
+
+  // Where the business keeps each kind of record (V27 reads it).
+  async sources({ venture }, { workspace }) {
+    return sourceMapIn(await dirOf(venture, workspace));
+  },
+
+  // A person chooses where one kind of the business's records is kept (M4, Integrations spec "Sources of truth"):
+  // a source entry for a service they connected, read through the platform's mcp connector, or none for Reflect,
+  // the venture's own folder. The whole-business rule for that record type is replaced, a connected service's
+  // entry that no rule names any more is dropped, and the map is written through the router as the person.
+  // Which connection may be named is the web app's to check: it is the side that knows the person's connections.
+  async source({ venture, record, source, actor }, { identity, workspace }) {
+    const dir = await dirOf(venture, workspace);
+    await refuseNonPerson(dir, actor, identity.name);
+    if (typeof record !== "string" || !/^[a-z][a-z0-9-]*$/.test(record)) throw new Error("That is not a kind of record, so nothing was saved.");
+    if (source !== null && (typeof source !== "object" || source.connector !== "mcp" || source.writes !== "none"
+      || typeof source.id !== "string" || !/^mcp-[a-z0-9-]+$/.test(source.id) || typeof source.api !== "string" || !/^[a-z0-9-]+$/.test(source.api)
+      || Object.keys(source).some((k) => !["id", "connector", "api", "writes"].includes(k)))) {
+      throw new Error("That source cannot be named here, so nothing was saved.");
+    }
+    const current = await sourceMapIn(dir);
+    const whole = (/** @type {any} */ r) => r.record === record && ["attribute", "phase", "product", "account", "actor"].every((k) => r[k] === "*");
+    const rules = (Array.isArray(current.rules) ? current.rules : []).filter((/** @type {any} */ r) => !whole(r));
+    const records = { ...(current.records ?? {}) };
+    delete records[record];
+    let sources = (Array.isArray(current.sources) ? current.sources : []).filter((/** @type {any} */ s) => !source || s.id !== source.id);
+    if (source) {
+      sources.push(source);
+      rules.push({ record, attribute: "*", phase: "*", product: "*", account: "*", actor: "*", system_of_record: source.id, owner: "founder" });
+    }
+    const named = new Set([...rules.map((/** @type {any} */ r) => r.system_of_record), ...Object.values(records)]);
+    sources = sources.filter((/** @type {any} */ s) => s.connector !== "mcp" || named.has(s.id));
+    const { call } = await fw("packages/naive/src/router/router.mjs");
+    const route = "knowledge/knowledge-sources";
+    await refuseWaitingDraft(route, venture, workspace);
+    const r = await call({ venture, route, action: "write", input: { ...current, sources, records, rules }, actor: "person", workspace, via: "console",
+      provenance: { agent: { id: identity.name, account: identity.userId } } });
+    if (!r.ok) throw new Error("Naive did not accept that source, so nothing was saved. Refresh the page and choose again.");
+    return { written: r.result.written, draft: landedAsDraft(r.result) };
   },
 
   // A person accepts an agent's draft: mentura accept, from a door that checked a sign-in. It is tied to what

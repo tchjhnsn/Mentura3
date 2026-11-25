@@ -63,7 +63,7 @@ export function studioUnavailable(env: NodeJS.ProcessEnv = process.env): string 
   return null;
 }
 
-const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete"]);
+const WRITES = new Set(["adopt", "create", "decide", "record", "accept", "confirm", "advance", "prompt", "claim", "fileWrite", "fileFolder", "fileMove", "fileDelete", "source"]);
 const READ_MS = 15_000;
 const WRITE_MS = 120_000;
 // A key for this process: the bridge only checks that the request was signed by its caller just now. The hosted store

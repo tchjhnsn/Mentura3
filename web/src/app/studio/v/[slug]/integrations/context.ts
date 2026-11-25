@@ -41,11 +41,9 @@ export async function integrationsContext(slug: string): Promise<IntegrationsCon
 export async function sourceMapOf(slug: string): Promise<{ map: SourceMap; error: string | null }> {
   if (isSample(slug) || studioUnavailable()) return { map: {}, error: null };
   try {
-    const r = await naive<{ text: string | null }>("read", { venture: decodeURIComponent(slug), path: "knowledge/sources.json" });
-    return { map: r.text ? (JSON.parse(r.text) as SourceMap) : {}, error: null };
-  } catch (e) {
-    // No knowledge/sources.json is the usual case for a new business: everything stays in Reflect.
-    if (e instanceof Error && /ENOENT|no such file|not found/i.test(e.message)) return { map: {}, error: null };
+    // The bridge finds knowledge/sources.json wherever the venture's layout keeps it; a new business has none.
+    return { map: await naive<SourceMap>("sources", { venture: decodeURIComponent(slug) }), error: null };
+  } catch {
     return { map: {}, error: "Reflect could not read where this business keeps its records." };
   }
 }
