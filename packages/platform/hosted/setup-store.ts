@@ -42,15 +42,20 @@ export async function setupStore(env: NodeJS.ProcessEnv = process.env, driver: D
     await ensureSchema(admin);
     await admin.query(`do $$ begin
       if not exists (select 1 from pg_roles where rolname = '${RUNTIME_ROLE}') then
-        create role ${RUNTIME_ROLE} login nosuperuser nocreatedb nocreaterole nobypassrls;
+        create role ${RUNTIME_ROLE} login;
       end if;
     end $$`);
-    await admin.query(`alter role ${RUNTIME_ROLE} with login nosuperuser nocreatedb nocreaterole nobypassrls password ${literal}`);
+    // Attributes stay at their defaults (no superuser, no bypass): a hosted owner such as Neon's may not set them at all.
+    await admin.query(`alter role ${RUNTIME_ROLE} with login password ${literal}`);
     for (const sql of setupSteps(database)) await admin.query(sql);
     await admin.query(readFileSync(new URL("./sql/002-tenant-isolation.sql", import.meta.url), "utf8"));
     await admin.query("insert into mentura_tenant_key (id, secret) values (true, $1) on conflict (id) do update set secret = excluded.secret", [key]);
     const bypass = await admin.query("select rolbypassrls as b, rolsuper as s from pg_roles where rolname = $1", [RUNTIME_ROLE]);
     if (bypass.rows[0]?.b || bypass.rows[0]?.s) throw new Error(`${RUNTIME_ROLE} can bypass row security; drop it and run this again`);
+    // A member of a role that bypasses row security could switch to it, so no such membership is allowed either.
+    const inherited = await admin.query(`select count(*)::int as n from pg_roles r
+      where (r.rolbypassrls or r.rolsuper) and r.rolname <> $1 and pg_has_role($1, r.oid, 'member')`, [RUNTIME_ROLE]);
+    if (Number(inherited.rows[0]?.n) > 0) throw new Error(`${RUNTIME_ROLE} belongs to a role that can bypass row security; drop it and run this again`);
     return { database, role: RUNTIME_ROLE };
   } finally {
     await admin.end();
