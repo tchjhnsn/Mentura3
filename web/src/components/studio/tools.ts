@@ -1,6 +1,6 @@
 // The business console's tools, from Naive's tool catalog (naive packages/naive/src/functions/tools.json, EE-163):
 // function (APQC level 1) > process group (APQC level 2) > tool, plus the universal tools every business gets.
-// naive-tools.json is a copy of that file at tchjhnsn/naive 49e96064e; copy it again when the catalog changes.
+// naive-tools.json is a copy of that file at tchjhnsn/naive 34c53347a; copy it again when the catalog changes.
 // The sidebar (src/components/sidebar.tsx) is drawn from it in three levels, after Vercel (doc "Where actions live in
 // the business console", 2026-11-24): the Studio, one business, and one function, each replacing the whole sidebar.
 import catalog from "./naive-tools.json";
