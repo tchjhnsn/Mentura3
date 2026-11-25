@@ -127,7 +127,7 @@ process.env.BETTER_AUTH_SECRET = "hosted-secret-must-not-appear-0123456789";
 const bridge = new URL("../bridge/bridge.mjs", import.meta.url).pathname;
 const key = "bridge-test-key-0123456789abcdef";
 const userId = "acctada";
-const identity: Identity = { userId, name: "Ada", email: "ada@example.com", organizationId: "org", organizationRole: "owner" };
+const identity: Identity = { userId, name: "Ada", email: "ada@example.com", organizationId: userId, organizationRole: "owner" };
 const sign = (op: string, request: Record<string, unknown> = {}) => signAssertion(identity, { op, ...request }, key);
 
 const sentinel = mkdtempSync(join(tmpdir(), "mentura-no-fallback-"));
@@ -162,7 +162,7 @@ expect("a replacement process reads the venture", child.code === 0 && child.out.
 
 const other = await runHostedBridge<{ ventures: { id: string }[] }>({
   userId: "acctbea",
-  assertion: signAssertion({ ...identity, userId: "acctbea", name: "Bea" }, { op: "ventures" }, key),
+  assertion: signAssertion({ ...identity, userId: "acctbea", organizationId: "acctbea", name: "Bea" }, { op: "ventures" }, key),
   bridgePath: bridge,
   key,
 });
@@ -218,7 +218,7 @@ const [adaAgain, beaAgain] = await Promise.all([
   runHostedBridge<{ ventures: { id: string }[] }>({ userId, assertion: sign("ventures"), bridgePath: bridge, key }),
   runHostedBridge<{ ventures: { id: string }[] }>({
     userId: "acctbea",
-    assertion: signAssertion({ ...identity, userId: "acctbea", name: "Bea" }, { op: "ventures" }, key),
+    assertion: signAssertion({ ...identity, userId: "acctbea", organizationId: "acctbea", name: "Bea" }, { op: "ventures" }, key),
     bridgePath: bridge,
     key,
   }),
