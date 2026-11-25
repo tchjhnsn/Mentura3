@@ -9,6 +9,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
+    "e2e:prod": "playwright test -c playwright.prod.config.ts",
     "migrate": "tsx scripts/migrate.ts",
     "bundle": "tsx scripts/person-bundle.ts",
     "schemas": "tsx scripts/life-schemas.ts",
