@@ -2,8 +2,8 @@
 // the record: this reads each session's spans, sends the ones not yet sent as OpenTelemetry (OTLP/HTTP, JSON
 // encoding) to LangSmith's OTel endpoint, and remembers in .naive/langsmith-sync.json the hash of the last span
 // LangSmith accepted, so a run offline sends nothing and the next run online sends what is pending, once. Spans keep
-// only what the venture allowed when they were written (inputs and outputs only with traces.content), and this adds
-// nothing. Only this side names the vendor and the key.
+// only what the venture allowed when they were written (inputs and outputs only with traces.content). toOtlp copies
+// those messages onto the keys LangSmith reads. Only this side names the vendor and the key.
 //
 //   LANGSMITH_API_KEY=... node platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]
 //
@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { sessions, spans } from "naive-framework/src/core/instrumentation.mjs";
 import type { TraceSpan } from "naive-framework/src/records/types/records.d.ts";
+import { redactTrace } from "../agents/trace-redact.ts";
 
 const SYNC = ".naive/langsmith-sync.json";
 type Value = { stringValue: string } | { intValue: string } | { doubleValue: number } | { boolValue: boolean };
@@ -24,11 +25,17 @@ export interface Result { session: string, sent: number, pending: number, error?
 const hex = (s: string, n: number): string => { const h = s.replace(/-/g, "").toLowerCase(); return /^[0-9a-f]+$/.test(h) && h.length === n ? h : createHash("sha256").update(s).digest("hex").slice(0, n); };
 const nanos = (iso: string): string => (BigInt(Date.parse(iso)) * 1000000n).toString();
 const value = (v: unknown): Value => typeof v === "boolean" ? { boolValue: v } : typeof v === "number" ? (Number.isInteger(v) ? { intValue: String(v) } : { doubleValue: v }) : { stringValue: typeof v === "string" ? v : JSON.stringify(v) };
+const traceText = (v: unknown): string => redactTrace(typeof v === "string" ? v : JSON.stringify(v));
 const RUN_TYPE: Record<string, string> = { agent: "chain", model: "llm", tool: "tool", call: "retriever", judgment: "llm", trigger: "chain" };
 
 /** One Naive span as an OTLP span. Span ids become 16 hex characters (a hash when they are not), parents likewise. */
 export function toOtlp(s: TraceSpan): OtlpSpan {
   const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash };
+  // LangSmith reads input.value and output.value. Copy the messages already on the span. Redact only this copy.
+  const input = attrs["gen_ai.input.messages"];
+  if (input !== undefined && input !== null) { const text = traceText(input); attrs["input.value"] = text; attrs["gen_ai.prompt"] = text; }
+  const output = attrs["gen_ai.output.messages"];
+  if (output !== undefined && output !== null) { const text = traceText(output); attrs["output.value"] = text; attrs["gen_ai.completion"] = text; }
   return {
     traceId: hex(s.trace_id, 32), spanId: hex(s.span_id, 16), ...(s.parent_span_id ? { parentSpanId: hex(s.parent_span_id, 16) } : {}),
     name: s.name, kind: s.kind === "model" || s.kind === "call" ? 3 : 1, startTimeUnixNano: nanos(s.start), endTimeUnixNano: nanos(s.end),
