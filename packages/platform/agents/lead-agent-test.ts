@@ -122,7 +122,7 @@ createInterface({ input: shim.stdout }).on("line", (l) => { const m = JSON.parse
 const ask = (id: number, method: string, params: unknown = {}) => new Promise<ShimReply>((res) => { replies.set(id, res); shim.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n"); });
 await ask(1, "initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "0" } });
 const listed = await ask(2, "tools/list");
-ok("the shim lists the staffed lead and route_task", JSON.stringify(listed.result?.tools?.map((t) => t.name)) === JSON.stringify(["lead_growth-lead", "route_task"]), JSON.stringify(listed.result?.tools?.map((t) => t.name)));
+ok("the shim lists the staffed lead, route_task and command", JSON.stringify(listed.result?.tools?.map((t) => t.name)) === JSON.stringify(["lead_growth-lead", "route_task", "command"]), JSON.stringify(listed.result?.tools?.map((t) => t.name)));
 const routed = (await ask(3, "tools/call", { name: "route_task", arguments: { functions: ["finance"] } })).result?.structuredContent as RouteAnswer | undefined;
 ok("route_task sends a single-function task to agent_<function>", routed?.tool === "agent_finance", JSON.stringify(routed));
 const toPerson = (await ask(4, "tools/call", { name: "route_task", arguments: { functions: ["products"], classes: ["production-ship"] } })).result?.structuredContent as RouteAnswer | undefined;

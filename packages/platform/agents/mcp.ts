@@ -70,7 +70,7 @@ export function toolsFor(env: Env): Tool[] {
       inputSchema: RUN_INPUT(env),
     };
   });
-  return [...agents, ...leads, ROUTE_TOOL(env)];
+  return [...agents, ...leads, ROUTE_TOOL(env), COMMAND_TOOL(env)];
 }
 
 const RUN_INPUT = (env: Env): Record<string, unknown> => ({ type: "object", properties: {
@@ -90,6 +90,20 @@ const ROUTE_TOOL = (env: Env): Tool => ({
     venture: { type: "string", description: `The venture's id${env.MENTURA_VENTURE ? ` (default ${env.MENTURA_VENTURE})` : ""}` },
   }, required: ["functions"] },
 });
+
+/** The slash command tool: meetings that walk a function workflow with its agent, what is due, memory and tooling (commands.ts). */
+const COMMAND_TOOL = (env: Env): Tool => ({
+  name: "command",
+  description: "Runs one Mentura slash command on the venture and returns its result. /next says what is due; /meet <function> [<workflow>] opens a meeting that walks that workflow with the function's agent and stops when it needs the person; /answer, /done, /skip, /handoff <meeting> answer the item it waits on; /revisit and /end loop back over skipped items or close it; /meetings, /skipped, /memory <role>, /tools <need>, /help. Show the person what the meeting waits on and pass their words back with /answer; never answer for them.",
+  inputSchema: { type: "object", properties: {
+    text: { type: "string", description: "The command line, starting with /" },
+    by: { type: "string", description: `The person speaking${env.MENTURA_PERSON ? ` (default ${env.MENTURA_PERSON})` : ""}` },
+    venture: { type: "string", description: `The venture's id${env.MENTURA_VENTURE ? ` (default ${env.MENTURA_VENTURE})` : ""}` },
+  }, required: ["text"] },
+});
+
+/** Runs `bin.ts cmd` once and resolves with its one line of JSON. Injected so a test can stand in for it. */
+export type SpawnCommand = (_args: { venture: string, by: string, text: string }, _env: Env) => { child: ChildProcess, result: Promise<{ ok: boolean, [k: string]: unknown }> };
 
 const dirOf = (env: Env, venture = env.MENTURA_VENTURE): string | null =>
   venture ? ventureDir(venture, env.MENTURA_WORKSPACE || undefined) as string | null : null;
@@ -119,7 +133,7 @@ const running = new Map<number | string, ChildProcess>();
  * SIGTERM it (the run ends its open spans and releases its lock), and replies with the RunResult as text and as
  * structuredContent. isError is true unless the status is done or already-ran.
  */
-export async function handle(msg: Message, env: Env, spawnRun: SpawnRun = spawnBin): Promise<Reply> {
+export async function handle(msg: Message, env: Env, spawnRun: SpawnRun = spawnBin, spawnCommand: SpawnCommand = spawnCmd): Promise<Reply> {
   const { id, method, params = {} } = msg;
   const reply = (result: unknown): Reply => ({ jsonrpc: "2.0", id, result });
   const failed = (text: string): Reply => reply({ content: [{ type: "text", text }], isError: true });
@@ -134,6 +148,19 @@ export async function handle(msg: Message, env: Env, spawnRun: SpawnRun = spawnB
       if (params.name === "route_task") {
         const r = routeTool((params.arguments ?? {}) as Record<string, unknown>, env);
         return "error" in r ? failed(r.error) : reply({ content: [{ type: "text", text: JSON.stringify(r, null, 2) }], structuredContent: r, isError: false });
+      }
+      if (params.name === "command") {
+        const a = (params.arguments ?? {}) as { text?: unknown, by?: unknown, venture?: unknown };
+        const venture = typeof a.venture === "string" && a.venture ? a.venture : env.MENTURA_VENTURE;
+        const by = typeof a.by === "string" && a.by ? a.by : env.MENTURA_PERSON;
+        if (typeof a.text !== "string" || !a.text.trim().startsWith("/")) return failed("text is required: a command line starting with /, such as /next");
+        if (!venture) return failed("venture is required: pass it, or set MENTURA_VENTURE in this server's environment");
+        if (!by) return failed("by is required: the person speaking, or set MENTURA_PERSON in this server's environment");
+        const { child, result } = spawnCommand({ venture, by, text: a.text }, env);
+        if (id !== undefined) running.set(id, child);
+        try { const r = await result; return reply({ content: [{ type: "text", text: JSON.stringify(r, null, 2) }], structuredContent: r, isError: !r.ok }); }
+        catch (e) { return failed(String((e as Error).message ?? e)); }
+        finally { if (id !== undefined) running.delete(id); }
       }
       const fn = functionIds().find((f) => toolName(f) === params.name);
       const lead = fn ? undefined : leadIds().find((l) => leadToolName(l) === params.name);
@@ -176,6 +203,21 @@ export function serve(stdin: NodeJS.ReadableStream, stdout: NodeJS.WritableStrea
 const BIN = fileURLToPath(new URL("./bin.ts", import.meta.url));
 
 /** One `bin.ts run` (or `bin.ts lead`) child: the task on stdin, its one line of stdout parsed as the result. */
+const spawnCmd: SpawnCommand = (args, env) => {
+  const child = spawn(process.execPath, [BIN, "cmd", "--venture", args.venture, "--by", args.by], { env: { ...env }, stdio: ["pipe", "pipe", "inherit"] });
+  child.stdin?.end(args.text);
+  const result = new Promise<{ ok: boolean, [k: string]: unknown }>((resolve, reject) => {
+    let out = "";
+    child.stdout?.on("data", (d: Buffer) => { out += d.toString("utf8"); });
+    child.on("error", reject);
+    child.on("close", (code, signal) => {
+      try { resolve(JSON.parse(out.trim().split("\n").at(-1) ?? "") as { ok: boolean }); }
+      catch { reject(new Error(`the command process ended (${signal ?? `exit ${code}`}) without a result`)); }
+    });
+  });
+  return { child, result };
+};
+
 const spawnBin: SpawnRun = (target, args, env) => {
   const child = spawn(process.execPath, [BIN, target.kind, target.id, "--venture", args.venture, ...(args.run_id ? ["--run-id", args.run_id] : [])],
     { env: { ...env }, stdio: ["pipe", "pipe", "inherit"] });

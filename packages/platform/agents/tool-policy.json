@@ -1,0 +1,10 @@
+{
+  "description": "How a Mentura agent scores a candidate tool (skills/tooling/SKILL.md). Each criterion is scored 0 to 4. A criterion with gate true rules a candidate out at 0, whatever the rest. Weights are unvalidated priors that sum to 1; a business may change them in its own records.",
+  "criteria": [
+    { "id": "visibility", "gate": true, "weight": 0.35, "question": "After the tool is used, can the business's agents read what happened without a person retyping it?", "levels": ["Activity stays in the tool's screens", "Manual export only", "Export or API without history", "API, MCP or webhooks with most activity", "Every action leaves an event or transcript the business reads automatically"] },
+    { "id": "ownership", "gate": true, "weight": 0.3, "question": "Does the business hold its own account and data, and can it leave with its history?", "levels": ["A personal account, or no export", "Business account, partial export", "Full export in a closed format", "Full export in an open format", "Open format export tested, or the business runs it itself"] },
+    { "id": "fit", "gate": false, "weight": 0.2, "question": "Does it do the job the work needs?", "levels": ["No", "Barely", "With workarounds", "Well", "Better than the work needs"] },
+    { "id": "cost", "gate": false, "weight": 0.1, "question": "Is the monthly cost right for the business's stage?", "levels": ["Out of reach", "High", "Fair", "Low", "Free or nearly"] },
+    { "id": "learning", "gate": false, "weight": 0.05, "question": "How much must the team learn?", "levels": ["Weeks", "Days", "A day", "An hour", "Nothing"] }
+  ]
+}

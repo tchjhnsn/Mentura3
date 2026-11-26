@@ -1,5 +1,6 @@
 // A run's graph state on disk, so the same run id can continue after the process stops (local only).
-// The file is <venture>/.naive/agent-checkpoints.sqlite. One venture lock means one writer.
+// The file is <venture>/.naive/agent-checkpoints.sqlite for agent runs and <venture>/.naive/meeting-checkpoints.sqlite
+// for meetings (meeting-graph.ts). Each file is rewritten whole on every put, so two savers never share one file.
 // node:sqlite is in Node 22, so this adds no native addon.
 //
 // A finished thread is the saved state. A thread with work left is continued. A new thread starts on the task.
@@ -59,11 +60,11 @@ export class SqliteRunSaver extends MemorySaver {
   #db: DatabaseSync;
   #closed = false;
 
-  constructor(dir: string) {
+  constructor(dir: string, file: string = FILE) {
     super();
     const folder = join(dir, ".naive");
     mkdirSync(folder, { recursive: true });
-    this.#db = new DatabaseSync(join(folder, FILE));
+    this.#db = new DatabaseSync(join(folder, file));
     this.#db.exec(`CREATE TABLE IF NOT EXISTS saver (
       id INTEGER PRIMARY KEY CHECK (id = 1),
       storage TEXT NOT NULL,
@@ -107,6 +108,11 @@ export class SqliteRunSaver extends MemorySaver {
 
 export function openRunSaver(dir: string): SqliteRunSaver {
   return new SqliteRunSaver(dir);
+}
+
+/** The venture's meeting checkpoints, a file of their own: a meeting process also runs agents, which save to agent-checkpoints.sqlite. */
+export function openMeetingSaver(dir: string): SqliteRunSaver {
+  return new SqliteRunSaver(dir, "meeting-checkpoints.sqlite");
 }
 
 /**

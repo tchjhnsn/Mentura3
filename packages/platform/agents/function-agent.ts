@@ -14,6 +14,7 @@
 import { closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, unlinkSync, writeSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { BaseLanguageModel } from "@langchain/core/language_models/base";
 import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents";
 import { invokeThread, openRunSaver } from "./checkpoint.ts";
@@ -24,6 +25,7 @@ import { roleOf } from "naive-framework/src/engine/access.mjs";
 import { ventureDir } from "naive-framework/src/router/router.mjs";
 import type { FunctionAgentSpec, FunctionId, Phase } from "./function-spec.ts";
 import { reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
+import { memoryDir, writeMemory } from "./memory.ts";
 import { NaiveBackend } from "./naive-backend.ts";
 import { NaiveTracer, tagSpan } from "./naive-tracer.ts";
 import { redactTrace } from "./trace-redact.ts";
@@ -160,8 +162,26 @@ const RULES = [
   "When a tool answers \"Held for a person\", the record did not change. A person must accept your draft. Do not try the write again. Say in your answer what waits.",
   "Only a person settles a decision. To raise a question, write an open decision under /decisions/.",
   "Your function's skills, frameworks and templates are under /function/ and are read-only. Read a skill's SKILL.md before you do the work it covers.",
+  "Mentura's own skills are under /mentura/skills/: ownership (you own every operation you run, gates included), information-hierarchy (answer first, top-down stages), meetings (how to work an agenda item), documents (record, then a print copy a person approves, then a PDF or deck for outsiders, HTML last) and tooling (choose tools that let the business see every activity and own its data). Read ownership before every task and tooling before you name any tool.",
+  "You own what you execute. Run every gate on your own output (the schema, the step's checks, and for anything public the publishing gate and its internal-terms lint) before you hand it off or call it done. If a gate fails, fix it or say exactly what failed.",
+  "Writing and building are separate: when your work is copy, a plan or a sitemap that another function builds, end with a handoff to that function's agent instead of building it yourself.",
+  "Your memory, derived from the business's closed meetings, is /memory/MEMORY.md. A record wins over memory when they disagree.",
+  "For a narrow piece of work (look up a vendor, read a long source, draft one section), start a temporary specialist with the task tool. It works through the same gate and ends when it answers.",
   "Finish with a short answer for whoever called you: what you changed, what waits for a person, and what you recommend next.",
 ];
+
+/** Where Mentura's skills are mounted, read-only, for every function and lead agent. */
+export const MENTURA_SKILLS = "/mentura/skills/";
+/** Paths no agent may write: Mentura's skills and the agent's derived memory. */
+export const MENTURA_READ_ONLY = ["/mentura/**", "/memory/**"];
+
+/** The read-only mounts every Mentura agent gets beside the venture's records: Mentura's skills and the role's memory. */
+export function menturaMounts(dir: string, role: string): Record<string, FilesystemBackend> {
+  return {
+    [MENTURA_SKILLS]: new FilesystemBackend({ rootDir: fileURLToPath(new URL("./skills/", import.meta.url)), virtualMode: true }),
+    "/memory/": new FilesystemBackend({ rootDir: memoryDir(dir, role), virtualMode: true }),
+  };
+}
 
 /** The keys withRunEnv sets. Every one is restored after the run, unset again when it was unset. */
 const RUN_ENV = ["MENTURA_ACTOR", "MENTURA_ACTOR_ID", "MENTURA_MODEL", "MENTURA_SESSION", "MENTURA_TRACE_ID", "MENTURA_SPAN_ID",
@@ -197,12 +217,13 @@ export async function withRunEnv<T>(run: Pick<RunRef, "role" | "session" | "trac
  */
 async function invoke(dir: string, spec: FunctionAgentSpec, task: string, run: RunRef, role: TeamPlanEntryRead, model: BaseLanguageModel, workspace?: string, signal?: AbortSignal): Promise<RunResult> {
   const tracer = new NaiveTracer(dir, { session: run.session, trace_id: run.trace_id, agents: [spec.function] });
+  const memory = writeMemory(dir, spec.role);
   const backend = new CompositeBackend(new NaiveBackend({ venture: run.venture, workspace, actor_id: spec.role }, tracer),
-    { "/function/": new FilesystemBackend({ rootDir: spec.module, virtualMode: true }) });
-  const skills = [...new Set(spec.skills.map((s) => s.path.replace(/[^/]+\/$/, "")))];
+    { "/function/": new FilesystemBackend({ rootDir: spec.module, virtualMode: true }), ...menturaMounts(dir, spec.role) });
+  const skills = [...new Set([...spec.skills.map((s) => s.path.replace(/[^/]+\/$/, "")), MENTURA_SKILLS])];
   const saver = openRunSaver(dir);
-  const agent = createDeepAgent({ model, backend, name: spec.function, systemPrompt: promptOf(spec, run.venture, role), skills,
-    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/function/**"], mode: "deny" }] });
+  const agent = createDeepAgent({ model, backend, name: spec.function, systemPrompt: promptOf(spec, run.venture, role), skills, memory: [memory],
+    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/function/**", ...MENTURA_READ_ONLY], mode: "deny" }] });
   try {
     const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
     const answer = answerOf(out);

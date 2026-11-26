@@ -8,6 +8,7 @@
 //   node <EE>/platform/agents/bin.ts mcp
 //   node <EE>/platform/agents/bin.ts harness                                         < prompt.txt
 //   node <EE>/platform/agents/bin.ts traces --venture <id> [--session <name>] [--trace <id>]
+//   node <EE>/platform/agents/bin.ts cmd --venture <id> [--by <person>]                 < "/meet strategy intake"
 //
 // What changes per call is an argument (function, venture, run id) or stdin (the task, kept out of argv and so out
 // of `ps`). What stays with the caller is the environment, read once here:
@@ -23,6 +24,9 @@
 //
 // lead runs a lead agent (platform/agents/lead-agent.ts, lead agents build plan item 4): a role template with a
 // portfolio, which writes a lead plan entry and one handoff per function involved instead of a function's records.
+//
+// cmd runs one slash command (platform/agents/commands.ts): meetings that walk a function workflow with its agent,
+// what is due, memory, tooling. --by (or MENTURA_PERSON) is the person speaking; it names the minutes.
 //
 // Prints one JSON RunResult (or LeadRunResult, or ResearchResult) on stdout, a usage error included. Exit: 0 done or already-ran, 1 failed, 2 refused or
 // usage, 75 busy (try again later), 130 cancelled. SIGTERM and SIGINT abort the run cleanly.
@@ -70,9 +74,10 @@ export type Parsed =
   | { command: "mcp" }
   | { command: "harness" }
   | { command: "traces", venture: string, workspace?: string, session?: string, trace?: string }
+  | { command: "cmd", invocation: Invocation, person: string }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, or mentura-agent traces --venture <id> [--session <name>] [--trace <id>]";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, mentura-agent traces --venture <id> [--session <name>] [--trace <id>], or mentura-agent cmd --venture <id> [--by <person>] < /command";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
@@ -80,6 +85,7 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   if (argv[0] === "mcp" && argv.length === 1) return { command: "mcp" };
   if (argv[0] === "harness" && argv.length === 1) return { command: "harness" };
   if (argv[0] === "traces") return parseTraces(argv, val);
+  if (argv[0] === "cmd") return parseCmd(argv, val);
   if ((argv[0] !== "run" && argv[0] !== "lead" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
   const known = argv[0] === "research" ? ["--venture", "--run-id", "--max-experiments"] : ["--venture", "--run-id"];
   const flags = new Map<string, string>();
@@ -100,6 +106,36 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   const max = flags.get("--max-experiments");
   if (max !== undefined && !/^[1-9][0-9]*$/.test(max)) return { command: "usage", usage: `${USAGE} (--max-experiments is a whole number of at least 1, not ${max})` };
   return { command: "research", invocation: { ...invocation, readsAsOf: val("MENTURA_READS_AS_OF"), ...(max ? { maxExperiments: Number(max) } : {}) } };
+}
+
+function parseCmd(argv: readonly string[], val: (k: string) => string | undefined): Parsed {
+  const flags = new Map<string, string>();
+  for (let i = 1; i < argv.length; i += 2) {
+    const [k, v] = [argv[i], argv[i + 1]];
+    if (!["--venture", "--by"].includes(k) || !v || flags.has(k)) return { command: "usage", usage: `${USAGE} (unexpected ${k ?? "end"})` };
+    flags.set(k, v);
+  }
+  const venture = flags.get("--venture") ?? val("MENTURA_VENTURE");
+  if (!venture) return { command: "usage", usage: `${USAGE} (--venture or MENTURA_VENTURE is required)` };
+  const person = flags.get("--by") ?? val("MENTURA_PERSON");
+  if (!person) return { command: "usage", usage: `${USAGE} (--by or MENTURA_PERSON names the person speaking)` };
+  const trace: TraceJoin = { session: val("MENTURA_SESSION"), trace_id: val("MENTURA_TRACE_ID"), parent_span_id: val("MENTURA_SPAN_ID") };
+  return { command: "cmd", person, invocation: { function: "", venture, workspace: val("MENTURA_WORKSPACE"), trace, model: val("MENTURA_MODEL") ?? null, harness: val("MENTURA_HARNESS") } };
+}
+
+/** cmd: one slash command against one venture. Prints a CommandResult; exit 0 when ok, 2 when not. */
+async function command(inv: Invocation, person: string, stdin: NodeJS.ReadableStream): Promise<number> {
+  const { parseCommand, runCommand } = await import("./commands.ts");
+  const { commandHost } = await import("./command-host.ts");
+  const out = (r: unknown, code: number): number => { process.stdout.write(JSON.stringify(r) + "\n"); return code; };
+  let cmd;
+  try { cmd = parseCommand(await text(stdin)); } catch (e) { return out({ ok: false, error: (e as Error).message }, 2); }
+  const abort = new AbortController();
+  for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
+  const host = await commandHost({ venture: inv.venture, workspace: inv.workspace, person, model: modelSource(inv.model), trace: inv.trace, harness: inv.harness, signal: abort.signal });
+  if ("error" in host) return out({ ok: false, error: host.error }, 2);
+  try { const r = await runCommand(cmd, host.ctx); return out(r, r.ok ? 0 : 2); }
+  finally { host.close(); }
 }
 
 function parseTraces(argv: readonly string[], val: (k: string) => string | undefined): Parsed {
@@ -177,6 +213,7 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
   if (p.command === "traces") return traces(p);
+  if (p.command === "cmd") return command(p.invocation, p.person, stdin);
   if (p.command === "harness") {
     const { runHarness } = await import("./harness.ts");
     const abort = new AbortController();
