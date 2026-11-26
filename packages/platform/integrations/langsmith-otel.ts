@@ -31,11 +31,11 @@ const RUN_TYPE: Record<string, string> = { agent: "chain", model: "llm", tool: "
 /** One Naive span as an OTLP span. Span ids become 16 hex characters (a hash when they are not), parents likewise. */
 export function toOtlp(s: TraceSpan): OtlpSpan {
   const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash };
-  // LangSmith reads input.value and output.value. Copy the messages already on the span. Redact only this copy.
+  // LangSmith reads input.value and output.value. Copy the messages already on the span, and redact every content string that leaves.
   const input = attrs["gen_ai.input.messages"];
-  if (input !== undefined && input !== null) { const text = traceText(input); attrs["input.value"] = text; attrs["gen_ai.prompt"] = text; }
+  if (input !== undefined && input !== null) { const text = traceText(input); attrs["gen_ai.input.messages"] = text; attrs["input.value"] = text; attrs["gen_ai.prompt"] = text; }
   const output = attrs["gen_ai.output.messages"];
-  if (output !== undefined && output !== null) { const text = traceText(output); attrs["output.value"] = text; attrs["gen_ai.completion"] = text; }
+  if (output !== undefined && output !== null) { const text = traceText(output); attrs["gen_ai.output.messages"] = text; attrs["output.value"] = text; attrs["gen_ai.completion"] = text; }
   return {
     traceId: hex(s.trace_id, 32), spanId: hex(s.span_id, 16), ...(s.parent_span_id ? { parentSpanId: hex(s.parent_span_id, 16) } : {}),
     name: s.name, kind: s.kind === "model" || s.kind === "call" ? 3 : 1, startTimeUnixNano: nanos(s.start), endTimeUnixNano: nanos(s.end),

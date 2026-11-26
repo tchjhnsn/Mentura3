@@ -105,7 +105,6 @@ const traceSpan = (attributes?: TraceSpan["attributes"]): TraceSpan => ({
 });
 const held = { "gen_ai.input.messages": prompt, "gen_ai.output.messages": answer };
 const exported = toOtlp(traceSpan(held));
-console.log(JSON.stringify(exported.attributes.find((a) => a.key === "input.value")));
 ok("the scripted reply is the output message", answer === `The kettle boils. ${MARKER}`);
 ok("a span with messages copies them onto the keys LangSmith reads, and the originals remain",
   stringOf(exported, "input.value") === prompt && stringOf(exported, "output.value") === answer
@@ -120,14 +119,15 @@ const asList = toOtlp(traceSpan({ "gen_ai.input.messages": messageList }));
 ok("a message list is JSON on the keys LangSmith reads", stringOf(asList, "input.value") === JSON.stringify(messageList) && stringOf(asList, "gen_ai.prompt") === JSON.stringify(messageList) && stringOf(asList, "output.value") === undefined && stringOf(asList, "gen_ai.completion") === undefined);
 setTraceRedactor((text) => text.replaceAll(MARKER, "[redacted]"));
 try {
-  const hidden = toOtlp(traceSpan({ "gen_ai.input.messages": prompt, "gen_ai.output.messages": answer }));
-  ok("the export copy drops the marker and the stored messages keep it",
-    stringOf(hidden, "input.value") === prompt.replaceAll(MARKER, "[redacted]")
-    && stringOf(hidden, "output.value") === answer.replaceAll(MARKER, "[redacted]")
-    && stringOf(hidden, "gen_ai.prompt") === prompt.replaceAll(MARKER, "[redacted]")
-    && stringOf(hidden, "gen_ai.completion") === answer.replaceAll(MARKER, "[redacted]")
-    && stringOf(hidden, "gen_ai.input.messages") === prompt
-    && stringOf(hidden, "gen_ai.output.messages") === answer);
+  const source = { "gen_ai.input.messages": prompt, "gen_ai.output.messages": answer };
+  const hidden = toOtlp(traceSpan(source));
+  const promptOut = prompt.replaceAll(MARKER, "[redacted]");
+  const answerOut = answer.replaceAll(MARKER, "[redacted]");
+  ok("every content string in the export drops the marker, and the span object keeps it",
+    stringOf(hidden, "input.value") === promptOut && stringOf(hidden, "output.value") === answerOut
+    && stringOf(hidden, "gen_ai.prompt") === promptOut && stringOf(hidden, "gen_ai.completion") === answerOut
+    && stringOf(hidden, "gen_ai.input.messages") === promptOut && stringOf(hidden, "gen_ai.output.messages") === answerOut
+    && source["gen_ai.input.messages"] === prompt && source["gen_ai.output.messages"] === answer);
 } finally {
   setTraceRedactor((text) => text);
 }
