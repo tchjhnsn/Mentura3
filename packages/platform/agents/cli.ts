@@ -9,6 +9,7 @@
 //   node <EE>/platform/agents/bin.ts harness                                         < prompt.txt
 //   node <EE>/platform/agents/bin.ts traces --venture <id> [--session <name>] [--trace <id>]
 //   node <EE>/platform/agents/bin.ts cmd --venture <id> [--by <person>]                 < "/meet strategy intake"
+//   node <EE>/platform/agents/bin.ts site <role> --venture <id> --site <dir> [--run-id <uuid>] [--no-commit] < task.txt
 //
 // What changes per call is an argument (function, venture, run id) or stdin (the task, kept out of argv and so out
 // of `ps`). What stays with the caller is the environment, read once here:
@@ -28,6 +29,10 @@
 // cmd runs one slash command (platform/agents/commands.ts): meetings that walk a function workflow with its agent,
 // what is due, memory, tooling. --by (or MENTURA_PERSON) is the person speaking; it names the minutes.
 //
+// site runs a site agent (platform/agents/site-run.ts): a function's IT specialist, the design-system agent or a
+// capability agent on a site or docs repository with containers.json at its root, writing only what that gives it and
+// committing what it changed with an Agent trailer.
+//
 // Prints one JSON RunResult (or LeadRunResult, or ResearchResult) on stdout, a usage error included. Exit: 0 done or already-ran, 1 failed, 2 refused or
 // usage, 75 busy (try again later), 130 cancelled. SIGTERM and SIGINT abort the run cleanly.
 //
@@ -42,6 +47,7 @@ import { functionAgent, functionResearcher } from "./function-spec.ts";
 import type { LeadRunResult } from "./lead-agent.ts";
 import { leadAgent } from "./lead-spec.ts";
 import type { ResearchResult } from "./research.ts";
+import type { SiteRunResult } from "./site-run.ts";
 import { ventureDir } from "naive-framework/src/router/router.mjs";
 
 type Env = Readonly<Record<string, string | undefined>>;
@@ -75,9 +81,10 @@ export type Parsed =
   | { command: "harness" }
   | { command: "traces", venture: string, workspace?: string, session?: string, trace?: string }
   | { command: "cmd", invocation: Invocation, person: string }
+  | { command: "site", invocation: Invocation, site: string, commit: boolean }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, mentura-agent traces --venture <id> [--session <name>] [--trace <id>], or mentura-agent cmd --venture <id> [--by <person>] < /command";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, mentura-agent traces --venture <id> [--session <name>] [--trace <id>], mentura-agent cmd --venture <id> [--by <person>] < /command, or mentura-agent site <role> --venture <id> --site <dir> [--run-id <uuid>] [--no-commit] < task";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
@@ -86,6 +93,7 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   if (argv[0] === "harness" && argv.length === 1) return { command: "harness" };
   if (argv[0] === "traces") return parseTraces(argv, val);
   if (argv[0] === "cmd") return parseCmd(argv, val);
+  if (argv[0] === "site") return parseSite(argv, val);
   if ((argv[0] !== "run" && argv[0] !== "lead" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
   const known = argv[0] === "research" ? ["--venture", "--run-id", "--max-experiments"] : ["--venture", "--run-id"];
   const flags = new Map<string, string>();
@@ -106,6 +114,26 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   const max = flags.get("--max-experiments");
   if (max !== undefined && !/^[1-9][0-9]*$/.test(max)) return { command: "usage", usage: `${USAGE} (--max-experiments is a whole number of at least 1, not ${max})` };
   return { command: "research", invocation: { ...invocation, readsAsOf: val("MENTURA_READS_AS_OF"), ...(max ? { maxExperiments: Number(max) } : {}) } };
+}
+
+function parseSite(argv: readonly string[], val: (k: string) => string | undefined): Parsed {
+  if (!argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: `${USAGE} (site needs a role)` };
+  const flags = new Map<string, string>();
+  let commit = true;
+  for (let i = 2; i < argv.length; i++) {
+    const k = argv[i];
+    if (k === "--no-commit") { commit = false; continue; }
+    const v = argv[i + 1];
+    if (!["--venture", "--site", "--run-id"].includes(k) || !v || flags.has(k)) return { command: "usage", usage: `${USAGE} (unexpected ${k ?? "end"})` };
+    flags.set(k, v); i++;
+  }
+  const venture = flags.get("--venture"), site = flags.get("--site");
+  if (!venture || !site) return { command: "usage", usage: `${USAGE} (site needs --venture and --site)` };
+  let runId: RunId | undefined;
+  try { runId = flags.has("--run-id") ? runIdOf(flags.get("--run-id") ?? "") : undefined; }
+  catch (e) { return { command: "usage", usage: `${USAGE} (${(e as Error).message})` }; }
+  const trace: TraceJoin = { session: val("MENTURA_SESSION"), trace_id: val("MENTURA_TRACE_ID"), parent_span_id: val("MENTURA_SPAN_ID") };
+  return { command: "site", site: resolve(site), commit, invocation: { function: argv[1], venture, runId, workspace: val("MENTURA_WORKSPACE"), trace, model: val("MENTURA_MODEL") ?? null, harness: val("MENTURA_HARNESS") } };
 }
 
 function parseCmd(argv: readonly string[], val: (k: string) => string | undefined): Parsed {
@@ -208,7 +236,7 @@ export function exitCode(r: Pick<RunResult | LeadRunResult, "status">): number {
  * lead and runLeadAgent. mcp: serve the shim until stdin closes.
  */
 export async function main(argv: readonly string[], env: Env, stdin: NodeJS.ReadableStream): Promise<number> {
-  const print = (r: RunResult | LeadRunResult | ResearchResult): number => { process.stdout.write(JSON.stringify(r) + "\n"); return exitCode(r); };
+  const print = (r: RunResult | LeadRunResult | ResearchResult | SiteRunResult): number => { process.stdout.write(JSON.stringify(r) + "\n"); return exitCode(r); };
   const p = parse(argv, env);
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
@@ -222,6 +250,7 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   }
   if (p.command === "research") return print(await research(p.invocation));
   if (p.command === "lead") return print(await lead(p.invocation, stdin));
+  if (p.command === "site") return print(await siteRun(p.invocation, p.site, p.commit, stdin));
   const inv = p.invocation;
   let spec;
   try { spec = functionAgent(inv.function); } catch (e) { return print({ status: "refused", reason: (e as Error).message }); }
@@ -243,6 +272,17 @@ async function lead(inv: Invocation, stdin: NodeJS.ReadableStream): Promise<Lead
   for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
   const { runLeadAgent } = await import("./lead-agent.ts");
   return await runLeadAgent(spec, task, { venture: inv.venture, workspace: inv.workspace, trace: inv.trace, runId: inv.runId,
+    harness: inv.harness, model: modelSource(inv.model), signal: abort.signal });
+}
+
+/** site: read the task from stdin, wire SIGTERM and SIGINT, run the site agent. */
+async function siteRun(inv: Invocation, site: string, commit: boolean, stdin: NodeJS.ReadableStream): Promise<SiteRunResult> {
+  const task = (await text(stdin)).trim();
+  if (!task) return { status: "refused", reason: "no task on stdin" };
+  const abort = new AbortController();
+  for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
+  const { runSiteAgent } = await import("./site-run.ts");
+  return await runSiteAgent(inv.function, task, { venture: inv.venture, workspace: inv.workspace, site, commit, trace: inv.trace, runId: inv.runId,
     harness: inv.harness, model: modelSource(inv.model), signal: abort.signal });
 }
 
