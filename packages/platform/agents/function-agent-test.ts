@@ -168,7 +168,7 @@ createInterface({ input: shim.stdout }).on("line", (l) => { const m = JSON.parse
 const ask = (id: number, method: string, params: unknown = {}) => new Promise<ShimReply>((res) => { replies.set(id, res); shim.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n"); });
 await ask(1, "initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "0" } });
 const listed = await ask(2, "tools/list");
-ok("the shim lists only the functions the venture has staffed, and route_task", JSON.stringify(listed.result?.tools?.map((t) => t.name)) === JSON.stringify(["agent_strategy", "route_task"]), JSON.stringify(listed.result?.tools?.map((t) => t.name)));
+ok("the shim lists only the functions the venture has staffed, route_task and command", JSON.stringify(listed.result?.tools?.map((t) => t.name)) === JSON.stringify(["agent_strategy", "route_task", "command"]), JSON.stringify(listed.result?.tools?.map((t) => t.name)));
 const called = await ask(3, "tools/call", { name: "agent_strategy", arguments: { task: "Tighten the pricing decision.", run_id: RUN } });
 const sc = called.result?.structuredContent;
 ok("a call through the shim reaches the same run through the environment alone (already-ran, same drafts)", called.result?.isError === false && sc?.status === "already-ran" && r.status === "done" && JSON.stringify(sc.held) === JSON.stringify(r.held), JSON.stringify(called.result));
