@@ -25,7 +25,8 @@ import { roleOf, routeGlob } from "naive-framework/src/engine/access.mjs";
 import type { Context } from "naive-framework/src/router/agent-files.mjs";
 import { ventureDir } from "naive-framework/src/router/router.mjs";
 import type { HeldDraft, ModelSource, RunId, TraceJoin, TeamPlanEntryRead, Written } from "./function-agent.ts";
-import { answerOf, lockVenture, messageOf, MODEL_FIX, outcomeOf, ownProcess, phaseOf, withRunEnv } from "./function-agent.ts";
+import { answerOf, lockVenture, MENTURA_READ_ONLY, MENTURA_SKILLS, menturaMounts, messageOf, MODEL_FIX, outcomeOf, ownProcess, phaseOf, withRunEnv } from "./function-agent.ts";
+import { writeMemory } from "./memory.ts";
 import { functionAgent, functionIds, reachesTeamPlan } from "./function-spec.ts";
 import type { LeadAgentSpec, LeadId } from "./lead-spec.ts";
 import { beyondLead, leadTeamPlanEntry } from "./lead-spec.ts";
@@ -161,10 +162,11 @@ class LeadBackend extends NaiveBackend {
 async function invoke(dir: string, spec: LeadAgentSpec, task: string, run: LeadRunRef, role: TeamPlanEntryRead, model: BaseLanguageModel, workspace?: string, signal?: AbortSignal): Promise<LeadRunResult> {
   const tracer = new NaiveTracer(dir, { session: run.session, trace_id: run.trace_id, agents: [spec.id] });
   const records = new LeadBackend({ venture: run.venture, workspace, actor_id: spec.role }, tracer, spec);
-  const backend = spec.skill ? new CompositeBackend(records, { "/lead/": new FilesystemBackend({ rootDir: spec.skill, virtualMode: true }) }) : records;
+  const memory = writeMemory(dir, spec.role);
+  const backend = new CompositeBackend(records, { ...(spec.skill ? { "/lead/": new FilesystemBackend({ rootDir: spec.skill, virtualMode: true }) } : {}), ...menturaMounts(dir, spec.role) });
   const saver = openRunSaver(dir);
-  const agent = createDeepAgent({ model, backend, name: spec.id, systemPrompt: promptOf(spec, run.venture, role),
-    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/lead/**"], mode: "deny" }] });
+  const agent = createDeepAgent({ model, backend, name: spec.id, systemPrompt: promptOf(spec, run.venture, role), skills: [MENTURA_SKILLS], memory: [memory],
+    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/lead/**", ...MENTURA_READ_ONLY], mode: "deny" }] });
   try {
     const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
     const answer = answerOf(out);

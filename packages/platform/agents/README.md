@@ -12,11 +12,21 @@ Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its functio
 | `lead-spec.ts` | Re-exports Naive's lead specs and `routeFor` (`naive-framework/src/engine/agents/lead-spec.ts`). Every role template with a `portfolio` is one lead, with its template's skill and the write routes `operations/lead/<id>`, `decisions/*` and `operations/handoff/*`. `routeFor` applies Naive's routing rule (`naive-framework/src/engine/route-task.ts`) |
 | `lead-agent.ts` | One lead run, mirroring the function agent run (same process claim, venture lock, run id, trace join and outcome): the deep agent reads every record, has its role's skill mounted read-only at `/lead/`, and writes a lead plan entry and one handoff per function involved, each addressed to `<function>-agent` with `requested_by` set to the lead. Any other write, or a handoff for someone else, is refused before Naive sees it. The result adds whether the plan changed and the handoffs written |
 | `research.ts` | One researcher run (autoresearch build plan item 13): for each pattern the venture's research program lists, one deep agent proposes one change to `/<pattern>.recipe.ts` per turn, written only through Naive's `recipes/<pattern>` route, which scores it; the loop stops at the plan's budget, the run's limit or a turn with no experiment, and reads only as of the plan's cut |
-| `cli.ts`, `bin.ts` | `mentura-agent`, the one way to start a run: `node platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts lead <lead> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]`, or `node platform/agents/bin.ts mcp`. One process per run |
+| `cli.ts`, `bin.ts` | `mentura-agent`, the one way to start a run: `node platform/agents/bin.ts cmd --venture <id> [--by <person>]` with a slash command on stdin, `node platform/agents/bin.ts run <function> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts lead <lead> --venture <id> [--run-id <uuid>]` with the task on stdin, `node platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]`, or `node platform/agents/bin.ts mcp`. One process per run |
 | `jev.ts` | Jev (TypeSafe System 1) as a LangChain runnable: takes the request Naive's triage builds (`state`, `model`, `questions`), sends it in chunks to TypeSafe with `TYPESAFE_API_KEY` and returns the answers. It decides nothing. With no key, `jevRunnable` returns null and the caller holds every label for a person; it never falls back to another model |
 | `triage-ledger.ts` | Founder corrections in the detection ledger (raw triage item 7). Each Noul label Jev answers is a trial of the `triage-accept` detector, scored by Jev's certainty (max(p, 1 − p)), a yes call (needs a person) below the line. The graph appends the trials when it files, given a `ledger`; a held label the founder answers as Jev guessed resolves as a false alarm, the other way as a hit. `correctFiled` resolves a filed label the founder later changes as a miss, or confirms as a correct rejection. `routerLedger` appends through Naive's router (`governance/detector-trial/triage-accept`) as `triage-agent` for trials and as the person for resolutions |
 | `triage-graph.ts` | The triage graph (Naive `docs/design/RAW_TRIAGE_2026-11-09.md`, item 4), a LangGraph `StateGraph` over one raw entry: load, ask Jev, decide with Naive's `decide()`, hold with `interrupt()` when a label is below the `triage-accept` line (or always, with `confirmAll`), file, route with Naive's `routeTask`. A held run is a checkpoint and resumes with `Command({ resume })` carrying the founder's yes or no per label; each answer is kept beside Jev's guess (`person` on that label). It files an idea (`people/<person>/ideas/<id>.json`) per fragment or a reference (`people/<person>/references/<id>.json`), and one triage record (`raw/triage/<id>.json`) with every label, the model and the line. The test checks all three against Naive's schemas (`founder-idea`, `founder-reference`, `triage`). It never writes raw. The checkpointer and the writer are injected: `MemorySaver` and an in-memory writer in the test |
-| `mcp.ts` | The MCP shim for any MCP harness: one `agent_<function>` tool per function the venture has staffed and one `lead_<id>` tool per lead it has staffed, each call a `bin.ts run` or `bin.ts lead` child process, a cancel sent to it as SIGTERM, and `route_task`, which applies the routing rule |
+| `mcp.ts` | The MCP shim for any MCP harness: one `agent_<function>` tool per function the venture has staffed and one `lead_<id>` tool per lead it has staffed, each call a `bin.ts run` or `bin.ts lead` child process, a cancel sent to it as SIGTERM, `route_task`, which applies the routing rule, and `command`, which runs one slash command as a `bin.ts cmd` child |
+| `meetings.ts` | Meetings with agents over Naive's meeting record (EE-200, route `operations/meeting/[id]`): a meeting built from a function workflow (one pending agenda item per step, owned by `<function>-agent`) or from a person's own agenda, the outcome and takeaways derived at close (`closeOf`), the stable run id of each item's agent run (`itemRunId`), and the record read and written through Naive's router as the role `meeting-facilitator` (`routerStore`) |
+| `meeting-graph.ts` | The meeting graph, a LangGraph `StateGraph` that works a meeting's agenda in order: an item that asks a person stops the graph with `interrupt()`, an agent's item is worked by the worker and waits for a person's approval, a skipped item is looped back to or handed to its agent to recommend, and the meeting closes with a derived outcome. Every change is written to the record before the graph moves on |
+| `meeting-worker.ts` | The production worker: each agenda item is worked, or recommended on, by its owner as a function agent run, with a task that names the meeting's goal and the workflow step's skill, writes and decision classes |
+| `prerequisites.ts`, `prerequisites.json` | What must be finished before a workflow may start, for people and agents alike, and whether it is: Mentura's policy plus a workflow's own `requires` in Naive, failing closed |
+| `review.ts` | The print copy of what an agent drafted for an agenda item, and accepting its held drafts once a person approves |
+| `commands.ts`, `command-host.ts` | The slash commands (`/next`, `/meet`, `/agenda`, `/answer`, `/approve`, `/rework`, `/blocked`, `/done`, `/skip`, `/handoff`, `/revisit`, `/end`, `/abandon`, `/meetings`, `/skipped`, `/memory`, `/tools`, `/help`), parsed pure and run against one venture; the host wires the router store, the function-agent worker, `<venture>/.naive/meeting-checkpoints.sqlite`, Naive's `due` ranked by the phase's function weights, and Naive's run log on close |
+| `memory.ts` | Each agent's memory, rendered from the business's closed meetings into `<venture>/.naive/agent-memory/<role>/MEMORY.md` before each run and loaded as deepagents memory from a read-only mount at `/memory/` |
+| `skills/` | Mentura's own skills, mounted read-only at `/mentura/skills/` for every function and lead agent: `ownership` (an agent runs every gate on what it executes, the publishing gate and internal-terms lint included, and hands off between writing and building), `information-hierarchy` (answer first, top-down stages, best practice named at each stage), `meetings` (how to work an agenda item, recommend on a handed-off one, and start a temporary specialist with the `task` tool), `documents` (the record, then a print copy a person approves, then a PDF, deck or document for outsiders, HTML last) and `tooling` (choose tools that let the business see every activity and own its data) |
+| `tool-policy.json`, `tool-policy.ts` | The tooling skill's rubric: visibility and ownership are gates (a 0 rules a tool out), then fit, cost and learning, weighted; `scoreTools` does the arithmetic and never chooses |
+| `meetings-test.ts` | The meeting graph, approval, the prerequisite locks, the slash commands, memory and the tool rubric, offline, with a scripted worker against a made-up venture and Naive's meeting schema |
 | `function-agent-test.ts` | The strategy agent run offline with a scripted model, through the CLI and through the shim |
 | `lead-agent-test.ts` | The growth lead run offline with a scripted model: a plan entry and one handoff per function, no function record; the routing rule; the CLI and the shim |
 | `research-test.ts` | The strategy researcher run offline with a scripted model: it keeps, discards, and stops at the run's limit and at the plan's budget; every other write is refused; the cut is the plan's; through the CLI too |
@@ -27,7 +37,7 @@ const agent = createDeepAgent({ model, name: "strategy", backend: new NaiveBacke
 await agent.invoke(input, { callbacks: [tracer] });
 ```
 
-From `packages/platform`, run the tests with `node agents/agents-test.ts`, `node agents/function-agent-test.ts`, `node agents/lead-agent-test.ts` and `node agents/research-test.ts`. Outside a function, lead or researcher run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
+From `packages/platform`, run the tests with `node agents/agents-test.ts`, `node agents/function-agent-test.ts`, `node agents/lead-agent-test.ts`, `node agents/research-test.ts` and `node agents/meetings-test.ts`. Outside a function, lead or researcher run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
 
 ## Function agents (EE-123)
 
@@ -97,6 +107,59 @@ The calling model sees one tool per function the venture has staffed (`agent_str
 `route_task` is how any harness decides who takes a task. Whatever model the harness runs, or a person, labels the task with `{ functions, measure?, classes?, venture? }`, and code decides by Naive's routing rule: one function goes to `agent_<function>`; several functions in one lead's portfolio go to that lead's `lead_<id>`; functions across portfolios go to the lead accountable for the measure (the one lead plan that binds it, else the one lead whose default measure kinds hold its kind); a one-way door, a never-redelegated class, or functions across portfolios with no measure or no single accountable lead go to a person, with no tool. The answer carries the rule and the reason, and when the target is not staffed, the team-plan entry a person would add.
 
 Not built yet: filesystem triggers that start a function agent (they would call the same `bin.ts run`), a chat model provider package as a dependency here, and appends that two processes can share, so a venture runs one function agent at a time.
+
+## Meetings and slash commands (Naive EE-200)
+
+The founder works through each function's workflow with its agent the way one runs a meeting: a goal and the outcome that shows it was reached are stated first, the agenda is worked in order, and what was decided is recorded where every agent reads it. A meeting is a Naive record, `operations/meetings/<id>.json`, so the record a person reads and the state the graph works from are one thing. The graph's checkpoint only says where it stopped.
+
+```sh
+MENTURA_WORKSPACE=~/workspace/ventures MENTURA_MODEL=anthropic:<model> MENTURA_PERSON=torian \
+  node agents/bin.ts cmd --venture mentura <<< "/meet strategy intake"
+```
+
+```mermaid
+stateDiagram-v2
+  [*] --> planned
+  planned --> planned: a prerequisite is missing (locked, nothing written)
+  planned --> open: /meet or /agenda, every prerequisite met
+  state open {
+    [*] --> pick
+    pick --> ask: item asks a person
+    pick --> work: agent's item
+    ask --> work: /answer (the agent works it with the person's words)
+    ask --> pick: /done, /skip
+    ask --> recommend: /handoff
+    work --> review: presented with a print copy
+    work --> pick: a failed run leaves it skipped
+    review --> work: /rework (with the person's note)
+    review --> pick: /approve (held drafts accepted, item done)
+    review --> review: an approval that cannot accept a draft
+    recommend --> pick: handed-off
+    pick --> loop: nothing pending, something skipped
+    loop --> pick: /revisit
+    loop --> recommend: /handoff
+  }
+  open --> closed: nothing pending and nothing skipped, or /end
+  open --> abandoned: /abandon
+  closed --> [*]
+  abandoned --> [*]
+```
+
+- **Locked until ready (fails closed).** A meeting on a workflow does not open, for a person or an agent, until every prerequisite is met (`prerequisites.ts`). Mentura's policy is `prerequisites.json`: strategy's intake comes first, every other intake needs it closed with the problem, the customer and the goals approved, every other workflow needs its own function's intake, marketing work needs an approved brand and publication policy, and investor work needs approved goals and exit criteria. A workflow's own `requires` in Naive is added to these. A meeting counts only when closed with its outcome reached, a record only when live (a held draft is not), a decision only when decided, and anything that cannot be checked counts as missing. `/meet` on a locked workflow is refused before anything is written and says what to finish first; the graph checks again on open. `/blocked` lists every locked workflow, and `/next` marks the due ones that are locked.
+- **Nothing an agent does counts until a person approves it.** Each item an agent works stops in review with a print copy, a Markdown file at `.naive/presentations/<meeting>/<item>.md` that a person can read or print (`review.ts`). `/approve` accepts the drafts the gate held, in the person's name, and marks the item done; a foundation record is accepted only when named (`/approve <meeting> foundation/problem`), as Naive's own accept asks. `/rework <meeting> <note>` sends it back to its agent. The `documents` skill fixes the order of forms: the record, the print copy, then a PDF, deck or document for someone outside, and HTML last.
+- **Order.** `/next` lists what is due across the business's functions from Naive's `due`: workflows the phase lists as active first, a function's intake before its other workflows, then the phase's weight of each function. `/meet <function>` with no workflow opens the function's due workflow, else its intake.
+- **Who works an item.** The item's owner, `<function>-agent`, as an ordinary function agent run through Naive's gate (`meeting-worker.ts`). Its run id comes from the meeting, the item and the attempt, so a meeting resumed after a crash finds the run it already made.
+- **Skipped steps.** `/skip` passes an item over. When nothing is pending, the meeting asks to loop back: `/revisit` puts items back, `/handoff` asks their agent to recommend (the agent writes an open decision that keeps every option open when a person must choose), and `/end` closes the meeting with the outcome partly or no.
+- **Close.** The outcome (reached yes, partly or no), the follow-up and each attendee's takeaways are derived from the agenda, never asked of a model. A meeting that walked a workflow is logged in Naive's run log (`.naive/workflow-runs.jsonl`), so `naive due` knows it ran.
+- **Durable.** The graph saves to `<venture>/.naive/meeting-checkpoints.sqlite`, a file of its own because agent runs in the same process save to `agent-checkpoints.sqlite`. A meeting stopped for a person is answered hours later, from any process, with the next command.
+- **Memory.** Before each function or lead run, the agent's memory is rendered from closed meetings (its own takeaways, the meetings still open that it attends, and every closed meeting's outcome) and loaded from `/memory/MEMORY.md`. A record wins over memory.
+- **Specialists.** deepagents gives every agent the `task` tool and a general-purpose subagent. An agent starts a temporary specialist for a narrow piece of work; the specialist uses the same backend, so its writes meet the same gate, and it ends when it answers.
+- **Tools.** The `tooling` skill makes every agent opinionated: a tool must let the business's agents read what happened (recorded and transcribed meetings, events, an API or MCP server) and let the business own its account and data. `/tools <need>` asks the IT agent for one tool and a runner-up, scored with `tool-policy.json`.
+- **From a harness.** The MCP shim's `command` tool runs any slash command (`{ text, by?, venture? }`), one `bin.ts cmd` child per call. A Claude Code slash command file can call `bin.ts cmd` the same way.
+
+A business staffs the facilitator by adding `{ "id": "meeting-facilitator", "occupant": "agent", "routes": { "write": ["operations/meeting/*"] } }` to its team plan, and each function it meets with by its `<function>-agent` entry. A meeting the gate would hold for a person is refused with that entry, since a meeting the business cannot record is not run.
+
+Not built yet: the same locks in Naive's own router, so a person writing a record directly (not through a meeting) is held too (Naive owns the rule; asked of that thread); rendering a print copy to PDF or a deck automatically; meetings started by a schedule or a trigger (Naive's loop could start `/meet` in auto mode), a person's meeting tool (a recorder's transcript filed into the meeting record), several people in one meeting answering in turn, and a view of meetings in Mentura's web app.
 
 ## Lead agents (lead agents build plan item 4)
 

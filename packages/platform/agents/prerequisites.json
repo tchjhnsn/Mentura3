@@ -1,0 +1,37 @@
+{
+  "about": "Mentura's opinion of what must be finished before a workflow may start, for people and agents alike. A workflow's own requires field in Naive is added to these. Every rule that matches a workflow applies. <function> stands for the workflow's own function. A meeting is met only when it is closed with its outcome reached; a record only when it is live, never a held draft; a decision only when decided. Anything that cannot be checked counts as missing.",
+  "rules": [
+    {
+      "workflow": "*/intake",
+      "except": ["strategy/intake"],
+      "why": "Strategy comes first: no function is set up before the business knows its purpose, its customer and its problem.",
+      "requires": {
+        "meetings": ["strategy/intake"],
+        "records": ["foundation/problem", "foundation/icp/*", "foundation/goals/*"]
+      }
+    },
+    {
+      "workflow": "*/*",
+      "except": ["*/intake"],
+      "why": "A function is learned before it is run: its intake meeting closes before any of its other workflows starts.",
+      "requires": { "meetings": ["<function>/intake"] }
+    },
+    {
+      "workflow": "strategy/competitor-review",
+      "why": "Competitors are judged against the customer and the problem the business chose.",
+      "requires": { "records": ["foundation/icp/*", "foundation/problem"] }
+    },
+    {
+      "workflow": "marketing-and-sales/*",
+      "except": ["marketing-and-sales/intake"],
+      "why": "Nothing is said in public before the brand and the publication policy exist and a person has approved them.",
+      "requires": { "records": ["marketing/brand", "governance/publication-policy"] }
+    },
+    {
+      "workflow": "external-relationships/*",
+      "except": ["external-relationships/intake"],
+      "why": "No investor hears from the business before its goals and exit criteria are written and approved.",
+      "requires": { "records": ["foundation/goals/*", "foundation/exit-criteria/*"] }
+    }
+  ]
+}

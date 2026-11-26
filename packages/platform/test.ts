@@ -36,6 +36,7 @@ const steps: [string, string[]][] = [
   ["gated harness", ["agents/harness-test.ts"]],
   ["local traces", ["agents/traces-test.ts"]],
   ["lead agents", ["agents/lead-agent-test.ts"]],
+  ["meetings with agents: the meeting graph, slash commands, memory and the tool rubric", ["agents/meetings-test.ts"]],
   ["triage graph", ["agents/triage-graph-test.ts"]],
   ["triage corrections", ["agents/triage-ledger-test.ts"]],
   ["function researchers", ["agents/research-test.ts"]],
