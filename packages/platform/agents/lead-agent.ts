@@ -16,8 +16,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import type { BaseLanguageModel } from "@langchain/core/language_models/base";
-import { HumanMessage } from "@langchain/core/messages";
 import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents";
+import { invokeThread, openRunSaver } from "./checkpoint.ts";
 import type { EditResult, WriteResult } from "deepagents";
 import { spans } from "naive-framework/src/core/instrumentation.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
@@ -161,18 +161,18 @@ async function invoke(dir: string, spec: LeadAgentSpec, task: string, run: LeadR
   const tracer = new NaiveTracer(dir, { session: run.session, trace_id: run.trace_id, agents: [spec.id] });
   const records = new LeadBackend({ venture: run.venture, workspace, actor_id: spec.role }, tracer, spec);
   const backend = spec.skill ? new CompositeBackend(records, { "/lead/": new FilesystemBackend({ rootDir: spec.skill, virtualMode: true }) }) : records;
+  const saver = openRunSaver(dir);
   const agent = createDeepAgent({ model, backend, name: spec.id, systemPrompt: promptOf(spec, run.venture, role),
-    permissions: [{ operations: ["write"], paths: ["/lead/**"], mode: "deny" }] });
-  // deepagents 1.16's invoke type resolves the messages field to never under strict mode, so the input is cast.
-  const input = { messages: [new HumanMessage(task)] } as unknown as Parameters<typeof agent.invoke>[0];
+    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/lead/**"], mode: "deny" }] });
   try {
-    const out = await agent.invoke(input, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
+    const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
     return { status: "done", run, answer: answerOf(out), ...leadOutcome(dir, spec, run) };
   }
   catch (e) {
     tracer.closeOpen(signal?.aborted ? "cancelled" : messageOf(e));
     return signal?.aborted ? { status: "cancelled", run, ...leadOutcome(dir, spec, run) } : { status: "failed", run, error: messageOf(e), ...leadOutcome(dir, spec, run) };
   }
+  finally { saver.close(); }
 }
 
 /** The system prompt: who the lead is (its role template), the function agents it hands work to, its reach, and RULES. Pure. */

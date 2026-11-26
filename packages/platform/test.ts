@@ -32,6 +32,7 @@ const steps: [string, string[]][] = [
   ["LangSmith exporter", ["integrations/langsmith-test.mjs"]],
   ["LangChain over Naive: a deep agent edits records through the router", ["agents/agents-test.ts"]],
   ["function agents", ["agents/function-agent-test.ts"]],
+  ["run checkpoint", ["agents/checkpoint-test.ts"]],
   ["lead agents", ["agents/lead-agent-test.ts"]],
   ["triage graph", ["agents/triage-graph-test.ts"]],
   ["triage corrections", ["agents/triage-ledger-test.ts"]],
