@@ -17,6 +17,7 @@ import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { AIMessage } from "@langchain/core/messages";
 import { fakeModel } from "@langchain/core/testing";
+import { spans } from "naive-framework/src/core/instrumentation.mjs";
 import { routeGlob } from "naive-framework/src/engine/access.mjs";
 import { naivePath } from "../naive.ts";
 import type { ModelSource } from "./function-agent.ts";
@@ -77,6 +78,7 @@ const system = textOf(calls[0]?.messages[0]?.content);
 const tool = (calls.at(-1)?.messages ?? []).filter((m) => m.getType() === "tool").map((m) => textOf(m.content));
 
 ok("the run is done with the model's answer", r.status === "done" && r.answer.startsWith("I wrote two handoffs"), JSON.stringify(r));
+ok("with content off, the trace file does not contain the task", !readFileSync(join(dir, "traces", `${SESSION}.jsonl`), "utf8").includes("Launch the paid tier with support."));
 ok("the system prompt names the lead, its portfolio and the function agents", system.includes("Growth lead of the venture kettle") && system.includes("marketing-and-sales, customer-service") && system.includes("finance-agent"), system.slice(0, 600));
 ok("the lead reads its role's skill under /lead/", /marketing/i.test(tool[0] ?? "") && !/not found/i.test(tool[0] ?? ""), tool[0]?.slice(0, 200));
 ok("a function's record is refused before Naive sees it", /A lead writes only/.test(tool[4] ?? ""), tool[4]);
@@ -130,6 +132,16 @@ const sc = called.result?.structuredContent as LeadRunResult | undefined;
 ok("a lead call through the shim reaches the same run (already-ran, same handoffs)", called.result?.isError === false && sc?.status === "already-ran" && JSON.stringify(sc.handoffs) === JSON.stringify(handoffs), JSON.stringify(called.result));
 shim.stdin.end();
 await new Promise((res) => shim.on("close", res));
+
+// ---- 6. Content on: the root span keeps the task and the answer ----
+writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ traces: { spans: true, content: true } }));
+const leadTask = "Plan the paid tier launch.";
+const leadAnswer = "The paid tier is planned.";
+const leadModel = fakeModel().respond(new AIMessage(leadAnswer));
+const SESSION_C = "harness-lead-content", RUN_C = runIdOf(randomUUID());
+const rc = await runLeadAgent(growth, leadTask, { venture: "kettle", model: scripted(leadModel), trace: { session: SESSION_C, trace_id: randomUUID() }, runId: RUN_C, harness: "claude-code" });
+const contentRoot = (spans(dir, SESSION_C) as { span_id: string, attributes?: Record<string, unknown> }[]).find((s) => s.span_id === RUN_C);
+ok("with content on, the root span stores the task and the answer", rc.status === "done" && contentRoot?.attributes?.["gen_ai.input.messages"] === leadTask && contentRoot?.attributes?.["gen_ai.output.messages"] === leadAnswer && contentRoot?.attributes?.["gen_ai.operation.name"] === "invoke_agent", JSON.stringify(contentRoot?.attributes));
 
 rmSync(ws, { recursive: true, force: true });
 if (failed) { console.error(`${failed} failed`); process.exit(1); }

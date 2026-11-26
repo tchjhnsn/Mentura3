@@ -8,35 +8,18 @@
 //   const agent = createDeepAgent({ model, backend: new NaiveBackend({ venture: "kettle" }, tracer), ... });
 //   await agent.invoke(input, { callbacks: [tracer] });
 
-import { writeFileSync } from "node:fs";
 import { AsyncLocalStorageProviderSingleton } from "@langchain/core/singletons";
 import type { BackendProtocolV2, EditResult, FileInfo, GlobResult, GrepResult, LsResult, ReadRawResult, ReadResult, WriteResult } from "deepagents";
-import { spanHash, spans, traceFile } from "naive-framework/src/core/instrumentation.mjs";
+import { spans } from "naive-framework/src/core/instrumentation.mjs";
 import * as files from "naive-framework/src/router/agent-files.mjs";
 import type { Context } from "naive-framework/src/router/agent-files.mjs";
-import type { NaiveTracer } from "./naive-tracer.ts";
+import { tagSpan, type NaiveTracer } from "./naive-tracer.ts";
 
 type Outcome = "held" | "refused" | "written";
 type RouterWrite = { ok: boolean, draft?: boolean, written?: string, error?: string };
 
 const bareRoute = (route: string): string => route.replace(/^\/+|\/+$/g, "");
 const outcomeOf = (w: RouterWrite): Outcome => w.draft ? "held" : w.ok ? "written" : "refused";
-
-function tagSpan(dir: string, session: string, spanId: string, patch: (span: Record<string, unknown>) => void): void {
-  const list = spans(dir, session) as Record<string, unknown>[];
-  const i = list.findIndex((s) => s.span_id === spanId);
-  if (i < 0) return;
-  patch(list[i]);
-  let prev = i === 0 ? "genesis" : String(list[i - 1].hash);
-  for (let j = i; j < list.length; j++) {
-    const { hash: _hash, ...rest } = list[j];
-    rest.prev = prev;
-    const hash = spanHash(prev, rest);
-    list[j] = { ...rest, hash };
-    prev = hash;
-  }
-  writeFileSync(traceFile(dir, session), list.map((l) => JSON.stringify(l)).join("\n") + "\n");
-}
 
 const info = (f: { path: string, is_dir: boolean }): FileInfo => ({ path: f.path, is_dir: f.is_dir });
 // deepagents tells the model only "Successfully wrote" on success, so a draft goes back as the tool's error text:
