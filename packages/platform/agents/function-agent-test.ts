@@ -22,6 +22,7 @@ import { fakeModel } from "@langchain/core/testing";
 import { span, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
 import { routeGlob } from "naive-framework/src/engine/access.mjs";
+import { functionWrites } from "naive-framework/src/engine/agents/reach.mjs";
 import { routes } from "naive-framework/src/router/router.mjs";
 import { naivePath } from "../naive.ts";
 import type { ModelSource, RunResult } from "./function-agent.ts";
@@ -39,7 +40,8 @@ ok("each role is <function>-agent", ids.every((id) => functionAgent(id).role ===
 const table = (routes() as { route: string }[]).map((r) => r.route.replace("[id]", "x"));
 ok("every suggested write glob matches a route", ids.every((id) => functionAgent(id).writes.every((g) => table.some((r) => routeGlob(g).test(r)))));
 const strategy = functionAgent("strategy");
-ok("strategy writes decisions and its own foundation and validation routes, nothing else", strategy.writes.includes("decisions/*") && strategy.writes.includes("foundation/telos") && strategy.writes.includes("validation/interviews/*") && strategy.writes.every((g) => /^(decisions|foundation|validation)\//.test(g)), JSON.stringify(strategy.writes));
+ok("a function agent's writes are the routes the router allows", ids.every((id) => JSON.stringify([...functionAgent(id).writes]) === JSON.stringify(functionWrites(id))));
+ok("strategy writes decisions and its own foundation and validation routes", strategy.writes.includes("decisions/*") && strategy.writes.includes("foundation/telos") && strategy.writes.includes("validation/interviews/*"), JSON.stringify(strategy.writes));
 ok("no function's derived reach can write the team plan", ids.every((id) => !functionAgent(id).writes.some((g) => routeGlob(g).test("people/team-plan"))));
 ok("strategy's skills come from its module and its validation kit", ["telos", "chief-of-staff", "problem-validation", "validation-score"].every((n) => strategy.skills.some((s) => s.name === n)) && strategy.skills.every((s) => /^\/function\/(skills|kits\/validation\/skills)\//.test(s.path)), strategy.skills.map((s) => s.path).join());
 ok("an unknown function is an error naming the valid ones", (() => { try { functionAgent("sales"); return false; } catch (e) { return /strategy/.test(String(e)); } })());
