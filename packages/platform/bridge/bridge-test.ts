@@ -754,7 +754,7 @@ try {
 
     const worded = fresh("Worded");
     draftOn(worded.dir, "foundation__alignment.json.draft", { venture: worded.id, principles: [{ id: "a", statement: "x", source: "bot", check: null }] });
-    expect("a statement's draft card promises no change it cannot offer", statementOf(worded.id, "alignment")?.question === "Accept the agent's draft of the alignment statement", statementOf(worded.id, "alignment"));
+    expect("a statement's draft card promises no change it cannot offer", /^Accept the agent's draft of \S*alignment\S* \(the alignment statement\)$/.test(statementOf(worded.id, "alignment")?.question ?? "") && !/reject/i.test(statementOf(worded.id, "alignment")?.question ?? ""), statementOf(worded.id, "alignment"));
 
     const planted2 = fresh("Planted phase");
     mkdirSync(fileIn(planted2.dir, "foundation/exit-criteria"), { recursive: true });

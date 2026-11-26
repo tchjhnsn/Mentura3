@@ -99,7 +99,8 @@ export function physicalPath(at: StoreLayout, rel: string): string {
   if (r === ".release" || r.startsWith(".release/")) return `meta/releases${r.slice(".release".length)}`;
   if (r.startsWith(".naive/") || r === ".naive" || r.startsWith("node_modules") || r.startsWith(".git")) return r;
   const kb = at.kbase;
-  if (r.startsWith(`${kb}/`) || r === kb || r.startsWith("meta/") || r.startsWith(`${CODEBASE}/`) || r.startsWith("repo/")) return r;
+  // Code beside k-base/ (src/) stays where it is, as in Naive's physical (naive#141).
+  if (r.startsWith(`${kb}/`) || r === kb || r.startsWith("meta/") || r.startsWith(`${CODEBASE}/`) || r.startsWith("repo/") || r.startsWith("src/")) return r;
   const g = first ? at.groups.get(first) : undefined;
   return `${kb}/${g ? `${g}/` : ""}${r}`;
 }

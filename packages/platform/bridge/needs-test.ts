@@ -68,14 +68,20 @@ try {
   const top = list.find((d) => d.id === "product-exists");
   expect("a decision says what it unlocks and how many decisions wait on it", !!top && top.unlocks.length > 0 && top.opens >= 1, top);
   expect("a decision names its function", list.every((d) => typeof d.function === "string"), list.map((d) => d.function));
-  expect("nothing was decided yet", needs.result.last_decided === null, needs.result.last_decided);
+  // create decides founding-team from the founder's own team answer (Naive's create-venture), so it is the only thing decided.
+  expect("only the team question, answered at create, is decided yet", needs.result.last_decided?.id === "founding-team" && !list.some((d) => d.id === "founding-team"), needs.result.last_decided);
   expect("reading needs leaves the business as it was (no index cache, no history)", snapshot(dir) === before);
 
-  const decided = bridge<{ decided: string }>({ op: "decide", venture: id, id: "founding-team", answer: "Solo: I am founding it alone" });
+  // A listed decision with options a person can pick, read from its file.
+  const decisionFiles = (readdirSync(dir, { recursive: true }) as string[]).filter((n) => n.endsWith(".decision.json"))
+    .map((n) => JSON.parse(readFileSync(join(dir, n), "utf8")) as { id: string, options?: string[] });
+  const pick = list.map((d) => ({ id: d.id, answer: decisionFiles.find((f) => f.id === d.id)?.options?.[0] })).find((d) => typeof d.answer === "string");
+  expect("a listed decision offers options", !!pick, list.map((d) => d.id));
+  const decided = bridge<{ decided: string }>({ op: "decide", venture: id, id: pick!.id, answer: pick!.answer! });
   expect("a person decides one", decided.ok, decided.error);
   const after = bridge<Needs>({ op: "needs", venture: id });
-  expect("the decided one leaves the list", after.ok && !after.result.decisions.some((d) => d.id === "founding-team"), after.result?.decisions.map((d) => d.id));
-  expect("and is the last thing decided", after.result.last_decided?.id === "founding-team", after.result.last_decided);
+  expect("the decided one leaves the list", after.ok && !after.result.decisions.some((d) => d.id === pick!.id), after.result?.decisions.map((d) => d.id));
+  expect("and is the last thing decided", after.result.last_decided?.id === pick!.id, after.result.last_decided);
 
   // A cache the CLI left stays exactly as it was.
   mkdirSync(join(dir, ".naive"), { recursive: true });
