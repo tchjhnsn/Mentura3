@@ -3,7 +3,8 @@
 // encoding) to LangSmith's OTel endpoint, and remembers in .naive/langsmith-sync.json the hash of the last span
 // LangSmith accepted, so a run offline sends nothing and the next run online sends what is pending, once. Spans keep
 // only what the venture allowed when they were written (inputs and outputs only with traces.content). toOtlp copies
-// those messages onto the keys LangSmith reads. Only this side names the vendor and the key.
+// those messages onto the keys LangSmith reads, and redacts every content key Naive would have kept. Only this side
+// names the vendor and the key.
 //
 //   LANGSMITH_API_KEY=... node platform/integrations/langsmith-otel.ts <venture dir> [--project <name>] [--dry-run]
 //
@@ -26,21 +27,27 @@ const hex = (s: string, n: number): string => { const h = s.replace(/-/g, "").to
 const nanos = (iso: string): string => (BigInt(Date.parse(iso)) * 1000000n).toString();
 const value = (v: unknown): Value => typeof v === "boolean" ? { boolValue: v } : typeof v === "number" ? (Number.isInteger(v) ? { intValue: String(v) } : { doubleValue: v }) : { stringValue: typeof v === "string" ? v : JSON.stringify(v) };
 const traceText = (v: unknown): string => redactTrace(typeof v === "string" ? v : JSON.stringify(v));
+/** The same keys Naive's span() treats as content. A host redactor must see every one of them on the way out. */
+const CONTENT_KEY = /^(gen_ai\.(input|output)\.messages|gen_ai\.system_instructions|gen_ai\.tool\.call\.(arguments|result)|naive\.(input|output))$/;
 const RUN_TYPE: Record<string, string> = { agent: "chain", model: "llm", tool: "tool", call: "retriever", judgment: "llm", trigger: "chain" };
 
 /** One Naive span as an OTLP span. Span ids become 16 hex characters (a hash when they are not), parents likewise. */
 export function toOtlp(s: TraceSpan): OtlpSpan {
   const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash };
-  // LangSmith reads input.value and output.value. Copy the messages already on the span, and redact every content string that leaves.
+  for (const key of Object.keys(attrs)) {
+    if (!CONTENT_KEY.test(key) || attrs[key] === undefined || attrs[key] === null) continue;
+    attrs[key] = traceText(attrs[key]);
+  }
+  // LangSmith reads input.value and output.value. They are the redacted message strings, not a second copy of the raw text.
   const input = attrs["gen_ai.input.messages"];
-  if (input !== undefined && input !== null) { const text = traceText(input); attrs["gen_ai.input.messages"] = text; attrs["input.value"] = text; attrs["gen_ai.prompt"] = text; }
+  if (typeof input === "string") { attrs["input.value"] = input; attrs["gen_ai.prompt"] = input; }
   const output = attrs["gen_ai.output.messages"];
-  if (output !== undefined && output !== null) { const text = traceText(output); attrs["gen_ai.output.messages"] = text; attrs["output.value"] = text; attrs["gen_ai.completion"] = text; }
+  if (typeof output === "string") { attrs["output.value"] = output; attrs["gen_ai.completion"] = output; }
   return {
     traceId: hex(s.trace_id, 32), spanId: hex(s.span_id, 16), ...(s.parent_span_id ? { parentSpanId: hex(s.parent_span_id, 16) } : {}),
     name: s.name, kind: s.kind === "model" || s.kind === "call" ? 3 : 1, startTimeUnixNano: nanos(s.start), endTimeUnixNano: nanos(s.end),
     attributes: Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null).map(([key, v]) => ({ key, value: value(v) })),
-    status: s.status === "error" ? { code: 2, ...(s.error ? { message: s.error } : {}) } : { code: 1 },
+    status: s.status === "error" ? { code: 2, ...(s.error ? { message: traceText(s.error) } : {}) } : { code: 1 },
   };
 }
 

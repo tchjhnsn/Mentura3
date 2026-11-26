@@ -128,6 +128,17 @@ try {
     && stringOf(hidden, "gen_ai.prompt") === promptOut && stringOf(hidden, "gen_ai.completion") === answerOut
     && stringOf(hidden, "gen_ai.input.messages") === promptOut && stringOf(hidden, "gen_ai.output.messages") === answerOut
     && source["gen_ai.input.messages"] === prompt && source["gen_ai.output.messages"] === answer);
+  const tools = toOtlp(traceSpan({
+    "gen_ai.tool.call.arguments": `arg ${MARKER}`, "gen_ai.tool.call.result": `result ${MARKER}`,
+    "gen_ai.system_instructions": `system ${MARKER}`, "naive.input": `in ${MARKER}`, "naive.output": `out ${MARKER}`,
+    "gen_ai.request.model": `claude-${MARKER}`,
+  }));
+  ok("tool text and the other content keys are redacted, and a model name is not",
+    stringOf(tools, "gen_ai.tool.call.arguments") === "arg [redacted]" && stringOf(tools, "gen_ai.tool.call.result") === "result [redacted]"
+    && stringOf(tools, "gen_ai.system_instructions") === "system [redacted]" && stringOf(tools, "naive.input") === "in [redacted]"
+    && stringOf(tools, "naive.output") === "out [redacted]" && stringOf(tools, "gen_ai.request.model") === `claude-${MARKER}`);
+  const erred = toOtlp({ ...traceSpan({}), status: "error", error: `refused ${MARKER}` });
+  ok("an error status message is redacted", erred.status.message === "refused [redacted]");
 } finally {
   setTraceRedactor((text) => text);
 }
