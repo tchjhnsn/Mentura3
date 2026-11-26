@@ -7,6 +7,7 @@
 //   node <EE>/platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]
 //   node <EE>/platform/agents/bin.ts mcp
 //   node <EE>/platform/agents/bin.ts harness                                         < prompt.txt
+//   node <EE>/platform/agents/bin.ts traces --venture <id> [--session <name>] [--trace <id>]
 //
 // What changes per call is an argument (function, venture, run id) or stdin (the task, kept out of argv and so out
 // of `ps`). What stays with the caller is the environment, read once here:
@@ -37,6 +38,7 @@ import { functionAgent, functionResearcher } from "./function-spec.ts";
 import type { LeadRunResult } from "./lead-agent.ts";
 import { leadAgent } from "./lead-spec.ts";
 import type { ResearchResult } from "./research.ts";
+import { ventureDir } from "naive-framework/src/router/router.mjs";
 
 type Env = Readonly<Record<string, string | undefined>>;
 
@@ -67,15 +69,17 @@ export type Parsed =
   | { command: "research", invocation: ResearchInvocation }
   | { command: "mcp" }
   | { command: "harness" }
+  | { command: "traces", venture: string, workspace?: string, session?: string, trace?: string }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, or mentura-agent harness < prompt";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, or mentura-agent traces --venture <id> [--session <name>] [--trace <id>]";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
   const val = (k: string): string | undefined => env[k] || undefined;
   if (argv[0] === "mcp" && argv.length === 1) return { command: "mcp" };
   if (argv[0] === "harness" && argv.length === 1) return { command: "harness" };
+  if (argv[0] === "traces") return parseTraces(argv, val);
   if ((argv[0] !== "run" && argv[0] !== "lead" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
   const known = argv[0] === "research" ? ["--venture", "--run-id", "--max-experiments"] : ["--venture", "--run-id"];
   const flags = new Map<string, string>();
@@ -96,6 +100,31 @@ export function parse(argv: readonly string[], env: Env): Parsed {
   const max = flags.get("--max-experiments");
   if (max !== undefined && !/^[1-9][0-9]*$/.test(max)) return { command: "usage", usage: `${USAGE} (--max-experiments is a whole number of at least 1, not ${max})` };
   return { command: "research", invocation: { ...invocation, readsAsOf: val("MENTURA_READS_AS_OF"), ...(max ? { maxExperiments: Number(max) } : {}) } };
+}
+
+function parseTraces(argv: readonly string[], val: (k: string) => string | undefined): Parsed {
+  const known = ["--venture", "--session", "--trace"];
+  const flags = new Map<string, string>();
+  for (let i = 1; i < argv.length; i += 2) {
+    const [k, v] = [argv[i], argv[i + 1]];
+    if (!known.includes(k) || !v || flags.has(k)) return { command: "usage", usage: `${USAGE} (unexpected ${k ?? "end"})` };
+    flags.set(k, v);
+  }
+  const venture = flags.get("--venture");
+  if (!venture) return { command: "usage", usage: `${USAGE} (--venture is required)` };
+  return { command: "traces", venture, workspace: val("MENTURA_WORKSPACE"), session: flags.get("--session"), trace: flags.get("--trace") };
+}
+
+async function traces(p: { venture: string, workspace?: string, session?: string, trace?: string }): Promise<number> {
+  const located = ventureOf(p.venture, p.workspace);
+  const dir = ventureDir(located.venture, located.workspace) as string | null;
+  if (!dir) {
+    process.stdout.write(JSON.stringify({ status: "refused", reason: `no venture ${located.venture} in ${located.workspace ?? process.env.MENTURA_WORKSPACE ?? process.cwd()}` }) + "\n");
+    return 2;
+  }
+  const { traceView } = await import("./traces.ts");
+  process.stdout.write(JSON.stringify(traceView(dir, { session: p.session, trace: p.trace })) + "\n");
+  return 0;
 }
 
 /**
@@ -147,6 +176,7 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   const p = parse(argv, env);
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
+  if (p.command === "traces") return traces(p);
   if (p.command === "harness") {
     const { runHarness } = await import("./harness.ts");
     const abort = new AbortController();
