@@ -40,6 +40,8 @@ MENTURA_WORKSPACE=~/workspace/ventures MENTURA_MODEL=anthropic:claude-opus-4-5 \
 
 It prints one JSON result and exits 0 (done, or already ran), 1 (failed), 2 (refused or usage), 75 (busy: another run holds the venture, try again with the same `--run-id`) or 130 (cancelled by SIGTERM or SIGINT). The result names the run, the agent's answer, what it wrote, and each draft held for a person with the command that accepts it, such as `mentura accept decisions/pricing --venture kettle`. Only a person runs that command.
 
+A function run and a lead run save the graph in `<venture>/.naive/agent-checkpoints.sqlite`. The same `--run-id` continues that graph when the process stopped before the run's root span was written. Once the span is written, the same id reports the first result and does not run again. A researcher run does not use this file. Its experiment log and the plan's budget are what a later run reads.
+
 The environment it reads, once, at the start:
 
 | Variable | What it is |

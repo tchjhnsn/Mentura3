@@ -12,7 +12,7 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createInterface } from "node:readline";
@@ -113,6 +113,15 @@ ok("the process environment is restored after the run", RUN_KEYS.every((k) => pr
 span(dir, { name: "invoke_agent harness", kind: "agent", trace_id: TRACE, span_id: PARENT, parent_span_id: null, session: SESSION }, { force: true });
 const check = spawnSync("node", [naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
 ok("check-traces passes with no warnings", check.status === 0 && !/warning:/.test(check.stdout + check.stderr), check.stdout + check.stderr);
+
+ok("the run saved a checkpoint", existsSync(join(dir, ".naive", "agent-checkpoints.sqlite")));
+const traceFile = join(dir, "traces", `${SESSION}.jsonl`);
+const traceAside = `${traceFile}.aside`;
+renameSync(traceFile, traceAside);
+const callsBefore = calls.length;
+const resumed = await runFunctionAgent(strategy, "Tighten the pricing decision.", { venture: "kettle", model: scripted(model), trace: caller, runId: RUN, harness: "claude-code" });
+ok("a finished run whose span is missing returns the same answer and does not call the model", resumed.status === "done" && r.status === "done" && resumed.answer === r.answer && calls.length === callsBefore, JSON.stringify(resumed));
+renameSync(traceAside, traceFile);
 
 // ---- 3. Idempotent: the same run id reports what the run did, without a model ----
 const count = spans(dir, SESSION).length;

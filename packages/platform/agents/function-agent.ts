@@ -15,8 +15,8 @@ import { closeSync, constants, existsSync, mkdirSync, openSync, readFileSync, un
 import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import type { BaseLanguageModel } from "@langchain/core/language_models/base";
-import { HumanMessage } from "@langchain/core/messages";
 import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents";
+import { invokeThread, openRunSaver } from "./checkpoint.ts";
 import { spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries, stealDeadLock } from "naive-framework/src/core/provenance.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
@@ -192,24 +192,25 @@ export async function withRunEnv<T>(run: Pick<RunRef, "role" | "session" | "trac
  * Builds and invokes the deep agent. The backend is the venture's records (NaiveBackend, acting as spec.role) with the
  * function's module mounted at /function/ and its writes denied, so its skills, frameworks and templates are readable.
  * The tracer's root span is run.id (passed as the LangChain runId) and hangs from MENTURA_SPAN_ID, the caller's span.
+ * The same run id continues from .naive/agent-checkpoints.sqlite when the process stopped before that span was written.
  */
 async function invoke(dir: string, spec: FunctionAgentSpec, task: string, run: RunRef, role: TeamPlanEntryRead, model: BaseLanguageModel, workspace?: string, signal?: AbortSignal): Promise<RunResult> {
   const tracer = new NaiveTracer(dir, { session: run.session, trace_id: run.trace_id, agents: [spec.function] });
   const backend = new CompositeBackend(new NaiveBackend({ venture: run.venture, workspace, actor_id: spec.role }, tracer),
     { "/function/": new FilesystemBackend({ rootDir: spec.module, virtualMode: true }) });
   const skills = [...new Set(spec.skills.map((s) => s.path.replace(/[^/]+\/$/, "")))];
+  const saver = openRunSaver(dir);
   const agent = createDeepAgent({ model, backend, name: spec.function, systemPrompt: promptOf(spec, run.venture, role), skills,
-    permissions: [{ operations: ["write"], paths: ["/function/**"], mode: "deny" }] });
-  // deepagents 1.16's invoke type resolves the messages field to never under strict mode, so the input is cast.
-  const input = { messages: [new HumanMessage(task)] } as unknown as Parameters<typeof agent.invoke>[0];
+    checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/function/**"], mode: "deny" }] });
   try {
-    const out = await agent.invoke(input, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
+    const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
     return { status: "done", run, answer: answerOf(out), ...outcomeOf(dir, run) };
   }
   catch (e) {
     tracer.closeOpen(signal?.aborted ? "cancelled" : messageOf(e));
     return signal?.aborted ? { status: "cancelled", run, ...outcomeOf(dir, run) } : { status: "failed", run, error: messageOf(e), ...outcomeOf(dir, run) };
   }
+  finally { saver.close(); }
 }
 
 /** The fields of the venture's team-plan entry the run reads. Read fresh on every run (Naive's roleOf). A lead run reads the same. */
