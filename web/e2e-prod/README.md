@@ -33,7 +33,7 @@ The files run in name order, one test at a time.
 
 `studio.spec.ts` (E4): as the Owner in its personal team, a business said in a sentence shows "Setting up", opens inside its team at `/studio/<team>/<business>` on Needs you, and the team home shows one more card.
 
-`surfaces.spec.ts` (round 5), as the Owner on E4's business: the business home shows Needs you, with one Open decision button that opens Decisions, or says nothing needs you, then Done by agents.
+`surfaces.spec.ts` (round 5), as the Owner on E4's business: the business home shows Needs you, with one Open decision button that opens Decisions, or says nothing needs you, then Done by agents. Then B1, the bottom bar: it is on the business page and not on the team home; Stream and Running each open their panel with a tap and close with a second tap and with Escape; and at 390 px wide with touch the bar is hidden, the chip opens a bottom sheet with the Stream and Running tabs, and the page does not scroll sideways. They need migration 0072 applied for Running to read rows; without it Running says nothing is running.
 
 `teams.spec.ts` (E5, E7): E5 makes a team from the switcher (Create team, a name, Create, then Skip on the invite step), lands on its empty home and finds it in the switcher. E7 opens the Owner's personal team and one of its businesses as the invitee and expects "You are not a member of this team." with none of the team's businesses shown.
 
