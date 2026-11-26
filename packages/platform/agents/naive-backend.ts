@@ -8,11 +8,35 @@
 //   const agent = createDeepAgent({ model, backend: new NaiveBackend({ venture: "kettle" }, tracer), ... });
 //   await agent.invoke(input, { callbacks: [tracer] });
 
+import { writeFileSync } from "node:fs";
 import { AsyncLocalStorageProviderSingleton } from "@langchain/core/singletons";
 import type { BackendProtocolV2, EditResult, FileInfo, GlobResult, GrepResult, LsResult, ReadRawResult, ReadResult, WriteResult } from "deepagents";
+import { spanHash, spans, traceFile } from "naive-framework/src/core/instrumentation.mjs";
 import * as files from "naive-framework/src/router/agent-files.mjs";
 import type { Context } from "naive-framework/src/router/agent-files.mjs";
 import type { NaiveTracer } from "./naive-tracer.ts";
+
+type Outcome = "held" | "refused" | "written";
+type RouterWrite = { ok: boolean, draft?: boolean, written?: string, error?: string };
+
+const bareRoute = (route: string): string => route.replace(/^\/+|\/+$/g, "");
+const outcomeOf = (w: RouterWrite): Outcome => w.draft ? "held" : w.ok ? "written" : "refused";
+
+function tagSpan(dir: string, session: string, spanId: string, patch: (span: Record<string, unknown>) => void): void {
+  const list = spans(dir, session) as Record<string, unknown>[];
+  const i = list.findIndex((s) => s.span_id === spanId);
+  if (i < 0) return;
+  patch(list[i]);
+  let prev = i === 0 ? "genesis" : String(list[i - 1].hash);
+  for (let j = i; j < list.length; j++) {
+    const { hash: _hash, ...rest } = list[j];
+    rest.prev = prev;
+    const hash = spanHash(prev, rest);
+    list[j] = { ...rest, hash };
+    prev = hash;
+  }
+  writeFileSync(traceFile(dir, session), list.map((l) => JSON.stringify(l)).join("\n") + "\n");
+}
 
 const info = (f: { path: string, is_dir: boolean }): FileInfo => ({ path: f.path, is_dir: f.is_dir });
 // deepagents tells the model only "Successfully wrote" on success, so a draft goes back as the tool's error text:
@@ -44,6 +68,35 @@ export class NaiveBackend implements BackendProtocolV2 {
     finally { keys.forEach((k, i) => { if (saved[i] === undefined) delete process.env[k]; else process.env[k] = saved[i]; }); }
   }
 
+  /** The router span is already in the trace file. Patch the last untagged write for this route, then rehash the tail. */
+  tagWrite(filePath: string, w: RouterWrite): void {
+    const tracer = this.tracer;
+    if (!tracer) return;
+    const route = bareRoute(filePath);
+    const list = spans(tracer.dir, tracer.session) as { span_id?: unknown, kind?: unknown, attributes?: Record<string, unknown> }[];
+    let spanId = "";
+    for (const s of list) {
+      const attrs = s.attributes ?? {};
+      if (s.kind !== "call" || attrs["naive.action"] !== "write" || attrs["naive.outcome"] != null) continue;
+      if (bareRoute(String(attrs["naive.route"] ?? "")) !== route) continue;
+      if (typeof s.span_id === "string") spanId = s.span_id;
+    }
+    if (!spanId) return;
+    const outcome = outcomeOf(w);
+    const venture = this.ctx.venture;
+    tagSpan(tracer.dir, tracer.session, spanId, (span) => {
+      const current = span.attributes;
+      const attrs: Record<string, unknown> = current !== null && typeof current === "object" && !Array.isArray(current) ? { ...current } : {};
+      attrs["naive.outcome"] = outcome;
+      if (outcome === "held") {
+        attrs["naive.draft"] = typeof w.written === "string" ? w.written : route;
+        attrs["naive.accept"] = `mentura accept ${route} --venture ${venture}`;
+      }
+      if (outcome === "refused" && typeof w.error === "string") span.error = w.error;
+      span.attributes = attrs;
+    });
+  }
+
   async ls(path: string): Promise<LsResult> {
     try { return { files: (await this.under(() => files.ls(this.ctx, path))).map(info) }; } catch (e) { return { error: String((e as Error).message ?? e) }; }
   }
@@ -66,6 +119,7 @@ export class NaiveBackend implements BackendProtocolV2 {
 
   async write(filePath: string, content: string): Promise<WriteResult> {
     const w = await this.under(() => files.write(this.ctx, filePath, content));
+    this.tagWrite(filePath, w);
     if (!w.ok) return { error: w.error ?? "not written" };
     if (w.draft) return { error: held(w.path, w) };
     return { path: w.path, filesUpdate: null, metadata: { naive: { written: w.written, draft: !!w.draft, ...(w.note ? { note: w.note } : {}) } } };
@@ -73,6 +127,7 @@ export class NaiveBackend implements BackendProtocolV2 {
 
   async edit(filePath: string, oldString: string, newString: string, replaceAll = false): Promise<EditResult> {
     const e = await this.under(() => files.edit(this.ctx, filePath, oldString, newString, replaceAll));
+    this.tagWrite(filePath, e);
     if (!e.ok) return { error: e.error ?? "not edited" };
     if (e.draft) return { error: held(e.path, e) };
     return { path: e.path, filesUpdate: null, occurrences: e.occurrences, metadata: { naive: { written: e.written, draft: !!e.draft, ...(e.note ? { note: e.note } : {}) } } };
