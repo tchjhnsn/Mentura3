@@ -1,9 +1,10 @@
 // Tests Mentura's LangChain side over Naive (EE-121, EE-122), offline with a scripted model: a deep agent built with
 // createDeepAgent and the NaiveBackend lists, reads and edits a venture's records through Naive's router; an edit that
-// decides a decision is held as a draft; the NaiveTracer writes the run as spans in the venture's trace files (the
-// agent, each model call, each tool call, Naive's file operation and router call under the tool); the provenance
-// line of the write names the tool's file operation span; inputs stay out unless traces.content is on; check-traces
-// passes.
+// decides a decision is held as a draft; a write the router rejects is refused; the NaiveTracer writes the run as
+// spans in the venture's trace files (the agent, each model call, each tool call, Naive's file operation and router
+// call under the tool); each write's router call span records naive.outcome held, refused or written, and the OTLP
+// export carries that outcome; the provenance line of the write names the tool's file operation span; inputs stay
+// out unless traces.content is on; check-traces passes.
 //
 //   node platform/agents/agents-test.ts
 
@@ -16,6 +17,8 @@ import { fakeModel } from "@langchain/core/testing";
 import { createDeepAgent } from "deepagents";
 import { sessions, spans } from "naive-framework/src/core/instrumentation.mjs";
 import { entries } from "naive-framework/src/core/provenance.mjs";
+import type { TraceSpan } from "naive-framework/src/records/types/records.d.ts";
+import { toOtlp } from "../integrations/langsmith-otel.ts";
 import { naivePath } from "../naive.ts";
 import { NaiveBackend } from "./naive-backend.ts";
 import { NaiveTracer } from "./naive-tracer.ts";
@@ -41,6 +44,7 @@ const model = fakeModel()
   .respondWithTools([{ name: "ls", args: { path: "/decisions" }, id: "call-ls" }])
   .respondWithTools([{ name: "read_file", args: { file_path: "/decisions/pricing" }, id: "call-read" }])
   .respondWithTools([{ name: "edit_file", args: { file_path: "/decisions/pricing", old_string: "What do we charge for the first kettle?", new_string: "What do we charge for the first kettle, and from when?" }, id: "call-edit" }])
+  .respondWithTools([{ name: "write_file", args: { file_path: "/decisions/pricing", content: JSON.stringify({ id: "pricing", question: "What do we charge?", status: "nope" }) }, id: "call-refuse" }])
   .respondWithTools([{ name: "edit_file", args: { file_path: "/decisions/pricing", old_string: "\"status\": \"open\"", new_string: "\"status\": \"decided\"" }, id: "call-decide" }])
   .respond(new AIMessage("I sharpened the pricing question and proposed deciding it; a person has to accept that."));
 
@@ -61,14 +65,14 @@ ok("edit_file wrote the record through the router", after.question.endsWith("and
 ok("an agent's edit that decides a decision is held as a draft, and the agent is told", after.status === "open" && /Held for a person/.test(toolText.at(-1) ?? ""), toolText.at(-1));
 
 // The run is in the venture's trace files.
-const all = sessions(dir).flatMap((s: string) => spans(dir, s)) as { kind: string, name: string, span_id: string, parent_span_id?: string, trace_id: string, attributes?: Record<string, unknown> }[];
+const all = sessions(dir).flatMap((s: string) => spans(dir, s)) as TraceSpan[];
 const byId = new Map(all.map((s) => [s.span_id, s]));
 const agentSpan = all.find((s) => s.kind === "agent" && s.name === "invoke_agent strategy");
 ok("the run is in the session the harness named", sessions(dir).includes("harness-run-1"), sessions(dir).join());
 ok("the agent run is one agent span", !!agentSpan, all.map((s) => s.name).join(", "));
-ok("each model call is a model span under the agent", all.filter((s) => s.kind === "model").length === 5 && all.filter((s) => s.kind === "model").every((s) => s.parent_span_id === agentSpan?.span_id));
+ok("each model call is a model span under the agent", all.filter((s) => s.kind === "model").length === 6 && all.filter((s) => s.kind === "model").every((s) => s.parent_span_id === agentSpan?.span_id));
 const tools = all.filter((s) => s.kind === "tool" && s.name.startsWith("execute_tool ") && !s.name.startsWith("execute_tool naive_"));
-ok("each tool call is a tool span under the agent", tools.length === 4 && tools.every((s) => s.parent_span_id === agentSpan?.span_id), tools.map((s) => s.name).join(", "));
+ok("each tool call is a tool span under the agent", tools.length === 5 && tools.every((s) => s.parent_span_id === agentSpan?.span_id), tools.map((s) => s.name).join(", "));
 const ops = all.filter((s) => s.name.startsWith("execute_tool naive_"));
 ok("Naive's file operations hang from the tool call that made them", ops.length >= 4 && ops.every((s) => byId.get(s.parent_span_id ?? "")?.kind === "tool" || byId.get(s.parent_span_id ?? "")?.name.startsWith("execute_tool naive_")));
 ok("Naive's router calls are under its file operations", all.some((s) => s.kind === "call" && byId.get(s.parent_span_id ?? "")?.name.startsWith("execute_tool naive_")));
@@ -77,6 +81,24 @@ const write = entries(dir).filter((e: { entity?: string }) => e.entity === "deci
 ok("the provenance line of the edit names a span of this run", !!write?.span && byId.has(write.span.span_id));
 ok("inputs and outputs are left out (traces.content is off)", !readFileSync(join(dir, "traces/harness-run-1.jsonl"), "utf8").includes("Tighten the pricing decision"));
 ok("token and model attributes are kept", all.filter((s) => s.kind === "model").every((s) => typeof s.attributes?.["gen_ai.request.model"] === "string"));
+const routeOf = (s: TraceSpan) => String(s.attributes?.["naive.route"] ?? "").replace(/^\/+|\/+$/g, "");
+const pricingWrites = all.filter((s) => s.kind === "call" && s.attributes?.["naive.action"] === "write" && routeOf(s) === "decisions/pricing");
+const withOutcome = (outcome: string) => pricingWrites.filter((s) => s.attributes?.["naive.outcome"] === outcome);
+const written = withOutcome("written");
+const held = withOutcome("held");
+const refused = withOutcome("refused");
+const stringAttr = (s: ReturnType<typeof toOtlp>, key: string): string | undefined => {
+  const v = s.attributes.find((a) => a.key === key)?.value;
+  return v && "stringValue" in v ? v.stringValue : undefined;
+};
+ok("the edit that changes the question is written", written.length === 1 && written[0].attributes?.["naive.outcome"] === "written");
+ok("the edit that decides the decision is held", held.length === 1 && held[0].attributes?.["naive.outcome"] === "held" && typeof held[0].attributes?.["naive.draft"] === "string" && held[0].attributes?.["naive.draft"] !== "" && held[0].attributes?.["naive.accept"] === "mentura accept decisions/pricing --venture kettle", JSON.stringify(held[0]?.attributes));
+ok("a schema failure is refused on the router call span", refused.length === 1 && refused[0].attributes?.["naive.outcome"] === "refused" && typeof refused[0].error === "string" && refused[0].error.includes("does not match"), refused[0]?.error);
+ok("reads, ls, glob and grep are not tagged", all.filter((s) => s.kind === "call" && s.attributes?.["naive.action"] !== "write").every((s) => s.attributes?.["naive.outcome"] === undefined));
+const heldOtlp = held[0] ? toOtlp(held[0]) : undefined;
+const refusedOtlp = refused[0] ? toOtlp(refused[0]) : undefined;
+ok("the held span exports as held and names the Naive run", !!heldOtlp && heldOtlp.status.code === 1 && heldOtlp.status.message === "held" && stringAttr(heldOtlp, "langsmith.span.tags") === "held" && stringAttr(heldOtlp, "langsmith.metadata.naive_run_id") === held[0]?.trace_id);
+ok("the refused span exports as an error with a message", !!refusedOtlp && refusedOtlp.status.code === 2 && typeof refusedOtlp.status.message === "string" && refusedOtlp.status.message.length > 0, refusedOtlp?.status.message);
 const check = spawnSync("node", [naivePath("packages/naive/src/checks/check-traces.ts"), dir], { encoding: "utf8" });
 ok("check-traces passes the venture", check.status === 0, check.stderr || check.stdout);
 

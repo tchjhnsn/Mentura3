@@ -30,18 +30,24 @@ const RUN_TYPE: Record<string, string> = { agent: "chain", model: "llm", tool: "
 
 /** One Naive span as an OTLP span. Span ids become 16 hex characters (a hash when they are not), parents likewise. */
 export function toOtlp(s: TraceSpan): OtlpSpan {
-  const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash };
+  const outcome = s.attributes?.["naive.outcome"];
+  const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash, "langsmith.metadata.naive_run_id": s.trace_id };
+  if (outcome === "held" || outcome === "refused" || outcome === "written") attrs["langsmith.span.tags"] = outcome;
   for (const [key, raw] of Object.entries(s.attributes ?? {})) attrs[key] = redactAttribute(key, raw);
   // LangSmith reads input.value and output.value. They are the redacted message strings, not a second copy of the raw text.
   const input = attrs["gen_ai.input.messages"];
   if (typeof input === "string") { attrs["input.value"] = input; attrs["gen_ai.prompt"] = input; }
   const output = attrs["gen_ai.output.messages"];
   if (typeof output === "string") { attrs["output.value"] = output; attrs["gen_ai.completion"] = output; }
+  const status = outcome === "held" ? { code: 1, message: "held" }
+    : outcome === "written" ? { code: 1, message: "written" }
+    : outcome === "refused" ? { code: 2, message: redactTrace(s.error || "refused") }
+    : s.status === "error" ? { code: 2, ...(s.error ? { message: redactTrace(s.error) } : {}) } : { code: 1 };
   return {
     traceId: hex(s.trace_id, 32), spanId: hex(s.span_id, 16), ...(s.parent_span_id ? { parentSpanId: hex(s.parent_span_id, 16) } : {}),
     name: s.name, kind: s.kind === "model" || s.kind === "call" ? 3 : 1, startTimeUnixNano: nanos(s.start), endTimeUnixNano: nanos(s.end),
     attributes: Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null).map(([key, v]) => ({ key, value: value(v) })),
-    status: s.status === "error" ? { code: 2, ...(s.error ? { message: redactTrace(s.error) } : {}) } : { code: 1 },
+    status,
   };
 }
 
