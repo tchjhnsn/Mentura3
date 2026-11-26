@@ -27,7 +27,7 @@ const agent = createDeepAgent({ model, name: "strategy", backend: new NaiveBacke
 await agent.invoke(input, { callbacks: [tracer] });
 ```
 
-Run the tests with `node platform/agents/agents-test.ts`, `node --import ./naive-ts.ts agents/function-agent-test.ts`, `node --import ./naive-ts.ts agents/lead-agent-test.ts` and `node --import ./naive-ts.ts agents/research-test.ts` (the loader strips types from Naive's `.ts` files under node_modules). Outside a function agent run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
+From `packages/platform`, run the tests with `node agents/agents-test.ts`, `node agents/function-agent-test.ts`, `node agents/lead-agent-test.ts` and `node agents/research-test.ts`. Outside a function, lead or researcher run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
 
 ## Function agents (EE-123)
 
