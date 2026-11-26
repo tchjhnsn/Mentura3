@@ -17,7 +17,7 @@ import { join } from "node:path";
 import type { BaseLanguageModel } from "@langchain/core/language_models/base";
 import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents";
 import { invokeThread, openRunSaver } from "./checkpoint.ts";
-import { spans } from "naive-framework/src/core/instrumentation.mjs";
+import { spans, tracing } from "naive-framework/src/core/instrumentation.mjs";
 import { entries, stealDeadLock } from "naive-framework/src/core/provenance.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
 import { roleOf } from "naive-framework/src/engine/access.mjs";
@@ -25,7 +25,8 @@ import { ventureDir } from "naive-framework/src/router/router.mjs";
 import type { FunctionAgentSpec, FunctionId, Phase } from "./function-spec.ts";
 import { reachesTeamPlan, teamPlanEntry } from "./function-spec.ts";
 import { NaiveBackend } from "./naive-backend.ts";
-import { NaiveTracer } from "./naive-tracer.ts";
+import { NaiveTracer, tagSpan } from "./naive-tracer.ts";
+import { redactTrace } from "./trace-redact.ts";
 
 /** A run id: a UUID, used as the root span id, so a retry with the same id finds the run in the session's trace. */
 export type RunId = string & { readonly __run: true };
@@ -204,7 +205,15 @@ async function invoke(dir: string, spec: FunctionAgentSpec, task: string, run: R
     checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/function/**"], mode: "deny" }] });
   try {
     const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
-    return { status: "done", run, answer: answerOf(out), ...outcomeOf(dir, run) };
+    const answer = answerOf(out);
+    // The tracer closes the root span inside invokeThread, before this answer exists. Write the task and the answer only when the venture keeps content in traces.
+    if (tracing(dir).content) tagSpan(dir, run.session, run.id, (span) => {
+      const attributes = { ...(span.attributes as Record<string, unknown> | undefined) };
+      attributes["gen_ai.input.messages"] = redactTrace(task);
+      attributes["gen_ai.output.messages"] = redactTrace(answer);
+      span.attributes = attributes;
+    });
+    return { status: "done", run, answer, ...outcomeOf(dir, run) };
   }
   catch (e) {
     tracer.closeOpen(signal?.aborted ? "cancelled" : messageOf(e));

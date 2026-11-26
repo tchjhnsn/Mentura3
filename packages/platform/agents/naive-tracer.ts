@@ -14,7 +14,8 @@ import type { BaseMessage } from "@langchain/core/messages";
 import type { LLMResult } from "@langchain/core/outputs";
 import type { ChainValues } from "@langchain/core/utils/types";
 import { randomUUID } from "node:crypto";
-import { span } from "naive-framework/src/core/instrumentation.mjs";
+import { writeFileSync } from "node:fs";
+import { span, spanHash, spans, traceFile } from "naive-framework/src/core/instrumentation.mjs";
 
 export interface TracerOptions { session?: string, trace_id?: string, agents?: string[] }
 export interface SpanContext { trace_id: string, span_id: string, session: string }
@@ -138,4 +139,24 @@ export class NaiveTracer extends BaseCallbackHandler {
 
   override handleToolEnd(output: unknown, runId: string): void { this.end(runId, { "gen_ai.tool.call.result": text(output) }); }
   override handleToolError(err: Error, runId: string): void { this.end(runId, {}, err); }
+}
+
+/**
+ * Patches one closed span and rehashes that line and every line after it.
+ * span() chains each line to the hash of the line before, so a patched line breaks check-traces until the tail is rewritten.
+ */
+export function tagSpan(dir: string, session: string, spanId: string, patch: (span: Record<string, unknown>) => void): void {
+  const list = spans(dir, session) as Record<string, unknown>[];
+  const i = list.findIndex((s) => s.span_id === spanId);
+  if (i < 0) return;
+  patch(list[i]);
+  let prev = i === 0 ? "genesis" : String(list[i - 1].hash);
+  for (let j = i; j < list.length; j++) {
+    const { hash: _hash, ...rest } = list[j];
+    rest.prev = prev;
+    const hash = spanHash(prev, rest);
+    list[j] = { ...rest, hash };
+    prev = hash;
+  }
+  writeFileSync(traceFile(dir, session), list.map((l) => JSON.stringify(l)).join("\n") + "\n");
 }

@@ -28,6 +28,7 @@ import { naivePath } from "../naive.ts";
 import type { ModelSource, RunResult } from "./function-agent.ts";
 import { runFunctionAgent, runIdOf } from "./function-agent.ts";
 import { functionAgent, functionIds, teamPlanEntry } from "./function-spec.ts";
+import { setTraceRedactor } from "./trace-redact.ts";
 
 let failed = 0;
 const ok = (name: string, cond: boolean, detail = "") => { console.log(`${cond ? "pass" : "FAIL"}  ${name}${cond || !detail ? "" : `: ${detail}`}`); if (!cond) failed++; };
@@ -106,6 +107,7 @@ const root = run.find((s) => s.span_id === RUN);
 ok("the run is in the caller's session file", !!root, run.map((s) => s.name).join());
 ok("its root span is invoke_agent strategy, nested under the caller's span", root?.name === "invoke_agent strategy" && root.parent_span_id === PARENT, JSON.stringify(root));
 ok("every span of the run is in the caller's trace", run.length > 5 && run.every((s) => s.trace_id === TRACE));
+ok("with content off, the trace file does not contain the task", !readFileSync(join(dir, "traces", `${SESSION}.jsonl`), "utf8").includes("Tighten the pricing decision."));
 const lines = (entries(dir) as { span?: { trace_id: string }, agent?: Record<string, string> }[]).filter((e) => e.span?.trace_id === TRACE);
 ok("provenance names the same session, role, model and harness", lines.length > 0 && lines.every((e) => e.agent?.session === SESSION && e.agent?.id === "strategy-agent" && e.agent?.model === "fake:scripted" && e.agent?.harness === "claude-code"), JSON.stringify(lines.map((e) => e.agent)));
 ok("the process environment is restored after the run", RUN_KEYS.every((k) => process.env[k] === undefined) && process.env.MENTURA_WORKSPACE === ws);
@@ -172,6 +174,22 @@ const sc = called.result?.structuredContent;
 ok("a call through the shim reaches the same run through the environment alone (already-ran, same drafts)", called.result?.isError === false && sc?.status === "already-ran" && r.status === "done" && JSON.stringify(sc.held) === JSON.stringify(r.held), JSON.stringify(called.result));
 shim.stdin.end();
 await new Promise((res) => shim.on("close", res));
+
+// ---- 8. Content on: the root span keeps the task and the answer, and a redactor runs first ----
+writeFileSync(join(dir, "naive.config.json"), JSON.stringify({ traces: { spans: true, content: true } }));
+const marked = "Price the second kettle. TRACE_MARKER";
+const answered = "Charge for the first kettle from day one.";
+const contentModel = fakeModel().respond(new AIMessage(answered));
+const SESSION_C = "harness-content", RUN_C = runIdOf(randomUUID());
+setTraceRedactor((text) => text.replaceAll("TRACE_MARKER", "[redacted]"));
+let rc: RunResult;
+try {
+  rc = await runFunctionAgent(strategy, marked, { venture: "kettle", model: scripted(contentModel), trace: { session: SESSION_C, trace_id: randomUUID() }, runId: RUN_C, harness: "claude-code" });
+}
+finally { setTraceRedactor((text) => text); }
+const contentRoot = (spans(dir, SESSION_C) as { span_id: string, attributes?: Record<string, unknown> }[]).find((s) => s.span_id === RUN_C);
+ok("with content on, the root span stores the task and the answer", rc.status === "done" && contentRoot?.attributes?.["gen_ai.input.messages"] === "Price the second kettle. [redacted]" && contentRoot?.attributes?.["gen_ai.output.messages"] === answered && contentRoot?.attributes?.["gen_ai.operation.name"] === "invoke_agent", JSON.stringify(contentRoot?.attributes));
+ok("the redactor's marker is absent from the root span", !JSON.stringify(contentRoot ?? {}).includes("TRACE_MARKER"));
 
 if (failed) { console.error(`${failed} failed`); process.exit(1); }
 console.log("function agents: all passing");

@@ -19,7 +19,7 @@ import type { BaseLanguageModel } from "@langchain/core/language_models/base";
 import { CompositeBackend, createDeepAgent, FilesystemBackend } from "deepagents";
 import { invokeThread, openRunSaver } from "./checkpoint.ts";
 import type { EditResult, WriteResult } from "deepagents";
-import { spans } from "naive-framework/src/core/instrumentation.mjs";
+import { spans, tracing } from "naive-framework/src/core/instrumentation.mjs";
 import { ventureFile } from "naive-framework/src/core/venture-paths.mjs";
 import { roleOf, routeGlob } from "naive-framework/src/engine/access.mjs";
 import type { Context } from "naive-framework/src/router/agent-files.mjs";
@@ -30,7 +30,8 @@ import { functionAgent, functionIds, reachesTeamPlan } from "./function-spec.ts"
 import type { LeadAgentSpec, LeadId } from "./lead-spec.ts";
 import { beyondLead, leadTeamPlanEntry } from "./lead-spec.ts";
 import { NaiveBackend } from "./naive-backend.ts";
-import { NaiveTracer } from "./naive-tracer.ts";
+import { NaiveTracer, tagSpan } from "./naive-tracer.ts";
+import { redactTrace } from "./trace-redact.ts";
 
 export interface LeadRunContext {
   venture: string,
@@ -166,7 +167,15 @@ async function invoke(dir: string, spec: LeadAgentSpec, task: string, run: LeadR
     checkpointer: saver, permissions: [{ operations: ["write"], paths: ["/lead/**"], mode: "deny" }] });
   try {
     const out = await invokeThread(agent, run.id, task, { runId: run.id, callbacks: [tracer], signal, recursionLimit: MAX_STEPS });
-    return { status: "done", run, answer: answerOf(out), ...leadOutcome(dir, spec, run) };
+    const answer = answerOf(out);
+    // The tracer closes the root span inside invokeThread, before this answer exists. Write the task and the answer only when the venture keeps content in traces.
+    if (tracing(dir).content) tagSpan(dir, run.session, run.id, (span) => {
+      const attributes = { ...(span.attributes as Record<string, unknown> | undefined) };
+      attributes["gen_ai.input.messages"] = redactTrace(task);
+      attributes["gen_ai.output.messages"] = redactTrace(answer);
+      span.attributes = attributes;
+    });
+    return { status: "done", run, answer, ...leadOutcome(dir, spec, run) };
   }
   catch (e) {
     tracer.closeOpen(signal?.aborted ? "cancelled" : messageOf(e));
