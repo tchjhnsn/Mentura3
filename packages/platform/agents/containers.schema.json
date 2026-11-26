@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mentura.xyz/schemas/containers.schema.json",
+  "title": "containers.json",
+  "description": "Who may change which part of a site or docs repository (agents/containers.ts). Every section is a container with one owner that writes its copy and one builder, its function's IT specialist, that builds it. The design system has one owner. containers.ts checks the rules a schema cannot: unique ids, a builder that is <function>-it, an owner that is not the builder, holds that name containers, and paths that one container claims.",
+  "type": "object",
+  "required": ["design_system", "containers"],
+  "additionalProperties": false,
+  "properties": {
+    "design_system": {
+      "type": "object",
+      "required": ["paths", "owner"],
+      "additionalProperties": false,
+      "properties": {
+        "paths": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "owner": { "const": "design-system-agent" }
+      }
+    },
+    "containers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "paths", "owner", "function", "builder", "may"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "paths": { "type": "array", "minItems": 1, "items": { "type": "string" }, "description": "Globs from the repository root: * within a folder, ** across folders." },
+          "owner": { "type": "string", "description": "The agent that writes the copy: a capability, category or function agent." },
+          "category": { "type": "string", "description": "The category agent with authority over the owner." },
+          "function": { "type": "string", "description": "A departments.json function id." },
+          "builder": { "type": "string", "pattern": "-it$", "description": "<function>-it, the one agent that builds it." },
+          "may": { "type": "array", "items": { "enum": ["copy", "order", "props"] }, "uniqueItems": true },
+          "holds": { "type": "array", "items": { "type": "string" }, "description": "For a page: the containers it holds, in order." }
+        }
+      }
+    }
+  }
+}

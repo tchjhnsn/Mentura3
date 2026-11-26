@@ -28,9 +28,22 @@ person's. There is no "someone downstream will catch it".
 ## Handoffs
 
 - The agent that writes copy and plans a sitemap is not the agent that builds the design. Writing ends with a handoff
-  (`operations/handoff/<id>`) to the building agent, with what must be true when it is done.
+  (`operations/handoff/<id>`) to the building agent, with what must be true when it is done: the IT specialist of the
+  function that owns the container (`<function>-it`), never a central builder.
 - The receiving agent owns its part the same way: it runs the gates on what it builds, and sends back what fails.
 - A handoff says what you checked. The receiver does not assume you checked anything you did not name.
+
+## The site and the docs
+
+- Every section of the site and the docs is a container with exactly one owner, listed in the repository's
+  `containers.json`. The owner writes its copy and controls its hierarchy and information architecture, and nothing
+  outside it. Its function's IT specialist is the only agent that builds it.
+- A category agent has authority over the containers of every capability in its group. It sends work back with a
+  note; it does not edit a child's container itself unless that child agent is retired.
+- Only the design-system agent changes tokens, shared components, the grid and type. A container uses existing
+  components and sets their editable props. Ask the design-system agent for anything new through a handoff.
+- A write outside your containers is refused before it lands. Do not try another path to the same file: hand off to
+  its owner.
 
 ## What is internal
 

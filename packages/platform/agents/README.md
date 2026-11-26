@@ -25,10 +25,14 @@ Mentura's LangChain side over Naive (EE-121, EE-122). Mentura builds its functio
 | `commands.ts`, `command-host.ts` | The slash commands (`/next`, `/meet`, `/agenda`, `/answer`, `/approve`, `/rework`, `/blocked`, `/done`, `/skip`, `/handoff`, `/revisit`, `/end`, `/abandon`, `/meetings`, `/skipped`, `/memory`, `/tools`, `/help`), parsed pure and run against one venture; the host wires the router store, the function-agent worker, `<venture>/.naive/meeting-checkpoints.sqlite`, Naive's `due` ranked by the phase's function weights, and Naive's run log on close |
 | `memory.ts` | Each agent's memory, rendered from the business's closed meetings into `<venture>/.naive/agent-memory/<role>/MEMORY.md` before each run and loaded as deepagents memory from a read-only mount at `/memory/` |
 | `skills/` | Mentura's own skills, mounted read-only at `/mentura/skills/` for every function and lead agent: `ownership` (an agent runs every gate on what it executes, the publishing gate and internal-terms lint included, and hands off between writing and building), `information-hierarchy` (answer first, top-down stages, best practice named at each stage), `meetings` (how to work an agenda item, recommend on a handed-off one, and start a temporary specialist with the `task` tool), `documents` (the record, then a print copy a person approves, then a PDF, deck or document for outsiders, HTML last) and `tooling` (choose tools that let the business see every activity and own its data) |
+| `containers.ts`, `containers.schema.json` | Who may change which part of a site or docs repository. The repository's `containers.json` lists every container once: its paths, the owner that writes its copy, its category agent, its function and its builder, that function's IT specialist (`<function>-it`). The design system has one owner, `design-system-agent`. `mayWrite` and `checkChange` fail closed: a path no container claims is nobody's, a path two claim is a broken manifest, a container file may not carry a raw colour, colour function, stylesheet or inline style, and only a person may change anything |
+| `site-agents.ts` | The site agents: `ContainerGuardBackend`, a deepagents filesystem backend over the repository mounted at `/site/` that refuses a write, edit, delete or upload the manifest does not give the agent before it touches the disk, and `siteRules`, the prompt lines for an IT specialist, the design-system agent and a capability agent, each naming its own containers |
+| `check-containers.ts` | `node agents/check-containers.ts <repo dir> --agent <id> --paths <path>...` checks one agent's change; `--range <base>..<head>` checks each commit as the agent its `Agent:` trailer names (no trailer: a person's commit). An IT specialist runs it as its gate before handing back, and CI runs it as a backstop. Exits 1 on a problem, 2 on an unsound manifest |
 | `tool-policy.json`, `tool-policy.ts` | The tooling skill's rubric: visibility and ownership are gates (a 0 rules a tool out), then fit, cost and learning, weighted; `scoreTools` does the arithmetic and never chooses |
 | `meetings-test.ts` | The meeting graph, approval, the prerequisite locks, the slash commands, memory and the tool rubric, offline, with a scripted worker against a made-up venture and Naive's meeting schema |
 | `function-agent-test.ts` | The strategy agent run offline with a scripted model, through the CLI and through the shim |
 | `lead-agent-test.ts` | The growth lead run offline with a scripted model: a plan entry and one handoff per function, no function record; the routing rule; the CLI and the shim |
+| `containers-test.ts` | The manifest's rules, who may write which path, the design-system lint, the guard refusing before the disk, the site agents' rules, and `check-containers.ts` over a real git range |
 | `research-test.ts` | The strategy researcher run offline with a scripted model: it keeps, discards, and stops at the run's limit and at the plan's budget; every other write is refused; the cut is the plan's; through the CLI too |
 
 ```ts
@@ -37,7 +41,7 @@ const agent = createDeepAgent({ model, name: "strategy", backend: new NaiveBacke
 await agent.invoke(input, { callbacks: [tracer] });
 ```
 
-From `packages/platform`, run the tests with `node agents/agents-test.ts`, `node agents/function-agent-test.ts`, `node agents/lead-agent-test.ts`, `node agents/research-test.ts` and `node agents/meetings-test.ts`. Outside a function, lead or researcher run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
+From `packages/platform`, run the tests with `node agents/agents-test.ts`, `node agents/function-agent-test.ts`, `node agents/lead-agent-test.ts`, `node agents/research-test.ts` and `node agents/meetings-test.ts` and `node agents/containers-test.ts`. Outside a function, lead or researcher run, the venture needs `"traces": true` in `naive.config.json` for spans to be written.
 
 ## Function agents (EE-123)
 
@@ -206,3 +210,25 @@ Not built yet: scheduling runs, spend limits in tokens or money (the limits are 
 `triage-graph.ts` is what a raw intake worker (`../intake/raw-intake.ts`) hands each claimed entry to. `node platform/agents/triage-graph-test.ts` runs it offline with a scripted Jev.
 
 Not built yet: the command that starts a worker with this graph, LangGraph's Postgres checkpointer on the tenant's database (it is not a dependency here; any `BaseCheckpointSaver` can be passed), and a writer that writes through Naive's router as `triage-agent` with that role in the team plan.
+
+## The site and docs, one owner per container
+
+Every section of a business's site and docs is a container with exactly one owner, listed in the repository's `containers.json` (`containers.schema.json`). A capability agent (for example `time-travel-agent`) writes one capability's copy, under a category agent with authority over its group. The function's IT specialist (`<function>-it`) builds the function's containers from approved copy. Only `design-system-agent` changes tokens, shared components, the grid and type.
+
+```mermaid
+stateDiagram-v2
+  [*] --> drafted: owner writes copy
+  drafted --> printCopy
+  printCopy --> drafted: /rework
+  printCopy --> handedOff: /approve, handoff to <function>-it
+  handedOff --> built: guard lets only the builder write its paths
+  built --> gates
+  gates --> built: a gate fails (fix, or hand off what it does not own)
+  gates --> waiting: scope, design system, internal terms and the approved words all pass
+  waiting --> published: a person publishes
+  published --> [*]
+```
+
+A builder's commit names it in an `Agent:` trailer, so CI can check each commit with `check-containers.ts --range`.
+
+Not built yet: a run command that starts an IT specialist, the design-system agent or a capability agent with `/site/` mounted (`siteRules` and `ContainerGuardBackend` are what it will use), their team-plan entries in Naive, capability records in Naive that the manifest's owners come from, a category agent starting a capability agent, and any business's `containers.json` (the site's own work writes it when the template is split).
