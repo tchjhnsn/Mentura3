@@ -42,6 +42,8 @@ It prints one JSON result and exits 0 (done, or already ran), 1 (failed), 2 (ref
 
 A function run and a lead run save the graph in `<venture>/.naive/agent-checkpoints.sqlite`. The same `--run-id` continues that graph when the process stopped before the run's root span was written. Once the span is written, the same id reports the first result and does not run again. A researcher run does not use this file. Its experiment log and the plan's budget are what a later run reads.
 
+`mentura-agent traces --venture <id> [--session <name>] [--trace <id>]` prints one JSON summary of the files in `<venture>/traces/`. Each run lists its span counts, tool calls, router writes and the provenance lines with activity `draft` that name that run. It does not upload anything. `node integrations/langsmith-otel.ts <venture dir>` is the separate export, and it runs only when you start it.
+
 The environment it reads, once, at the start:
 
 | Variable | What it is |
