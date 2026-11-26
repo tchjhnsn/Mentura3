@@ -1,5 +1,3 @@
-<!-- Placement: tchjhnsn/Mentura3 docs/mentura/research/PUZZLE_MODEL_HOSTING_2026-11-02.md. Original research date: 2 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. -->
-
 # Puzzle chat: where the question-writing model should run
 
 Prepared for Torian, Monday Nov 2, 2026 (America/Chicago). Every price and limit below links to the official page it came from, fetched today. "Not documented" means I could not find it on an official page.

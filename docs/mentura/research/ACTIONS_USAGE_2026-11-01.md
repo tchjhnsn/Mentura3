@@ -1,5 +1,3 @@
-<!-- Placement: tchjhnsn/Mentura3 docs/mentura/research/ACTIONS_USAGE_2026-11-01.md. Original research date: 1 November 2026 (America/Chicago). Moved from a box working note on 26 November 2026. Box-local paths were rewritten. Docs only. No secrets were added or removed. -->
-
 # GitHub Actions usage: tchjhnsn/everything-ecosystem (measured November 1, 2026)
 
 Read-only measurement. Data came from the cursor-github connector, using the workflow runs, jobs, job logs, branch and file contents endpoints. All times below are in America/Chicago: CDT before Nov 1 at 2:00, CST after. Day buckets use UTC-6 throughout, so they are off by at most an hour before Nov 1.
