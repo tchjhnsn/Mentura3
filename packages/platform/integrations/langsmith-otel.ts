@@ -16,7 +16,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { sessions, spans } from "naive-framework/src/core/instrumentation.mjs";
 import type { TraceSpan } from "naive-framework/src/records/types/records.d.ts";
-import { redactTrace } from "../agents/trace-redact.ts";
+import { redactAttribute, redactTrace } from "../agents/trace-redact.ts";
 
 const SYNC = ".naive/langsmith-sync.json";
 type Value = { stringValue: string } | { intValue: string } | { doubleValue: number } | { boolValue: boolean };
@@ -26,18 +26,12 @@ export interface Result { session: string, sent: number, pending: number, error?
 const hex = (s: string, n: number): string => { const h = s.replace(/-/g, "").toLowerCase(); return /^[0-9a-f]+$/.test(h) && h.length === n ? h : createHash("sha256").update(s).digest("hex").slice(0, n); };
 const nanos = (iso: string): string => (BigInt(Date.parse(iso)) * 1000000n).toString();
 const value = (v: unknown): Value => typeof v === "boolean" ? { boolValue: v } : typeof v === "number" ? (Number.isInteger(v) ? { intValue: String(v) } : { doubleValue: v }) : { stringValue: typeof v === "string" ? v : JSON.stringify(v) };
-const traceText = (v: unknown): string => redactTrace(typeof v === "string" ? v : JSON.stringify(v));
-/** The same keys Naive's span() treats as content. A host redactor must see every one of them on the way out. */
-const CONTENT_KEY = /^(gen_ai\.(input|output)\.messages|gen_ai\.system_instructions|gen_ai\.tool\.call\.(arguments|result)|naive\.(input|output))$/;
 const RUN_TYPE: Record<string, string> = { agent: "chain", model: "llm", tool: "tool", call: "retriever", judgment: "llm", trigger: "chain" };
 
 /** One Naive span as an OTLP span. Span ids become 16 hex characters (a hash when they are not), parents likewise. */
 export function toOtlp(s: TraceSpan): OtlpSpan {
   const attrs: Record<string, unknown> = { ...(s.attributes ?? {}), "langsmith.span.kind": RUN_TYPE[s.kind] ?? "chain", "naive.kind": s.kind, "naive.span_id": s.span_id, "naive.trace_id": s.trace_id, "naive.hash": s.hash };
-  for (const key of Object.keys(attrs)) {
-    if (!CONTENT_KEY.test(key) || attrs[key] === undefined || attrs[key] === null) continue;
-    attrs[key] = traceText(attrs[key]);
-  }
+  for (const [key, raw] of Object.entries(s.attributes ?? {})) attrs[key] = redactAttribute(key, raw);
   // LangSmith reads input.value and output.value. They are the redacted message strings, not a second copy of the raw text.
   const input = attrs["gen_ai.input.messages"];
   if (typeof input === "string") { attrs["input.value"] = input; attrs["gen_ai.prompt"] = input; }
@@ -47,7 +41,7 @@ export function toOtlp(s: TraceSpan): OtlpSpan {
     traceId: hex(s.trace_id, 32), spanId: hex(s.span_id, 16), ...(s.parent_span_id ? { parentSpanId: hex(s.parent_span_id, 16) } : {}),
     name: s.name, kind: s.kind === "model" || s.kind === "call" ? 3 : 1, startTimeUnixNano: nanos(s.start), endTimeUnixNano: nanos(s.end),
     attributes: Object.entries(attrs).filter(([, v]) => v !== undefined && v !== null).map(([key, v]) => ({ key, value: value(v) })),
-    status: s.status === "error" ? { code: 2, ...(s.error ? { message: traceText(s.error) } : {}) } : { code: 1 },
+    status: s.status === "error" ? { code: 2, ...(s.error ? { message: redactTrace(s.error) } : {}) } : { code: 1 },
   };
 }
 
