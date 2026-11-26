@@ -6,6 +6,7 @@
 //   node <EE>/platform/agents/bin.ts lead <lead> --venture <id> [--run-id <uuid>]       < task.txt
 //   node <EE>/platform/agents/bin.ts research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>]
 //   node <EE>/platform/agents/bin.ts mcp
+//   node <EE>/platform/agents/bin.ts harness                                         < prompt.txt
 //
 // What changes per call is an argument (function, venture, run id) or stdin (the task, kept out of argv and so out
 // of `ps`). What stays with the caller is the environment, read once here:
@@ -65,14 +66,16 @@ export type Parsed =
   | { command: "lead", invocation: Invocation }
   | { command: "research", invocation: ResearchInvocation }
   | { command: "mcp" }
+  | { command: "harness" }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], or mentura-agent mcp";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, or mentura-agent harness < prompt";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
   const val = (k: string): string | undefined => env[k] || undefined;
   if (argv[0] === "mcp" && argv.length === 1) return { command: "mcp" };
+  if (argv[0] === "harness" && argv.length === 1) return { command: "harness" };
   if ((argv[0] !== "run" && argv[0] !== "lead" && argv[0] !== "research") || !argv[1] || argv[1].startsWith("--")) return { command: "usage", usage: USAGE };
   const known = argv[0] === "research" ? ["--venture", "--run-id", "--max-experiments"] : ["--venture", "--run-id"];
   const flags = new Map<string, string>();
@@ -144,6 +147,12 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   const p = parse(argv, env);
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
+  if (p.command === "harness") {
+    const { runHarness } = await import("./harness.ts");
+    const abort = new AbortController();
+    for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
+    return print(await runHarness(env, await text(stdin), modelSource(env.MENTURA_MODEL ?? null), process.cwd(), abort.signal));
+  }
   if (p.command === "research") return print(await research(p.invocation));
   if (p.command === "lead") return print(await lead(p.invocation, stdin));
   const inv = p.invocation;

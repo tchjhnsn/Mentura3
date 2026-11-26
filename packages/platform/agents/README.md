@@ -53,6 +53,18 @@ The environment it reads, once, at the start:
 
 A venture staffs a function agent by listing its role in its team plan. Until then a run is refused, and the refusal carries the entry to add, with write routes derived for that function. The role must be an agent's, must list routes (a role without routes could reach every route) and must not be able to write the team plan. The agent never writes the team plan itself.
 
+### Record-writing runs
+
+`mentura-agent harness` is the command to put in `NAIVE_AGENT_CMD`. It reads the prompt on stdin, takes the role from `MENTURA_ACTOR_ID`, and runs in the venture folder, which is what `naive agent run` does. The task is the `## Task` section of that prompt. The run is the function or lead agent above, so file tools go through NaiveBackend and the gate. It has no shell.
+
+```sh
+NAIVE_AGENT_CMD="node platform/agents/bin.ts harness" naive agent run strategy-agent "Tighten the pricing decision."
+```
+
+A command in `NAIVE_AGENT_CMD` that grants Write, Edit or Bash can change files without the gate. Dogfood's `run/bin/harness` is that command. Point `NAIVE_AGENT_CMD` at `mentura-agent harness` instead.
+
+The agent-upgrade kit is a different path. It edits a staged copy, Naive's checks run after it, and nothing lands until a person accepts. `MENTURA_AGENT_CMD` replaces that kit's command. It is not this harness.
+
 ### From a harness
 
 Any harness that speaks MCP adds the shim to its MCP config. Nothing here depends on which harness or which model: the harness's own model only calls the tools, and the agents run on whatever `MENTURA_MODEL` names. The trace variables name the harness's session, trace and the span of its turn. The example is a Claude Code config, where the key is a reference Claude Code expands from its own environment, so the file holds no key; another harness sets the same variables its own way:

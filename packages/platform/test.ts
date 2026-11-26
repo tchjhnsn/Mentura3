@@ -33,6 +33,7 @@ const steps: [string, string[]][] = [
   ["LangChain over Naive: a deep agent edits records through the router", ["agents/agents-test.ts"]],
   ["function agents", ["agents/function-agent-test.ts"]],
   ["run checkpoint", ["agents/checkpoint-test.ts"]],
+  ["gated harness", ["agents/harness-test.ts"]],
   ["lead agents", ["agents/lead-agent-test.ts"]],
   ["triage graph", ["agents/triage-graph-test.ts"]],
   ["triage corrections", ["agents/triage-ledger-test.ts"]],
