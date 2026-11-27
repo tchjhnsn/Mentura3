@@ -18,6 +18,7 @@ import { schemaFailure } from "naive-framework/src/router/write-effects.mjs";
 import { naivePath } from "../naive.ts";
 import { openMeetingSaver } from "./checkpoint.ts";
 import { parseCommand, runCommand, type CommandContext } from "./commands.ts";
+import { parse as parseCli } from "./cli.ts";
 import { rankDue } from "./command-host.ts";
 import { meetingGraph, questionOf, type Worker } from "./meeting-graph.ts";
 import { closeOf, facilitatorEntry, freeMeeting, itemRunId, meetingFromWorkflow, meetingsIn, routerStore, workflowOf, type Meeting } from "./meetings.ts";
@@ -211,6 +212,41 @@ r = await runCommand(parseCommand("/tools record sales calls with leads"), ctx);
 ok("/tools asks the IT agent with the tooling skill", r.ok && "text" in r && r.text.startsWith("it: Recommend tooling"));
 r = await runCommand(parseCommand("/meetings"), ctx);
 ok("/meetings lists each meeting with what it waits on", r.ok && "text" in r && /waits on/.test(r.text) && /abandoned/.test(r.text));
+// /containers and /site: the site repository is named, its roles come from containers.json, and a site agent is locked as site/<role>.
+ok("parse: /site keeps the whole task, /containers takes an optional role", JSON.stringify(parseCommand("/site products-it Build the  hero")) === JSON.stringify({ kind: "site", role: "products-it", task: "Build the  hero" }) && parseCommand("/containers").kind === "containers" && (parseCommand("/containers products-it") as { role?: string }).role === "products-it");
+ok("parse: /site needs a role and a task", (() => { try { parseCommand("/site products-it"); return false; } catch (err) { return /usage: \/site <role> <task>/.test(String(err)); } })());
+r = await runCommand(parseCommand("/site products-it Build the hero"), ctx);
+ok("/site with no site repository named says how to name one", !r.ok && "error" in r && /MENTURA_SITE/.test(r.error));
+const ran: string[] = [];
+const runRef = { id: "00000000-0000-4000-8000-000000000001", role: "products-it", venture: "kettle", site: "/s", session: "s", trace_id: "t", parent_span_id: null } as never;
+let siteOut: "done" | "problems" | "refused" = "done";
+const siteCtx: CommandContext = { ...ctx,
+  check: async (w) => w === "site/marketing-and-sales-it" ? { workflow: w, met: false, missing: [{ kind: "record", what: "marketing/brand", why: "no person has approved it.", fix: "approve it" }] } : ctx.check(w),
+  site: { dir: "/s",
+    roles: () => [{ role: "design-system-agent", builds: [], owns: [], design_system: true }, { role: "marketing-and-sales-it", builds: ["hero"], owns: [], design_system: false }, { role: "products-it", builds: ["features"], owns: [], design_system: false }],
+    async run(role, task) {
+      ran.push(`${role}: ${task}`);
+      if (siteOut === "refused") return { status: "refused", reason: "products-it is not staffed.", fix: "add it to the team plan" };
+      return { status: "done", run: runRef, answer: "Built the features section.", wrote: [], held: [], changed: ["containers/features/page.tsx"], problems: siteOut === "problems" ? [{ path: "tokens/colors.css", why: "the design system is design-system-agent's" }] : [], commit: siteOut === "problems" ? null : "abc1234" };
+    } } };
+r = await runCommand(parseCommand("/containers"), siteCtx);
+ok("/containers lists each role the manifest needs with what it builds", r.ok && "text" in r && /design-system-agent: the design system/.test(r.text) && /products-it: builds features/.test(r.text), JSON.stringify(r));
+r = await runCommand(parseCommand("/containers finance-it"), siteCtx);
+ok("/containers refuses a role the manifest does not need", !r.ok);
+r = await runCommand(parseCommand("/site marketing-and-sales-it Build the hero"), siteCtx);
+ok("/site on a locked site role is refused, naming what to finish, and runs nothing", !r.ok && "error" in r && /site\/marketing-and-sales-it is locked until/.test(r.error) && ran.length === 0, JSON.stringify(r));
+r = await runCommand(parseCommand("/site finance-it Build it"), siteCtx);
+ok("/site refuses a role containers.json does not need", !r.ok && "error" in r && /needs no finance-it/.test(r.error) && ran.length === 0);
+r = await runCommand(parseCommand("/site products-it Build the features section"), siteCtx);
+ok("/site runs the agent and answers with what changed and the commit, nothing pushed", r.ok && "text" in r && ran[0] === "products-it: Build the features section" && /Committed abc1234 as products-it/.test(r.text) && /you push/.test(r.text), JSON.stringify(r));
+siteOut = "problems";
+r = await runCommand(parseCommand("/site products-it Recolour it"), siteCtx);
+ok("/site fails when the changes break containers.json, naming each one", !r.ok && "error" in r && /were not committed/.test(r.error) && /tokens\/colors.css/.test(r.error));
+siteOut = "refused";
+r = await runCommand(parseCommand("/site products-it Build it"), siteCtx);
+ok("/site passes a refusal on with its fix", !r.ok && "error" in r && /not staffed\. Fix: add it to the team plan/.test(r.error));
+const cliSite = parseCli(["cmd", "--venture", "kettle", "--by", "torian", "--site", "site"], {});
+ok("cmd takes --site, or MENTURA_SITE, as an absolute path", cliSite.command === "cmd" && cliSite.site === join(process.cwd(), "site") && (() => { const p = parseCli(["cmd", "--venture", "kettle", "--by", "torian"], { MENTURA_SITE: "/srv/site" }); return p.command === "cmd" && p.site === "/srv/site"; })(), JSON.stringify(cliSite));
 ok("a free meeting passes the schema", valid(freeMeeting({ title: "T", goal: "G", outcome_expected: ["x"], items: [{ title: "a" }], called_by: "torian", functions: ["strategy"], now: NOW })));
 
 // ---- 5b. Prerequisites fail closed ----
@@ -221,6 +257,7 @@ ok("strategy's intake needs nothing: strategy comes first", req("strategy/intake
 ok("every other intake needs strategy's intake meeting and the foundation records", ["meeting:strategy/intake", "record:foundation/problem", "record:foundation/icp/*"].every((x) => req("finance/intake").includes(x)), req("finance/intake").join());
 ok("any other workflow needs its own function's intake first, and never its own meeting", req("finance/monthly-spend-review").includes("meeting:finance/intake") && !req("finance/intake").includes("meeting:finance/intake"));
 ok("marketing work needs an approved brand and publication policy", ["record:marketing/brand", "record:governance/publication-policy"].every((x) => req("marketing-and-sales/weekly-pipeline-review").includes(x)));
+ok("a site agent needs marketing set up, the brand and the publication policy, and no function intake of its own", ["meeting:marketing-and-sales/intake", "record:marketing/brand", "record:governance/publication-policy"].every((x) => req("site/products-it").includes(x)) && !req("site/products-it").includes("meeting:site/intake") && !req("site/products-it").includes("meeting:strategy/intake"), req("site/products-it").join());
 ok("a workflow's own requires in Naive is added", requiresOf("it/intake", { decisions: ["it-budget"] }, P).some((r) => r.kind === "decision" && r.what === "it-budget"));
 const closedYes = { ...planned, status: "closed" as const, workflow: "strategy/intake", outcome: { reached: "yes" as const, summary: "", records: [], decisions: [], handoffs: [] } };
 const look = (o: { meetings?: Meeting[], live?: string[], drafts?: string[], decided?: string[], broken?: boolean }): Lookup => ({

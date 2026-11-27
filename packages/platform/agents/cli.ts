@@ -8,7 +8,7 @@
 //   node <EE>/platform/agents/bin.ts mcp
 //   node <EE>/platform/agents/bin.ts harness                                         < prompt.txt
 //   node <EE>/platform/agents/bin.ts traces --venture <id> [--session <name>] [--trace <id>]
-//   node <EE>/platform/agents/bin.ts cmd --venture <id> [--by <person>]                 < "/meet strategy intake"
+//   node <EE>/platform/agents/bin.ts cmd --venture <id> [--by <person>] [--site <dir>]  < "/meet strategy intake"
 //   node <EE>/platform/agents/bin.ts site <role> --venture <id> --site <dir> [--run-id <uuid>] [--no-commit] < task.txt
 //
 // What changes per call is an argument (function, venture, run id) or stdin (the task, kept out of argv and so out
@@ -27,7 +27,8 @@
 // portfolio, which writes a lead plan entry and one handoff per function involved instead of a function's records.
 //
 // cmd runs one slash command (platform/agents/commands.ts): meetings that walk a function workflow with its agent,
-// what is due, memory, tooling. --by (or MENTURA_PERSON) is the person speaking; it names the minutes.
+// what is due, memory, tooling, site agents. --by (or MENTURA_PERSON) is the person speaking; it names the minutes.
+// --site (or MENTURA_SITE) names the site repository for /containers and /site.
 //
 // site runs a site agent (platform/agents/site-run.ts): a function's IT specialist, the design-system agent or a
 // capability agent on a site or docs repository with containers.json at its root, writing only what that gives it and
@@ -80,11 +81,11 @@ export type Parsed =
   | { command: "mcp" }
   | { command: "harness" }
   | { command: "traces", venture: string, workspace?: string, session?: string, trace?: string }
-  | { command: "cmd", invocation: Invocation, person: string }
+  | { command: "cmd", invocation: Invocation, person: string, site?: string }
   | { command: "site", invocation: Invocation, site: string, commit: boolean }
   | { command: "usage", usage: string };
 
-const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, mentura-agent traces --venture <id> [--session <name>] [--trace <id>], mentura-agent cmd --venture <id> [--by <person>] < /command, or mentura-agent site <role> --venture <id> --site <dir> [--run-id <uuid>] [--no-commit] < task";
+const USAGE = "usage: mentura-agent run <function> --venture <id> [--run-id <uuid>] < task, mentura-agent lead <lead> --venture <id> [--run-id <uuid>] < task, mentura-agent research <function> --venture <id or folder> [--run-id <uuid>] [--max-experiments <n>], mentura-agent mcp, mentura-agent harness < prompt, mentura-agent traces --venture <id> [--session <name>] [--trace <id>], mentura-agent cmd --venture <id> [--by <person>] [--site <dir>] < /command, or mentura-agent site <role> --venture <id> --site <dir> [--run-id <uuid>] [--no-commit] < task";
 
 /** Parses argv and env. Pure. A bad --run-id or --max-experiments, a missing --venture or any other flag is a usage error. */
 export function parse(argv: readonly string[], env: Env): Parsed {
@@ -140,7 +141,7 @@ function parseCmd(argv: readonly string[], val: (k: string) => string | undefine
   const flags = new Map<string, string>();
   for (let i = 1; i < argv.length; i += 2) {
     const [k, v] = [argv[i], argv[i + 1]];
-    if (!["--venture", "--by"].includes(k) || !v || flags.has(k)) return { command: "usage", usage: `${USAGE} (unexpected ${k ?? "end"})` };
+    if (!["--venture", "--by", "--site"].includes(k) || !v || flags.has(k)) return { command: "usage", usage: `${USAGE} (unexpected ${k ?? "end"})` };
     flags.set(k, v);
   }
   const venture = flags.get("--venture") ?? val("MENTURA_VENTURE");
@@ -148,11 +149,12 @@ function parseCmd(argv: readonly string[], val: (k: string) => string | undefine
   const person = flags.get("--by") ?? val("MENTURA_PERSON");
   if (!person) return { command: "usage", usage: `${USAGE} (--by or MENTURA_PERSON names the person speaking)` };
   const trace: TraceJoin = { session: val("MENTURA_SESSION"), trace_id: val("MENTURA_TRACE_ID"), parent_span_id: val("MENTURA_SPAN_ID") };
-  return { command: "cmd", person, invocation: { function: "", venture, workspace: val("MENTURA_WORKSPACE"), trace, model: val("MENTURA_MODEL") ?? null, harness: val("MENTURA_HARNESS") } };
+  const site = flags.get("--site") ?? val("MENTURA_SITE");
+  return { command: "cmd", person, ...(site ? { site: resolve(site) } : {}), invocation: { function: "", venture, workspace: val("MENTURA_WORKSPACE"), trace, model: val("MENTURA_MODEL") ?? null, harness: val("MENTURA_HARNESS") } };
 }
 
 /** cmd: one slash command against one venture. Prints a CommandResult; exit 0 when ok, 2 when not. */
-async function command(inv: Invocation, person: string, stdin: NodeJS.ReadableStream): Promise<number> {
+async function command(inv: Invocation, person: string, site: string | undefined, stdin: NodeJS.ReadableStream): Promise<number> {
   const { parseCommand, runCommand } = await import("./commands.ts");
   const { commandHost } = await import("./command-host.ts");
   const out = (r: unknown, code: number): number => { process.stdout.write(JSON.stringify(r) + "\n"); return code; };
@@ -160,7 +162,7 @@ async function command(inv: Invocation, person: string, stdin: NodeJS.ReadableSt
   try { cmd = parseCommand(await text(stdin)); } catch (e) { return out({ ok: false, error: (e as Error).message }, 2); }
   const abort = new AbortController();
   for (const s of ["SIGTERM", "SIGINT"] as const) process.once(s, () => abort.abort());
-  const host = await commandHost({ venture: inv.venture, workspace: inv.workspace, person, model: modelSource(inv.model), trace: inv.trace, harness: inv.harness, signal: abort.signal });
+  const host = await commandHost({ venture: inv.venture, workspace: inv.workspace, person, model: modelSource(inv.model), trace: inv.trace, harness: inv.harness, signal: abort.signal, site });
   if ("error" in host) return out({ ok: false, error: host.error }, 2);
   try { const r = await runCommand(cmd, host.ctx); return out(r, r.ok ? 0 : 2); }
   finally { host.close(); }
@@ -241,7 +243,7 @@ export async function main(argv: readonly string[], env: Env, stdin: NodeJS.Read
   if (p.command === "usage") return print({ status: "refused", reason: p.usage });
   if (p.command === "mcp") { await (await import("./mcp.ts")).serve(stdin, process.stdout, env); return 0; }
   if (p.command === "traces") return traces(p);
-  if (p.command === "cmd") return command(p.invocation, p.person, stdin);
+  if (p.command === "cmd") return command(p.invocation, p.person, p.site, stdin);
   if (p.command === "harness") {
     const { runHarness } = await import("./harness.ts");
     const abort = new AbortController();

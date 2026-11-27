@@ -25,6 +25,8 @@
 //   /skipped                                   every skipped or handed-off item across meetings, with recommendations
 //   /memory <role>                             what an agent remembers from closed meetings
 //   /tools <need>                              the IT agent recommends a tool, by visibility and ownership first
+//   /containers [<role>]                       the site agents the site's containers.json needs, and what each builds or owns
+//   /site <role> <task>                        run a site agent on the site repository (locked like a workflow, as site/<role>)
 //   /help
 
 import { Command } from "@langchain/langgraph";
@@ -35,6 +37,7 @@ import { memoryOf } from "./memory.ts";
 import { explain, type Check } from "./prerequisites.ts";
 import type { AgendaItem } from "./meetings.ts";
 import { functionAgent, functionIds } from "./function-spec.ts";
+import type { SiteRunResult } from "./site-run.ts";
 
 export type SlashCommand =
   | { kind: "next" }
@@ -54,12 +57,14 @@ export type SlashCommand =
   | { kind: "skipped" }
   | { kind: "memory", role: string }
   | { kind: "tools", need: string }
+  | { kind: "containers", role?: string }
+  | { kind: "site", role: string, task: string }
   | { kind: "help" };
 
 export const HELP = [
   "/next", "/meet <function> [<workflow>]", "/agenda <title> | <goal> | <outcome; ...> | <item; ask: item; item @function; ...>",
   "/answer <meeting> <text>", "/approve <meeting> [<foundation route> ...]", "/rework <meeting> <what to change>", "/blocked [<function>]", "/done <meeting> <text>", "/skip <meeting> [why]", "/handoff <meeting> [<item> ...]",
-  "/revisit <meeting> [<item> ...]", "/end <meeting>", "/abandon <meeting> [why]", "/meetings", "/skipped", "/memory <role>", "/tools <need>", "/help",
+  "/revisit <meeting> [<item> ...]", "/end <meeting>", "/abandon <meeting> [why]", "/meetings", "/skipped", "/memory <role>", "/tools <need>", "/containers [<role>]", "/site <role> <task>", "/help",
 ].join("\n");
 
 /** Parses one command line. Pure. Throws with the usage line on anything it cannot read. */
@@ -89,6 +94,8 @@ export function parseCommand(line: string): SlashCommand {
     case "end": need(1, "/end <meeting>"); return { kind: "end", meeting: words[0] };
     case "memory": need(1, "/memory <role>"); return { kind: "memory", role: words[0] };
     case "tools": need(1, "/tools <need>"); return { kind: "tools", need: rest.trim() };
+    case "containers": return { kind: "containers", ...(words[0] ? { role: words[0] } : {}) };
+    case "site": need(2, "/site <role> <task>"); return { kind: "site", role: words[0], task: rest.trim().slice(words[0].length).trim() };
     case "agenda": {
       const parts = rest.split("|").map((p) => p.trim());
       if (parts.length !== 4 || parts.some((p) => !p)) throw new Error("usage: /agenda <title> | <goal> | <outcome; ...> | <item; ask: item; item @function; ...>");
@@ -126,9 +133,38 @@ export interface CommandContext {
   present?: (m: Meeting, item: AgendaItem, drafted: string[]) => Promise<string | null>,
   /** Runs an agent on a task outside a meeting (for /tools). */
   ask(fn: string, task: string): Promise<string>,
+  /** The business's site or docs repository, when one is named (MENTURA_SITE or --site): for /containers and /site. */
+  site?: SiteHost,
   /** Called once a meeting closes (meetingGraph's closed). */
   closed?: (m: Meeting) => Promise<void>,
   now?: () => string,
+}
+
+/** A site role, from the site's containers.json, with what it builds and owns there. */
+export interface SiteRoleReach { role: string, builds: string[], owns: string[], design_system: boolean }
+
+/** The site repository a command reaches: its manifest's roles, and one site agent run (site-run.ts). */
+export interface SiteHost {
+  dir: string,
+  /** Every role containers.json needs staffed, with its reach. Throws when the manifest is missing or unsound. */
+  roles(): SiteRoleReach[],
+  run(role: string, task: string): Promise<SiteRunResult>,
+}
+
+const NO_SITE = "no site repository is named: set MENTURA_SITE or pass --site <dir> to cmd";
+
+/** What a site agent run answers, as a command result. Problems found after the run fail it: nothing unchecked is committed. Pure. */
+export function siteResult(role: string, r: SiteRunResult): CommandResult {
+  if (r.status === "refused") return { ok: false, error: `${r.reason}${r.fix ? ` Fix: ${r.fix}` : ""}` };
+  if (r.status === "busy") return { ok: false, error: `the business is busy with another run${r.holder ? ` (process ${r.holder})` : ""}; try again when it finishes` };
+  if (r.status === "cancelled") return { ok: false, error: `${role} was cancelled` };
+  const held = r.held.map((h) => `Held for you: ${h.route} (${h.accept})`);
+  const problems = r.problems.map((p) => `- ${p.path}: ${p.why}${p.fix ? ` Fix: ${p.fix}` : ""}`);
+  if (r.status === "failed") return { ok: false, error: [`${role} failed: ${r.error}`, ...problems, ...held].join("\n") };
+  if (problems.length) return { ok: false, error: [`${role}'s changes break containers.json and were not committed:`, ...problems, ...held].join("\n") };
+  const head = r.status === "done" ? r.answer : `${role} already ran this task.`;
+  const changed = r.changed.length ? [`Changed: ${r.changed.join(", ")}`, r.commit ? `Committed ${r.commit} as ${role}. Nothing is pushed: you push.` : "Not committed."] : ["Changed nothing."];
+  return { ok: true, text: [head, ...changed, ...held].join("\n"), data: { status: r.status, changed: r.changed, commit: r.commit, held: r.held } };
 }
 
 /** What a command answers: a meeting's state and what it waits on, or text. */
@@ -230,6 +266,21 @@ export async function runCommand(cmd: SlashCommand, ctx: CommandContext): Promis
         return { ok: true, text: rows.join("\n") || "Nothing is skipped or handed off." };
       }
       case "memory": return { ok: true, text: memoryOf(meetingsIn(ctx.dir), cmd.role) };
+      case "containers": {
+        if (!ctx.site) return { ok: false, error: NO_SITE };
+        const roles = ctx.site.roles().filter((x) => !cmd.role || x.role === cmd.role);
+        if (cmd.role && !roles.length) return { ok: false, error: `containers.json needs no ${cmd.role}. /containers lists the roles it needs.` };
+        const line = (x: SiteRoleReach) => `${x.role}: ${[x.design_system ? "the design system" : "", x.builds.length ? `builds ${x.builds.join(", ")}` : "", x.owns.length ? `owns ${x.owns.join(", ")}` : ""].filter(Boolean).join("; ") || "nothing yet"}`;
+        return { ok: true, text: roles.map(line).join("\n"), data: roles };
+      }
+      case "site": {
+        if (!ctx.site) return { ok: false, error: NO_SITE };
+        const roles = ctx.site.roles().map((x) => x.role);
+        if (!roles.includes(cmd.role)) return { ok: false, error: `containers.json needs no ${cmd.role}. Site roles: ${roles.join(", ")}.` };
+        const c = await ctx.check(`site/${cmd.role}`);
+        if (!c.met) return { ok: false, error: explain(c) };
+        return siteResult(cmd.role, await ctx.site.run(cmd.role, cmd.task));
+      }
       case "tools": return { ok: true, text: await ctx.ask("it", `Recommend tooling for this need, following /mentura/skills/tooling/SKILL.md: ${cmd.need}. Name one tool and one runner-up, score both with the rubric, say where each one's records land in the business, and write an open decision under /decisions/ for the person when choosing spends money or signs anything.`) };
     }
   }

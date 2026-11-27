@@ -3,7 +3,7 @@
   "rules": [
     {
       "workflow": "*/intake",
-      "except": ["strategy/intake"],
+      "except": ["strategy/intake", "site/*"],
       "why": "Strategy comes first: no function is set up before the business knows its purpose, its customer and its problem.",
       "requires": {
         "meetings": ["strategy/intake"],
@@ -12,7 +12,7 @@
     },
     {
       "workflow": "*/*",
-      "except": ["*/intake"],
+      "except": ["*/intake", "site/*"],
       "why": "A function is learned before it is run: its intake meeting closes before any of its other workflows starts.",
       "requires": { "meetings": ["<function>/intake"] }
     },
@@ -32,6 +32,14 @@
       "except": ["external-relationships/intake"],
       "why": "No investor hears from the business before its goals and exit criteria are written and approved.",
       "requires": { "records": ["foundation/goals/*", "foundation/exit-criteria/*"] }
+    },
+    {
+      "workflow": "site/*",
+      "why": "A site agent builds public pages: no one builds them before marketing is set up and the brand and the publication policy exist and a person has approved them.",
+      "requires": {
+        "meetings": ["marketing-and-sales/intake"],
+        "records": ["marketing/brand", "governance/publication-policy"]
+      }
     }
   ]
 }
