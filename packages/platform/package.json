@@ -19,7 +19,7 @@
     "effect": "4.1.5",
     "https-proxy-agent": "9.1.0",
     "langchain": "^1.5.10",
-    "naive-framework": "git+https://github.com/tchjhnsn/naive.git#12b44e00cba7f5c43e80cd892524cdee1556a3e1",
+    "naive-framework": "git+https://github.com/tchjhnsn/naive.git#59f889db928ed403f7763e4c8b984d8e89a119bd",
     "pg": "^8.13.1",
     "ws": "8.22.0"
   },

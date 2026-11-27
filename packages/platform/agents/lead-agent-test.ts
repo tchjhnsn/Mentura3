@@ -80,7 +80,7 @@ const tool = (calls.at(-1)?.messages ?? []).filter((m) => m.getType() === "tool"
 ok("the run is done with the model's answer", r.status === "done" && r.answer.startsWith("I wrote two handoffs"), JSON.stringify(r));
 ok("with content off, the trace file does not contain the task", !readFileSync(join(dir, "traces", `${SESSION}.jsonl`), "utf8").includes("Launch the paid tier with support."));
 ok("the system prompt names the lead, its portfolio and the function agents", system.includes("Growth lead of the venture kettle") && system.includes("marketing-and-sales, customer-service") && system.includes("finance-agent"), system.slice(0, 600));
-ok("the lead reads its role's skill under /lead/", /marketing/i.test(tool[0] ?? "") && !/not found/i.test(tool[0] ?? ""), tool[0]?.slice(0, 200));
+ok("the lead reads its role's skill under /lead/ (Naive's one generic lead skill since EE-215)", /\blead/i.test(tool[0] ?? "") && !/not found/i.test(tool[0] ?? ""), tool[0]?.slice(0, 200));
 ok("a function's record is refused before Naive sees it", /A lead writes only/.test(tool[4] ?? ""), tool[4]);
 ok("a handoff naming another requester is refused", /requested_by \(growth-lead\)/.test(tool[5] ?? ""), tool[5]);
 ok("a handoff not addressed to a function agent is refused", /function agent/.test(tool[6] ?? ""), tool[6]);

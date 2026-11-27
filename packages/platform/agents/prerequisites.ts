@@ -1,9 +1,12 @@
 // What must be finished before a workflow may start, and whether it is. This applies to people and agents alike, and
 // it fails closed. A meeting that walks a workflow does not open, and none of its items is worked, until every
-// prerequisite is met. The rules come from Mentura's policy (prerequisites.json) plus any `requires` the workflow
-// carries in Naive. Every matching rule applies.
+// prerequisite is met. Two sources apply, and every entry of both must hold:
+//   Naive's verdict (EE-217): the workflow's own `requires`, the venture's prerequisites config and the overrides a
+//     person made, judged by Naive's prerequisitesOf. Mentura never judges those itself (naiveMissing below).
+//   Mentura's policy (prerequisites.json): its opinion on top, and the only source for site/<role>, which Naive has no
+//     workflow for. Every matching rule applies.
 //
-//   const check = await prerequisitesOf("marketing-and-sales/weekly-pipeline-review", routerLookup({ venture: "mentura" }, dir));
+//   const check = await prerequisitesOf("marketing-and-sales/weekly-pipeline-review", routerLookup({ venture: "mentura" }, dir), { naive: () => naiveMissing(dir, "marketing-and-sales/weekly-pipeline-review") });
 //   // { met: false, missing: [{ kind: "meeting", what: "marketing-and-sales/intake", why: "...", fix: "/meet marketing-and-sales intake" }] }
 //
 // What counts as met:
@@ -14,6 +17,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { call } from "naive-framework/src/router/router.mjs";
+import { prerequisitesOf as naivePrerequisitesOf } from "naive-framework/src/engine/prerequisites.mjs";
 import { meetingsIn, type Meeting } from "./meetings.ts";
 
 export interface Requires { records?: string[], meetings?: string[], decisions?: string[] }
@@ -45,8 +49,8 @@ export function matches(pattern: string, workflow: string): boolean {
   return (pf === "*" || pf === f) && (pw === "*" || pw === w);
 }
 
-/** Everything a workflow requires, with the reason for each entry. It never requires its own meeting. Pure. */
-export function requiresOf(workflow: string, own: Requires | undefined, p: Policy): { kind: Missing["kind"], what: string, why: string }[] {
+/** Everything Mentura's policy requires of a workflow, with the reason for each entry. It never requires its own meeting. Pure. */
+export function requiresOf(workflow: string, p: Policy): { kind: Missing["kind"], what: string, why: string }[] {
   const fn = workflow.split("/")[0];
   const out = new Map<string, { kind: Missing["kind"], what: string, why: string }>();
   const add = (r: Requires, why: string): void => {
@@ -60,7 +64,6 @@ export function requiresOf(workflow: string, own: Requires | undefined, p: Polic
     }
   };
   for (const rule of p.rules) if (matches(rule.workflow, workflow) && !(rule.except ?? []).some((e) => matches(e, workflow))) add(rule.requires, rule.why);
-  if (own) add(own, `${workflow} requires it in Naive`);
   return [...out.values()];
 }
 
@@ -71,14 +74,32 @@ const fixOf = (kind: Missing["kind"], what: string, state?: string): string => {
   return "fix prerequisites.json";
 };
 
-/** Whether a workflow may start now. Never throws: what it cannot check is missing. */
-export async function prerequisitesOf(workflow: string, look: Lookup, o: { own?: Requires, policy?: Policy } = {}): Promise<Check> {
+/**
+ * What Naive's verdict (EE-217) says blocks a workflow, as Mentura's entries. Never throws: a verdict that cannot be
+ * reached is one missing entry, so the lock holds.
+ */
+export function naiveMissing(dir: string, workflow: string): Missing[] {
+  try {
+    const v = naivePrerequisitesOf(dir, workflow);
+    return v.met ? [] : v.missing.map((m) => ({ kind: m.kind, what: m.ref, why: `Naive: ${m.why}.`, fix: fixOf(m.kind, m.ref) }));
+  }
+  catch (e) { return [{ kind: "policy", what: workflow, why: `Naive's prerequisites cannot be read: ${String((e as Error)?.message ?? e)}`, fix: "run naive blocked to see why" }]; }
+}
+
+/**
+ * Whether a workflow may start now: Mentura's policy, plus Naive's verdict when `naive` is given. An entry both name
+ * is listed once, with Naive's reason. Never throws: what it cannot check is missing.
+ */
+export async function prerequisitesOf(workflow: string, look: Lookup, o: { naive?: () => Missing[], policy?: Policy } = {}): Promise<Check> {
+  const fromNaive = o.naive ? o.naive() : [];
   let p: Policy;
   try { p = o.policy ?? policy(); if (!Array.isArray(p.rules)) throw new Error("it has no rules"); }
-  catch (e) { return { workflow, met: false, missing: [{ kind: "policy", what: "prerequisites.json", why: `the policy cannot be read: ${String((e as Error)?.message ?? e)}`, fix: fixOf("policy", "") }] }; }
-  const missing: Missing[] = [];
+  catch (e) { return { workflow, met: false, missing: [...fromNaive, { kind: "policy", what: "prerequisites.json", why: `the policy cannot be read: ${String((e as Error)?.message ?? e)}`, fix: fixOf("policy", "") }] }; }
+  const missing: Missing[] = [...fromNaive];
+  const named = new Set(fromNaive.map((m) => `${m.kind}:${m.what}`));
   let meetings: Meeting[] | null = null;
-  for (const r of requiresOf(workflow, o.own, p)) {
+  for (const r of requiresOf(workflow, p)) {
+    if (named.has(`${r.kind}:${r.what}`)) continue;
     try {
       if (r.kind === "meeting") {
         meetings ??= look.meetings();

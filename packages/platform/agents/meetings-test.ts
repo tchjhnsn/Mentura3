@@ -25,7 +25,7 @@ import { closeOf, facilitatorEntry, freeMeeting, itemRunId, meetingFromWorkflow,
 import { taskOf } from "./meeting-worker.ts";
 import { memoryOf, writeMemory } from "./memory.ts";
 import { scoreTools } from "./tool-policy.ts";
-import { explain, matches, policy, prerequisitesOf, requiresOf, type Lookup } from "./prerequisites.ts";
+import { explain, matches, naiveMissing, policy, prerequisitesOf, requiresOf, type Lookup } from "./prerequisites.ts";
 import { acceptHeld, markdownOf, printCopy } from "./review.ts";
 
 let failed = 0;
@@ -252,13 +252,12 @@ ok("a free meeting passes the schema", valid(freeMeeting({ title: "T", goal: "G"
 // ---- 5b. Prerequisites fail closed ----
 ok("patterns: * matches any function or workflow", matches("*/intake", "it/intake") && !matches("*/intake", "it/quarterly-access-review") && matches("*/*", "a/b") && matches("strategy/*", "strategy/intake"));
 const P = policy();
-const req = (w: string) => requiresOf(w, undefined, P).map((r) => `${r.kind}:${r.what}`);
+const req = (w: string) => requiresOf(w, P).map((r) => `${r.kind}:${r.what}`);
 ok("strategy's intake needs nothing: strategy comes first", req("strategy/intake").length === 0, req("strategy/intake").join());
 ok("every other intake needs strategy's intake meeting and the foundation records", ["meeting:strategy/intake", "record:foundation/problem", "record:foundation/icp/*"].every((x) => req("finance/intake").includes(x)), req("finance/intake").join());
 ok("any other workflow needs its own function's intake first, and never its own meeting", req("finance/monthly-spend-review").includes("meeting:finance/intake") && !req("finance/intake").includes("meeting:finance/intake"));
 ok("marketing work needs an approved brand and publication policy", ["record:marketing/brand", "record:governance/publication-policy"].every((x) => req("marketing-and-sales/weekly-pipeline-review").includes(x)));
 ok("a site agent needs marketing set up, the brand and the publication policy, and no function intake of its own", ["meeting:marketing-and-sales/intake", "record:marketing/brand", "record:governance/publication-policy"].every((x) => req("site/products-it").includes(x)) && !req("site/products-it").includes("meeting:site/intake") && !req("site/products-it").includes("meeting:strategy/intake"), req("site/products-it").join());
-ok("a workflow's own requires in Naive is added", requiresOf("it/intake", { decisions: ["it-budget"] }, P).some((r) => r.kind === "decision" && r.what === "it-budget"));
 const closedYes = { ...planned, status: "closed" as const, workflow: "strategy/intake", outcome: { reached: "yes" as const, summary: "", records: [], decisions: [], handoffs: [] } };
 const look = (o: { meetings?: Meeting[], live?: string[], drafts?: string[], decided?: string[], broken?: boolean }): Lookup => ({
   async record(route) { if (o.broken) throw new Error("store down"); return o.live?.includes(route) ? "live" : o.drafts?.includes(route) ? "draft" : "none"; },
@@ -275,8 +274,15 @@ c = await prerequisitesOf("finance/intake", look({ meetings: [closedYes], live: 
 ok("with the meeting closed and the records approved, it may start", c.met && c.missing.length === 0);
 c = await prerequisitesOf("finance/intake", look({ meetings: [closedYes], broken: true }));
 ok("what cannot be checked counts as missing", !c.met && c.missing.every((m) => /could not be checked/.test(m.why)));
-c = await prerequisitesOf("finance/intake", look({}), { policy: undefined, own: undefined }).then(() => prerequisitesOf("strategy/intake", look({}), { policy: { rules: "x" } as never }));
+c = await prerequisitesOf("finance/intake", look({}), { policy: undefined }).then(() => prerequisitesOf("strategy/intake", look({}), { policy: { rules: "x" } as never }));
 ok("a policy that cannot be read locks everything", !c.met && c.missing[0].kind === "policy");
+const fromNaive = [{ kind: "decision" as const, what: "it-budget", why: "Naive: the venture has no decision it-budget.", fix: "decide decisions/it-budget" }, { kind: "meeting" as const, what: "strategy/intake", why: "Naive: no meeting has walked strategy/intake.", fix: "/meet strategy intake" }];
+c = await prerequisitesOf("finance/intake", look({}), { naive: () => fromNaive });
+ok("Naive's verdict joins Mentura's policy, and an entry both name is listed once with Naive's reason", !c.met && c.missing.some((m) => m.what === "it-budget") && c.missing.filter((m) => m.what === "strategy/intake").length === 1 && /^Naive:/.test(c.missing.find((m) => m.what === "strategy/intake")!.why), explain(c));
+c = await prerequisitesOf("finance/intake", look({ meetings: [closedYes], live: ["foundation/problem", "foundation/icp/*", "foundation/goals/*"] }), { naive: () => fromNaive.slice(0, 1) });
+ok("Mentura's policy met does not open a workflow Naive still locks", !c.met && c.missing.length === 1 && c.missing[0].what === "it-budget");
+const real = naiveMissing(dir, "products/intake");
+ok("naiveMissing reads Naive's own verdict for a real venture, as Mentura entries", Array.isArray(real) && real.every((m) => ["record", "meeting", "decision", "policy"].includes(m.kind) && typeof m.fix === "string"), JSON.stringify(real));
 ok("the real accept refuses a foundation draft not named, before touching anything", await acceptHeld({ venture: "kettle", workspace: ws }, ["foundation/problem (held for a person)"], "torian", []).then(() => false, (err) => /accepted only by name: \/approve <meeting> foundation\/problem/.test(String(err))));
 const copyPath = await printCopy({ venture: "kettle", workspace: ws }, dir, planned, { ...planned.agenda[1], result: "drafted the telos" }, ["foundation/goals/none (held for a person)"]);
 const copyText = readFileSync(join(dir, copyPath), "utf8");
@@ -284,7 +290,7 @@ ok("a print copy is a Markdown file under .naive/presentations, with the result,
 ok("a print copy renders a record as headings and bullets", markdownOf({ statement: "Founders run alone", evidence: ["two interviews"], owner: { id: "torian" } }) === "**statement:** Founders run alone\n\n### evidence\n\n- two interviews\n\n### owner\n\n**id:** torian");
 
 // ---- 6. Ranking what is due ----
-const e = (workflow: string, kind: "intake" | "schedule", in_phase: boolean) => ({ workflow, function: workflow.split("/")[0], title: "", role: "", trigger: { kind }, status: "due" as const, why: "w", last_done: null, last_failed: null, next_due: null, in_phase, time_box: null });
+const e = (workflow: string, kind: "intake" | "schedule", in_phase: boolean) => ({ workflow, function: workflow.split("/")[0], title: "", role: "", trigger: { kind }, status: "due" as const, why: "w", last_done: null, last_failed: null, next_due: null, in_phase, time_box: null, missing: [] });
 const ranked = rankDue([e("finance/review", "schedule", true), e("strategy/strategy-review", "schedule", true), e("products/intake", "intake", true), e("it/intake", "intake", false)], { strategy: 0.3, finance: 0.1, products: 0.2 });
 ok("due work ranks in-phase first, intakes first, then the phase's function weight", ranked.map((x) => x.workflow).join() === "products/intake,strategy/strategy-review,finance/review,it/intake", ranked.map((x) => x.workflow).join());
 
