@@ -20,7 +20,7 @@ import type { ModelSource, TraceJoin } from "./function-agent.ts";
 import { phaseOf, runFunctionAgent } from "./function-agent.ts";
 import { functionAgent, functionIds } from "./function-spec.ts";
 import { routerStore, workflowOf, type Meeting } from "./meetings.ts";
-import { prerequisitesOf, routerLookup } from "./prerequisites.ts";
+import { naiveMissing, prerequisitesOf, routerLookup } from "./prerequisites.ts";
 import { acceptHeld, printCopy } from "./review.ts";
 import { functionWorker } from "./meeting-worker.ts";
 import { rolesNeeded } from "./site-agents.ts";
@@ -70,10 +70,10 @@ export async function commandHost(o: HostOptions): Promise<{ ctx: CommandContext
       const [fn, wf] = workflow.split("/");
       const look = routerLookup({ venture: o.venture, workspace: o.workspace }, dir);
       if (fn === "site") return prerequisitesOf(workflow, look);
-      let own;
-      try { own = workflowOf(fn, wf).requires; }
+      try { workflowOf(fn, wf); }
       catch (e) { return { workflow, met: false, missing: [{ kind: "policy" as const, what: workflow, why: String((e as Error)?.message ?? e), fix: "name a workflow Naive has" }] }; }
-      return prerequisitesOf(workflow, look, { own });
+      // Naive judges the workflow's own requires (EE-217); Mentura's policy adds its opinion on top.
+      return prerequisitesOf(workflow, look, { naive: () => naiveMissing(dir, workflow) });
     },
     workflows: () => [...functionIds().flatMap((f) => functionAgent(f).workflows.map((w) => `${f}/${w}`)), ...siteWorkflows()],
     ...(site ? { site } : {}),
